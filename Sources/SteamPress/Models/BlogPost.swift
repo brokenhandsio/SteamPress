@@ -8,11 +8,11 @@ public class BlogPost: Model {
     public var id: Node?
     public var exists: Bool = false
     
-    var title: String
-    var contents: String
-    var author: Node?
-    var created: Date
-    var lastEdited: Date?
+    public var title: String
+    public var contents: String
+    public var author: Node?
+    public var created: Date
+    public var lastEdited: Date?
     
     init(title: String, contents: String, author: BlogUser, creationDate: Date) {
         self.id = nil
@@ -85,7 +85,7 @@ extension BlogPost {
 }
 
 extension BlogPost {
-    func makeNodeWithExtras() throws -> Node {
+    public func makeNodeWithExtras() throws -> Node {
         let dateFormatter = DateFormatter()
         dateFormatter.timeZone = TimeZone(abbreviation: "UTC")
         dateFormatter.dateStyle = .full

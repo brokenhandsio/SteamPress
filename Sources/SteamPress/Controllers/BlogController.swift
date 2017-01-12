@@ -9,10 +9,19 @@ struct BlogController {
     fileprivate let blogPostsPath = "posts"
     fileprivate let labelsPath = "labels"
     fileprivate let authorsPath = "authors"
-    let pathCreator: BlogPathCreator
+    fileprivate let drop: Droplet
+    fileprivate let pathCreator: BlogPathCreator
+    fileprivate let viewFactory: ViewFactory
+    
+    // MARK: - Initialiser
+    init(drop: Droplet, pathCreator: BlogPathCreator, viewFactory: ViewFactory) {
+        self.drop = drop
+        self.pathCreator = pathCreator
+        self.viewFactory = viewFactory
+    }
     
     // MARK: - Add routes
-    func addRoutes(drop: Droplet) {
+    func addRoutes() {
         drop.group(pathCreator.blogPath ?? "") { index in
             index.get(handler: indexHandler)
             index.get(blogPostsPath, BlogPost.self, handler: blogPostHandler)
@@ -95,7 +104,7 @@ struct BlogController {
     }
     
     func authorViewHandler(request: Request, author: BlogUser) throws -> ResponseRepresentable {
-        return try ViewFactory.createProfileView(user: author, isMyProfile: false)
+        return try viewFactory.createProfileView(user: author, isMyProfile: false)
     }
     
 }

@@ -8,15 +8,19 @@ import Fluent
 struct BlogAdminController {
     
     // MARK: - Properties
+    fileprivate let drop: Droplet
     fileprivate let pathCreator: BlogPathCreator
+    fileprivate let viewFactory: ViewFactory
     
     // MARK: - Initialiser
-    init(pathCreator: BlogPathCreator) {
+    init(drop: Droplet, pathCreator: BlogPathCreator, viewFactory: ViewFactory) {
+        self.drop = drop
         self.pathCreator = pathCreator
+        self.viewFactory = viewFactory
     }
     
     // MARK: - Route setup
-    func addRoutes(drop: Droplet) {
+    func addRoutes() {
         let router = drop.grouped(pathCreator.blogPath ?? "", "admin")
         
         router.get("login", handler: loginHandler)
@@ -50,7 +54,7 @@ struct BlogAdminController {
     }
     
     func createPostHandler(_ request: Request) throws -> ResponseRepresentable {
-        return try ViewFactory.createBlogPostView()
+        return try viewFactory.createBlogPostView()
     }
     
     func createPostPostHandler(_ request: Request) throws -> ResponseRepresentable {
@@ -59,7 +63,7 @@ struct BlogAdminController {
         let rawLabels = request.data["inputLabels"]?.string
         
         if let createPostErrors = validatePostCreation(title: rawTitle, contents: rawContents) {
-            return try ViewFactory.createBlogPostView(errors: createPostErrors, title: rawTitle, contents: rawContents, labels: rawLabels)
+            return try viewFactory.createBlogPostView(errors: createPostErrors, title: rawTitle, contents: rawContents, labels: rawLabels)
         }
         
         guard let user = try request.auth.user() as? BlogUser, let title = rawTitle, let contents = rawContents else {
@@ -111,7 +115,7 @@ struct BlogAdminController {
             labelsString.remove(at: labelsString.index(before: labelsString.endIndex))
             labelsSupplied = labelsString
         }
-        return try ViewFactory.createBlogPostView(title: post.title, contents: post.contents, labels: labelsSupplied,isEditing: true, postToEdit: post)
+        return try viewFactory.createBlogPostView(title: post.title, contents: post.contents, labels: labelsSupplied,isEditing: true, postToEdit: post)
     }
     
     func editPostPostHandler(request: Request, post: BlogPost) throws -> ResponseRepresentable {
@@ -120,7 +124,7 @@ struct BlogAdminController {
         let rawLabels = request.data["inputLabels"]?.string
         
         if let errors = validatePostCreation(title: rawTitle, contents: rawContents) {
-            return try ViewFactory.createBlogPostView(errors: errors, title: rawTitle, contents: rawContents, labels: rawLabels, isEditing: true, postToEdit: post)
+            return try viewFactory.createBlogPostView(errors: errors, title: rawTitle, contents: rawContents, labels: rawLabels, isEditing: true, postToEdit: post)
         }
         
         guard let title = rawTitle, let contents = rawContents else {
@@ -172,7 +176,7 @@ struct BlogAdminController {
     
     // MARK: - User handlers
     func createUserHandler(_ request: Request) throws -> ResponseRepresentable {
-        return try ViewFactory.createUserView()
+        return try viewFactory.createUserView()
     }
     
     func createUserPostHandler(_ request: Request) throws -> ResponseRepresentable {
@@ -188,7 +192,7 @@ struct BlogAdminController {
         
         // Return if we have any missing fields
         if (createUserRawErrors?.count)! > 0 {
-            return try ViewFactory.createUserView(errors: createUserRawErrors, name: rawName, username: rawUsername, passwordError: passwordRawError, confirmPasswordError: confirmPasswordRawError, resetPasswordRequired: resetPasswordRequired)
+            return try viewFactory.createUserView(errors: createUserRawErrors, name: rawName, username: rawUsername, passwordError: passwordRawError, confirmPasswordError: confirmPasswordRawError, resetPasswordRequired: resetPasswordRequired)
         }
         
         guard let name = rawName, let username = rawUsername?.lowercased(), let password = rawPassword, let confirmPassword = rawConfirmPassword else {
@@ -198,7 +202,7 @@ struct BlogAdminController {
         let (createUserErrors, passwordError, confirmPasswordError) = validateUserSaveData(edit: false, name: name, username: username, password: password, confirmPassword: confirmPassword)
         
         if (createUserErrors?.count)! > 0 {
-            return try ViewFactory.createUserView(errors: createUserErrors, name: name, username: username, passwordError: passwordError, confirmPasswordError: confirmPasswordError, resetPasswordRequired: resetPasswordRequired)
+            return try viewFactory.createUserView(errors: createUserErrors, name: name, username: username, passwordError: passwordError, confirmPasswordError: confirmPasswordError, resetPasswordRequired: resetPasswordRequired)
         }
         
         // We now have valid data
@@ -211,12 +215,12 @@ struct BlogAdminController {
             return Response(redirect: pathCreator.createPath(for: "admin"))
         }
         else {
-            return try ViewFactory.createUserView(errors: ["There was an error creating the user. Please try again"], name: name, username: username, passwordError: passwordError, confirmPasswordError: confirmPasswordError, resetPasswordRequired: resetPasswordRequired)
+            return try viewFactory.createUserView(errors: ["There was an error creating the user. Please try again"], name: name, username: username, passwordError: passwordError, confirmPasswordError: confirmPasswordError, resetPasswordRequired: resetPasswordRequired)
         }
     }
     
     func editUserHandler(request: Request, user: BlogUser) throws -> ResponseRepresentable {
-        return try ViewFactory.createUserView(editing: true, name: user.name, username: user.username, userId: user.id)
+        return try viewFactory.createUserView(editing: true, name: user.name, username: user.username, userId: user.id)
     }
     
     func editUserPostHandler(request: Request, user: BlogUser) throws -> ResponseRepresentable {
@@ -231,7 +235,7 @@ struct BlogAdminController {
         
         // Return if we have any missing fields
         if (saveUserRawErrors?.count)! > 0 {
-            return try ViewFactory.createUserView(editing: true, errors: saveUserRawErrors, name: rawName, username: rawUsername, passwordError: passwordRawError, confirmPasswordError: confirmPasswordRawError, resetPasswordRequired: resetPasswordRequired, userId: user.id)
+            return try viewFactory.createUserView(editing: true, errors: saveUserRawErrors, name: rawName, username: rawUsername, passwordError: passwordRawError, confirmPasswordError: confirmPasswordRawError, resetPasswordRequired: resetPasswordRequired, userId: user.id)
         }
         
         guard let name = rawName, let username = rawUsername else {
@@ -241,7 +245,7 @@ struct BlogAdminController {
         let (saveUserErrors, passwordError, confirmPasswordError) = validateUserSaveData(edit: true, name: name, username: username, password: rawPassword, confirmPassword: rawConfirmPassword, previousUsername: user.username)
         
         if (saveUserErrors?.count)! > 0 {
-            return try ViewFactory.createUserView(editing: true, errors: saveUserErrors, name: name, username: username, passwordError: passwordError, confirmPasswordError: confirmPasswordError, resetPasswordRequired: resetPasswordRequired, userId: user.id)
+            return try viewFactory.createUserView(editing: true, errors: saveUserErrors, name: name, username: username, passwordError: passwordError, confirmPasswordError: confirmPasswordError, resetPasswordRequired: resetPasswordRequired, userId: user.id)
         }
         
         // We now have valid data
@@ -273,11 +277,11 @@ struct BlogAdminController {
         // Check we have at least one user left
         let users = try BlogUser.all()
         if users.count <= 1 {
-            return try ViewFactory.createBlogAdminView(errors: ["You cannot delete the last user"])
+            return try viewFactory.createBlogAdminView(errors: ["You cannot delete the last user"])
         }
         // Make sure we aren't deleting ourselves!
         else if currentUser.id == user.id {
-            return try ViewFactory.createBlogAdminView(errors: ["You cannot delete yourself whilst logged in"])
+            return try viewFactory.createBlogAdminView(errors: ["You cannot delete yourself whilst logged in"])
         }
         else {
             try user.delete()
@@ -305,7 +309,7 @@ struct BlogAdminController {
             print("There was an error creating a new admin user: \(error)")
         }
         
-        return try ViewFactory.createLoginView()
+        return try viewFactory.createLoginView()
     }
     
     func loginPostHandler(_ request: Request) throws -> ResponseRepresentable {
@@ -324,7 +328,7 @@ struct BlogAdminController {
         }
         
         if loginErrors.count > 0 {
-            return try ViewFactory.createLoginView(errors: loginErrors, username: rawUsername, password: rawPassword)
+            return try viewFactory.createLoginView(errors: loginErrors, username: rawUsername, password: rawPassword)
         }
         
         guard let username = rawUsername, let password = rawPassword else {
@@ -344,7 +348,7 @@ struct BlogAdminController {
         catch {
             print("Got error logging in \(error)")
             let loginError = ["Your username or password was incorrect"]
-            return try ViewFactory.createLoginView(errors: loginError, username: username, password: password)
+            return try viewFactory.createLoginView(errors: loginError, username: username, password: password)
         }
     }
     
@@ -355,7 +359,7 @@ struct BlogAdminController {
     
     // MARK: Admin Handler
     func adminHandler(_ request: Request) throws -> ResponseRepresentable {
-        return try ViewFactory.createBlogAdminView()
+        return try viewFactory.createBlogAdminView()
     }
     
     // MARK: - Profile Handler
@@ -365,12 +369,12 @@ struct BlogAdminController {
             throw Abort.badRequest
         }
         
-        return try ViewFactory.createProfileView(user: user, isMyProfile: true)
+        return try viewFactory.createProfileView(user: user, isMyProfile: true)
     }
     
     // MARK: - Password handlers
     func resetPasswordHandler(_ request: Request) throws -> ResponseRepresentable {
-        return try ViewFactory.createResetPasswordView()
+        return try viewFactory.createResetPasswordView()
     }
     
     func resetPasswordPostHandler(_ request: Request) throws -> ResponseRepresentable {
@@ -392,7 +396,7 @@ struct BlogAdminController {
         
         // Return if we have any missing fields
         if resetPasswordErrors.count > 0 {
-            return try ViewFactory.createResetPasswordView(errors: resetPasswordErrors, passwordError: passwordError, confirmPasswordError: confirmPasswordError)
+            return try viewFactory.createResetPasswordView(errors: resetPasswordErrors, passwordError: passwordError, confirmPasswordError: confirmPasswordError)
         }
         
         guard let password = rawPassword, let confirmPassword = rawConfirmPassword else {
@@ -413,7 +417,7 @@ struct BlogAdminController {
         }
         
         if resetPasswordErrors.count > 0 {
-            return try ViewFactory.createResetPasswordView(errors: resetPasswordErrors, passwordError: passwordError, confirmPasswordError: confirmPasswordError)
+            return try viewFactory.createResetPasswordView(errors: resetPasswordErrors, passwordError: passwordError, confirmPasswordError: confirmPasswordError)
         }
         
         guard var user = try request.auth.user() as? BlogUser else {

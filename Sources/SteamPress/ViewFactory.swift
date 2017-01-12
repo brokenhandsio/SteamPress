@@ -3,7 +3,9 @@ import HTTP
 
 struct ViewFactory {
     
-    static func createBlogPostView(errors: [String]? = nil, title: String? = nil, contents: String? = nil, labels: String? = nil, isEditing: Bool = false, postToEdit: BlogPost? = nil) throws -> View {
+    let drop: Droplet
+    
+    func createBlogPostView(errors: [String]? = nil, title: String? = nil, contents: String? = nil, labels: String? = nil, isEditing: Bool = false, postToEdit: BlogPost? = nil) throws -> View {
         let titleError = (title == nil || (title?.isWhitespace())!) && errors != nil
         let contentsError = (contents == nil || (contents?.isWhitespace())!) && errors != nil
         
@@ -44,7 +46,7 @@ struct ViewFactory {
         return try drop.view.make("blog/admin/createPost", parameters)
     }
     
-    static func createUserView(editing: Bool = false, errors: [String]? = nil, name: String? = nil, username: String? = nil, passwordError: Bool? = nil, confirmPasswordError: Bool? = nil, resetPasswordRequired: Bool? = nil, userId: Node? = nil) throws -> View {
+    func createUserView(editing: Bool = false, errors: [String]? = nil, name: String? = nil, username: String? = nil, passwordError: Bool? = nil, confirmPasswordError: Bool? = nil, resetPasswordRequired: Bool? = nil, userId: Node? = nil) throws -> View {
         let nameError = name == nil && errors != nil
         let usernameError = username == nil && errors != nil
         
@@ -90,7 +92,7 @@ struct ViewFactory {
         return try drop.view.make("blog/admin/createUser", parameters)
     }
     
-    static func createLoginView(errors: [String]? = nil, username: String? = nil, password: String? = nil) throws -> View {
+    func createLoginView(errors: [String]? = nil, username: String? = nil, password: String? = nil) throws -> View {
         let usernameError = username == nil && errors != nil
         let passwordError = password == nil && errors != nil
         
@@ -112,7 +114,7 @@ struct ViewFactory {
         return try drop.view.make("blog/admin/login", parameters)
     }
     
-    static func createBlogAdminView(errors: [String]? = nil) throws -> View {
+    func createBlogAdminView(errors: [String]? = nil) throws -> View {
         let blogPosts = try BlogPost.all()
         let users = try BlogUser.all()
         
@@ -138,7 +140,7 @@ struct ViewFactory {
         return try drop.view.make("blog/admin/index", parameters)
     }
     
-    static func createResetPasswordView(errors: [String]? = nil, passwordError: Bool? = nil, confirmPasswordError: Bool? = nil) throws -> View {
+    func createResetPasswordView(errors: [String]? = nil, passwordError: Bool? = nil, confirmPasswordError: Bool? = nil) throws -> View {
         
         var parameters: [String: Node] = [:]
         
@@ -159,7 +161,7 @@ struct ViewFactory {
         return try drop.view.make("blog/admin/resetPassword", parameters)
     }
     
-    static func createProfileView(user: BlogUser, isMyProfile: Bool) throws -> ResponseRepresentable {
+    func createProfileView(user: BlogUser, isMyProfile: Bool) throws -> ResponseRepresentable {
         var parameters: [String: Node] = [
             "user": try user.makeNodeWithoutPassword(),
         ]

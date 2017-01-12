@@ -39,13 +39,14 @@ public struct SteamPress {
         }
         
         let pathCreator = BlogPathCreator(blogPath: blogPath)
+        let viewFactory = ViewFactory(drop: drop)
         
         // Set up the controllers
-        blogController = BlogController(pathCreator: pathCreator)
-        blogAdminController = BlogAdminController(pathCreator: pathCreator)
+        blogController = BlogController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory)
+        blogAdminController = BlogAdminController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory)
         
         // Add the routes
-        blogController.addRoutes(drop: drop)
-        blogAdminController.addRoutes(drop: drop)
+        blogController.addRoutes()
+        blogAdminController.addRoutes()
     }
 }
