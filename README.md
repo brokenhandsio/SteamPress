@@ -107,7 +107,67 @@ This is the page for viewing a profile of a user. This is generally used for vie
 
 ## Admin Site
 
-TODO
+### `index.leaf`
+
+This is the main Admin page for the blog where you can create and edit users and posts. The parameters for this page are:
+
+* `users` - all the users for the site
+* `posts` - all the posts that have been written if there are any
+* `errors` - any error messages for errors that have occured when trying to delete posts or users (for instance trying to delete yourself or the last user)
+* `blogAdminPage` - a boolean set to true, useful for navigation
+
+### `login.leaf`
+
+This is the page for logging in to the admin section of the blog. The parameters are:
+
+* `usernameError` - a boolean set if there was an issue with the username
+* `passwordError` - a boolean set if there was an error with the password (note that we do not pass any password submitted back to any pages if there was an error for security reasons)
+* `usernameSupplied` - the username supplied (if any) when originally submitting the login for and there (useful for prepopulating the form)
+* `errors` - an array of error messages if there were any errors logging in
+
+### `resetPassword.leaf`
+
+This is the page you will be redirected to if you need to reset your password. The parameters are:
+
+* `errors` - an array of errors if there were any errors resetting your password
+* `passwordError` - a boolean set if there was an error with the password (for instance it was blank)
+* `confirmPasswordError` - a boolean set if there was an error with the password confirm (for instance it was blank)
+
+### `createPost.leaf`
+
+This is the page for creating a new blog post, or editing an existing one. The parameters for this page are:
+
+* `titleError` - a boolean set to true if there was an error with the title
+* `contentsError` - a boolean set to true if there was an error with the blog contents
+* `errors` - an array of error messages if there were any errors creating or editing the blog post
+* `titleSupplied` - the title of the blog post to edit, or the post that failed to be created
+* `contentsSupplied` - the contents of the blog post to edit, or the post that failed to be created
+* `labelsSupplied` - a space-seperated string of all of the labels that have been specified for the blog post
+* `editing` - a boolean set to true if we are currently editing the a blog post rather than creating a new one
+* `post` - the post object we are currently editing
+* `createBlogPostPage` - a boolean set to true, useful for the navbar etc
+
+### `createLogin.leaf`
+
+This is the page for creating a nw user, or editing an existing one. The parameters are:
+
+* `nameError` - a boolean set if there was an error with the name
+* `usernameError` - a boolean set if there was an error with the username
+* `errors` - an array of error messages if there were any errors editing or creating the user
+* `nameSupplied` - the name of the user we are editing or that we failed to create
+* `usernameSupplied` - the userame of the user we are editing or that we failed to create
+* `passwordError` - a boolean set to true if there was an error with the password
+* `confirmPasswordError` - a boolean set to true if there was an error with the password confirm
+* `resetPasswordOnLoginSupplied` - a boolean set to true if the edit/create submission was asked to reset the users password on next login (this is only supplied in an error so you can prepopulate the form for a user to correct without losing any information)
+* `editing` - a boolean set to true if we are editing a user
+* `userId` - this is the ID of the user if we are editing one. This allows you to send the edit user `POST` back to the correct route
+
+
+## `POST` Routes
+
+There are a number of `POST` routes to the Admin site for creating and editing user etc that are required otherwise you will receive errors.
+
+This section needs to be filled out, but you can view the Controllers in the code to work out what they should be, or see the [Example Site](https://github.com/brokenhandsio/SteamPressExample).
 
 # Snippets
 
