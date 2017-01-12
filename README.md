@@ -178,7 +178,7 @@ SteamPress supports two type of snippets for blog posts - short and long. Short 
 Any call to `makeNodeWithExtras()` on the `BlogPost` object will return both snippets. You can also call them directly on a `BlogPost` object (such as from a `Query()`):
 
 ```swift
-// These both return the some of the contents of a blog post (as a `String`)
+// These both return the some of the contents of a blog post (as a String)
 let shortSnippet = post.shortSnippet()
 let longSnippet = post.longSnippet()
 ```
