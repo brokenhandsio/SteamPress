@@ -5,6 +5,15 @@ The blog can either be used as the root of your website (i.e. appearing at https
 
 There is an example of how it can work in a site (and what it requires in terms of Leaf templates and the parameteres is passes to them) at https://github.com/brokenhandsio/SteamPressExample.
 
+## Features:
+
+* Blog entries with Markdown
+* Multiple user accounts
+* Label tagging for blogging
+* Snippet for posts
+* Works with any Fluent driver
+* Protected Admin route for creating blog posts
+
 # How to Use
 
 ## Setup
@@ -36,27 +45,31 @@ This will initialise it as the root path of your site. If you wish to have it in
 let steamPress = SteamPress(drop: drop, blogPath: "blog")
 ```
 
-## Expected Leaf Templates
+## Logging In
+
+When you first visit the login page of the admin section of the blog it will create a user for you to use for login, with the username `admin`. The password will be printed out to the console and you will be required to reset your password when you first login. It is recommended you do this as soon as your site is up and running.
+
+# Expected Leaf Templates
 
 TODO
 
-### Main Blog Site
+## Main Blog Site
 
 TODO
 
-### Admin Site
+## Admin Site
 
 TODO
 
-## Snippets
+# Snippets
 
 SteamPress supports two type of snippets for blog posts - short and long. Short snippets will provide the first paragraph or so of the blog post, whereas long snippets will show several paragraphs (such as for use on the main blog page, when listing all of the posts).
 
-### Usage
+## Usage
 
 TODO
 
-## LeafMardown
+# LeafMardown
 
 LeafMarkdown allows you to render markdown as HTML in your Leaf files. To use, just simply use:
 
@@ -68,6 +81,6 @@ This will convert the `Node` object `myObject`'s `markdownContent` to HTML (you 
 
 # Known issues
 
-When the admin user is created when first accessing the login screen, sometimes two are created so you need to use the first password displayed. You can then delete the second Admin user in the Admin pane.
-
-Despite me being a big believer in TDD and it saving me on many occasions, I neglected to actually write any tests for this. So despite the fact that I have been tripped up due to no tests, I haven't written the unit tests yet, mainly because this started out as a Spike to see how easy it would be. They will definitely be coming soon!
+* When the admin user is created when first accessing the login screen, sometimes two are created so you need to use the first password displayed. You can then delete the second Admin user in the Admin pane.
+* Despite me being a big believer in TDD and it saving me on many occasions, I neglected to actually write any tests for this. So despite the fact that I have been tripped up due to no tests, I haven't written the unit tests yet, mainly because this started out as a Spike to see how easy it would be. They will definitely be coming soon!
+* There is no 'remember me' logic when logging in yet, which means you will only be logged in for an hour until your session times out. Please remember this when writing long posts!
