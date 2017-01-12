@@ -73,7 +73,7 @@ The basic structure of your `Resources/View` directory should be:
 
 This is the index page of the blog. The parameters it will receive are:
 
-* `posts` - an array of blog posts if there are any. These will be long snippets (see below)
+* `posts` - an array of blog posts if there are any. These will include extra information such as the `authorName`, dates in a nice format and snippets (see below)
 * `labels` - an array of labels if there are any
 * `user` - the currently logged in user if a user is currently logged in
 * `blogIndexPage` - a boolean saying we are on the index page of the blog - useful for navbars
@@ -175,7 +175,13 @@ SteamPress supports two type of snippets for blog posts - short and long. Short 
 
 ## Usage
 
-TODO
+Any call to `makeNodeWithExtras()` on the `BlogPost` object will return both snippets. You can also call them directly on a `BlogPost` object (such as from a `Query()`):
+
+```swift
+// These both return the some of the contents of a blog post (as a `String`)
+let shortSnippet = post.shortSnippet()
+let longSnippet = post.longSnippet()
+```
 
 # LeafMardown
 
