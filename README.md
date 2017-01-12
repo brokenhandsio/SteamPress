@@ -51,11 +51,59 @@ When you first visit the login page of the admin section of the blog it will cre
 
 # Expected Leaf Templates
 
-TODO
+SteamPress expects there to be a number of Leaf template files in the correct location in `Resources/Views`. All these files should be in a `blog` directory, with the admin template files being in an `admin` directory. For an example of how it SteamPress works with the leaf templates, see the [Example SteamPress site](https://github.com/brokenhandsio/SteamPressExample).
+
+The basic structure of your `Resources/View` directory should be:
+
+* `blog`
+ * `blog.leaf` - the main index page
+ * `blogpost.leaf` - the page for a single blog post
+ * `label.leaf` - the page for a label
+ * `profile.leaf` - the page for a user profile
+ * `admin`
+  * `createPost.leaf` - the page for creating and editing a blog post
+  * `createUser.leaf` - the page for creating and editing a user
+  * `index.leaf` - the index page for the Admin site
+  * `login.leaf` - the login page for the Admin site
+  * `resetPassword.leaf` - the page for resetting your password
 
 ## Main Blog Site
 
-TODO
+### `blog.leaf`
+
+This is the index page of the blog. The parameters it will receive are:
+
+* `posts` - an array of blog posts if there are any. These will be long snippets (see below)
+* `labels` - an array of labels if there are any
+* `user` - the currently logged in user if a user is currently logged in
+* `blogIndexPage` - a boolean saying we are on the index page of the blog - useful for navbars
+
+### `blogpost.leaf`
+
+This is the page for viewing a single entire blog post. The parameters set are:
+
+* `post` - the full current post
+* `author` - the author of the post
+* `blogPostPage` - a boolean saying we are on the blog post page
+* `user` - the currently logged in user if a user is currently logged in
+
+### `label.leaf`
+
+This is the page for a label. A blog post can be tagged with many labels and a label can be tagged on many blog posts. This page is generally used for viewing all posts under that label. The parameters are:
+
+* `label` - the label
+* `posts` - all the posts that have been tagged with this label
+* `labelPage` - a boolean saying we are on the label page
+* `user` - the currently logged in user if a user is currently logged in
+
+### `profile.leaf`
+
+This is the page for viewing a profile of a user. This is generally used for viewing all posts written by a user, as well as some information about them. This template is also used by the Admin section for viewing a 'My Profile' page when logged in. The parameters it can have set are:
+
+* `user` - the user the page is for
+* `myProfile` - a boolean set to true if we are viewing the my profile page
+* `profilePage` - a boolean set to to true if we are viewing the profile page
+* `posts` - all the posts the user has written if they have written any
 
 ## Admin Site
 
