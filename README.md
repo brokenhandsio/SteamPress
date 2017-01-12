@@ -13,9 +13,9 @@ It's just a single line! Well almost... First add it to your `Package.swift` dep
 
 ```swift
 dependencies: [
-        ...,
-        .Package(url: "https://github.com/brokenhandsio/SteamPress", majorVersion: 0, minor: 1)
-    ]
+    ...,
+    .Package(url: "https://github.com/brokenhandsio/SteamPress", majorVersion: 0, minor: 1)
+]
 ```
 
 Next import it in the file where you are setting up your `Droplet` with:
