@@ -66,7 +66,7 @@ extension BlogPost {
         try database.create(databaseTableName) { posts in
             posts.id()
             posts.string("title")
-            posts.string("contents")
+            posts.string("contents", length: 10000000, optional: false)
             posts.parent(BlogUser.self, optional: false)
             posts.double("created")
             posts.double("lastedited", optional: true)
