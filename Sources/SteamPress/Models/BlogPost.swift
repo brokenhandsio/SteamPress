@@ -29,7 +29,7 @@ public class BlogPost: Model {
         contents = try node.extract("contents")
         author = try node.extract("author")
         let createdTime: Double = try node.extract("created")
-        let lastEditedTime: Double? = try? node.extract("lastEdited")
+        let lastEditedTime: Double? = try? node.extract("lastedited")
         
         created = Date(timeIntervalSince1970: createdTime)
         
@@ -53,13 +53,13 @@ extension BlogPost: NodeRepresentable {
             "contents": contents,
             "author": author,
             "created": createdTime,
-            "createdTimestamp": createdDateTimestamp
+            "createdtimestamp": createdDateTimestamp
             ])
         
         if let lastEdited = lastEdited {
             let lastEditedTimestamp = dateFormatter.string(from: lastEdited)
-            node["lastEdited"] = lastEdited.timeIntervalSince1970.makeNode()
-            node["lastEditedTimestamp"] = lastEditedTimestamp.makeNode()
+            node["lastedited"] = lastEdited.timeIntervalSince1970.makeNode()
+            node["lasteditedtimestamp"] = lastEditedTimestamp.makeNode()
         }
         
         return node
@@ -75,7 +75,7 @@ extension BlogPost {
             posts.string("contents")
             posts.parent(BlogUser.self, optional: false)
             posts.double("created")
-            posts.double("lastEdited", optional: true)
+            posts.double("lastedited", optional: true)
         }
     }
     
@@ -97,11 +97,11 @@ extension BlogPost {
         
         if let lastEdited = lastEdited {
             let lastEditedDate = dateFormatter.string(from: lastEdited)
-            node["lastEditedDate"] = lastEditedDate.makeNode()
+            node["lastediteddate"] = lastEditedDate.makeNode()
             
         }
         
-        node["authorName"] = try getAuthor()?.name.makeNode()
+        node["authorname"] = try getAuthor()?.name.makeNode()
         
         let allLabels = try labels()
         
@@ -109,8 +109,8 @@ extension BlogPost {
             node["labels"] = try allLabels.makeNode()
         }
         
-        node["longSnippet"] = longSnippet().makeNode()
-        node["shortSnippet"] = shortSnippet().makeNode()
+        node["longsnippet"] = longSnippet().makeNode()
+        node["shortsnippet"] = shortSnippet().makeNode()
         
         return node
     }

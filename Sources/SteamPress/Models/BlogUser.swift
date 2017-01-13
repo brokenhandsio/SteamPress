@@ -25,7 +25,7 @@ final class BlogUser: Model {
         name = try node.extract("name")
         username = try node.extract("username")
         password = try node.extract("password")
-        resetPasswordRequired = try node.extract("resetPasswordRequired")
+        resetPasswordRequired = try node.extract("resetpasswordrequired")
     }
     
     func makeNode(context: Context) throws -> Node {
@@ -34,7 +34,7 @@ final class BlogUser: Model {
             "name": name,
             "username": username,
             "password": password,
-            "resetPasswordRequired": resetPasswordRequired
+            "resetpasswordrequired": resetPasswordRequired
         ])
     }
     
@@ -44,7 +44,7 @@ final class BlogUser: Model {
             users.string("name")
             users.string("username")
             users.string("password")
-            users.bool("resetPasswordRequired")
+            users.bool("resetpasswordrequired")
         }
     }
     
