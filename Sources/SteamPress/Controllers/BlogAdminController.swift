@@ -556,7 +556,7 @@ extension String {
         var randomString: String = ""
         
         for _ in 0..<length {
-            let randomValue = Int.random(min: 0, max: base.characters.count)
+            let randomValue = Int.random(min: 0, max: base.characters.count-1)
             randomString += "\(base[base.index(base.startIndex, offsetBy: Int(randomValue))])"
         }
         return randomString
