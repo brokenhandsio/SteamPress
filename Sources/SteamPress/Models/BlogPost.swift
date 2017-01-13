@@ -27,7 +27,7 @@ public class BlogPost: Model {
         id = try node.extract("id")
         title = try node.extract("title")
         contents = try node.extract("contents")
-        author = try node.extract("author")
+        author = try node.extract("bloguser_id")
         let createdTime: Double = try node.extract("created")
         let lastEditedTime: Double? = try? node.extract("lastedited")
         
@@ -42,24 +42,18 @@ public class BlogPost: Model {
 
 extension BlogPost: NodeRepresentable {
     public func makeNode(context: Context) throws -> Node {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-        let createdDateTimestamp = dateFormatter.string(from: created)
         let createdTime = created.timeIntervalSince1970
         
         var node = try Node(node: [
             "id": id,
             "title": title,
             "contents": contents,
-            "author": author,
-            "created": createdTime,
-            "createdtimestamp": createdDateTimestamp
+            "bloguser_id": author,
+            "created": createdTime
             ])
         
         if let lastEdited = lastEdited {
-            let lastEditedTimestamp = dateFormatter.string(from: lastEdited)
             node["lastedited"] = lastEdited.timeIntervalSince1970.makeNode()
-            node["lasteditedtimestamp"] = lastEditedTimestamp.makeNode()
         }
         
         return node
@@ -93,7 +87,7 @@ extension BlogPost {
         let createdDate = dateFormatter.string(from: created)
         
         var node = try makeNode()
-        node["createdDate"] = createdDate.makeNode()
+        node["createddate"] = createdDate.makeNode()
         
         if let lastEdited = lastEdited {
             let lastEditedDate = dateFormatter.string(from: lastEdited)

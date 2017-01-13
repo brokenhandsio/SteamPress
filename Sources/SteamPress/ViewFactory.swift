@@ -128,7 +128,13 @@ struct ViewFactory {
             ])
         
         if blogPosts.count > 0 {
-            parameters["posts"] = try blogPosts.makeNode()
+            if blogPosts.count > 0 {
+                var postsNode = [Node]()
+                for post in blogPosts {
+                    postsNode.append(try post.makeNodeWithExtras())
+                }
+                parameters["posts"] = try postsNode.makeNode()
+            }
         }
         
         if let errors = errors {
@@ -174,7 +180,11 @@ struct ViewFactory {
         }
         
         if try user.posts().count > 0 {
-            parameters["posts"] = try user.posts().makeNode()
+            var postsNode = [Node]()
+            for post in try user.posts() {
+                postsNode.append(try post.makeNodeWithExtras())
+            }
+            parameters["posts"] = try postsNode.makeNode()
         }
         
         return try drop.view.make("blog/profile", parameters)

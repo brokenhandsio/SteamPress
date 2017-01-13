@@ -89,9 +89,14 @@ struct BlogController {
         
         var parameters: [String: Node] = [
             "label": try label.makeNode(),
-            "posts": try posts.makeNode(),
             "labelPage": true.makeNode()
         ]
+        
+        var postsNode = [Node]()
+        for post in posts {
+            postsNode.append(try post.makeNodeWithExtras())
+        }
+        parameters["posts"] = try postsNode.makeNode()
         
         do {
             if let user = try request.auth.user() as? BlogUser {

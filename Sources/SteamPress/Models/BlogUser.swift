@@ -101,7 +101,7 @@ extension BlogUser {
 
 extension BlogUser {
     func posts() throws -> [BlogPost] {
-        return try children("author", BlogPost.self).all()
+        return try children(nil, BlogPost.self).all()
     }
 }
 
