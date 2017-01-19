@@ -198,3 +198,23 @@ This will convert the `Node` object `myObject`'s `markdownContent` to HTML (you 
 * When the admin user is created when first accessing the login screen, sometimes two are created so you need to use the first password displayed. You can then delete the second Admin user in the Admin pane.
 * Despite me being a big believer in TDD and it saving me on many occasions, I neglected to actually write any tests for this. So despite the fact that I have been tripped up due to no tests, I haven't written the unit tests yet, mainly because this started out as a Spike to see how easy it would be. They will definitely be coming soon!
 * There is no 'remember me' logic when logging in yet, which means you will only be logged in for an hour until your session times out. Please remember this when writing long posts!
+
+# Roadmap
+
+I anticipate SteamPress staying on a version 0 for some time, whilst some of the biggest features are implemented. Semantic versioning makes life a little difficult for this as any new endpoints will require a breaking change for you to add Leaf templates! However, I will aim to stabilise this as quickly as possible, and any breaking changes will be announced in the [releases](https://github.com/brokenhandsio/SteamPress/releases) page.
+
+On the roadmap we have:
+
+* Pagination for posts - once a few posts have been written (say 15 or so), it can become a long page to scroll through so pagination on the blog homepage is needed
+* Code tidyup - in some places in the code you can tell it evolved quickly from a hacky spike - there is a lot of repeated code lying around and I'm not taking advatange of all of Swift or Vapor; this needs to be improved
+* Proper testing! Even now I have had too many bugs that would have been picked up by unit tests so I need to start them! Better late than never right...
+* Remember Me functionality for logging in - improve the 1 hour cookie expiry when logging and and wanting to be remembered
+* JSON endpoints for validating things like labels
+* Slug URL for posts - helps SEO and makes life a bit easier!
+* Image uploading - you can link to images easily but can't upload any without redeploying the site - I may implement some functionality for this depending on whether people want images going to the same site as the code or something like an S3 bucket (I'm leaning towards the S3 option so answers on a postcard!)
+* Blog drafts - it would be nice not to publish posts until you want to
+* Sitemap/RSS feed - again for SEO
+* AMP endpoints for posts
+* Searching through the blog
+* Saving state when logging in - if you go to a page (e.g. edit post) but need to be logged in, it would be great if you could head back to that page once logged in. Also, if you have edited a post and your session expires before you post it, wouldn't it be great if it rememebered everything!
+
