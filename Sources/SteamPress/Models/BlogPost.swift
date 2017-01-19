@@ -134,6 +134,7 @@ extension BlogPost {
     }
     
     private func getLines(characterLimit: Int) -> String {
+        contents = contents.replacingOccurrences(of: "\r\n", with: "\n", options: .regularExpression)
         let lines = contents.components(separatedBy: "\n")
         var snippet = ""
         for line in lines {
