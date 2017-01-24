@@ -2,6 +2,7 @@ import Vapor
 import Fluent
 import LeafMarkdown
 import Auth
+import Paginator
 
 /**
     A Blog engine for Vapor. Simply initialise an instance of `SteamPress` and it will do the rest for you!
@@ -36,6 +37,7 @@ public struct SteamPress {
         // Set up Leaf tag
         if let leaf = drop.view as? LeafRenderer {
             leaf.stem.register(Markdown())
+            leaf.stem.register(PaginatorTag())
         }
         
         let pathCreator = BlogPathCreator(blogPath: blogPath)

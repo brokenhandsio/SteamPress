@@ -38,13 +38,16 @@ struct BlogController {
         var parameters: [String: Node] = [:]
 
         blogPosts.sort { $0.created > $1.created }
+        
+        var paginatedBlogPosts = try blogPosts.paginator(10, request: request)
 
         if blogPosts.count > 0 {
             var postsNode = [Node]()
             for post in blogPosts {
                 postsNode.append(try post.makeNodeWithExtras())
             }
-            parameters["posts"] = try postsNode.makeNode()
+            paginatedBlogPosts.data = try postsNode.makeNode()
+            parameters["posts"] = try paginatedBlogPosts.makeNode()
         }
         
         if labels.count > 0 {
