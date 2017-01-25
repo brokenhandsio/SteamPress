@@ -19,12 +19,8 @@ public struct SteamPress {
      
         - Parameter drop: The droplet to add the blog too
         - Parameter blogPath: The path to add the blog too
-     
-        - Throws: this throws due to adding providers to the `Droplet`
-
-     
      */
-    public init(drop: Droplet, blogPath: String? = nil) throws {
+    public init(drop: Droplet, blogPath: String? = nil) {
         self.blogPath = blogPath
         
         // Database preperations
@@ -38,7 +34,8 @@ public struct SteamPress {
         drop.middleware.append(authMiddleware)
         
         // Providers
-        try drop.addProvider(PaginatorProvider.self)
+        let paginator = PaginatorProvider(useBootstrap4: true)
+        drop.addProvider(paginator)
         
         // Set up Leaf tag
         if let leaf = drop.view as? LeafRenderer {
