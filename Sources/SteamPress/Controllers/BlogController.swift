@@ -39,7 +39,7 @@ struct BlogController {
 
         blogPosts.sort { $0.created > $1.created }
         
-        var paginatedBlogPosts = try blogPosts.paginator(10, request: request)
+        var paginatedBlogPosts = try blogPosts.paginator(2, request: request)
 
         if blogPosts.count > 0 {
             var postsNode = [Node]()
