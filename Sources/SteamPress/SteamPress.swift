@@ -34,7 +34,7 @@ public struct SteamPress {
         drop.middleware.append(authMiddleware)
         
         // Providers
-        let paginator = PaginatorProvider(useBootstrap4: true)
+        let paginator = PaginatorProvider(useBootstrap4: true, paginationLabel: "Blog Post Pages")
         drop.addProvider(paginator)
         
         // Set up Leaf tag
