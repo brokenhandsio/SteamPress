@@ -38,14 +38,8 @@ struct BlogController {
         var parameters: [String: Node] = [:]
 
         blogPosts.sort { $0.created > $1.created }
-
-        if blogPosts.count > 0 {
-            var postsNode = [Node]()
-            for post in blogPosts {
-                postsNode.append(try post.makeNodeWithExtras())
-            }
-            parameters["posts"] = try postsNode.makeNode()
-        }
+        
+        parameters["posts"] = try blogPosts.makeNode(context: BlogPostAllInfo())
         
         if labels.count > 0 {
             parameters["labels"] = try labels.makeNode()
@@ -69,7 +63,7 @@ struct BlogController {
         }
                 
         var parameters = try Node(node: [
-                "post": blogPost.makeNodeWithExtras(),
+                "post": try blogPost.makeNode(context: BlogPostAllInfo()),
                 "author": try author.makeNode(context: BlogUserPasswordHidden()),
                 "blogPostPage": true.makeNode()
             ])
@@ -89,14 +83,9 @@ struct BlogController {
         
         var parameters: [String: Node] = [
             "label": try label.makeNode(),
-            "labelPage": true.makeNode()
+            "labelPage": true.makeNode(),
+            "posts": try posts.makeNode(context: BlogPostAllInfo())
         ]
-        
-        var postsNode = [Node]()
-        for post in posts {
-            postsNode.append(try post.makeNodeWithExtras())
-        }
-        parameters["posts"] = try postsNode.makeNode()
         
         do {
             if let user = try request.auth.user() as? BlogUser {
