@@ -118,13 +118,8 @@ struct ViewFactory {
         let blogPosts = try BlogPost.all()
         let users = try BlogUser.all()
         
-        var usersNode = [Node]()
-        for user in users {
-            usersNode.append(try user.makeNodeWithoutPassword())
-        }
-        
         var parameters = try Node(node: [
-            "users": usersNode.makeNode()
+            "users": users.makeNode(context: BlogUserPasswordHidden())
             ])
         
         if blogPosts.count > 0 {
@@ -169,7 +164,7 @@ struct ViewFactory {
     
     func createProfileView(user: BlogUser, isMyProfile: Bool) throws -> ResponseRepresentable {
         var parameters: [String: Node] = [
-            "user": try user.makeNodeWithoutPassword(),
+            "user": try user.makeNode(context: BlogUserPasswordHidden())
         ]
         
         if isMyProfile {

@@ -29,13 +29,18 @@ final class BlogUser: Model {
     }
     
     func makeNode(context: Context) throws -> Node {
-        return try Node(node: [
+        var userNode = try Node(node: [
             "id": id,
             "name": name,
             "username": username,
-            "password": password,
             "resetpasswordrequired": resetPasswordRequired
-        ])
+            ])
+        
+        if type(of: context) != BlogUserPasswordHidden.self {
+            userNode["password"] = password.makeNode()
+        }
+        
+        return userNode
     }
     
     static func prepare(_ database: Database) throws {
@@ -92,18 +97,12 @@ extension BlogUser: Auth.User {
 }
 
 extension BlogUser {
-    func makeNodeWithoutPassword() throws -> Node {
-        var nodeWithoutPassword = try makeNode()
-        nodeWithoutPassword["password"] = nil
-        return nodeWithoutPassword
-    }
-}
-
-extension BlogUser {
     func posts() throws -> [BlogPost] {
         return try children(nil, BlogPost.self).all()
     }
 }
+
+struct BlogUserPasswordHidden: Context {}
 
 struct BlogUserCredentials: Credentials {
     
