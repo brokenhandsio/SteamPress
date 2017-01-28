@@ -39,6 +39,7 @@ struct BlogController {
 
         blogPosts.sort { $0.created > $1.created }
         
+
         var paginatedBlogPosts = try blogPosts.paginator(2, request: request)
 
         if blogPosts.count > 0 {
@@ -49,6 +50,9 @@ struct BlogController {
             paginatedBlogPosts.data = try postsNode.makeNode()
             parameters["posts"] = try paginatedBlogPosts.makeNode()
         }
+
+        //parameters["posts"] = try blogPosts.makeNode(context: BlogPostAllInfo())
+
         
         if labels.count > 0 {
             parameters["labels"] = try labels.makeNode()
@@ -56,7 +60,7 @@ struct BlogController {
         
         do {
             if let user = try request.auth.user() as? BlogUser {
-                parameters["user"] = try user.makeNodeWithoutPassword()
+                parameters["user"] = try user.makeNode(context: BlogUserPasswordHidden())
             }
         }
         catch {}
@@ -72,14 +76,14 @@ struct BlogController {
         }
                 
         var parameters = try Node(node: [
-                "post": blogPost.makeNodeWithExtras(),
-                "author": author.makeNodeWithoutPassword(),
+                "post": try blogPost.makeNode(context: BlogPostAllInfo()),
+                "author": try author.makeNode(context: BlogUserPasswordHidden()),
                 "blogPostPage": true.makeNode()
             ])
         
         do {
             if let user = try request.auth.user() as? BlogUser {
-                parameters["user"] = try user.makeNodeWithoutPassword()
+                parameters["user"] = try user.makeNode(context: BlogUserPasswordHidden())
             }
         }
         catch {}
@@ -92,18 +96,13 @@ struct BlogController {
         
         var parameters: [String: Node] = [
             "label": try label.makeNode(),
-            "labelPage": true.makeNode()
+            "labelPage": true.makeNode(),
+            "posts": try posts.makeNode(context: BlogPostAllInfo())
         ]
-        
-        var postsNode = [Node]()
-        for post in posts {
-            postsNode.append(try post.makeNodeWithExtras())
-        }
-        parameters["posts"] = try postsNode.makeNode()
         
         do {
             if let user = try request.auth.user() as? BlogUser {
-                parameters["user"] = try user.makeNodeWithoutPassword()
+                parameters["user"] = try user.makeNode(context: BlogUserPasswordHidden())
             }
         }
         catch {}

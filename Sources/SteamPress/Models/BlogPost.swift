@@ -56,6 +56,37 @@ extension BlogPost: NodeRepresentable {
             node["lastedited"] = lastEdited.timeIntervalSince1970.makeNode()
         }
         
+        if type(of: context) == BlogPostAllInfo.self || type(of: context) == BlogPostShortSnippet.self {
+        
+            let dateFormatter = DateFormatter()
+            dateFormatter.timeZone = TimeZone(abbreviation: "UTC")
+            dateFormatter.dateStyle = .full
+            dateFormatter.timeStyle = .none
+            let createdDate = dateFormatter.string(from: created)
+            
+            node["createddate"] = createdDate.makeNode()
+            
+            if let lastEdited = lastEdited {
+                let lastEditedDate = dateFormatter.string(from: lastEdited)
+                node["lastediteddate"] = lastEditedDate.makeNode()
+                
+            }
+            
+            node["authorname"] = try getAuthor()?.name.makeNode()
+            node["shortsnippet"] = shortSnippet().makeNode()
+            
+            if type(of: context) != BlogPostShortSnippet.self {
+                let allLabels = try labels()
+                
+                if allLabels.count > 0 {
+                    node["labels"] = try allLabels.makeNode()
+                }
+                
+                node["longsnippet"] = longSnippet().makeNode()
+            }
+        
+        }
+        
         return node
     }
 }
@@ -78,38 +109,45 @@ extension BlogPost {
     }
 }
 
-extension BlogPost {
-    public func makeNodeWithExtras() throws -> Node {
-        let dateFormatter = DateFormatter()
-        dateFormatter.timeZone = TimeZone(abbreviation: "UTC")
-        dateFormatter.dateStyle = .full
-        dateFormatter.timeStyle = .none
-        let createdDate = dateFormatter.string(from: created)
-        
-        var node = try makeNode()
-        node["createddate"] = createdDate.makeNode()
-        
-        if let lastEdited = lastEdited {
-            let lastEditedDate = dateFormatter.string(from: lastEdited)
-            node["lastediteddate"] = lastEditedDate.makeNode()
-            
-        }
-        
-        node["authorname"] = try getAuthor()?.name.makeNode()
-        
-        let allLabels = try labels()
-        
-        if allLabels.count > 0 {
-            node["labels"] = try allLabels.makeNode()
-        }
-        
-        node["longsnippet"] = longSnippet().makeNode()
-        node["shortsnippet"] = shortSnippet().makeNode()
-        
-        return node
-    }
-
+public struct BlogPostShortSnippet: Context {
+    public init(){}
 }
+public struct BlogPostAllInfo: Context {
+    public init(){}
+}
+
+//extension BlogPost {
+//    public func makeNodeWithExtras() throws -> Node {
+//        let dateFormatter = DateFormatter()
+//        dateFormatter.timeZone = TimeZone(abbreviation: "UTC")
+//        dateFormatter.dateStyle = .full
+//        dateFormatter.timeStyle = .none
+//        let createdDate = dateFormatter.string(from: created)
+//        
+//        var node = try makeNode()
+//        node["createddate"] = createdDate.makeNode()
+//        
+//        if let lastEdited = lastEdited {
+//            let lastEditedDate = dateFormatter.string(from: lastEdited)
+//            node["lastediteddate"] = lastEditedDate.makeNode()
+//            
+//        }
+//        
+//        node["authorname"] = try getAuthor()?.name.makeNode()
+//        
+//        let allLabels = try labels()
+//        
+//        if allLabels.count > 0 {
+//            node["labels"] = try allLabels.makeNode()
+//        }
+//        
+//        node["longsnippet"] = longSnippet().makeNode()
+//        node["shortsnippet"] = shortSnippet().makeNode()
+//
+//        return node
+//    }
+//
+//}
 
 extension BlogPost {
     func getAuthor() throws -> BlogUser? {
