@@ -26,7 +26,6 @@ struct BlogAdminController {
         router.get("login", handler: loginHandler)
         router.post("login", handler: loginPostHandler)
         router.get("logout", handler: logoutHandler)
-        router.get("pivots", handler: pivotHandler)
         
         let protect = BlogAuthMiddleware(pathCreator: pathCreator)
         let routerSecure = router.grouped(protect)
@@ -49,10 +48,6 @@ struct BlogAdminController {
     // MARK: - Route Handlers
     
     // MARK: - Blog Posts handlers
-    func pivotHandler(_ request: Request) throws -> ResponseRepresentable {
-        return try Pivot<BlogPost, BlogLabel>.all().makeJSON()
-    }
-    
     func createPostHandler(_ request: Request) throws -> ResponseRepresentable {
         return try viewFactory.createBlogPostView()
     }
