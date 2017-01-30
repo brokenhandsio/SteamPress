@@ -23,7 +23,7 @@ It's just a single line! Well almost... First add it to your `Package.swift` dep
 ```swift
 dependencies: [
     ...,
-    .Package(url: "https://github.com/brokenhandsio/SteamPress", majorVersion: 0, minor: 1)
+    .Package(url: "https://github.com/brokenhandsio/SteamPress", majorVersion: 0)
 ]
 ```
 
@@ -73,7 +73,7 @@ The basic structure of your `Resources/View` directory should be:
 
 This is the index page of the blog. The parameters it will receive are:
 
-* `posts` - an array of blog posts if there are any. These will include extra information such as the `authorName`, dates in a nice format and snippets (see below)
+* `posts` - a Node containing data about the posts and metadata for the paginator. You can access the posts by calling the `.data` object on it, which is an array of blog posts if there are any. These will include extra information such as the `authorName`, dates in a nice format and snippets (see below)
 * `labels` - an array of labels if there are any
 * `user` - the currently logged in user if a user is currently logged in
 * `blogIndexPage` - a boolean saying we are on the index page of the blog - useful for navbars
