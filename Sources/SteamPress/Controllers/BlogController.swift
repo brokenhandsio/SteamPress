@@ -36,7 +36,7 @@ struct BlogController {
         let labels = try BlogLabel.all()
         var parameters: [String: Node] = [:]
         
-        let paginatedBlogPosts = try BlogPost.query().sort("created", .descending).paginator(1, request: request)
+        let paginatedBlogPosts = try BlogPost.query().sort("created", .descending).paginator(10, request: request)
 
         if paginatedBlogPosts.totalPages ?? 0 > 0 {
             var paginatedNode = try paginatedBlogPosts.makeNode(context: BlogPostAllInfo())
