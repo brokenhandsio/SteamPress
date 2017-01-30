@@ -116,39 +116,6 @@ public struct BlogPostAllInfo: Context {
     public init(){}
 }
 
-//extension BlogPost {
-//    public func makeNodeWithExtras() throws -> Node {
-//        let dateFormatter = DateFormatter()
-//        dateFormatter.timeZone = TimeZone(abbreviation: "UTC")
-//        dateFormatter.dateStyle = .full
-//        dateFormatter.timeStyle = .none
-//        let createdDate = dateFormatter.string(from: created)
-//        
-//        var node = try makeNode()
-//        node["createddate"] = createdDate.makeNode()
-//        
-//        if let lastEdited = lastEdited {
-//            let lastEditedDate = dateFormatter.string(from: lastEdited)
-//            node["lastediteddate"] = lastEditedDate.makeNode()
-//            
-//        }
-//        
-//        node["authorname"] = try getAuthor()?.name.makeNode()
-//        
-//        let allLabels = try labels()
-//        
-//        if allLabels.count > 0 {
-//            node["labels"] = try allLabels.makeNode()
-//        }
-//        
-//        node["longsnippet"] = longSnippet().makeNode()
-//        node["shortsnippet"] = shortSnippet().makeNode()
-//
-//        return node
-//    }
-//
-//}
-
 extension BlogPost {
     func getAuthor() throws -> BlogUser? {
         return try parent(author, nil, BlogUser.self).get()

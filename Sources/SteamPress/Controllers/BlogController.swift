@@ -33,15 +33,12 @@ struct BlogController {
     // MARK: - Route Handlers
     
     func indexHandler(request: Request) throws -> ResponseRepresentable {
-        var blogPosts = try BlogPost.all()
         let labels = try BlogLabel.all()
         var parameters: [String: Node] = [:]
-
-        blogPosts.sort { $0.created > $1.created }
         
-        let paginatedBlogPosts = try BlogPost.paginator(1, request: request)
+        let paginatedBlogPosts = try BlogPost.query().sort("created", .descending).paginator(1, request: request)
 
-        if blogPosts.count > 0 {
+        if paginatedBlogPosts.totalPages ?? 0 > 0 {
             var paginatedNode = try paginatedBlogPosts.makeNode(context: BlogPostAllInfo())
             var postsNode = [Node]()
             for node in (paginatedNode["data"]?.array as? [Node])! {
