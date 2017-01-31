@@ -56,8 +56,17 @@ extension BlogPost: NodeRepresentable {
             node["lastedited"] = lastEdited.timeIntervalSince1970.makeNode()
         }
         
-        if type(of: context) == BlogPostAllInfo.self || type(of: context) == BlogPostShortSnippet.self {
-        
+        switch context {
+        case BlogPostContext.all:
+            let allLabels = try labels()
+            
+            if allLabels.count > 0 {
+                node["labels"] = try allLabels.makeNode()
+            }
+            
+            node["longsnippet"] = longSnippet().makeNode()
+            fallthrough
+        case BlogPostContext.shortSnippet:
             let dateFormatter = DateFormatter()
             dateFormatter.timeZone = TimeZone(abbreviation: "UTC")
             dateFormatter.dateStyle = .full
@@ -69,22 +78,11 @@ extension BlogPost: NodeRepresentable {
             if let lastEdited = lastEdited {
                 let lastEditedDate = dateFormatter.string(from: lastEdited)
                 node["lastediteddate"] = lastEditedDate.makeNode()
-                
             }
             
             node["authorname"] = try getAuthor()?.name.makeNode()
             node["shortsnippet"] = shortSnippet().makeNode()
-            
-            if type(of: context) != BlogPostShortSnippet.self {
-                let allLabels = try labels()
-                
-                if allLabels.count > 0 {
-                    node["labels"] = try allLabels.makeNode()
-                }
-                
-                node["longsnippet"] = longSnippet().makeNode()
-            }
-        
+        default: break
         }
         
         return node
@@ -109,11 +107,9 @@ extension BlogPost {
     }
 }
 
-public struct BlogPostShortSnippet: Context {
-    public init(){}
-}
-public struct BlogPostAllInfo: Context {
-    public init(){}
+public enum BlogPostContext: Context {
+    case all
+    case shortSnippet
 }
 
 extension BlogPost {

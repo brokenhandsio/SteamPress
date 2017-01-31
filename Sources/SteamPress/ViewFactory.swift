@@ -123,7 +123,7 @@ struct ViewFactory {
             ])
         
         if blogPosts.count > 0 {
-            parameters["posts"] = try blogPosts.makeNode(context: BlogPostAllInfo())
+            parameters["posts"] = try blogPosts.makeNode(context: BlogPostContext.all)
         }
         
         if let errors = errors {
@@ -169,7 +169,7 @@ struct ViewFactory {
         }
         
         if try user.posts().count > 0 {
-            parameters["posts"] = try user.posts().makeNode(context: BlogPostAllInfo())
+            parameters["posts"] = try user.posts().makeNode(context: BlogPostContext.all)
         }
         
         return try drop.view.make("blog/profile", parameters)

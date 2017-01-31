@@ -39,13 +39,13 @@ struct BlogController {
         let paginatedBlogPosts = try BlogPost.query().sort("created", .descending).paginator(10, request: request)
 
         if paginatedBlogPosts.totalPages ?? 0 > 0 {
-            var paginatedNode = try paginatedBlogPosts.makeNode(context: BlogPostAllInfo())
+            var paginatedNode = try paginatedBlogPosts.makeNode(context: BlogPostContext.all)
             var postsNode = [Node]()
             for node in (paginatedNode["data"]?.array as? [Node])! {
                 if let id = node["id"]?.string {
                     let post = try BlogPost.query().filter("id", id).first()
                     if let foundPost = post {
-                        postsNode.append(try foundPost.makeNode(context: BlogPostAllInfo()))
+                        postsNode.append(try foundPost.makeNode(context: BlogPostContext.all))
                     }
                 }
             }
@@ -75,7 +75,7 @@ struct BlogController {
         }
                 
         var parameters = try Node(node: [
-                "post": try blogPost.makeNode(context: BlogPostAllInfo()),
+                "post": try blogPost.makeNode(context: BlogPostContext.all),
                 "author": try author.makeNode(context: BlogUserPasswordHidden()),
                 "blogPostPage": true.makeNode()
             ])
@@ -96,7 +96,7 @@ struct BlogController {
         var parameters: [String: Node] = [
             "label": try label.makeNode(),
             "labelPage": true.makeNode(),
-            "posts": try posts.makeNode(context: BlogPostAllInfo())
+            "posts": try posts.makeNode(context: BlogPostContext.all)
         ]
         
         do {
