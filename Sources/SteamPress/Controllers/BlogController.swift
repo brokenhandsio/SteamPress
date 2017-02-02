@@ -39,13 +39,13 @@ struct BlogController {
         let paginatedBlogPosts = try BlogPost.query().sort("created", .descending).paginator(10, request: request)
 
         if paginatedBlogPosts.totalPages ?? 0 > 0 {
-            var paginatedNode = try paginatedBlogPosts.makeNode(context: BlogPostContext.all)
+            var paginatedNode = try paginatedBlogPosts.makeNode(context: BlogPostContext.longSnippet)
             var postsNode = [Node]()
             for node in (paginatedNode["data"]?.array as? [Node])! {
                 if let id = node["id"]?.string {
                     let post = try BlogPost.query().filter("id", id).first()
                     if let foundPost = post {
-                        postsNode.append(try foundPost.makeNode(context: BlogPostContext.all))
+                        postsNode.append(try foundPost.makeNode(context: BlogPostContext.longSnippet))
                     }
                 }
             }
@@ -59,7 +59,7 @@ struct BlogController {
         
         do {
             if let user = try request.auth.user() as? BlogUser {
-                parameters["user"] = try user.makeNode(context: BlogUserPasswordHidden())
+                parameters["user"] = try user.makeNode(context: BlogUserContext.passwordHidden)
             }
         }
         catch {}
@@ -76,13 +76,13 @@ struct BlogController {
                 
         var parameters = try Node(node: [
                 "post": try blogPost.makeNode(context: BlogPostContext.all),
-                "author": try author.makeNode(context: BlogUserPasswordHidden()),
+                "author": try author.makeNode(context: BlogUserContext.passwordHidden),
                 "blogPostPage": true.makeNode()
             ])
         
         do {
             if let user = try request.auth.user() as? BlogUser {
-                parameters["user"] = try user.makeNode(context: BlogUserPasswordHidden())
+                parameters["user"] = try user.makeNode(context: BlogUserContext.passwordHidden)
             }
         }
         catch {}
@@ -96,12 +96,12 @@ struct BlogController {
         var parameters: [String: Node] = [
             "label": try label.makeNode(),
             "labelPage": true.makeNode(),
-            "posts": try posts.makeNode(context: BlogPostContext.all)
+            "posts": try posts.makeNode(context: BlogPostContext.shortSnippet)
         ]
         
         do {
             if let user = try request.auth.user() as? BlogUser {
-                parameters["user"] = try user.makeNode(context: BlogUserPasswordHidden())
+                parameters["user"] = try user.makeNode(context: BlogUserContext.passwordHidden)
             }
         }
         catch {}

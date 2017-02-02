@@ -29,7 +29,7 @@ public class BlogPost: Model {
         contents = try node.extract("contents")
         author = try node.extract("bloguser_id")
         let createdTime: Double = try node.extract("created")
-        let lastEditedTime: Double? = try? node.extract("lastedited")
+        let lastEditedTime: Double? = try? node.extract("last_edited")
         
         created = Date(timeIntervalSince1970: createdTime)
         
@@ -53,10 +53,39 @@ extension BlogPost: NodeRepresentable {
             ])
         
         if let lastEdited = lastEdited {
-            node["lastedited"] = lastEdited.timeIntervalSince1970.makeNode()
+            node["last_edited"] = lastEdited.timeIntervalSince1970.makeNode()
         }
         
+        let dateFormatter = DateFormatter()
+        dateFormatter.timeZone = TimeZone(abbreviation: "UTC")
+        dateFormatter.dateStyle = .full
+        dateFormatter.timeStyle = .none
+        let createdDate = dateFormatter.string(from: created)
+        
         switch context {
+        case BlogPostContext.shortSnippet:
+            node = try Node(node: [
+                "id": id,
+                "title": title,
+                "author_name": try getAuthor()?.name.makeNode(),
+                "short_snippet": shortSnippet().makeNode(),
+                "created_date": createdDate.makeNode()
+                ])
+        case BlogPostContext.longSnippet:
+            node = try Node(node: [
+                "id": id,
+                "title": title,
+                "author_name": try getAuthor()?.name.makeNode(),
+                "long_snippet": longSnippet().makeNode(),
+                "created_date": createdDate.makeNode()
+                ])
+            
+            let allLabels = try labels()
+            
+            if allLabels.count > 0 {
+                node["labels"] = try allLabels.makeNode()
+            }
+            
         case BlogPostContext.all:
             let allLabels = try labels()
             
@@ -64,24 +93,17 @@ extension BlogPost: NodeRepresentable {
                 node["labels"] = try allLabels.makeNode()
             }
             
-            node["longsnippet"] = longSnippet().makeNode()
-            fallthrough
-        case BlogPostContext.shortSnippet:
-            let dateFormatter = DateFormatter()
-            dateFormatter.timeZone = TimeZone(abbreviation: "UTC")
-            dateFormatter.dateStyle = .full
-            dateFormatter.timeStyle = .none
-            let createdDate = dateFormatter.string(from: created)
-            
-            node["createddate"] = createdDate.makeNode()
+            node["long_snippet"] = longSnippet().makeNode()
+            node["created_date"] = createdDate.makeNode()
             
             if let lastEdited = lastEdited {
                 let lastEditedDate = dateFormatter.string(from: lastEdited)
-                node["lastediteddate"] = lastEditedDate.makeNode()
+                node["last_edited_date"] = lastEditedDate.makeNode()
             }
             
-            node["authorname"] = try getAuthor()?.name.makeNode()
-            node["shortsnippet"] = shortSnippet().makeNode()
+            node["author_name"] = try getAuthor()?.name.makeNode()
+            node["short_snippet"] = shortSnippet().makeNode()
+            node["long_snippet"] = longSnippet().makeNode()
         default: break
         }
         
@@ -110,6 +132,7 @@ extension BlogPost {
 public enum BlogPostContext: Context {
     case all
     case shortSnippet
+    case longSnippet
 }
 
 extension BlogPost {

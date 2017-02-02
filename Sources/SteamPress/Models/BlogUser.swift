@@ -36,8 +36,11 @@ final class BlogUser: Model {
             "resetpasswordrequired": resetPasswordRequired
             ])
         
-        if type(of: context) != BlogUserPasswordHidden.self {
+        switch context {
+        case BlogUserContext.passwordHidden:
             userNode["password"] = password.makeNode()
+        default:
+            break
         }
         
         return userNode
@@ -102,7 +105,9 @@ extension BlogUser {
     }
 }
 
-struct BlogUserPasswordHidden: Context {}
+enum BlogUserContext: Context {
+    case passwordHidden
+}
 
 struct BlogUserCredentials: Credentials {
     

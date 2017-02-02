@@ -119,11 +119,11 @@ struct ViewFactory {
         let users = try BlogUser.all()
         
         var parameters = try Node(node: [
-            "users": users.makeNode(context: BlogUserPasswordHidden())
+            "users": users.makeNode(context: BlogUserContext.passwordHidden)
             ])
         
         if blogPosts.count > 0 {
-            parameters["posts"] = try blogPosts.makeNode(context: BlogPostContext.all)
+            parameters["posts"] = try blogPosts.makeNode(context: BlogPostContext.shortSnippet)
         }
         
         if let errors = errors {
@@ -158,7 +158,7 @@ struct ViewFactory {
     
     func createProfileView(user: BlogUser, isMyProfile: Bool) throws -> ResponseRepresentable {
         var parameters: [String: Node] = [
-            "user": try user.makeNode(context: BlogUserPasswordHidden())
+            "user": try user.makeNode(context: BlogUserContext.passwordHidden)
         ]
         
         if isMyProfile {
@@ -169,7 +169,7 @@ struct ViewFactory {
         }
         
         if try user.posts().count > 0 {
-            parameters["posts"] = try user.posts().makeNode(context: BlogPostContext.all)
+            parameters["posts"] = try user.posts().makeNode(context: BlogPostContext.shortSnippet)
         }
         
         return try drop.view.make("blog/profile", parameters)
