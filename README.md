@@ -13,6 +13,7 @@ There is an example of how it can work in a site (and what it requires in terms 
 * Snippet for posts
 * Works with any Fluent driver
 * Protected Admin route for creating blog posts
+* Pagination on the main blog page
 
 # How to Use
 
