@@ -73,7 +73,7 @@ The basic structure of your `Resources/View` directory should be:
 
 This is the index page of the blog. The parameters it will receive are:
 
-* `posts` - a Node containing data about the posts and metadata for the paginator. You can access the posts by calling the `.data` object on it, which is an array of blog posts if there are any. These will include extra information such as the `authorName`, dates in a nice format and snippets (see below)
+* `posts` - a Node containing data about the posts and metadata for the paginator. You can access the posts by calling the `.data` object on it, which is an array of blog posts if there are any. The posts will be made with a `longSnippet` context (see below)
 * `labels` - an array of labels if there are any
 * `user` - the currently logged in user if a user is currently logged in
 * `blogIndexPage` - a boolean saying we are on the index page of the blog - useful for navbars
@@ -82,7 +82,7 @@ This is the index page of the blog. The parameters it will receive are:
 
 This is the page for viewing a single entire blog post. The parameters set are:
 
-* `post` - the full current post
+* `post` - the full current post, with the `all` context
 * `author` - the author of the post
 * `blogPostPage` - a boolean saying we are on the blog post page
 * `user` - the currently logged in user if a user is currently logged in
@@ -92,7 +92,7 @@ This is the page for viewing a single entire blog post. The parameters set are:
 This is the page for a label. A blog post can be tagged with many labels and a label can be tagged on many blog posts. This page is generally used for viewing all posts under that label. The parameters are:
 
 * `label` - the label
-* `posts` - all the posts that have been tagged with this label
+* `posts` - all the posts that have been tagged with this label, in `shortSnippet` form
 * `labelPage` - a boolean saying we are on the label page
 * `user` - the currently logged in user if a user is currently logged in
 
@@ -103,7 +103,7 @@ This is the page for viewing a profile of a user. This is generally used for vie
 * `user` - the user the page is for
 * `myProfile` - a boolean set to true if we are viewing the my profile page
 * `profilePage` - a boolean set to to true if we are viewing the profile page
-* `posts` - all the posts the user has written if they have written any
+* `posts` - all the posts the user has written if they have written any in `shortSnippet` form
 
 ## Admin Site
 
@@ -112,7 +112,7 @@ This is the page for viewing a profile of a user. This is generally used for vie
 This is the main Admin page for the blog where you can create and edit users and posts. The parameters for this page are:
 
 * `users` - all the users for the site
-* `posts` - all the posts that have been written if there are any
+* `posts` - all the posts that have been written if there are any, in `shortSnippet` form
 * `errors` - any error messages for errors that have occured when trying to delete posts or users (for instance trying to delete yourself or the last user)
 * `blogAdminPage` - a boolean set to true, useful for navigation
 
@@ -175,10 +175,11 @@ SteamPress supports two type of snippets for blog posts - short and long. Short 
 
 ## Usage
 
-You can pass in a `Context` to the `makeNode()` call to provide more information when getting `BlogPost` objects. Currently there are two contexts supported:
+You can pass in a `BlogPostContext` to the `makeNode()` call to provide more information when getting `BlogPost` objects. Currently there are three contexts supported:
 
-* `BlogPostShortSnippet` - this will return the post with extra information (human readable dates, author names) and a short snippet
-* `BlogPostAllInfo` - this returns the post with all information, including both snippet lengths
+* `.shortSnippet` - this will return the post with an `id`, `title`, `author_name`, `created_date` (Human readable) and `short_snippet`
+* `.longSnippet` - this will return the post with an `id`, `title`, `author_name`, `created_date` (Human readable) and `long_snippet`. It will also include all of the labels in a `labels` object if there are any associated with that post
+* `.all` - this returns the post with all information, including both snippet lengths, including author names and human readable dates
 
 You can also call them directly on a `BlogPost` object (such as from a `Query()`):
 
@@ -210,7 +211,6 @@ I anticipate SteamPress staying on a version 0 for some time, whilst some of the
 
 On the roadmap we have:
 
-* Pagination for posts - once a few posts have been written (say 15 or so), it can become a long page to scroll through so pagination on the blog homepage is needed
 * Code tidyup - in some places in the code you can tell it evolved quickly from a hacky spike - there is a lot of repeated code lying around and I'm not taking advatange of all of Swift or Vapor; this needs to be improved
 * Proper testing! Even now I have had too many bugs that would have been picked up by unit tests so I need to start them! Better late than never right...
 * Remember Me functionality for logging in - improve the 1 hour cookie expiry when logging and and wanting to be remembered
