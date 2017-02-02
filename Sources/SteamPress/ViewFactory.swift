@@ -123,7 +123,7 @@ struct ViewFactory {
             ])
         
         if blogPosts.count > 0 {
-            parameters["posts"] = try blogPosts.makeNode(context: BlogPostContext.shortSnippet)
+            parameters["posts"] = try blogPosts.makeNode(context: BlogPostContext.all)
         }
         
         if let errors = errors {

@@ -112,7 +112,7 @@ This is the page for viewing a profile of a user. This is generally used for vie
 This is the main Admin page for the blog where you can create and edit users and posts. The parameters for this page are:
 
 * `users` - all the users for the site
-* `posts` - all the posts that have been written if there are any, in `shortSnippet` form
+* `posts` - all the posts that have been written if there are any, with the `all` Context
 * `errors` - any error messages for errors that have occured when trying to delete posts or users (for instance trying to delete yourself or the last user)
 * `blogAdminPage` - a boolean set to true, useful for navigation
 
