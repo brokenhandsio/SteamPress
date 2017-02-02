@@ -33,12 +33,13 @@ final class BlogUser: Model {
             "id": id,
             "name": name,
             "username": username,
-            "resetpasswordrequired": resetPasswordRequired
+            "resetpasswordrequired": resetPasswordRequired,
+            "password": password
             ])
         
         switch context {
         case BlogUserContext.passwordHidden:
-            userNode["password"] = password.makeNode()
+            userNode["password"] = nil
         default:
             break
         }
