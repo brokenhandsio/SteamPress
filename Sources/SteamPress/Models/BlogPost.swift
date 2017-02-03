@@ -13,13 +13,15 @@ public class BlogPost: Model {
     public var author: Node?
     public var created: Date
     public var lastEdited: Date?
+    public var slugUrl: String?
     
-    init(title: String, contents: String, author: BlogUser, creationDate: Date) {
+    init(title: String, contents: String, author: BlogUser, creationDate: Date, slugUrl: String) {
         self.id = nil
         self.title = title
         self.contents = contents
         self.author = author.id
         self.created = creationDate
+        self.slugUrl = slugUrl
         self.lastEdited = nil
     }
     
@@ -28,11 +30,11 @@ public class BlogPost: Model {
         title = try node.extract("title")
         contents = try node.extract("contents")
         author = try node.extract("bloguser_id")
+        slugUrl = try node.extract("slug_url")
         let createdTime: Double = try node.extract("created")
         let lastEditedTime: Double? = try? node.extract("last_edited")
         
         created = Date(timeIntervalSince1970: createdTime)
-        
         
         if let lastEditedTime = lastEditedTime {
             lastEdited = Date(timeIntervalSince1970: lastEditedTime)
@@ -49,7 +51,8 @@ extension BlogPost: NodeRepresentable {
             "title": title,
             "contents": contents,
             "bloguser_id": author,
-            "created": createdTime
+            "created": createdTime,
+            "slug_url": slugUrl
             ])
         
         if let lastEdited = lastEdited {
@@ -69,7 +72,8 @@ extension BlogPost: NodeRepresentable {
                 "title": title,
                 "author_name": try getAuthor()?.name.makeNode(),
                 "short_snippet": shortSnippet().makeNode(),
-                "created_date": createdDate.makeNode()
+                "created_date": createdDate.makeNode(),
+                "slug_url": slugUrl
                 ])
         case BlogPostContext.longSnippet:
             node = try Node(node: [
@@ -77,7 +81,8 @@ extension BlogPost: NodeRepresentable {
                 "title": title,
                 "author_name": try getAuthor()?.name.makeNode(),
                 "long_snippet": longSnippet().makeNode(),
-                "created_date": createdDate.makeNode()
+                "created_date": createdDate.makeNode(),
+                "slug_url": slugUrl
                 ])
             
             let allLabels = try labels()
@@ -121,6 +126,7 @@ extension BlogPost {
             posts.parent(BlogUser.self, optional: false)
             posts.double("created")
             posts.double("lastedited", optional: true)
+            posts.string("slugUrl")
         }
     }
     
