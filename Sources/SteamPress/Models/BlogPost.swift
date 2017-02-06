@@ -176,5 +176,10 @@ extension BlogPost {
         return snippet
     }
     
+}
 
+extension BlogPost {
+    public static func generateSlugUrl(title: String) -> String {
+        return ""
+    }
 }

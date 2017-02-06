@@ -71,7 +71,7 @@ struct BlogAdminController {
         let labels = parseLabels(rawLabels)
         
         // Could probably unwrap this better
-        var newPost = BlogPost(title: title, contents: contents, author: user, creationDate: creationDate)
+        var newPost = BlogPost(title: title, contents: contents, author: user, creationDate: creationDate, slugUrl: "")
         try newPost.save()
         
         // Save the labels
