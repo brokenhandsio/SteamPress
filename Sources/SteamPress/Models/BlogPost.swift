@@ -21,7 +21,7 @@ public class BlogPost: Model {
         self.contents = contents
         self.author = author.id
         self.created = creationDate
-        self.slugUrl = slugUrl
+        self.slugUrl = BlogPost.generateSlugUrl(from: slugUrl)
         self.lastEdited = nil
     }
     
@@ -179,7 +179,10 @@ extension BlogPost {
 }
 
 extension BlogPost {
-    public static func generateSlugUrl(title: String) -> String {
-        return ""
+    public static func generateSlugUrl(from title: String) -> String {
+        return title.lowercased()
+            .trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+            .trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+            .replacingOccurrences(of: " ", with: "-", options: .regularExpression)
     }
 }
