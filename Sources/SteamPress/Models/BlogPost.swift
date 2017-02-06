@@ -180,8 +180,10 @@ extension BlogPost {
 
 extension BlogPost {
     public static func generateSlugUrl(from title: String) -> String {
+        let alphanumerics = NSCharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890")
+        
         return title.lowercased()
-            .trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+            .trimmingCharacters(in: alphanumerics.inverted)
             .trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
             .replacingOccurrences(of: " ", with: "-", options: .regularExpression)
     }
