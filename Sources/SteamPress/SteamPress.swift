@@ -26,8 +26,8 @@ public struct SteamPress {
         // Database preperations
         drop.preparations.append(BlogPost.self)
         drop.preparations.append(BlogUser.self)
-        drop.preparations.append(BlogLabel.self)
-        drop.preparations.append(Pivot<BlogPost, BlogLabel>.self)
+        drop.preparations.append(BlogTag.self)
+        drop.preparations.append(Pivot<BlogPost, BlogTag>.self)
         
         // Middleware
         let authMiddleware = AuthMiddleware<BlogUser>()

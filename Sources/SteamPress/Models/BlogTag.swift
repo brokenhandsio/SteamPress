@@ -2,9 +2,9 @@ import Foundation
 import Vapor
 import Fluent
 
-class BlogLabel: Model {
+class BlogTag: Model {
     
-    static fileprivate let databaseTableName = "bloglabels"
+    static fileprivate let databaseTableName = "blogtags"
     var id: Node?
     var exists: Bool = false
     
@@ -20,7 +20,7 @@ class BlogLabel: Model {
     }
 }
 
-extension BlogLabel: NodeRepresentable {
+extension BlogTag: NodeRepresentable {
     func makeNode(context: Context) throws -> Node {
         return try Node(node: [
             "id": id,
@@ -29,7 +29,7 @@ extension BlogLabel: NodeRepresentable {
     }
 }
 
-extension BlogLabel {
+extension BlogTag {
     
     static func prepare(_ database: Database) throws {
         try database.create(databaseTableName) { posts in
@@ -43,34 +43,34 @@ extension BlogLabel {
     }
 }
 
-extension BlogLabel {
+extension BlogTag {
     func blogPosts() throws -> [BlogPost] {
         return try siblings().all()
     }
     
     func deletePivot(for post: BlogPost) throws {
-        guard let labelId = id, let postId = post.id else {
+        guard let tagId = id, let postId = post.id else {
             throw Abort.badRequest
         }
-        let pivot = try Pivot<BlogPost, BlogLabel>.query().filter("bloglabel_id", labelId).filter("blogpost_id", postId).first()
+        let pivot = try Pivot<BlogPost, BlogTag>.query().filter("blogtag_id", tagId).filter("blogpost_id", postId).first()
         try pivot?.delete()
     }
     
-    static func addLabel(name: String, to post: BlogPost) throws {
-        var pivotLabel: BlogLabel
-        let label = try BlogLabel.query().filter("name", name).first()
+    static func addTag(name: String, to post: BlogPost) throws {
+        var pivotTag: BlogTag
+        let tag = try BlogTag.query().filter("name", name).first()
         
-        if let existingLabel = label {
-            pivotLabel = existingLabel
+        if let existingTag = tag {
+            pivotTag = existingTag
         }
         else {
-            var newLabel = BlogLabel(name: name)
-            try newLabel.save()
-            pivotLabel = newLabel
+            var newTag = BlogTag(name: name)
+            try newTag.save()
+            pivotTag = newTag
         }
         
-        // Check if a new label
-        var pivot = Pivot<BlogPost, BlogLabel>(post, pivotLabel)
+        // Check if a new tag
+        var pivot = Pivot<BlogPost, BlogTag>(post, pivotTag)
         try pivot.save()
     }
 }

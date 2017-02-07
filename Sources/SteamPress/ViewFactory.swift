@@ -6,7 +6,7 @@ struct ViewFactory {
     
     let drop: Droplet
     
-    func createBlogPostView(uri: URI, errors: [String]? = nil, title: String? = nil, contents: String? = nil, slugUrl: String? = nil, labels: String? = nil, isEditing: Bool = false, postToEdit: BlogPost? = nil) throws -> View {
+    func createBlogPostView(uri: URI, errors: [String]? = nil, title: String? = nil, contents: String? = nil, slugUrl: String? = nil, tags: String? = nil, isEditing: Bool = false, postToEdit: BlogPost? = nil) throws -> View {
         let titleError = (title == nil || (title?.isWhitespace())!) && errors != nil
         let contentsError = (contents == nil || (contents?.isWhitespace())!) && errors != nil
         
@@ -44,8 +44,8 @@ struct ViewFactory {
             parameters["slugUrlSupplied"] = slugUrlSupplied.makeNode()
         }
         
-        if let labelsSupplied = labels {
-            parameters["labelsSupplied"] = labelsSupplied.makeNode()
+        if let tagsSupplied = tags {
+            parameters["tagsSupplied"] = tagsSupplied.makeNode()
         }
         
         if isEditing {

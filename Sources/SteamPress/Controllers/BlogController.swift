@@ -7,7 +7,7 @@ struct BlogController {
     
     // MARK: - Properties
     fileprivate let blogPostsPath = "posts"
-    fileprivate let labelsPath = "labels"
+    fileprivate let tagsPath = "tags"
     fileprivate let authorsPath = "authors"
     fileprivate let drop: Droplet
     fileprivate let pathCreator: BlogPathCreator
@@ -25,7 +25,7 @@ struct BlogController {
         drop.group(pathCreator.blogPath ?? "") { index in
             index.get(handler: indexHandler)
             index.get(blogPostsPath, String.self, handler: blogPostHandler)
-            index.get(labelsPath, BlogLabel.self, handler: labelViewHandler)
+            index.get(tagsPath, BlogTag.self, handler: tagViewHandler)
             index.get(authorsPath, BlogUser.self, handler: authorViewHandler)
         }
     }
@@ -33,7 +33,7 @@ struct BlogController {
     // MARK: - Route Handlers
     
     func indexHandler(request: Request) throws -> ResponseRepresentable {
-        let labels = try BlogLabel.all()
+        let tags = try BlogTag.all()
         var parameters: [String: Node] = [:]
         
         let paginatedBlogPosts = try BlogPost.query().sort("created", .descending).paginator(10, request: request)
@@ -53,8 +53,8 @@ struct BlogController {
             parameters["posts"] = paginatedNode
         }
         
-        if labels.count > 0 {
-            parameters["labels"] = try labels.makeNode()
+        if tags.count > 0 {
+            parameters["tags"] = try tags.makeNode()
         }
         
         do {
@@ -94,12 +94,12 @@ struct BlogController {
         return try drop.view.make("blog/blogpost", parameters)
     }
     
-    func labelViewHandler(request: Request, label: BlogLabel) throws -> ResponseRepresentable {
-        let posts = try label.blogPosts()
+    func tagViewHandler(request: Request, tag: BlogTag) throws -> ResponseRepresentable {
+        let posts = try tag.blogPosts()
         
         var parameters: [String: Node] = [
-            "label": try label.makeNode(),
-            "labelPage": true.makeNode(),
+            "tag": try tag.makeNode(),
+            "tagPage": true.makeNode(),
             "posts": try posts.makeNode(context: BlogPostContext.shortSnippet)
         ]
         
@@ -110,7 +110,7 @@ struct BlogController {
         }
         catch {}
         
-        return try drop.view.make("blog/label", parameters)
+        return try drop.view.make("blog/tag", parameters)
     }
     
     func authorViewHandler(request: Request, author: BlogUser) throws -> ResponseRepresentable {

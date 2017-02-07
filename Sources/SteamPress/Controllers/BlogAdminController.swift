@@ -55,11 +55,11 @@ struct BlogAdminController {
     func createPostPostHandler(_ request: Request) throws -> ResponseRepresentable {
         let rawTitle = request.data["inputTitle"]?.string
         let rawContents = request.data["inputPostContents"]?.string
-        let rawLabels = request.data["inputLabels"]?.string
+        let rawTags = request.data["inputTags"]?.string
         let rawSlugUrl = request.data["inputSlugUrl"]?.string
         
         if let createPostErrors = validatePostCreation(title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl) {
-            return try viewFactory.createBlogPostView(uri: request.uri, errors: createPostErrors, title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl, labels: rawLabels)
+            return try viewFactory.createBlogPostView(uri: request.uri, errors: createPostErrors, title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl, tags: rawTags)
         }
         
         guard let user = try request.auth.user() as? BlogUser, let title = rawTitle, let contents = rawContents, let slugUrl = rawSlugUrl else {
@@ -68,16 +68,16 @@ struct BlogAdminController {
         
         let creationDate = Date()
         
-        // Sort out our labels if we have any
-        let labels = parseLabels(rawLabels)
+        // Sort out our tags if we have any
+        let tags = parseTags(rawTags)
         
         // Could probably unwrap this better
         var newPost = BlogPost(title: title, contents: contents, author: user, creationDate: creationDate, slugUrl: slugUrl)
         try newPost.save()
         
-        // Save the labels
-        for labelString in labels {
-            try BlogLabel.addLabel(name: labelString, to: newPost)
+        // Save the tags
+        for tagString in tags {
+            try BlogTag.addTag(name: tagString, to: newPost)
         }
         
         // Should probably redirect to the page once created
@@ -86,15 +86,15 @@ struct BlogAdminController {
     
     func deletePostHandler(request: Request, post: BlogPost) throws -> ResponseRepresentable {
         
-        let labels = try post.labels()
+        let tags = try post.tags()
         
         // Clean up pivots
-        for label in labels {
-            try label.deletePivot(for: post)
+        for tag in tags {
+            try tag.deletePivot(for: post)
             
-            // See if any of the labels need to be deleted
-            if try label.blogPosts().count == 0 {
-                try label.delete()
+            // See if any of the tags need to be deleted
+            if try tag.blogPosts().count == 0 {
+                try tag.delete()
             }
         }
         
@@ -103,25 +103,25 @@ struct BlogAdminController {
     }
     
     func editPostHandler(request: Request, post: BlogPost) throws -> ResponseRepresentable {
-        let labels = try post.labels()
-        var labelsString = labels.reduce("",{$0 + $1.name + " "})
-        var labelsSupplied: String? = nil
-        if !labelsString.isEmpty {
+        let tags = try post.tags()
+        var tagsString = tags.reduce("",{$0 + $1.name + " "})
+        var tagsSupplied: String? = nil
+        if !tagsString.isEmpty {
             // Remove final ' '
-            labelsString.remove(at: labelsString.index(before: labelsString.endIndex))
-            labelsSupplied = labelsString
+            tagsString.remove(at: tagsString.index(before: tagsString.endIndex))
+            tagsSupplied = tagsString
         }
-        return try viewFactory.createBlogPostView(uri: request.uri, title: post.title, contents: post.contents, slugUrl: post.slugUrl, labels: labelsSupplied, isEditing: true, postToEdit: post)
+        return try viewFactory.createBlogPostView(uri: request.uri, title: post.title, contents: post.contents, slugUrl: post.slugUrl, tags: tagsSupplied, isEditing: true, postToEdit: post)
     }
     
     func editPostPostHandler(request: Request, post: BlogPost) throws -> ResponseRepresentable {
         let rawTitle = request.data["inputTitle"]?.string
         let rawContents = request.data["inputPostContents"]?.string
-        let rawLabels = request.data["inputLabels"]?.string
+        let rawTags = request.data["inputTags"]?.string
         let rawSlugUrl = request.data["inputSlugUrl"]?.string
         
         if let errors = validatePostCreation(title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl) {
-            return try viewFactory.createBlogPostView(uri: request.uri, errors: errors, title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl, labels: rawLabels, isEditing: true, postToEdit: post)
+            return try viewFactory.createBlogPostView(uri: request.uri, errors: errors, title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl, tags: rawTags, isEditing: true, postToEdit: post)
         }
         
         guard let title = rawTitle, let contents = rawContents else {
@@ -133,37 +133,37 @@ struct BlogAdminController {
         post.contents = contents
         post.lastEdited = Date()
         
-        let existing = try post.labels()
+        let existing = try post.tags()
         let existingString = existing.map { $0.name }
-        let newLabels: [String]
+        let newTags: [String]
         
-        if let newLabelsString = rawLabels {
-            newLabels = parseLabels(newLabelsString)
+        if let newTagsString = rawTags {
+            newTags = parseTags(newTagsString)
         }
         else {
-            newLabels = []
+            newTags = []
         }
         
-        // Work out new labels and labels to delete
+        // Work out new tags and tags to delete
         let existingSet:Set<String> = Set(existingString)
-        let newLabelSet:Set<String> = Set(newLabels)
+        let newTagSet:Set<String> = Set(newTags)
         
-        let labelsToDelete = existingSet.subtracting(newLabelSet)
-        let labelsToAdd = newLabelSet.subtracting(existingSet)
+        let tagsToDelete = existingSet.subtracting(newTagSet)
+        let tagsToAdd = newTagSet.subtracting(existingSet)
         
-        for deleteLabel in labelsToDelete {
-            let label = try BlogLabel.query().filter("name", deleteLabel).first()
-            guard let labelToCleanUp = label else {
+        for deleteTag in tagsToDelete {
+            let tag = try BlogTag.query().filter("name", deleteTag).first()
+            guard let tagToCleanUp = tag else {
                 throw Abort.badRequest
             }
-            try labelToCleanUp.deletePivot(for: post)
-            if try labelToCleanUp.blogPosts().count == 0 {
-                try labelToCleanUp.delete()
+            try tagToCleanUp.deletePivot(for: post)
+            if try tagToCleanUp.blogPosts().count == 0 {
+                try tagToCleanUp.delete()
             }
         }
         
-        for newLabelString in labelsToAdd {
-            try BlogLabel.addLabel(name: newLabelString, to: post)
+        for newTagString in tagsToAdd {
+            try BlogTag.addTag(name: newTagString, to: post)
         }
         
         try post.save()
@@ -539,13 +539,13 @@ struct BlogAdminController {
         
     }
     
-    fileprivate func parseLabels(_ labelsString: String?) -> [String] {
-        guard let labelsString = labelsString else {
+    fileprivate func parseTags(_ tagsString: String?) -> [String] {
+        guard let tagsString = tagsString else {
             return []
         }
         
-        let labels = labelsString.components(separatedBy: " ")
-        return labels
+        let tags = tagsString.components(separatedBy: " ")
+        return tags
     }
     
 }

@@ -85,17 +85,17 @@ extension BlogPost: NodeRepresentable {
                 "slug_url": slugUrl
                 ])
             
-            let allLabels = try labels()
+            let allTags = try tags()
             
-            if allLabels.count > 0 {
-                node["labels"] = try allLabels.makeNode()
+            if allTags.count > 0 {
+                node["tags"] = try allTags.makeNode()
             }
             
         case BlogPostContext.all:
-            let allLabels = try labels()
+            let allTags = try tags()
             
-            if allLabels.count > 0 {
-                node["labels"] = try allLabels.makeNode()
+            if allTags.count > 0 {
+                node["tags"] = try allTags.makeNode()
             }
             
             node["long_snippet"] = longSnippet().makeNode()
@@ -148,7 +148,7 @@ extension BlogPost {
 }
 
 extension BlogPost {
-    func labels() throws -> [BlogLabel] {
+    func tags() throws -> [BlogTag] {
         return try siblings().all()
     }
 }
