@@ -25,8 +25,8 @@ struct BlogController {
         drop.group(pathCreator.blogPath ?? "") { index in
             index.get(handler: indexHandler)
             index.get(blogPostsPath, String.self, handler: blogPostHandler)
-            index.get(tagsPath, BlogTag.self, handler: tagViewHandler)
-            index.get(authorsPath, BlogUser.self, handler: authorViewHandler)
+            index.get(tagsPath, String.self, handler: tagViewHandler)
+            index.get(authorsPath, String.self, handler: authorViewHandler)
         }
     }
     
@@ -94,7 +94,10 @@ struct BlogController {
         return try drop.view.make("blog/blogpost", parameters)
     }
     
-    func tagViewHandler(request: Request, tag: BlogTag) throws -> ResponseRepresentable {
+    func tagViewHandler(request: Request, tagName: String) throws -> ResponseRepresentable {
+        guard let tag = try BlogTag.query().filter("name", tagName).first() else {
+            throw Abort.notFound
+        }
         let posts = try tag.blogPosts()
         
         var parameters: [String: Node] = [
@@ -113,7 +116,11 @@ struct BlogController {
         return try drop.view.make("blog/tag", parameters)
     }
     
-    func authorViewHandler(request: Request, author: BlogUser) throws -> ResponseRepresentable {
+    func authorViewHandler(request: Request, authorUsername: String) throws -> ResponseRepresentable {
+        guard let author = try BlogUser.query().filter("username", authorUsername).first() else {
+            throw Abort.notFound
+        }
+        
         return try viewFactory.createProfileView(user: author, isMyProfile: false)
     }
     
