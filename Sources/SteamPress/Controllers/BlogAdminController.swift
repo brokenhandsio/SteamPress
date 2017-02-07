@@ -111,7 +111,7 @@ struct BlogAdminController {
             labelsString.remove(at: labelsString.index(before: labelsString.endIndex))
             labelsSupplied = labelsString
         }
-        return try viewFactory.createBlogPostView(uri: request.uri, title: post.title, contents: post.contents, slugUrl: "TODO", labels: labelsSupplied, isEditing: true, postToEdit: post)
+        return try viewFactory.createBlogPostView(uri: request.uri, title: post.title, contents: post.contents, slugUrl: post.slugUrl, labels: labelsSupplied, isEditing: true, postToEdit: post)
     }
     
     func editPostPostHandler(request: Request, post: BlogPost) throws -> ResponseRepresentable {

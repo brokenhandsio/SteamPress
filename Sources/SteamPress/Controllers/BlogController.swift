@@ -24,7 +24,7 @@ struct BlogController {
     func addRoutes() {
         drop.group(pathCreator.blogPath ?? "") { index in
             index.get(handler: indexHandler)
-            index.get(blogPostsPath, BlogPost.self, handler: blogPostHandler)
+            index.get(blogPostsPath, String.self, handler: blogPostHandler)
             index.get(labelsPath, BlogLabel.self, handler: labelViewHandler)
             index.get(authorsPath, BlogUser.self, handler: authorViewHandler)
         }
@@ -69,7 +69,11 @@ struct BlogController {
         return try drop.view.make("blog/blog", parameters)
     }
     
-    func blogPostHandler(request: Request, blogPost: BlogPost) throws -> ResponseRepresentable {
+    func blogPostHandler(request: Request, blogSlugUrl: String) throws -> ResponseRepresentable {
+        guard let blogPost = try BlogPost.query().filter("slug_url", blogSlugUrl).first() else {
+            throw Abort.notFound
+        }
+        
         guard let author = try blogPost.getAuthor() else {
             throw Abort.badRequest
         }
