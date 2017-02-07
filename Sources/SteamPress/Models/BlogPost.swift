@@ -3,28 +3,28 @@ import Vapor
 import Fluent
 
 public class BlogPost: Model {
-    
+
     static fileprivate let databaseTableName = "blogposts"
     public var id: Node?
     public var exists: Bool = false
-    
+
     public var title: String
     public var contents: String
     public var author: Node?
     public var created: Date
     public var lastEdited: Date?
     public var slugUrl: String
-    
+
     init(title: String, contents: String, author: BlogUser, creationDate: Date, slugUrl: String) {
         self.id = nil
         self.title = title
         self.contents = contents
         self.author = author.id
         self.created = creationDate
-        self.slugUrl = (try? BlogPost.generateUniqueSlugUrl(from: slugUrl)) ?? slugUrl
+        self.slugUrl = BlogPost.generateUniqueSlugUrl(from: slugUrl)
         self.lastEdited = nil
     }
-    
+
     required public init(node: Node, in context: Context) throws {
         id = try node.extract("id")
         title = try node.extract("title")
@@ -33,9 +33,9 @@ public class BlogPost: Model {
         slugUrl = try node.extract("slug_url")
         let createdTime: Double = try node.extract("created")
         let lastEditedTime: Double? = try? node.extract("last_edited")
-        
+
         created = Date(timeIntervalSince1970: createdTime)
-        
+
         if let lastEditedTime = lastEditedTime {
             lastEdited = Date(timeIntervalSince1970: lastEditedTime)
         }
@@ -45,7 +45,7 @@ public class BlogPost: Model {
 extension BlogPost: NodeRepresentable {
     public func makeNode(context: Context) throws -> Node {
         let createdTime = created.timeIntervalSince1970
-        
+
         var node = try Node(node: [
             "id": id,
             "title": title,
@@ -54,17 +54,17 @@ extension BlogPost: NodeRepresentable {
             "created": createdTime,
             "slug_url": slugUrl
             ])
-        
+
         if let lastEdited = lastEdited {
             node["last_edited"] = lastEdited.timeIntervalSince1970.makeNode()
         }
-        
+
         let dateFormatter = DateFormatter()
         dateFormatter.timeZone = TimeZone(abbreviation: "UTC")
         dateFormatter.dateStyle = .full
         dateFormatter.timeStyle = .none
         let createdDate = dateFormatter.string(from: created)
-        
+
         switch context {
         case BlogPostContext.shortSnippet:
             node = try Node(node: [
@@ -86,41 +86,41 @@ extension BlogPost: NodeRepresentable {
                 "created_date": createdDate.makeNode(),
                 "slug_url": slugUrl
                 ])
-            
+
             let allTags = try tags()
-            
+
             if allTags.count > 0 {
                 node["tags"] = try allTags.makeNode()
             }
-            
+
         case BlogPostContext.all:
             let allTags = try tags()
-            
+
             if allTags.count > 0 {
                 node["tags"] = try allTags.makeNode()
             }
-            
+
             node["long_snippet"] = longSnippet().makeNode()
             node["created_date"] = createdDate.makeNode()
-            
+
             if let lastEdited = lastEdited {
                 let lastEditedDate = dateFormatter.string(from: lastEdited)
                 node["last_edited_date"] = lastEditedDate.makeNode()
             }
-            
+
             node["author_name"] = try getAuthor()?.name.makeNode()
             node["author_username"] = try getAuthor()?.username.makeNode()
             node["short_snippet"] = shortSnippet().makeNode()
             node["long_snippet"] = longSnippet().makeNode()
         default: break
         }
-        
+
         return node
     }
 }
 
 extension BlogPost {
-    
+
     public static func prepare(_ database: Database) throws {
         try database.create(databaseTableName) { posts in
             posts.id()
@@ -132,7 +132,7 @@ extension BlogPost {
             posts.string("slug_url", unique: true)
         }
     }
-    
+
     public static func revert(_ database: Database) throws {
         try database.delete(databaseTableName)
     }
@@ -157,15 +157,15 @@ extension BlogPost {
 }
 
 extension BlogPost {
-    
+
     public func shortSnippet() -> String {
         return getLines(characterLimit: 150)
     }
-    
+
     public func longSnippet() -> String {
         return getLines(characterLimit: 900)
     }
-    
+
     private func getLines(characterLimit: Int) -> String {
         contents = contents.replacingOccurrences(of: "\r\n", with: "\n", options: .regularExpression)
         let lines = contents.components(separatedBy: "\n")
@@ -178,26 +178,29 @@ extension BlogPost {
         }
         return snippet
     }
-    
+
 }
 
 extension BlogPost {
-    public static func generateUniqueSlugUrl(from title: String) throws -> String {
-        let alphanumericsWithHyphenAndSpace = NSCharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890- ")
-        
+    public static func generateUniqueSlugUrl(from title: String) -> String {
+        let alphanumericsWithHyphenAndSpace = CharacterSet(charactersIn: " -0123456789abcdefghijklmnopqrstuvwxyz")
+
         let slugUrl = title.lowercased()
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .components(separatedBy: alphanumericsWithHyphenAndSpace.inverted).joined()
             .components(separatedBy: .whitespacesAndNewlines).filter { !$0.isEmpty }.joined(separator: " ")
             .replacingOccurrences(of: " ", with: "-", options: .regularExpression)
-        
-        
+
         var newSlugUrl = slugUrl
-        var count = 1
-        
-        while try BlogUser.query().filter("slug_url", newSlugUrl).first() != nil {
-            newSlugUrl = "\(slugUrl)-\(count)"
-            count += 1
+        var count = 2
+
+        do {
+            while try BlogUser.query().filter("slug_url", newSlugUrl).first() != nil {
+              newSlugUrl = "\(slugUrl)-\(count)"
+              count += 1
+            }
+        } catch {
+            // Swallow error - this will propragate the error up to the DB driver which should fail if it is not unique
         }
         
         return newSlugUrl

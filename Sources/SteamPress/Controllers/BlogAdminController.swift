@@ -6,27 +6,27 @@ import Foundation
 import Fluent
 
 struct BlogAdminController {
-    
+
     // MARK: - Properties
     fileprivate let drop: Droplet
     fileprivate let pathCreator: BlogPathCreator
     fileprivate let viewFactory: ViewFactory
-    
+
     // MARK: - Initialiser
     init(drop: Droplet, pathCreator: BlogPathCreator, viewFactory: ViewFactory) {
         self.drop = drop
         self.pathCreator = pathCreator
         self.viewFactory = viewFactory
     }
-    
+
     // MARK: - Route setup
     func addRoutes() {
         let router = drop.grouped(pathCreator.blogPath ?? "", "admin")
-        
+
         router.get("login", handler: loginHandler)
         router.post("login", handler: loginPostHandler)
         router.get("logout", handler: logoutHandler)
-        
+
         let protect = BlogAuthMiddleware(pathCreator: pathCreator)
         let routerSecure = router.grouped(protect)
         routerSecure.get(handler: adminHandler)
@@ -44,66 +44,66 @@ struct BlogAdminController {
         routerSecure.get("resetPassword", handler: resetPasswordHandler)
         routerSecure.post("resetPassword", handler: resetPasswordPostHandler)
     }
-    
+
     // MARK: - Route Handlers
-    
+
     // MARK: - Blog Posts handlers
     func createPostHandler(_ request: Request) throws -> ResponseRepresentable {
         return try viewFactory.createBlogPostView(uri: request.uri)
     }
-    
+
     func createPostPostHandler(_ request: Request) throws -> ResponseRepresentable {
         let rawTitle = request.data["inputTitle"]?.string
         let rawContents = request.data["inputPostContents"]?.string
         let rawTags = request.data["inputTags"]?.string
         let rawSlugUrl = request.data["inputSlugUrl"]?.string
-        
+
         if let createPostErrors = validatePostCreation(title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl) {
             return try viewFactory.createBlogPostView(uri: request.uri, errors: createPostErrors, title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl, tags: rawTags)
         }
-        
+
         guard let user = try request.auth.user() as? BlogUser, let title = rawTitle, let contents = rawContents, var slugUrl = rawSlugUrl else {
             throw Abort.badRequest
         }
-        
+
         let creationDate = Date()
-        
+
         // Sort out our tags if we have any
         let tags = parseTags(rawTags)
-        
+
         // Make sure slugUrl is unique
-        slugUrl = try BlogPost.generateUniqueSlugUrl(from: slugUrl)
-        
+        slugUrl = BlogPost.generateUniqueSlugUrl(from: slugUrl)
+
         var newPost = BlogPost(title: title, contents: contents, author: user, creationDate: creationDate, slugUrl: slugUrl)
         try newPost.save()
-        
+
         // Save the tags
         for tagString in tags {
             try BlogTag.addTag(tagString, to: newPost)
         }
-        
+
         // Should probably redirect to the page once created
         return Response(redirect: pathCreator.createPath(for: "admin"))
     }
-    
+
     func deletePostHandler(request: Request, post: BlogPost) throws -> ResponseRepresentable {
-        
+
         let tags = try post.tags()
-        
+
         // Clean up pivots
         for tag in tags {
             try tag.deletePivot(for: post)
-            
+
             // See if any of the tags need to be deleted
             if try tag.blogPosts().count == 0 {
                 try tag.delete()
             }
         }
-        
+
         try post.delete()
         return Response(redirect: pathCreator.createPath(for: "admin"))
     }
-    
+
     func editPostHandler(request: Request, post: BlogPost) throws -> ResponseRepresentable {
         let tags = try post.tags()
         var tagsString = tags.reduce("",{$0 + $1.name + " "})
@@ -115,45 +115,45 @@ struct BlogAdminController {
         }
         return try viewFactory.createBlogPostView(uri: request.uri, title: post.title, contents: post.contents, slugUrl: post.slugUrl, tags: tagsSupplied, isEditing: true, postToEdit: post)
     }
-    
+
     func editPostPostHandler(request: Request, post: BlogPost) throws -> ResponseRepresentable {
         let rawTitle = request.data["inputTitle"]?.string
         let rawContents = request.data["inputPostContents"]?.string
         let rawTags = request.data["inputTags"]?.string
         let rawSlugUrl = request.data["inputSlugUrl"]?.string
-        
+
         if let errors = validatePostCreation(title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl) {
             return try viewFactory.createBlogPostView(uri: request.uri, errors: errors, title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl, tags: rawTags, isEditing: true, postToEdit: post)
         }
-        
+
         guard let title = rawTitle, let contents = rawContents, let slugUrl = rawSlugUrl else {
             throw Abort.badRequest
         }
-        
+
         var post = post
         post.title = title
         post.contents = contents
         post.lastEdited = Date()
-        post.slugUrl = try BlogPost.generateUniqueSlugUrl(from: slugUrl)
-        
+        post.slugUrl = BlogPost.generateUniqueSlugUrl(from: slugUrl)
+
         let existing = try post.tags()
         let existingString = existing.map { $0.name }
         let newTags: [String]
-        
+
         if let newTagsString = rawTags {
             newTags = parseTags(newTagsString)
         }
         else {
             newTags = []
         }
-        
+
         // Work out new tags and tags to delete
         let existingSet:Set<String> = Set(existingString)
         let newTagSet:Set<String> = Set(newTags)
-        
+
         let tagsToDelete = existingSet.subtracting(newTagSet)
         let tagsToAdd = newTagSet.subtracting(existingSet)
-        
+
         for deleteTag in tagsToDelete {
             let tag = try BlogTag.query().filter("name", deleteTag).first()
             guard let tagToCleanUp = tag else {
@@ -164,47 +164,47 @@ struct BlogAdminController {
                 try tagToCleanUp.delete()
             }
         }
-        
+
         for newTagString in tagsToAdd {
             try BlogTag.addTag(newTagString, to: post)
         }
-        
+
         try post.save()
-        
+
         return Response(redirect: pathCreator.createPath(for: "admin"))
     }
-    
+
     // MARK: - User handlers
     func createUserHandler(_ request: Request) throws -> ResponseRepresentable {
         return try viewFactory.createUserView()
     }
-    
+
     func createUserPostHandler(_ request: Request) throws -> ResponseRepresentable {
-        
+
         let rawName = request.data["inputName"]?.string
         let rawUsername = request.data["inputUsername"]?.string
         let rawPassword = request.data["inputPassword"]?.string
         let rawConfirmPassword = request.data["inputConfirmPassword"]?.string
         let rawPasswordResetRequired = request.data["inputResetPasswordOnLogin"]?.string
         let resetPasswordRequired = rawPasswordResetRequired != nil
-        
+
         let (createUserRawErrors, passwordRawError, confirmPasswordRawError) = validateUserSaveDataExists(edit: false, name: rawName, username: rawUsername, password: rawPassword, confirmPassword: rawConfirmPassword)
-        
+
         // Return if we have any missing fields
         if (createUserRawErrors?.count)! > 0 {
             return try viewFactory.createUserView(errors: createUserRawErrors, name: rawName, username: rawUsername, passwordError: passwordRawError, confirmPasswordError: confirmPasswordRawError, resetPasswordRequired: resetPasswordRequired)
         }
-        
+
         guard let name = rawName, let username = rawUsername?.lowercased(), let password = rawPassword, let confirmPassword = rawConfirmPassword else {
             throw Abort.badRequest
         }
-        
+
         let (createUserErrors, passwordError, confirmPasswordError) = validateUserSaveData(edit: false, name: name, username: username, password: password, confirmPassword: confirmPassword)
-        
+
         if (createUserErrors?.count)! > 0 {
             return try viewFactory.createUserView(errors: createUserErrors, name: name, username: username, passwordError: passwordError, confirmPasswordError: confirmPasswordError, resetPasswordRequired: resetPasswordRequired)
         }
-        
+
         // We now have valid data
         let creds = BlogUserCredentials(username: username.lowercased(), password: password, name: name)
         if var user = try BlogUser.register(credentials: creds) as? BlogUser {
@@ -218,11 +218,11 @@ struct BlogAdminController {
             return try viewFactory.createUserView(errors: ["There was an error creating the user. Please try again"], name: name, username: username, passwordError: passwordError, confirmPasswordError: confirmPasswordError, resetPasswordRequired: resetPasswordRequired)
         }
     }
-    
+
     func editUserHandler(request: Request, user: BlogUser) throws -> ResponseRepresentable {
         return try viewFactory.createUserView(editing: true, name: user.name, username: user.username, userId: user.id)
     }
-    
+
     func editUserPostHandler(request: Request, user: BlogUser) throws -> ResponseRepresentable {
         let rawName = request.data["inputName"]?.string
         let rawUsername = request.data["inputUsername"]?.string
@@ -230,50 +230,50 @@ struct BlogAdminController {
         let rawConfirmPassword = request.data["inputConfirmPassword"]?.string
         let rawPasswordResetRequired = request.data["inputResetPasswordOnLogin"]?.string
         let resetPasswordRequired = rawPasswordResetRequired != nil
-        
+
         let (saveUserRawErrors, passwordRawError, confirmPasswordRawError) = validateUserSaveDataExists(edit: true, name: rawName, username: rawUsername, password: rawPassword, confirmPassword: rawConfirmPassword)
-        
+
         // Return if we have any missing fields
         if (saveUserRawErrors?.count)! > 0 {
             return try viewFactory.createUserView(editing: true, errors: saveUserRawErrors, name: rawName, username: rawUsername, passwordError: passwordRawError, confirmPasswordError: confirmPasswordRawError, resetPasswordRequired: resetPasswordRequired, userId: user.id)
         }
-        
+
         guard let name = rawName, let username = rawUsername else {
             throw Abort.badRequest
         }
-        
+
         let (saveUserErrors, passwordError, confirmPasswordError) = validateUserSaveData(edit: true, name: name, username: username, password: rawPassword, confirmPassword: rawConfirmPassword, previousUsername: user.username)
-        
+
         if (saveUserErrors?.count)! > 0 {
             return try viewFactory.createUserView(editing: true, errors: saveUserErrors, name: name, username: username, passwordError: passwordError, confirmPasswordError: confirmPasswordError, resetPasswordRequired: resetPasswordRequired, userId: user.id)
         }
-        
+
         // We now have valid data
         guard let userId = user.id, var userToUpdate = try BlogUser.query().filter("id", userId).first() else {
             throw Abort.badRequest
         }
         userToUpdate.name = name
         userToUpdate.username = username
-        
+
         if resetPasswordRequired {
             userToUpdate.resetPasswordRequired = true
         }
-        
+
         if let password = rawPassword {
             let newCreds = BlogUserCredentials(username: username, password: password, name: name)
             let newUserPassword = BlogUser(credentials: newCreds)
             userToUpdate.password = newUserPassword.password
         }
-        
+
         try userToUpdate.save()
         return Response(redirect: pathCreator.createPath(for: "admin"))
     }
-    
+
     func deleteUserPostHandler(request: Request, user: BlogUser) throws -> ResponseRepresentable {
         guard let currentUser = try request.auth.user() as? BlogUser else {
             throw Abort.badRequest
         }
-        
+
         // Check we have at least one user left
         let users = try BlogUser.all()
         if users.count <= 1 {
@@ -288,7 +288,7 @@ struct BlogAdminController {
             return Response(redirect: pathCreator.createPath(for: "admin"))
         }
     }
-    
+
     // MARK: - Login Handlers
     func loginHandler(_ request: Request) throws -> ResponseRepresentable {
         // See if we need to create an admin user on first login
@@ -309,38 +309,38 @@ struct BlogAdminController {
         catch {
             print("There was an error creating a new admin user: \(error)")
         }
-        
+
         return try viewFactory.createLoginView()
     }
-    
+
     func loginPostHandler(_ request: Request) throws -> ResponseRepresentable {
-        
+
         let rawUsername = request.data["inputUsername"]?.string
         let rawPassword = request.data["inputPassword"]?.string
-        
+
         var loginErrors: [String] = []
-        
+
         if rawUsername == nil {
             loginErrors.append("You must supply your username")
         }
-        
+
         if rawPassword == nil {
             loginErrors.append("You must supply your password")
         }
-        
+
         if loginErrors.count > 0 {
             return try viewFactory.createLoginView(errors: loginErrors, username: rawUsername, password: rawPassword)
         }
-        
+
         guard let username = rawUsername, let password = rawPassword else {
             throw Abort.badRequest
         }
-        
+
         let credentials = BlogUserCredentials(username: username.lowercased(), password: password)
-        
+
         do {
             try request.auth.login(credentials)
-            
+
             guard let _ = try request.auth.user() as? BlogUser else {
                 throw Abort.badRequest
             }
@@ -352,166 +352,166 @@ struct BlogAdminController {
             return try viewFactory.createLoginView(errors: loginError, username: username, password: password)
         }
     }
-    
+
     func logoutHandler(_ request: Request) throws -> ResponseRepresentable {
         try request.auth.logout()
         return Response(redirect: pathCreator.createPath(for: pathCreator.blogPath))
     }
-    
+
     // MARK: Admin Handler
     func adminHandler(_ request: Request) throws -> ResponseRepresentable {
         return try viewFactory.createBlogAdminView()
     }
-    
+
     // MARK: - Profile Handler
     func profileHandler(_ request: Request) throws -> ResponseRepresentable {
-        
+
         guard let user = try request.auth.user() as? BlogUser else {
             throw Abort.badRequest
         }
-        
+
         return try viewFactory.createProfileView(user: user, isMyProfile: true)
     }
-    
+
     // MARK: - Password handlers
     func resetPasswordHandler(_ request: Request) throws -> ResponseRepresentable {
         return try viewFactory.createResetPasswordView()
     }
-    
+
     func resetPasswordPostHandler(_ request: Request) throws -> ResponseRepresentable {
         let rawPassword = request.data["inputPassword"]?.string
         let rawConfirmPassword = request.data["inputConfirmPassword"]?.string
         var resetPasswordErrors: [String] = []
         var passwordError: Bool?
         var confirmPasswordError: Bool?
-        
+
         if rawPassword == nil {
             resetPasswordErrors.append("You must specify a password")
             passwordError = true
         }
-        
+
         if rawConfirmPassword == nil {
             resetPasswordErrors.append("You must confirm your password")
             confirmPasswordError = true
         }
-        
+
         // Return if we have any missing fields
         if resetPasswordErrors.count > 0 {
             return try viewFactory.createResetPasswordView(errors: resetPasswordErrors, passwordError: passwordError, confirmPasswordError: confirmPasswordError)
         }
-        
+
         guard let password = rawPassword, let confirmPassword = rawConfirmPassword else {
             throw Abort.badRequest
         }
-        
+
         if password != confirmPassword {
             resetPasswordErrors.append("Your passwords must match!")
             passwordError = true
             confirmPasswordError = true
         }
-        
+
         // Check password is valid
         let validPassword = password.passes(PasswordValidator.self)
         if !validPassword {
             resetPasswordErrors.append("Your password must contain a lowercase letter, an upperacase letter, a number and a symbol")
             passwordError = true
         }
-        
+
         if resetPasswordErrors.count > 0 {
             return try viewFactory.createResetPasswordView(errors: resetPasswordErrors, passwordError: passwordError, confirmPasswordError: confirmPasswordError)
         }
-        
+
         guard var user = try request.auth.user() as? BlogUser else {
             throw Abort.badRequest
         }
-        
+
         // Use the credentials class to hash the password
         let newCreds = BlogUserCredentials(username: user.username, password: password, name: user.name)
         let updatedUser = BlogUser(credentials: newCreds)
         user.password = updatedUser.password
         user.resetPasswordRequired = false
         try user.save()
-        
+
         return Response(redirect: pathCreator.createPath(for: "admin"))
     }
-    
+
     // MARK: - Validators
     private func validatePostCreation(title: String?, contents: String?, slugUrl: String?) -> [String]? {
         var createPostErrors: [String] = []
-        
+
         if title == nil || (title?.isWhitespace())! {
             createPostErrors.append("You must specify a blog post title")
         }
-        
+
         if contents == nil || (contents?.isWhitespace())! {
             createPostErrors.append("You must have some content in your blog post")
         }
-        
+
         if (slugUrl == nil || (slugUrl?.isWhitespace())!) && (!(title == nil || (title?.isWhitespace())!)) {
             // The user can't manually edit this so if the title wasn't empty, we should never hit here
             createPostErrors.append("There was an error with your request, please try again")
         }
-        
+
         if createPostErrors.count == 0 {
             return nil
         }
-        
+
         return createPostErrors
-        
+
     }
-    
+
     private func validateUserSaveDataExists(edit: Bool, name: String?, username: String?, password: String?, confirmPassword: String?) -> ([String]?, Bool?, Bool?) {
         var userSaveErrors: [String] = []
         var passwordError: Bool?
         var confirmPasswordError: Bool?
-        
+
         if name == nil || (name?.isWhitespace())! {
             userSaveErrors.append("You must specify a name")
         }
-        
+
         if username == nil || (username?.isWhitespace())! {
             userSaveErrors.append("You must specify a username")
         }
-        
+
         if !edit {
             if password == nil {
                 userSaveErrors.append("You must specify a password")
                 passwordError = true
             }
-            
+
             if confirmPassword == nil {
                 userSaveErrors.append("You must confirm your password")
                 confirmPasswordError = true
             }
         }
-        
+
         return (userSaveErrors, passwordError, confirmPasswordError)
     }
-    
+
     private func validateUserSaveData(edit: Bool, name: String, username: String, password: String?, confirmPassword: String?, previousUsername: String? = nil) -> ([String]?, Bool?, Bool?) {
-        
+
         var userSaveErrors: [String] = []
         var passwordError: Bool?
         var confirmPasswordError: Bool?
-        
+
         if password != confirmPassword {
             userSaveErrors.append("Your passwords must match!")
             passwordError = true
             confirmPasswordError = true
         }
-        
+
         // Check name is valid
         let validName = name.passes(NameValidator.self)
         if !validName {
             userSaveErrors.append("The name provided is not valid")
         }
-        
+
         // Check username is valid
         let validUsername = username.passes(UsernameValidator.self)
         if !validUsername {
             userSaveErrors.append("The username provided is not valid")
         }
-        
+
         // Check password is valid
         if !edit || password != nil {
             guard let actualPassword = password else {
@@ -523,7 +523,7 @@ struct BlogAdminController {
                 passwordError = true
             }
         }
-        
+
         // Check username unique
         do {
             if username != previousUsername {
@@ -536,38 +536,38 @@ struct BlogAdminController {
         catch {
             userSaveErrors.append("Unable to validate username")
         }
-        
+
         return (userSaveErrors, passwordError, confirmPasswordError)
-        
-        
+
+
     }
-    
+
     fileprivate func parseTags(_ tagsString: String?) -> [String] {
         guard let tagsString = tagsString else {
             return []
         }
-        
+
         let tags = tagsString.components(separatedBy: " ")
         return tags
     }
-    
+
 }
 
 // MARK: - Extensions
 extension String {
-    
+
     // TODO Could probably improve this
     static func random(length: Int = 8) -> String {
         let base = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
         var randomString: String = ""
-        
+
         for _ in 0..<length {
             let randomValue = Int.random(min: 0, max: base.characters.count-1)
             randomString += "\(base[base.index(base.startIndex, offsetBy: Int(randomValue))])"
         }
         return randomString
     }
-    
+
     func isWhitespace() -> Bool {
         let whitespaceSet = CharacterSet.whitespacesAndNewlines
         if isEmpty || self.trimmingCharacters(in: whitespaceSet).isEmpty {
