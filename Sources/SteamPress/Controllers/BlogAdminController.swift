@@ -77,7 +77,7 @@ struct BlogAdminController {
         
         // Save the tags
         for tagString in tags {
-            try BlogTag.addTag(name: tagString, to: newPost)
+            try BlogTag.addTag(tagString, to: newPost)
         }
         
         // Should probably redirect to the page once created
@@ -163,7 +163,7 @@ struct BlogAdminController {
         }
         
         for newTagString in tagsToAdd {
-            try BlogTag.addTag(name: newTagString, to: post)
+            try BlogTag.addTag(newTagString, to: post)
         }
         
         try post.save()

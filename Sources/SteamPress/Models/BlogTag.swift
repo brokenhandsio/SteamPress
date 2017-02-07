@@ -34,7 +34,7 @@ extension BlogTag {
     static func prepare(_ database: Database) throws {
         try database.create(databaseTableName) { posts in
             posts.id()
-            posts.string("name")
+            posts.string("name", unique: true)
         }
     }
     
@@ -56,7 +56,7 @@ extension BlogTag {
         try pivot?.delete()
     }
     
-    static func addTag(name: String, to post: BlogPost) throws {
+    static func addTag(_ name: String, to post: BlogPost) throws {
         var pivotTag: BlogTag
         let tag = try BlogTag.query().filter("name", name).first()
         

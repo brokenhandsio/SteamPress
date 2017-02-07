@@ -126,7 +126,7 @@ extension BlogPost {
             posts.parent(BlogUser.self, optional: false)
             posts.double("created")
             posts.double("last_edited", optional: true)
-            posts.string("slug_url")
+            posts.string("slug_url", unique: true)
         }
     }
     
