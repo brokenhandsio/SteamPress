@@ -58,6 +58,8 @@ class BlogPostTests: XCTestCase {
     }
     
     // TODO test snippets
+    // TODO test slug Url uniqueness logic
+    // TODO test tag pivot logic
     
 }
 

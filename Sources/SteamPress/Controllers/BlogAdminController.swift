@@ -62,7 +62,7 @@ struct BlogAdminController {
             return try viewFactory.createBlogPostView(uri: request.uri, errors: createPostErrors, title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl, tags: rawTags)
         }
         
-        guard let user = try request.auth.user() as? BlogUser, let title = rawTitle, let contents = rawContents, let slugUrl = rawSlugUrl else {
+        guard let user = try request.auth.user() as? BlogUser, let title = rawTitle, let contents = rawContents, var slugUrl = rawSlugUrl else {
             throw Abort.badRequest
         }
         
@@ -71,7 +71,9 @@ struct BlogAdminController {
         // Sort out our tags if we have any
         let tags = parseTags(rawTags)
         
-        // Could probably unwrap this better
+        // Make sure slugUrl is unique
+        slugUrl = try makeSlugUrlUnique(slugUrl)
+        
         var newPost = BlogPost(title: title, contents: contents, author: user, creationDate: creationDate, slugUrl: slugUrl)
         try newPost.save()
         
@@ -546,6 +548,18 @@ struct BlogAdminController {
         
         let tags = tagsString.components(separatedBy: " ")
         return tags
+    }
+    
+    fileprivate func makeSlugUrlUnique(_ currentSlugUrl: String) throws -> String {
+        var newSlugUrl = currentSlugUrl
+        var count = 1
+        
+        while try BlogUser.query().filter("slug_url", newSlugUrl).first() != nil {
+            newSlugUrl = "\(currentSlugUrl)-\(count)"
+            count += 1
+        }
+        
+        return newSlugUrl
     }
     
 }
