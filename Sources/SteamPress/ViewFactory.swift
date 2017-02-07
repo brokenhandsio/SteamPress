@@ -1,15 +1,29 @@
 import Vapor
+import URI
 import HTTP
 
 struct ViewFactory {
     
     let drop: Droplet
     
-    func createBlogPostView(errors: [String]? = nil, title: String? = nil, contents: String? = nil, labels: String? = nil, isEditing: Bool = false, postToEdit: BlogPost? = nil) throws -> View {
+    func createBlogPostView(uri: URI, errors: [String]? = nil, title: String? = nil, contents: String? = nil, slugUrl: String? = nil, labels: String? = nil, isEditing: Bool = false, postToEdit: BlogPost? = nil) throws -> View {
         let titleError = (title == nil || (title?.isWhitespace())!) && errors != nil
         let contentsError = (contents == nil || (contents?.isWhitespace())!) && errors != nil
         
+        let postPathPrefix: String
+        
+        if isEditing {
+            guard let editSubstringIndex = uri.description.range(of: "admin/posts")?.lowerBound else {
+                throw Abort.serverError
+            }
+            postPathPrefix = uri.description.substring(to: editSubstringIndex) + "posts/"
+        }
+        else {
+            postPathPrefix = uri.description.replacingOccurrences(of: "admin/createPost", with: "posts")
+        }
+        
         var parameters = [
+            "postPathPrefix": postPathPrefix.makeNode(),
             "titleError": titleError.makeNode(),
             "contentsError": contentsError.makeNode(),
             ]
@@ -24,6 +38,10 @@ struct ViewFactory {
         
         if let contentsSupplied = contents {
             parameters["contentsSupplied"] = contentsSupplied.makeNode()
+        }
+        
+        if let slugUrlSupplied = slugUrl {
+            parameters["slugUrlSupplied"] = slugUrlSupplied.makeNode()
         }
         
         if let labelsSupplied = labels {

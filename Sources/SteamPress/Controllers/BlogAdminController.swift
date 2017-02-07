@@ -49,19 +49,20 @@ struct BlogAdminController {
     
     // MARK: - Blog Posts handlers
     func createPostHandler(_ request: Request) throws -> ResponseRepresentable {
-        return try viewFactory.createBlogPostView()
+        return try viewFactory.createBlogPostView(uri: request.uri)
     }
     
     func createPostPostHandler(_ request: Request) throws -> ResponseRepresentable {
         let rawTitle = request.data["inputTitle"]?.string
         let rawContents = request.data["inputPostContents"]?.string
         let rawLabels = request.data["inputLabels"]?.string
+        let rawSlugUrl = request.data["inputSlugUrl"]?.string
         
-        if let createPostErrors = validatePostCreation(title: rawTitle, contents: rawContents) {
-            return try viewFactory.createBlogPostView(errors: createPostErrors, title: rawTitle, contents: rawContents, labels: rawLabels)
+        if let createPostErrors = validatePostCreation(title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl) {
+            return try viewFactory.createBlogPostView(uri: request.uri, errors: createPostErrors, title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl, labels: rawLabels)
         }
         
-        guard let user = try request.auth.user() as? BlogUser, let title = rawTitle, let contents = rawContents else {
+        guard let user = try request.auth.user() as? BlogUser, let title = rawTitle, let contents = rawContents, let slugUrl = rawSlugUrl else {
             throw Abort.badRequest
         }
         
@@ -71,7 +72,7 @@ struct BlogAdminController {
         let labels = parseLabels(rawLabels)
         
         // Could probably unwrap this better
-        var newPost = BlogPost(title: title, contents: contents, author: user, creationDate: creationDate, slugUrl: "")
+        var newPost = BlogPost(title: title, contents: contents, author: user, creationDate: creationDate, slugUrl: slugUrl)
         try newPost.save()
         
         // Save the labels
@@ -110,16 +111,17 @@ struct BlogAdminController {
             labelsString.remove(at: labelsString.index(before: labelsString.endIndex))
             labelsSupplied = labelsString
         }
-        return try viewFactory.createBlogPostView(title: post.title, contents: post.contents, labels: labelsSupplied,isEditing: true, postToEdit: post)
+        return try viewFactory.createBlogPostView(uri: request.uri, title: post.title, contents: post.contents, slugUrl: "TODO", labels: labelsSupplied, isEditing: true, postToEdit: post)
     }
     
     func editPostPostHandler(request: Request, post: BlogPost) throws -> ResponseRepresentable {
         let rawTitle = request.data["inputTitle"]?.string
         let rawContents = request.data["inputPostContents"]?.string
         let rawLabels = request.data["inputLabels"]?.string
+        let rawSlugUrl = request.data["inputSlugUrl"]?.string
         
-        if let errors = validatePostCreation(title: rawTitle, contents: rawContents) {
-            return try viewFactory.createBlogPostView(errors: errors, title: rawTitle, contents: rawContents, labels: rawLabels, isEditing: true, postToEdit: post)
+        if let errors = validatePostCreation(title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl) {
+            return try viewFactory.createBlogPostView(uri: request.uri, errors: errors, title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl, labels: rawLabels, isEditing: true, postToEdit: post)
         }
         
         guard let title = rawTitle, let contents = rawContents else {
@@ -134,7 +136,7 @@ struct BlogAdminController {
         let existing = try post.labels()
         let existingString = existing.map { $0.name }
         let newLabels: [String]
-            
+        
         if let newLabelsString = rawLabels {
             newLabels = parseLabels(newLabelsString)
         }
@@ -274,7 +276,7 @@ struct BlogAdminController {
         if users.count <= 1 {
             return try viewFactory.createBlogAdminView(errors: ["You cannot delete the last user"])
         }
-        // Make sure we aren't deleting ourselves!
+            // Make sure we aren't deleting ourselves!
         else if currentUser.id == user.id {
             return try viewFactory.createBlogAdminView(errors: ["You cannot delete yourself whilst logged in"])
         }
@@ -291,9 +293,10 @@ struct BlogAdminController {
             let users = try BlogUser.all()
             if users.count == 0 {
                 let password = String.random()
-                let creds = BlogUserCredentials(username: "admin", password: password, name: "Admin")
+                // WARNING TEMP TODO!
+                let creds = BlogUserCredentials(username: "admin", password: "password", name: "Admin")
                 if var user = try BlogUser.register(credentials: creds) as? BlogUser {
-                    user.resetPasswordRequired = true
+                    //                    user.resetPasswordRequired = true
                     try user.save()
                     print("An Admin user been created for you - the username is admin and the password is \(password)")
                     print("You will be asked to change your password once you have logged in, please do this immediately!")
@@ -430,7 +433,7 @@ struct BlogAdminController {
     }
     
     // MARK: - Validators
-    private func validatePostCreation(title: String?, contents: String?) -> [String]? {
+    private func validatePostCreation(title: String?, contents: String?, slugUrl: String?) -> [String]? {
         var createPostErrors: [String] = []
         
         if title == nil || (title?.isWhitespace())! {
@@ -439,6 +442,11 @@ struct BlogAdminController {
         
         if contents == nil || (contents?.isWhitespace())! {
             createPostErrors.append("You must have some content in your blog post")
+        }
+        
+        if (slugUrl == nil || (slugUrl?.isWhitespace())!) && (!(title == nil || (title?.isWhitespace())!)) {
+            // The user can't manually edit this so if the title wasn't empty, we should never hit here
+            createPostErrors.append("There was an error with your request, please try again")
         }
         
         if createPostErrors.count == 0 {
@@ -527,7 +535,7 @@ struct BlogAdminController {
         }
         
         return (userSaveErrors, passwordError, confirmPasswordError)
-
+        
         
     }
     
