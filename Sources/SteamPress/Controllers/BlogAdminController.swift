@@ -72,7 +72,7 @@ struct BlogAdminController {
         let tags = parseTags(rawTags)
         
         // Make sure slugUrl is unique
-        slugUrl = try makeSlugUrlUnique(slugUrl)
+        slugUrl = try BlogPost.generateUniqueSlugUrl(from: slugUrl)
         
         var newPost = BlogPost(title: title, contents: contents, author: user, creationDate: creationDate, slugUrl: slugUrl)
         try newPost.save()
@@ -126,7 +126,7 @@ struct BlogAdminController {
             return try viewFactory.createBlogPostView(uri: request.uri, errors: errors, title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl, tags: rawTags, isEditing: true, postToEdit: post)
         }
         
-        guard let title = rawTitle, let contents = rawContents else {
+        guard let title = rawTitle, let contents = rawContents, let slugUrl = rawSlugUrl else {
             throw Abort.badRequest
         }
         
@@ -134,6 +134,7 @@ struct BlogAdminController {
         post.title = title
         post.contents = contents
         post.lastEdited = Date()
+        post.slugUrl = try BlogPost.generateUniqueSlugUrl(from: slugUrl)
         
         let existing = try post.tags()
         let existingString = existing.map { $0.name }
@@ -548,18 +549,6 @@ struct BlogAdminController {
         
         let tags = tagsString.components(separatedBy: " ")
         return tags
-    }
-    
-    fileprivate func makeSlugUrlUnique(_ currentSlugUrl: String) throws -> String {
-        var newSlugUrl = currentSlugUrl
-        var count = 1
-        
-        while try BlogUser.query().filter("slug_url", newSlugUrl).first() != nil {
-            newSlugUrl = "\(currentSlugUrl)-\(count)"
-            count += 1
-        }
-        
-        return newSlugUrl
     }
     
 }

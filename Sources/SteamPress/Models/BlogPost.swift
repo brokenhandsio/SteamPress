@@ -13,7 +13,7 @@ public class BlogPost: Model {
     public var author: Node?
     public var created: Date
     public var lastEdited: Date?
-    public var slugUrl: String?
+    public var slugUrl: String
     
     init(title: String, contents: String, author: BlogUser, creationDate: Date, slugUrl: String) {
         self.id = nil
@@ -21,7 +21,7 @@ public class BlogPost: Model {
         self.contents = contents
         self.author = author.id
         self.created = creationDate
-        self.slugUrl = BlogPost.generateSlugUrl(from: slugUrl)
+        self.slugUrl = (try? BlogPost.generateUniqueSlugUrl(from: slugUrl)) ?? slugUrl
         self.lastEdited = nil
     }
     
@@ -182,13 +182,24 @@ extension BlogPost {
 }
 
 extension BlogPost {
-    public static func generateSlugUrl(from title: String) -> String {
+    public static func generateUniqueSlugUrl(from title: String) throws -> String {
         let alphanumericsWithHyphenAndSpace = NSCharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890- ")
         
-        return title.lowercased()
+        let slugUrl = title.lowercased()
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .components(separatedBy: alphanumericsWithHyphenAndSpace.inverted).joined()
             .components(separatedBy: .whitespacesAndNewlines).filter { !$0.isEmpty }.joined(separator: " ")
             .replacingOccurrences(of: " ", with: "-", options: .regularExpression)
+        
+        
+        var newSlugUrl = slugUrl
+        var count = 1
+        
+        while try BlogUser.query().filter("slug_url", newSlugUrl).first() != nil {
+            newSlugUrl = "\(slugUrl)-\(count)"
+            count += 1
+        }
+        
+        return newSlugUrl
     }
 }
