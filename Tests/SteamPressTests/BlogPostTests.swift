@@ -5,7 +5,7 @@ import XCTest
 class BlogPostTests: XCTestCase {
     
     static var allTests = [
-        "testThatSlugUrlCalculatedCorrectlyForTitleWithSpaces": testThatSlugUrlCalculatedCorrectlyForTitleWithSpaces,
+        ("testThatSlugUrlCalculatedCorrectlyForTitleWithSpaces", testThatSlugUrlCalculatedCorrectlyForTitleWithSpaces),
     ]
     
     func testThatSlugUrlCalculatedCorrectlyForTitleWithSpaces() {
