@@ -71,6 +71,7 @@ extension BlogPost: NodeRepresentable {
                 "id": id,
                 "title": title,
                 "author_name": try getAuthor()?.name.makeNode(),
+                "author_username": try getAuthor()?.username.makeNode(),
                 "short_snippet": shortSnippet().makeNode(),
                 "created_date": createdDate.makeNode(),
                 "slug_url": slugUrl
@@ -80,6 +81,7 @@ extension BlogPost: NodeRepresentable {
                 "id": id,
                 "title": title,
                 "author_name": try getAuthor()?.name.makeNode(),
+                "author_username": try getAuthor()?.username.makeNode(),
                 "long_snippet": longSnippet().makeNode(),
                 "created_date": createdDate.makeNode(),
                 "slug_url": slugUrl
@@ -107,6 +109,7 @@ extension BlogPost: NodeRepresentable {
             }
             
             node["author_name"] = try getAuthor()?.name.makeNode()
+            node["author_username"] = try getAuthor()?.username.makeNode()
             node["short_snippet"] = shortSnippet().makeNode()
             node["long_snippet"] = longSnippet().makeNode()
         default: break
