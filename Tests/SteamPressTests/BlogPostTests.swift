@@ -50,12 +50,12 @@ class BlogPostTests: XCTestCase {
         XCTAssertEqual(expectedSlugUrl, post.slugUrl)
     }
     
-//    func testEverythingWithLotsOfCharacters() {
-//        let title = " This will be Amazing! Can't wait to @ 3 of you for $$££€ "
-//        let expectedSlugUrl = "this-will-be-amazing-cant-wait-to-3-of-you-for"
-//        let post = TestDataBuilder.anyPost(slugUrl: title)
-//        XCTAssertEqual(expectedSlugUrl, post.slugUrl)
-//    }
+    func testEverythingWithLotsOfCharacters() {
+        let title = " This should remove! \nalmost _all_ of the @ punctuation, but it doesn't?"
+        let expectedSlugUrl = "this-should-remove-almost-all-of-the-punctuation-but-it-doesnt"
+        let post = TestDataBuilder.anyPost(slugUrl: title)
+        XCTAssertEqual(expectedSlugUrl, post.slugUrl)
+    }
     
     // TODO test snippets
     

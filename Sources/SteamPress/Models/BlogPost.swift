@@ -180,11 +180,12 @@ extension BlogPost {
 
 extension BlogPost {
     public static func generateSlugUrl(from title: String) -> String {
-        let alphanumerics = NSCharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890")
+        let alphanumericsWithHyphenAndSpace = NSCharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890- ")
         
         return title.lowercased()
-            .trimmingCharacters(in: alphanumerics.inverted)
-            .trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .components(separatedBy: alphanumericsWithHyphenAndSpace.inverted).joined()
+            .components(separatedBy: .whitespacesAndNewlines).filter { !$0.isEmpty }.joined(separator: " ")
             .replacingOccurrences(of: " ", with: "-", options: .regularExpression)
     }
 }
