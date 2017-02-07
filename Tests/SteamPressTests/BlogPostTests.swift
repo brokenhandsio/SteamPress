@@ -61,6 +61,8 @@ class BlogPostTests: XCTestCase {
     
 }
 
+import Foundation
+
 struct TestDataBuilder {
     static func anyUser() -> BlogUser {
         return BlogUser(name: "Tim C", username: "timc", password: "password")
