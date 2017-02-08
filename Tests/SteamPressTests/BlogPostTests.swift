@@ -1,6 +1,8 @@
 import XCTest
 
 @testable import SteamPress
+import Fluent
+import Vapor
 
 class BlogPostTests: XCTestCase {
 
@@ -13,6 +15,19 @@ class BlogPostTests: XCTestCase {
         ("testSlugUrlLowerCases", testSlugUrlLowerCases),
         ("testEverythingWithLotsOfCharacters", testEverythingWithLotsOfCharacters),
     ]
+    
+    override func setUp() {
+        let database = Database(MemoryDriver())
+        BlogPost.database = database
+        let fakeConsole = Terminal(arguments: [])
+        let prepare = Prepare(console: fakeConsole, preparations: [BlogPost.self], database: database)
+        do {
+            try prepare.run(arguments: [])
+        }
+        catch {
+            XCTFail("failed to prepapre DB")
+        }
+    }
 
     func testThatSlugUrlCalculatedCorrectlyForTitleWithSpaces() {
         let title = "This is a title"
@@ -61,9 +76,22 @@ class BlogPostTests: XCTestCase {
         let post = TestDataBuilder.anyPost(slugUrl: title)
         XCTAssertEqual(expectedSlugUrl, post.slugUrl)
     }
+    
+    func testSlugUrlGivenUniqueNameIfDuplicate() {
+        let title = "A duplicated title"
+        let expectedSlugUrl = "a-duplicated-title-2"
+        do {
+            var post1 = TestDataBuilder.anyPost(slugUrl: title)
+            try post1.save()
+            let post2 = TestDataBuilder.anyPost(slugUrl: title)
+            XCTAssertEqual(expectedSlugUrl, post2.slugUrl)
+        }
+        catch {
+            XCTFail("Test threw unexpected exception")
+        }
+    }
 
     // TODO test snippets
-    // TODO test slug Url uniqueness logic
     // TODO test tag pivot logic
 
 }
@@ -78,4 +106,21 @@ struct TestDataBuilder {
     static func anyPost(slugUrl: String = "some-exciting-title")  -> BlogPost {
         return BlogPost(title: "An Exciting Post!", contents: "<p>This is a blog post</p>", author: anyUser(), creationDate: Date(), slugUrl: slugUrl)
     }
+}
+
+import Console
+
+struct FakeConsole: ConsoleProtocol {
+
+    var size: (width: Int, height: Int) = (0, 0)
+
+    func execute(program: String, arguments: [String], input: Int32?, output: Int32?, error: Int32?) throws {}
+
+    func clear(_ clear: ConsoleClear) {}
+
+    func input() -> String {
+        return ""
+    }
+
+    
 }
