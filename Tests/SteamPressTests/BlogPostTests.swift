@@ -14,6 +14,7 @@ class BlogPostTests: XCTestCase {
         ("testNumbersRemainInUrl", testNumbersRemainInUrl),
         ("testSlugUrlLowerCases", testSlugUrlLowerCases),
         ("testEverythingWithLotsOfCharacters", testEverythingWithLotsOfCharacters),
+        ("testSlugUrlGivenUniqueNameIfDuplicate", testSlugUrlGivenUniqueNameIfDuplicate)
     ]
     
     override func setUp() {
@@ -93,6 +94,7 @@ class BlogPostTests: XCTestCase {
 
     // TODO test snippets
     // TODO test tag pivot logic
+    // TODO test context make node stuff
 
 }
 
