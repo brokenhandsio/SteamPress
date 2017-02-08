@@ -16,7 +16,7 @@ There is an example of how it can work in a site (and what it requires in terms 
 
 * Blog entries with Markdown
 * Multiple user accounts
-* Label tagging for blogging
+* Tags on blog posts
 * Snippet for posts
 * Works with any Fluent driver
 * Protected Admin route for creating blog posts
@@ -66,7 +66,7 @@ The basic structure of your `Resources/View` directory should be:
 * `blog`
  * `blog.leaf` - the main index page
  * `blogpost.leaf` - the page for a single blog post
- * `label.leaf` - the page for a label
+ * `tag.leaf` - the page for a tag
  * `profile.leaf` - the page for a user profile
  * `admin`
   * `createPost.leaf` - the page for creating and editing a blog post
@@ -82,7 +82,7 @@ The basic structure of your `Resources/View` directory should be:
 This is the index page of the blog. The parameters it will receive are:
 
 * `posts` - a Node containing data about the posts and metadata for the paginator. You can access the posts by calling the `.data` object on it, which is an array of blog posts if there are any. The posts will be made with a `longSnippet` context (see below)
-* `labels` - an array of labels if there are any
+* `tags` - an array of tags if there are any
 * `user` - the currently logged in user if a user is currently logged in
 * `blogIndexPage` - a boolean saying we are on the index page of the blog - useful for navbars
 
@@ -95,13 +95,13 @@ This is the page for viewing a single entire blog post. The parameters set are:
 * `blogPostPage` - a boolean saying we are on the blog post page
 * `user` - the currently logged in user if a user is currently logged in
 
-### `label.leaf`
+### `tag.leaf`
 
-This is the page for a label. A blog post can be tagged with many labels and a label can be tagged on many blog posts. This page is generally used for viewing all posts under that label. The parameters are:
+This is the page for a tag. A blog post can be tagged with many tags and a tag can be tagged on many blog posts. This page is generally used for viewing all posts under that tag. The parameters are:
 
-* `label` - the label
-* `posts` - all the posts that have been tagged with this label, in `shortSnippet` form
-* `labelPage` - a boolean saying we are on the label page
+* `tag` - the tag
+* `posts` - all the posts that have been tagged with this tag, in `shortSnippet` form
+* `tagPage` - a boolean saying we are on the tag page
 * `user` - the currently logged in user if a user is currently logged in
 
 ### `profile.leaf`
@@ -150,7 +150,7 @@ This is the page for creating a new blog post, or editing an existing one. The p
 * `errors` - an array of error messages if there were any errors creating or editing the blog post
 * `titleSupplied` - the title of the blog post to edit, or the post that failed to be created
 * `contentsSupplied` - the contents of the blog post to edit, or the post that failed to be created
-* `labelsSupplied` - a space-seperated string of all of the labels that have been specified for the blog post
+* `tagssSupplied` - a space-seperated string of all of the tags that have been specified for the blog post
 * `editing` - a boolean set to true if we are currently editing the a blog post rather than creating a new one
 * `post` - the post object we are currently editing
 * `createBlogPostPage` - a boolean set to true, useful for the navbar etc
@@ -186,7 +186,7 @@ SteamPress supports two type of snippets for blog posts - short and long. Short 
 You can pass in a `BlogPostContext` to the `makeNode()` call to provide more information when getting `BlogPost` objects. Currently there are three contexts supported:
 
 * `.shortSnippet` - this will return the post with an `id`, `title`, `author_name`, `created_date` (Human readable) and `short_snippet`
-* `.longSnippet` - this will return the post with an `id`, `title`, `author_name`, `created_date` (Human readable) and `long_snippet`. It will also include all of the labels in a `labels` object if there are any associated with that post
+* `.longSnippet` - this will return the post with an `id`, `title`, `author_name`, `created_date` (Human readable) and `long_snippet`. It will also include all of the tags in a `tags` object if there are any associated with that post
 * `.all` - this returns the post with all information, including both snippet lengths, including author names and human readable dates
 
 You can also call them directly on a `BlogPost` object (such as from a `Query()`):
@@ -222,8 +222,7 @@ On the roadmap we have:
 * Code tidyup - in some places in the code you can tell it evolved quickly from a hacky spike - there is a lot of repeated code lying around and I'm not taking advatange of all of Swift or Vapor; this needs to be improved
 * Proper testing! Even now I have had too many bugs that would have been picked up by unit tests so I need to start them! Better late than never right...
 * Remember Me functionality for logging in - improve the 1 hour cookie expiry when logging and and wanting to be remembered
-* JSON endpoints for validating things like labels
-* Slug URL for posts - helps SEO and makes life a bit easier!
+* JSON endpoints for validating things like tags
 * Image uploading - you can link to images easily but can't upload any without redeploying the site - I may implement some functionality for this depending on whether people want images going to the same site as the code or something like an S3 bucket (I'm leaning towards the S3 option so answers on a postcard!)
 * Blog drafts - it would be nice not to publish posts until you want to
 * Sitemap/RSS feed - again for SEO
