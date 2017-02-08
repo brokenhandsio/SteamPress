@@ -68,7 +68,7 @@ class BlogPostTests: XCTestCase {
     }
     
     func testSlugUrlGivenUniqueNameIfDuplicate() {
-        setupDatabase()
+        setupDatabase(preparations: [BlogPost.self])
         
         let title = "A duplicated title"
         let expectedSlugUrl = "a-duplicated-title-2"
@@ -98,11 +98,11 @@ class BlogPostTests: XCTestCase {
     // TODO test tag pivot logic
     // TODO test context make node stuff
     
-    func setupDatabase() {
+    func setupDatabase(preparations: [Preparation.Type]) {
         let database = Database(MemoryDriver())
         BlogPost.database = database
         let printConsole = PrintConsole()
-        let prepare = Prepare(console: printConsole, preparations: [BlogPost.self], database: database)
+        let prepare = Prepare(console: printConsole, preparations: preparations, database: database)
         do {
             try prepare.run(arguments: [])
         }
