@@ -19,8 +19,8 @@ class BlogPostTests: XCTestCase {
     override func setUp() {
         let database = Database(MemoryDriver())
         BlogPost.database = database
-        let fakeConsole = Terminal(arguments: [])
-        let prepare = Prepare(console: fakeConsole, preparations: [BlogPost.self], database: database)
+        let printConsole = PrintConsole()
+        let prepare = Prepare(console: printConsole, preparations: [BlogPost.self], database: database)
         do {
             try prepare.run(arguments: [])
         }
@@ -110,7 +110,11 @@ struct TestDataBuilder {
 
 import Console
 
-struct FakeConsole: ConsoleProtocol {
+struct PrintConsole: ConsoleProtocol {
+    
+    func output(_ string: String, style: ConsoleStyle, newLine: Bool) {
+        Swift.print(string)
+    }
 
     var size: (width: Int, height: Int) = (0, 0)
 
