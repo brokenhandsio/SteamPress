@@ -195,11 +195,12 @@ extension BlogPost {
         var count = 2
 
         do {
-            while try BlogUser.query().filter("slug_url", newSlugUrl).first() != nil {
+            while try BlogPost.query().filter("slug_url", newSlugUrl).first() != nil {
               newSlugUrl = "\(slugUrl)-\(count)"
               count += 1
             }
         } catch {
+            print("Error uniqueing the slug URL: \(error)")
             // Swallow error - this will propragate the error up to the DB driver which should fail if it is not unique
         }
         
