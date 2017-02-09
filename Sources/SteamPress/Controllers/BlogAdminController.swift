@@ -296,10 +296,9 @@ struct BlogAdminController {
             let users = try BlogUser.all()
             if users.count == 0 {
                 let password = String.random()
-                // WARNING TEMP TODO!
-                let creds = BlogUserCredentials(username: "admin", password: "password", name: "Admin")
+                let creds = BlogUserCredentials(username: "admin", password: password, name: "Admin")
                 if var user = try BlogUser.register(credentials: creds) as? BlogUser {
-                    //                    user.resetPasswordRequired = true
+                    user.resetPasswordRequired = true
                     try user.save()
                     print("An Admin user been created for you - the username is admin and the password is \(password)")
                     print("You will be asked to change your password once you have logged in, please do this immediately!")
