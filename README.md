@@ -197,7 +197,7 @@ let shortSnippet = post.shortSnippet()
 let longSnippet = post.longSnippet()
 ```
 
-# LeafMardown
+# Leaf Markdown
 
 LeafMarkdown allows you to render markdown as HTML in your Leaf files. To use, just simply use:
 
