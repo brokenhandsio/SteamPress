@@ -134,7 +134,9 @@ struct BlogAdminController {
         post.title = title
         post.contents = contents
         post.lastEdited = Date()
-        post.slugUrl = BlogPost.generateUniqueSlugUrl(from: slugUrl)
+        if (post.slugUrl != slugUrl) {
+            post.slugUrl = BlogPost.generateUniqueSlugUrl(from: slugUrl)
+        }
 
         let existing = try post.tags()
         let existingString = existing.map { $0.name }
