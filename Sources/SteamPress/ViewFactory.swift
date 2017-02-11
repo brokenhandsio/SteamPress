@@ -110,7 +110,7 @@ struct ViewFactory {
         return try drop.view.make("blog/admin/createUser", parameters)
     }
     
-    func createLoginView(errors: [String]? = nil, username: String? = nil, password: String? = nil) throws -> View {
+    func createLoginView(loginWarning: Bool = false, errors: [String]? = nil, username: String? = nil, password: String? = nil) throws -> View {
         let usernameError = username == nil && errors != nil
         let passwordError = password == nil && errors != nil
         
@@ -125,6 +125,10 @@ struct ViewFactory {
         
         if let loginErrors = errors {
             parameters["errors"] = try loginErrors.makeNode()
+        }
+        
+        if loginWarning {
+            parameters["loginWarning"] = true
         }
         
         print("Login view parameters created with usernameError set to \(usernameError), passwordError set to \(passwordError) and errors set to \(errors)")

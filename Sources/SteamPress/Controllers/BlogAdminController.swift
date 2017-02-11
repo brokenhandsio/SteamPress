@@ -310,38 +310,39 @@ struct BlogAdminController {
         catch {
             print("There was an error creating a new admin user: \(error)")
         }
-
-        return try viewFactory.createLoginView()
+        
+        let loginRequired = request.uri.rawQuery == "loginRequired"
+        return try viewFactory.createLoginView(loginWarning: loginRequired)
     }
-
+    
     func loginPostHandler(_ request: Request) throws -> ResponseRepresentable {
-
+        
         let rawUsername = request.data["inputUsername"]?.string
         let rawPassword = request.data["inputPassword"]?.string
-
+        
         var loginErrors: [String] = []
-
+        
         if rawUsername == nil {
             loginErrors.append("You must supply your username")
         }
-
+        
         if rawPassword == nil {
             loginErrors.append("You must supply your password")
         }
-
+        
         if loginErrors.count > 0 {
             return try viewFactory.createLoginView(errors: loginErrors, username: rawUsername, password: rawPassword)
         }
-
+        
         guard let username = rawUsername, let password = rawPassword else {
             throw Abort.badRequest
         }
-
+        
         let credentials = BlogUserCredentials(username: username.lowercased(), password: password)
-
+        
         do {
             try request.auth.login(credentials)
-
+            
             guard let _ = try request.auth.user() as? BlogUser else {
                 throw Abort.badRequest
             }

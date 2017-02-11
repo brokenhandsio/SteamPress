@@ -15,7 +15,7 @@ struct BlogAuthMiddleware: Middleware {
             }
             
         } catch {
-            return Response(redirect: pathCreator.createPath(for: "admin/login"))
+            return Response(redirect: pathCreator.createPath(for: "admin/login", query: "loginRequired"))
         }
         return try next.respond(to: request)
     }
