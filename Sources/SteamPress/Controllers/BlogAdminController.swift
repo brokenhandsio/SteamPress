@@ -319,6 +319,7 @@ struct BlogAdminController {
         
         let rawUsername = request.data["inputUsername"]?.string
         let rawPassword = request.data["inputPassword"]?.string
+        let rememberMe = request.data["remember-me"]?.string != nil
         
         var loginErrors: [String] = []
         
@@ -351,7 +352,7 @@ struct BlogAdminController {
         catch {
             print("Got error logging in \(error)")
             let loginError = ["Your username or password was incorrect"]
-            return try viewFactory.createLoginView(errors: loginError, username: username, password: password)
+            return try viewFactory.createLoginView(errors: loginError, username: username, password: "")
         }
     }
 
