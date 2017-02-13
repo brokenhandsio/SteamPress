@@ -221,7 +221,6 @@ On the roadmap we have:
 
 * Code tidyup - in some places in the code you can tell it evolved quickly from a hacky spike - there is a lot of repeated code lying around and I'm not taking advatange of all of Swift or Vapor; this needs to be improved
 * Proper testing! Even now I have had too many bugs that would have been picked up by unit tests so I need to start them! Better late than never right...
-* Remember Me functionality for logging in - improve the 1 hour cookie expiry when logging and and wanting to be remembered
 * JSON endpoints for validating things like tags
 * Image uploading - you can link to images easily but can't upload any without redeploying the site - I may implement some functionality for this depending on whether people want images going to the same site as the code or something like an S3 bucket (I'm leaning towards the S3 option so answers on a postcard!)
 * Blog drafts - it would be nice not to publish posts until you want to
