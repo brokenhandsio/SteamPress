@@ -27,7 +27,7 @@ struct BlogAdminController {
         router.post("login", handler: loginPostHandler)
         router.get("logout", handler: logoutHandler)
 
-        let protect = BlogAuthMiddleware(pathCreator: pathCreator)
+        let protect = BlogLoginRedirectAuthMiddleware(pathCreator: pathCreator)
         let routerSecure = router.grouped(protect)
         routerSecure.get(handler: adminHandler)
         routerSecure.get("createPost", handler: createPostHandler)
@@ -341,10 +341,18 @@ struct BlogAdminController {
         
         let credentials = BlogUserCredentials(username: username.lowercased(), password: password)
         
+        if rememberMe {
+            request.storage["remember_me"] = true
+        }
+        else {
+            request.storage.removeValue(forKey: "remember_me")
+        }
+        
         do {
             try request.auth.login(credentials)
             
             guard let _ = try request.auth.user() as? BlogUser else {
+                request.storage.removeValue(forKey: "remember_me")
                 throw Abort.badRequest
             }
             return Response(redirect: pathCreator.createPath(for: "admin"))
@@ -352,6 +360,7 @@ struct BlogAdminController {
         catch {
             print("Got error logging in \(error)")
             let loginError = ["Your username or password was incorrect"]
+            request.storage.removeValue(forKey: "remember_me")
             return try viewFactory.createLoginView(errors: loginError, username: username, password: "")
         }
     }
