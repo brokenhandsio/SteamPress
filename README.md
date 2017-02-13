@@ -1,7 +1,7 @@
 # SteamPress
 
 [![Language](https://img.shields.io/badge/Swift-3-brightgreen.svg)](http://swift.org)
-[![Build Status](https://travis-ci.org/brokenhandsio/SteamPress.svg)](https://travis-ci.org/brokenhandsio/SteamPress)
+[![Build Status](https://travis-ci.org/brokenhandsio/SteamPress.svg?branch=master)](https://travis-ci.org/brokenhandsio/SteamPress)
 [![codecov](https://codecov.io/gh/brokenhandsio/SteamPress/branch/master/graph/badge.svg)](https://codecov.io/gh/brokenhandsio/SteamPress)
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/brokenhandsio/SteamPress/master/LICENSE)
 
