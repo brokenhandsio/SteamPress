@@ -30,7 +30,7 @@ public struct SteamPress {
         drop.preparations.append(Pivot<BlogPost, BlogTag>.self)
         
         // Middleware
-        let authMiddleware = AuthMiddleware<BlogUser>()
+        let authMiddleware = BlogAuthMiddleware()
         drop.middleware.append(authMiddleware)
         
         // Providers
