@@ -37,8 +37,8 @@ final class BlogUser: Model {
             ])
         
         switch context {
-        case DatabaseContext:
-            userNode["password"] = password
+        case is DatabaseContext:
+            userNode["password"] = password.makeNode()
         default:
             break
         }

@@ -7,6 +7,8 @@ public struct Provider: Vapor.Provider {
 
     public var provided: Providable = Providable()
 
+    private static let configFilename: String = "steampress"
+    
     private let blogPath: String?
     private let postsPerPage: Int
     private let pathCreator: BlogPathCreator
@@ -43,8 +45,19 @@ public struct Provider: Vapor.Provider {
     }
 
     public init(config: Config) throws {
+        
+        guard let postsPerPage = config[Provider.configFilename, "postsPerPage"]?.int else {
+            throw Error.InvalidConfiguration(message: "Missing postsPerPage variable in Steampress' config file")
+        }
+        
+        var blogPath: String? = nil
+        
+        if let blogPathFromConfig = config[Provider.configFilename]?.string {
+            blogPath = blogPathFromConfig
+        }
+        
         // WARNING TODO
-        self.init(postsPerPage: 1, blogPath: nil)
+        self.init(postsPerPage: postsPerPage, blogPath: blogPath)
     }
 
     /**
@@ -57,6 +70,10 @@ public struct Provider: Vapor.Provider {
         self.postsPerPage = postsPerPage
         self.blogPath = blogPath
         self.pathCreator = BlogPathCreator(blogPath: self.blogPath)
+    }
+    
+    enum Error: Swift.Error {
+        case InvalidConfiguration(message: String)
     }
 
     public func afterInit(_: Vapor.Droplet) {}
