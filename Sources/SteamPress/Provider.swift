@@ -52,7 +52,7 @@ public struct Provider: Vapor.Provider {
         
         var blogPath: String? = nil
         
-        if let blogPathFromConfig = config[Provider.configFilename]?.string {
+        if let blogPathFromConfig = config[Provider.configFilename, "blogPath"]?.string {
             blogPath = blogPathFromConfig
         }
         
@@ -61,10 +61,10 @@ public struct Provider: Vapor.Provider {
     }
 
     /**
-     Initialiser for SteamPress' Provider to add a blog to your Vapor App. You can pass it an optional `blogPath` to add the blog to. For instance, if you pass in "blog", your blog will be accessible at http://mysite.com/blog/, or if you pass in `nil` your blog will be added to the root of your site (i.e. http://mysite.com/)
+         Initialiser for SteamPress' Provider to add a blog to your Vapor App. You can pass it an optional `blogPath` to add the blog to. For instance, if you pass in "blog", your blog will be accessible at http://mysite.com/blog/, or if you pass in `nil` your blog will be added to the root of your site (i.e. http://mysite.com/)
 
-     - Parameter postsPerPage: The number of posts to show per page on the main index page of the blog (integrates with Paginator)
-     - Parameter blogPath: The path to add the blog too
+         - Parameter postsPerPage: The number of posts to show per page on the main index page of the blog (integrates with Paginator)
+         - Parameter blogPath: The path to add the blog too
      */
     public init(postsPerPage: Int, blogPath: String?) {
         self.postsPerPage = postsPerPage
