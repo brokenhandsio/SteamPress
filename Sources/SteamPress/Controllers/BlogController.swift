@@ -50,7 +50,7 @@ struct BlogController {
         
         do {
             if let user = try request.auth.user() as? BlogUser {
-                parameters["user"] = try user.makeNode(context: BlogUserContext.passwordHidden)
+                parameters["user"] = try user.makeNode()
             }
         }
         catch {}
@@ -71,13 +71,13 @@ struct BlogController {
                 
         var parameters = try Node(node: [
                 "post": try blogPost.makeNode(context: BlogPostContext.all),
-                "author": try author.makeNode(context: BlogUserContext.passwordHidden),
+                "author": try author.makeNode(),
                 "blogPostPage": true.makeNode()
             ])
         
         do {
             if let user = try request.auth.user() as? BlogUser {
-                parameters["user"] = try user.makeNode(context: BlogUserContext.passwordHidden)
+                parameters["user"] = try user.makeNode()
             }
         }
         catch {}
@@ -99,7 +99,7 @@ struct BlogController {
         
         do {
             if let user = try request.auth.user() as? BlogUser {
-                parameters["user"] = try user.makeNode(context: BlogUserContext.passwordHidden)
+                parameters["user"] = try user.makeNode()
             }
         }
         catch {}

@@ -141,7 +141,7 @@ struct ViewFactory {
         let users = try BlogUser.all()
         
         var parameters = try Node(node: [
-            "users": users.makeNode(context: BlogUserContext.passwordHidden)
+            "users": users.makeNode()
             ])
         
         if blogPosts.count > 0 {
@@ -180,7 +180,7 @@ struct ViewFactory {
     
     func createProfileView(user: BlogUser, isMyProfile: Bool) throws -> ResponseRepresentable {
         var parameters: [String: Node] = [
-            "user": try user.makeNode(context: BlogUserContext.passwordHidden)
+            "user": try user.makeNode()
         ]
         
         if isMyProfile {

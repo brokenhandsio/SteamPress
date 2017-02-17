@@ -105,10 +105,6 @@ extension BlogUser {
     }
 }
 
-enum BlogUserContext: Context {
-    case passwordHidden
-}
-
 struct BlogUserCredentials: Credentials {
     
     let username: String
