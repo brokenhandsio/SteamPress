@@ -12,12 +12,14 @@ struct BlogController {
     fileprivate let drop: Droplet
     fileprivate let pathCreator: BlogPathCreator
     fileprivate let viewFactory: ViewFactory
+    fileprivate let postsPerPage: Int
     
     // MARK: - Initialiser
-    init(drop: Droplet, pathCreator: BlogPathCreator, viewFactory: ViewFactory) {
+    init(drop: Droplet, pathCreator: BlogPathCreator, viewFactory: ViewFactory, postsPerPage: Int) {
         self.drop = drop
         self.pathCreator = pathCreator
         self.viewFactory = viewFactory
+        self.postsPerPage = postsPerPage
     }
     
     // MARK: - Add routes
@@ -36,7 +38,7 @@ struct BlogController {
         let tags = try BlogTag.all()
         var parameters: [String: Node] = [:]
         
-        let paginatedBlogPosts = try BlogPost.query().sort("created", .descending).paginator(10, request: request)
+        let paginatedBlogPosts = try BlogPost.query().sort("created", .descending).paginator(postsPerPage, request: request)
 
         if paginatedBlogPosts.totalPages ?? 0 > 0 {
             parameters["posts"] = try paginatedBlogPosts.makeNode(context: BlogPostContext.longSnippet)
