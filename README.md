@@ -78,6 +78,18 @@ let steamPress = SteamPress.Provider(postsPerPage: 5, blogPath: "blog")
 
 When you first visit the login page of the admin section of the blog it will create a user for you to use for login, with the username `admin`. The password will be printed out to the console and you will be required to reset your password when you first login. It is recommended you do this as soon as your site is up and running.
 
+## Comments
+
+SteamPress currently supports using [Disqus](https://disqus.com) for the comments engine. To use Disqus, just add a config file `disqus.json` to your site that looks like:
+
+```swift
+{
+    "disqusName": "NAME_OF_YOUR_DISQUS_SITE" // This can be found from your Disqus admin panel
+}
+```
+
+This will pass it through to the Leaf templates for the Blog index (`blog.leaf`) and blog posts (`blogpost.leaf`) so you can include it if needs be. If you want to manually set up comments you can do this yourself and just include the necessary files for your provider. This is mainly to provide easily configuration for the [Platform site](https://github.com/brokenhandsio/SteamPressExample).
+
 # Expected Leaf Templates
 
 SteamPress expects there to be a number of Leaf template files in the correct location in `Resources/Views`. All these files should be in a `blog` directory, with the admin template files being in an `admin` directory. For an example of how it SteamPress works with the leaf templates, see the [Example SteamPress site](https://github.com/brokenhandsio/SteamPressExample).
@@ -105,7 +117,9 @@ This is the index page of the blog. The parameters it will receive are:
 * `posts` - a Node containing data about the posts and metadata for the paginator. You can access the posts by calling the `.data` object on it, which is an array of blog posts if there are any. The posts will be made with a `longSnippet` context (see below)
 * `tags` - an array of tags if there are any
 * `user` - the currently logged in user if a user is currently logged in
+* `disqusName` - the name of your Disqus site it configured
 * `blogIndexPage` - a boolean saying we are on the index page of the blog - useful for navbars
+
 
 ### `blogpost.leaf`
 
@@ -115,6 +129,7 @@ This is the page for viewing a single entire blog post. The parameters set are:
 * `author` - the author of the post
 * `blogPostPage` - a boolean saying we are on the blog post page
 * `user` - the currently logged in user if a user is currently logged in
+* `disqusName` - the name of your Disqus site it configured
 
 ### `tag.leaf`
 
@@ -206,8 +221,8 @@ SteamPress supports two type of snippets for blog posts - short and long. Short 
 
 You can pass in a `BlogPostContext` to the `makeNode()` call to provide more information when getting `BlogPost` objects. Currently there are three contexts supported:
 
-* `.shortSnippet` - this will return the post with an `id`, `title`, `author_name`, `created_date` (Human readable) and `short_snippet`
-* `.longSnippet` - this will return the post with an `id`, `title`, `author_name`, `created_date` (Human readable) and `long_snippet`. It will also include all of the tags in a `tags` object if there are any associated with that post
+* `.shortSnippet` - this will return the post with an `id`, `title`, `author_name`, `author_username`, `slug_url`, `created_date` (Human readable) and `short_snippet`
+* `.longSnippet` - this will return the post with an `id`, `title`, `author_name`, `author_username`, `slug_url`, `created_date` (Human readable) and `long_snippet`. It will also include all of the tags in a `tags` object if there are any associated with that post
 * `.all` - this returns the post with all information, including both snippet lengths, including author names and human readable dates
 
 You can also call them directly on a `BlogPost` object (such as from a `Query()`):
@@ -217,6 +232,15 @@ You can also call them directly on a `BlogPost` object (such as from a `Query()`
 let shortSnippet = post.shortSnippet()
 let longSnippet = post.longSnippet()
 ```
+
+If no `Context` is supplied to the `makeNode()` call you will get:
+
+* `id`
+* `title`
+* `contents`
+* `bloguser_id` - The ID of the Author of the post
+* `created` - The time the post was created as a `Double`
+* `slug_url`
 
 # Leaf Markdown
 
@@ -232,7 +256,6 @@ This will convert the `Node` object `myObject`'s `markdownContent` to HTML (you 
 
 * When the admin user is created when first accessing the login screen, sometimes two are created so you need to use the first password displayed. You can then delete the second Admin user in the Admin pane.
 * Despite me being a big believer in TDD and it saving me on many occasions, I neglected to actually write any tests for this. So despite the fact that I have been tripped up due to no tests, I haven't written the unit tests yet, mainly because this started out as a Spike to see how easy it would be. They will definitely be coming soon!
-* There is no 'remember me' logic when logging in yet, which means you will only be logged in for an hour until your session times out. Please remember this when writing long posts!
 
 # Roadmap
 
@@ -242,7 +265,6 @@ On the roadmap we have:
 
 * Code tidyup - in some places in the code you can tell it evolved quickly from a hacky spike - there is a lot of repeated code lying around and I'm not taking advatange of all of Swift or Vapor; this needs to be improved
 * Proper testing! Even now I have had too many bugs that would have been picked up by unit tests so I need to start them! Better late than never right...
-* Remember Me functionality for logging in - improve the 1 hour cookie expiry when logging and and wanting to be remembered
 * JSON endpoints for validating things like tags
 * Image uploading - you can link to images easily but can't upload any without redeploying the site - I may implement some functionality for this depending on whether people want images going to the same site as the code or something like an S3 bucket (I'm leaning towards the S3 option so answers on a postcard!)
 * Blog drafts - it would be nice not to publish posts until you want to
