@@ -66,12 +66,14 @@ You can also initialise the Provider manually, by creating it as so:
 
 ```swift
 let steampress = SteamPress.Provider(postsPerPage: 5)
+drop.addProvider(steampress)
 ```
 
 This will initialise it as the root path of your site. If you wish to have it in a subdirectory, initialise it with:
 
 ```swift
 let steamPress = SteamPress.Provider(postsPerPage: 5, blogPath: "blog")
+drop.addProvider(steampress)
 ```
 
 ## Logging In
