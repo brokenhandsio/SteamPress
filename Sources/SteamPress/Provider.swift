@@ -33,7 +33,7 @@ public struct Provider: Vapor.Provider {
             leaf.stem.register(Markdown())
         }
 
-        let viewFactory = ViewFactory(drop: drop)
+        let viewFactory = LeafViewFactory(drop: drop)
 
         // Set up the controllers
         let blogController = BlogController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, postsPerPage: postsPerPage)

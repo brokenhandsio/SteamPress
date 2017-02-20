@@ -4,4 +4,5 @@ import XCTest
 
 XCTMain([
     testCase(BlogPostTests.allTests),
+    testCase(BlogControllerTests.allTests),
 ])
