@@ -66,7 +66,7 @@ public struct Provider: Vapor.Provider {
          - Parameter postsPerPage: The number of posts to show per page on the main index page of the blog (integrates with Paginator)
          - Parameter blogPath: The path to add the blog too
      */
-    public init(postsPerPage: Int, blogPath: String?) {
+    public init(postsPerPage: Int, blogPath: String? = nil) {
         self.postsPerPage = postsPerPage
         self.blogPath = blogPath
         self.pathCreator = BlogPathCreator(blogPath: self.blogPath)

@@ -21,6 +21,8 @@ There is an example of how it can work in a site (and what it requires in terms 
 * Works with any Fluent driver
 * Protected Admin route for creating blog posts
 * Pagination on the main blog page
+* Slug URLs for SEO optimisation and easy linking to posts
+* Support for comments via Disqus
 
 # How to Use
 
@@ -41,16 +43,35 @@ Next import it in the file where you are setting up your `Droplet` with:
 import SteamPress
 ```
 
-Finally, initialise it!
+Finally, add the provider!
 
 ```swift
-let steamPress = SteamPress(drop: drop)
+try drop.addProvider(SteamPress.Provider.self)
+```
+
+This will look for a config file called `steampress.json` that looks like:
+
+```json
+{
+    "postsPerPage": 5,
+    "blogPath": "blog"
+}
+```
+
+The `blogPath` line is optional, if you want your blog to be at the root path of your site, just remove that line.
+
+### Manual initialisation
+
+You can also initialise the Provider manually, by creating it as so:
+
+```swift
+let steampress = SteamPress.Provider(postsPerPage: 5)
 ```
 
 This will initialise it as the root path of your site. If you wish to have it in a subdirectory, initialise it with:
 
 ```swift
-let steamPress = SteamPress(drop: drop, blogPath: "blog")
+let steamPress = SteamPress.Provider(postsPerPage: 5, blogPath: "blog")
 ```
 
 ## Logging In
@@ -229,4 +250,3 @@ On the roadmap we have:
 * AMP endpoints for posts
 * Searching through the blog
 * Saving state when logging in - if you go to a page (e.g. edit post) but need to be logged in, it would be great if you could head back to that page once logged in. Also, if you have edited a post and your session expires before you post it, wouldn't it be great if it rememebered everything!
-

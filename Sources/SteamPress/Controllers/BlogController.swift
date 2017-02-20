@@ -57,6 +57,10 @@ struct BlogController {
         
         parameters["blogIndexPage"] = true
         
+        if let disqusName = getDisqusName() {
+            parameters["disqusName"] = disqusName.makeNode()
+        }
+        
         return try drop.view.make("blog/blog", parameters)
     }
     
@@ -81,6 +85,10 @@ struct BlogController {
             }
         }
         catch {}
+        
+        if let disqusName = getDisqusName() {
+            parameters["disqusName"] = disqusName.makeNode()
+        }
         
         return try drop.view.make("blog/blogpost", parameters)
     }
@@ -113,6 +121,10 @@ struct BlogController {
         }
         
         return try viewFactory.createProfileView(user: author, isMyProfile: false)
+    }
+    
+    private func getDisqusName() -> String? {
+        return drop.config["disqus", "disqusName"]?.string
     }
     
 }
