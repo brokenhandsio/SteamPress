@@ -12,12 +12,14 @@ struct BlogController {
     fileprivate let drop: Droplet
     fileprivate let pathCreator: BlogPathCreator
     fileprivate let viewFactory: ViewFactory
+    fileprivate let postsPerPage: Int
     
     // MARK: - Initialiser
-    init(drop: Droplet, pathCreator: BlogPathCreator, viewFactory: ViewFactory) {
+    init(drop: Droplet, pathCreator: BlogPathCreator, viewFactory: ViewFactory, postsPerPage: Int) {
         self.drop = drop
         self.pathCreator = pathCreator
         self.viewFactory = viewFactory
+        self.postsPerPage = postsPerPage
     }
     
     // MARK: - Add routes
@@ -36,7 +38,7 @@ struct BlogController {
         let tags = try BlogTag.all()
         var parameters: [String: Node] = [:]
         
-        let paginatedBlogPosts = try BlogPost.query().sort("created", .descending).paginator(10, request: request)
+        let paginatedBlogPosts = try BlogPost.query().sort("created", .descending).paginator(postsPerPage, request: request)
 
         if paginatedBlogPosts.totalPages ?? 0 > 0 {
             parameters["posts"] = try paginatedBlogPosts.makeNode(context: BlogPostContext.longSnippet)
@@ -48,12 +50,16 @@ struct BlogController {
         
         do {
             if let user = try request.auth.user() as? BlogUser {
-                parameters["user"] = try user.makeNode(context: BlogUserContext.passwordHidden)
+                parameters["user"] = try user.makeNode()
             }
         }
         catch {}
         
         parameters["blogIndexPage"] = true
+        
+        if let disqusName = getDisqusName() {
+            parameters["disqusName"] = disqusName.makeNode()
+        }
         
         return try drop.view.make("blog/blog", parameters)
     }
@@ -69,16 +75,20 @@ struct BlogController {
                 
         var parameters = try Node(node: [
                 "post": try blogPost.makeNode(context: BlogPostContext.all),
-                "author": try author.makeNode(context: BlogUserContext.passwordHidden),
+                "author": try author.makeNode(),
                 "blogPostPage": true.makeNode()
             ])
         
         do {
             if let user = try request.auth.user() as? BlogUser {
-                parameters["user"] = try user.makeNode(context: BlogUserContext.passwordHidden)
+                parameters["user"] = try user.makeNode()
             }
         }
         catch {}
+        
+        if let disqusName = getDisqusName() {
+            parameters["disqusName"] = disqusName.makeNode()
+        }
         
         return try drop.view.make("blog/blogpost", parameters)
     }
@@ -97,7 +107,7 @@ struct BlogController {
         
         do {
             if let user = try request.auth.user() as? BlogUser {
-                parameters["user"] = try user.makeNode(context: BlogUserContext.passwordHidden)
+                parameters["user"] = try user.makeNode()
             }
         }
         catch {}
@@ -111,6 +121,10 @@ struct BlogController {
         }
         
         return try viewFactory.createProfileView(user: author, isMyProfile: false)
+    }
+    
+    private func getDisqusName() -> String? {
+        return drop.config["disqus", "disqusName"]?.string
     }
     
 }

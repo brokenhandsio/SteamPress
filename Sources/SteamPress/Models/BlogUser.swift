@@ -34,12 +34,11 @@ final class BlogUser: Model {
             "name": name,
             "username": username,
             "reset_password_required": resetPasswordRequired,
-            "password": password
             ])
         
         switch context {
-        case BlogUserContext.passwordHidden:
-            userNode["password"] = nil
+        case is DatabaseContext:
+            userNode["password"] = password.makeNode()
         default:
             break
         }
@@ -102,12 +101,8 @@ extension BlogUser: Auth.User {
 
 extension BlogUser {
     func posts() throws -> [BlogPost] {
-        return try children(nil, BlogPost.self).all()
+        return try children("bloguser_id", BlogPost.self).all()
     }
-}
-
-enum BlogUserContext: Context {
-    case passwordHidden
 }
 
 struct BlogUserCredentials: Credentials {
