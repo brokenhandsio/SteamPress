@@ -1,5 +1,6 @@
 import Vapor
 import URI
+import Paginator
 
 protocol ViewFactory {
     
@@ -9,8 +10,10 @@ protocol ViewFactory {
     func createLoginView(loginWarning: Bool, errors: [String]?, username: String?, password: String?) throws -> View
     func createBlogAdminView(errors: [String]?) throws -> View
     func createResetPasswordView(errors: [String]?, passwordError: Bool?, confirmPasswordError: Bool?) throws -> View
-    func createProfileView(user: BlogUser, isMyProfile: Bool, posts: [BlogPost]) throws -> View
+    func createProfileView(user: BlogUser, isMyProfile: Bool, posts: [BlogPost], disqusName: String?) throws -> View
     
     // MARK: - Blog Controller
+    func blogIndexView(paginatedPosts: Paginator<BlogPost>, tags: [BlogTag], loggedInUser: BlogUser?, disqusName: String?) throws -> View
     func blogPostView(post: BlogPost, author: BlogUser, user: BlogUser?, disqusName: String?) throws -> View
+    func tagView(tag: BlogTag, posts: [BlogPost], user: BlogUser?, disqusName: String?) throws -> View
 }

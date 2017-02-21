@@ -1,6 +1,7 @@
 import Vapor
 import URI
 import HTTP
+import Paginator
 
 struct LeafViewFactory: ViewFactory {
     
@@ -180,7 +181,7 @@ struct LeafViewFactory: ViewFactory {
         return try drop.view.make("blog/admin/resetPassword", parameters)
     }
     
-    func createProfileView(user: BlogUser, isMyProfile: Bool, posts: [BlogPost]) throws -> View {
+    func createProfileView(user: BlogUser, isMyProfile: Bool, posts: [BlogPost], disqusName: String?) throws -> View {
         var parameters: [String: Node] = [
             "user": try user.makeNode()
         ]
@@ -196,10 +197,40 @@ struct LeafViewFactory: ViewFactory {
             parameters["posts"] = try posts.makeNode(context: BlogPostContext.shortSnippet)
         }
         
+        if let disqusName = disqusName {
+            parameters["disqusName"] = disqusName.makeNode()
+        }
+        
         return try drop.view.make("blog/profile", parameters)
     }
     
     // MARK: - Blog Controller Views
+    
+    func blogIndexView(paginatedPosts: Paginator<BlogPost>, tags: [BlogTag], loggedInUser: BlogUser?, disqusName: String?) throws -> View {
+        
+        var parameters: [String: Node] = [:]
+        
+        if paginatedPosts.totalPages ?? 0 > 0 {
+            parameters["posts"] = try paginatedPosts.makeNode(context: BlogPostContext.longSnippet)
+        }
+        
+        if tags.count > 0 {
+            parameters["tags"] = try tags.makeNode()
+        }
+        
+        if let user = loggedInUser {
+            parameters["user"] = try user.makeNode()
+        }
+        
+        parameters["blogIndexPage"] = true
+        
+        if let disqusName = disqusName {
+            parameters["disqusName"] = disqusName.makeNode()
+        }
+        
+        return try drop.view.make("blog/blog", parameters)
+
+    }
     
     func blogPostView(post: BlogPost, author: BlogUser, user: BlogUser?, disqusName: String?) throws -> View {
         
@@ -218,5 +249,27 @@ struct LeafViewFactory: ViewFactory {
         }
         
         return try drop.view.make("blog/blogpost", parameters)
+    }
+    
+    func tagView(tag: BlogTag, posts: [BlogPost], user: BlogUser?, disqusName: String?) throws -> View {
+        
+        var parameters: [String: Node] = [
+            "tag": try tag.makeNode(),
+            "tagPage": true.makeNode(),
+        ]
+        
+        if posts.count > 0 {
+            parameters["posts"] = try posts.makeNode(context: BlogPostContext.shortSnippet)
+        }
+        
+        if let user = user {
+            parameters["user"] = try user.makeNode()
+        }
+        
+        if let disqusName = disqusName {
+            parameters["disqusName"] = disqusName.makeNode()
+        }
+        
+        return try drop.view.make("blog/tag", parameters)
     }
 }
