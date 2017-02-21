@@ -259,7 +259,7 @@ struct LeafViewFactory: ViewFactory {
         ]
         
         if posts.count > 0 {
-            parameters["posts"] = try posts.makeNode(context: BlogPostContext.shortSnippet)
+            parameters["posts"] = try posts.makeNode(context: BlogPostContext.longSnippet)
         }
         
         if let user = user {
