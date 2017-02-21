@@ -382,7 +382,7 @@ struct BlogAdminController {
             throw Abort.badRequest
         }
 
-        return try viewFactory.createProfileView(user: user, isMyProfile: true)
+        return try viewFactory.createProfileView(user: user, isMyProfile: true, posts: try user.posts())
     }
 
     // MARK: - Password handlers

@@ -14,7 +14,13 @@ import HTTP
 
 class BlogControllerTests: XCTestCase {
     static var allTests = [
+        ("testBlogIndexGetsPostsInReverseOrder", testBlogIndexGetsPostsInReverseOrder),
+        ("testBlogIndexGetsAllTags", testBlogIndexGetsAllTags),
+        ("testBlogIndexGetsDisqusNameIfSetInConfig", testBlogIndexGetsDisqusNameIfSetInConfig),
+        ("testBlogPostRetrievedCorrectlyFromSlugUrl", testBlogPostRetrievedCorrectlyFromSlugUrl),
         ("testDisqusNamePassedToBlogPostIfSpecified", testDisqusNamePassedToBlogPostIfSpecified),
+        ("testAuthorView", testAuthorView),
+        ("testTagView", testTagView)
     ]
     
     private var drop: Droplet!
@@ -22,12 +28,14 @@ class BlogControllerTests: XCTestCase {
     private var post: BlogPost!
     private var user: BlogUser!
     private var blogPostRequest: Request!
+    private var authorRequest: Request!
     
     override func setUp() {
-        blogPostRequest = try! Request(method: .get, uri: "/posts/test-path")
+        blogPostRequest = try! Request(method: .get, uri: "/posts/test-path/")
+        authorRequest = try! Request(method: .get, uri: "/authors/luke/")
     }
     
-    func setupDrop(config: Config? = nil) throws {
+    func setupDrop(config: Config? = nil, loginUser: Bool = false) throws {
         drop = Droplet(arguments: ["dummy/path/", "prepare"], config: config)
         drop.database = Database(MemoryDriver())
         
@@ -35,14 +43,36 @@ class BlogControllerTests: XCTestCase {
         steampress.setup(drop)
         
         viewFactory = CapturingViewFactory()
-        let blogController = BlogController(drop: drop, pathCreator: BlogPathCreator(blogPath: nil), viewFactory: viewFactory, postsPerPage: 5)
+        let pathCreator = BlogPathCreator(blogPath: nil)
+        let blogController = BlogController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, postsPerPage: 5)
         blogController.addRoutes()
+        
+        let blogAdminController = BlogAdminController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory)
+        blogAdminController.addRoutes()
         try drop.runCommands()
         
-        user = BlogUser(name: "Luke", username: "luke", password: "1234")
+        if loginUser {
+            let userCredentials = BlogUserCredentials(username: "luke", password: "1234", name: "Luke")
+            user = BlogUser(credentials: userCredentials)
+        }
+        else {
+            user = BlogUser(name: "Luke", username: "luke", password: "1234")
+        }
         try user.save()
         post = BlogPost(title: "Test Path", contents: "A long time ago", author: user, creationDate: Date(), slugUrl: "test-path")
         try post.save()
+    }
+    
+    func testBlogIndexGetsPostsInReverseOrder() throws {
+        
+    }
+    
+    func testBlogIndexGetsAllTags() throws {
+        
+    }
+    
+    func testBlogIndexGetsDisqusNameIfSetInConfig() throws {
+        
     }
     
     func testBlogPostRetrievedCorrectlyFromSlugUrl() throws {
@@ -69,6 +99,25 @@ class BlogControllerTests: XCTestCase {
         XCTAssertEqual(expectedName, viewFactory.disqusName)
     }
     
+//    func testUserPassedToBlogPostIfLoggedIn() throws {
+//        try setupDrop(loginUser: true)
+//        let loginRequest = try Request(method: .post, uri: "/admin/login/")
+//    }
+    
+    func testAuthorView() throws {
+        try setupDrop()
+        _ = try drop.respond(to: authorRequest)
+        
+        XCTAssertEqual(viewFactory.author?.username, user.username)
+        XCTAssertEqual(viewFactory.authorPosts?.count, 1)
+        XCTAssertEqual(viewFactory.authorPosts?.first?.title, post.title)
+        XCTAssertEqual(viewFactory.authorPosts?.first?.contents, post.contents)
+        XCTAssertEqual(viewFactory.isMyProfile, false)
+    }
+    
+    func testTagView() throws {
+        
+    }
 }
 
 import URI
@@ -95,7 +144,13 @@ class CapturingViewFactory: ViewFactory {
         return View(data: try "Test".makeBytes())
     }
     
-    func createProfileView(user: BlogUser, isMyProfile: Bool) throws -> View {
+    private(set) var author: BlogUser? = nil
+    private(set) var isMyProfile: Bool? = nil
+    private(set) var authorPosts: [BlogPost]? = nil
+    func createProfileView(user: BlogUser, isMyProfile: Bool, posts: [BlogPost]) throws -> View {
+        self.author = user
+        self.isMyProfile = isMyProfile
+        self.authorPosts = posts
         return View(data: try "Test".makeBytes())
     }
     

@@ -112,7 +112,9 @@ struct BlogController {
             throw Abort.notFound
         }
         
-        return try viewFactory.createProfileView(user: author, isMyProfile: false)
+        let posts = try author.posts()
+        
+        return try viewFactory.createProfileView(user: author, isMyProfile: false, posts: posts)
     }
     
     private func getDisqusName() -> String? {

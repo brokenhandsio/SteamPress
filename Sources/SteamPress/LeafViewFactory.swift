@@ -180,7 +180,7 @@ struct LeafViewFactory: ViewFactory {
         return try drop.view.make("blog/admin/resetPassword", parameters)
     }
     
-    func createProfileView(user: BlogUser, isMyProfile: Bool) throws -> View {
+    func createProfileView(user: BlogUser, isMyProfile: Bool, posts: [BlogPost]) throws -> View {
         var parameters: [String: Node] = [
             "user": try user.makeNode()
         ]
@@ -192,8 +192,8 @@ struct LeafViewFactory: ViewFactory {
             parameters["profilePage"] = true.makeNode()
         }
         
-        if try user.posts().count > 0 {
-            parameters["posts"] = try user.posts().makeNode(context: BlogPostContext.shortSnippet)
+        if posts.count > 0 {
+            parameters["posts"] = try posts.makeNode(context: BlogPostContext.shortSnippet)
         }
         
         return try drop.view.make("blog/profile", parameters)

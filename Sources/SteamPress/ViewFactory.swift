@@ -9,7 +9,7 @@ protocol ViewFactory {
     func createLoginView(loginWarning: Bool, errors: [String]?, username: String?, password: String?) throws -> View
     func createBlogAdminView(errors: [String]?) throws -> View
     func createResetPasswordView(errors: [String]?, passwordError: Bool?, confirmPasswordError: Bool?) throws -> View
-    func createProfileView(user: BlogUser, isMyProfile: Bool) throws -> View
+    func createProfileView(user: BlogUser, isMyProfile: Bool, posts: [BlogPost]) throws -> View
     
     // MARK: - Blog Controller
     func blogPostView(post: BlogPost, author: BlogUser, user: BlogUser?, disqusName: String?) throws -> View
