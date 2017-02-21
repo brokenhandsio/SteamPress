@@ -72,25 +72,17 @@ struct BlogController {
         guard let author = try blogPost.getAuthor() else {
             throw Abort.badRequest
         }
-                
-        var parameters = try Node(node: [
-                "post": try blogPost.makeNode(context: BlogPostContext.all),
-                "author": try author.makeNode(),
-                "blogPostPage": true.makeNode()
-            ])
+        
+        var loggedInUser: BlogUser? = nil
         
         do {
             if let user = try request.auth.user() as? BlogUser {
-                parameters["user"] = try user.makeNode()
+                loggedInUser = user
             }
         }
         catch {}
         
-        if let disqusName = getDisqusName() {
-            parameters["disqusName"] = disqusName.makeNode()
-        }
-        
-        return try drop.view.make("blog/blogpost", parameters)
+        return try viewFactory.blogPostView(post: blogPost, author: author, user: loggedInUser, disqusName: getDisqusName())
     }
     
     func tagViewHandler(request: Request, tagName: String) throws -> ResponseRepresentable {

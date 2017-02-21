@@ -6,6 +6,8 @@ struct LeafViewFactory: ViewFactory {
     
     let drop: Droplet
     
+    // MARK: - Admin Controller Views
+    
     func createBlogPostView(uri: URI, errors: [String]? = nil, title: String? = nil, contents: String? = nil, slugUrl: String? = nil, tags: String? = nil, isEditing: Bool = false, postToEdit: BlogPost? = nil) throws -> View {
         let titleError = (title == nil || (title?.isWhitespace())!) && errors != nil
         let contentsError = (contents == nil || (contents?.isWhitespace())!) && errors != nil
@@ -195,5 +197,26 @@ struct LeafViewFactory: ViewFactory {
         }
         
         return try drop.view.make("blog/profile", parameters)
+    }
+    
+    // MARK: - Blog Controller Views
+    
+    func blogPostView(post: BlogPost, author: BlogUser, user: BlogUser?, disqusName: String?) throws -> View {
+        
+        var parameters = try Node(node: [
+            "post": try post.makeNode(context: BlogPostContext.all),
+            "author": try author.makeNode(),
+            "blogPostPage": true.makeNode()
+            ])
+        
+        if let user = user {
+            parameters["user"] = try user.makeNode()
+        }
+        
+        if let disqusName = disqusName {
+            parameters["disqusName"] = disqusName.makeNode()
+        }
+        
+        return try drop.view.make("blog/blogpost", parameters)
     }
 }
