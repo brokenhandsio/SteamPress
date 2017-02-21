@@ -17,6 +17,44 @@ class BlogControllerTests: XCTestCase {
         ("testDisqusNamePassedToBlogPostIfSpecified", testDisqusNamePassedToBlogPostIfSpecified),
     ]
     
+    private var drop: Droplet!
+    private var viewFactory: CapturingViewFactory!
+    private var post: BlogPost!
+    private var user: BlogUser!
+    private var blogPostRequest: Request!
+    
+    override func setUp() {
+        blogPostRequest = try! Request(method: .get, uri: "/posts/test-path")
+    }
+    
+    func setupDrop(config: Config? = nil) throws {
+        drop = Droplet(arguments: ["dummy/path/", "prepare"], config: config)
+        drop.database = Database(MemoryDriver())
+        
+        let steampress = SteamPress.Provider(postsPerPage: 5)
+        steampress.setup(drop)
+        
+        viewFactory = CapturingViewFactory()
+        let blogController = BlogController(drop: drop, pathCreator: BlogPathCreator(blogPath: nil), viewFactory: viewFactory, postsPerPage: 5)
+        blogController.addRoutes()
+        try drop.runCommands()
+        
+        user = BlogUser(name: "Luke", username: "luke", password: "1234")
+        try user.save()
+        post = BlogPost(title: "Test Path", contents: "A long time ago", author: user, creationDate: Date(), slugUrl: "test-path")
+        try post.save()
+    }
+    
+    func testBlogPostRetrievedCorrectlyFromSlugUrl() throws {
+        try setupDrop()
+        _ = try drop.respond(to: blogPostRequest)
+        
+        XCTAssertEqual(viewFactory.blogPost?.title, post.title)
+        XCTAssertEqual(viewFactory.blogPost?.contents, post.contents)
+        XCTAssertEqual(viewFactory.blogPostAuthor?.name, user.name)
+        XCTAssertEqual(viewFactory.blogPostAuthor?.username, user.username)
+    }
+    
     func testDisqusNamePassedToBlogPostIfSpecified() throws {
         let expectedName = "steampress"
         let config = Config(try Node(node: [
@@ -24,28 +62,13 @@ class BlogControllerTests: XCTestCase {
                 "disqusName": expectedName.makeNode()
                 ])
         ]))
-        let drop = Droplet(arguments: ["dummy/path/", "prepare"], config: config)
-        drop.database = Database(MemoryDriver())
-        
-        let steampress = SteamPress.Provider(postsPerPage: 5, blogPath: "blog")
-        steampress.setup(drop)
-        
-        let viewFactory = CapturingViewFactory()
-        let blogController = BlogController(drop: drop, pathCreator: BlogPathCreator(blogPath: "blog"), viewFactory: viewFactory, postsPerPage: 5)
-        blogController.addRoutes()
-        try drop.runCommands()
-        
-        var user = BlogUser(name: "Luke", username: "luke", password: "1234")
-        try user.save()
-        var post = BlogPost(title: "Test Path", contents: "A long time ago", author: user, creationDate: Date(), slugUrl: "test-path")
-        try post.save()
-        
-        let blogPostRequest = try! Request(method: .get, uri: "/blog/posts/test-path")
+        try setupDrop(config: config)
         
         _ = try drop.respond(to: blogPostRequest)
         
         XCTAssertEqual(expectedName, viewFactory.disqusName)
     }
+    
 }
 
 import URI
@@ -76,8 +99,12 @@ class CapturingViewFactory: ViewFactory {
         return View(data: try "Test".makeBytes())
     }
     
+    private(set) var blogPost: BlogPost? = nil
+    private(set) var blogPostAuthor: BlogUser? = nil
     private(set) var disqusName: String? = nil
     func blogPostView(post: BlogPost, author: BlogUser, user: BlogUser?, disqusName: String?) throws -> View {
+        self.blogPost = post
+        self.blogPostAuthor = author
         self.disqusName = disqusName
         return View(data: try "Test".makeBytes())
     }
