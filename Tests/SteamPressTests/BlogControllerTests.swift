@@ -11,6 +11,7 @@ import XCTest
 @testable import Vapor
 import Fluent
 import HTTP
+import Foundation
 
 class BlogControllerTests: XCTestCase {
     static var allTests = [
