@@ -14,26 +14,10 @@ public struct Provider: Vapor.Provider {
     private let pathCreator: BlogPathCreator
 
     public func boot(_ drop: Droplet) {
-        // Database preperations
-        drop.preparations.append(BlogPost.self)
-        drop.preparations.append(BlogUser.self)
-        drop.preparations.append(BlogTag.self)
-        drop.preparations.append(Pivot<BlogPost, BlogTag>.self)
 
-        // Middleware
-        let authMiddleware = BlogAuthMiddleware()
-        drop.middleware.append(authMiddleware)
-
-        // Providers
-        let paginator = PaginatorProvider(useBootstrap4: true, paginationLabel: "Blog Post Pages")
-        drop.addProvider(paginator)
-
-        // Set up Leaf tag
-        if let leaf = drop.view as? LeafRenderer {
-            leaf.stem.register(Markdown())
-        }
-
-        let viewFactory = ViewFactory(drop: drop)
+        setup(drop)
+        
+        let viewFactory = LeafViewFactory(drop: drop)
 
         // Set up the controllers
         let blogController = BlogController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, postsPerPage: postsPerPage)
@@ -42,6 +26,27 @@ public struct Provider: Vapor.Provider {
         // Add the routes
         blogController.addRoutes()
         blogAdminController.addRoutes()
+    }
+    
+    func setup(_ drop: Droplet) {
+        // Database preperations
+        drop.preparations.append(BlogPost.self)
+        drop.preparations.append(BlogUser.self)
+        drop.preparations.append(BlogTag.self)
+        drop.preparations.append(Pivot<BlogPost, BlogTag>.self)
+        
+        // Middleware
+        let authMiddleware = BlogAuthMiddleware()
+        drop.middleware.append(authMiddleware)
+        
+        // Providers
+        let paginator = PaginatorProvider(useBootstrap4: true, paginationLabel: "Blog Post Pages")
+        drop.addProvider(paginator)
+        
+        // Set up Leaf tag
+        if let leaf = drop.view as? LeafRenderer {
+            leaf.stem.register(Markdown())
+        }
     }
 
     public init(config: Config) throws {

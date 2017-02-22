@@ -36,32 +36,11 @@ struct BlogController {
     
     func indexHandler(request: Request) throws -> ResponseRepresentable {
         let tags = try BlogTag.all()
-        var parameters: [String: Node] = [:]
-        
+        let allposts = try BlogPost.all()
+        print("We have \(allposts.count) posts")
         let paginatedBlogPosts = try BlogPost.query().sort("created", .descending).paginator(postsPerPage, request: request)
 
-        if paginatedBlogPosts.totalPages ?? 0 > 0 {
-            parameters["posts"] = try paginatedBlogPosts.makeNode(context: BlogPostContext.longSnippet)
-        }
-        
-        if tags.count > 0 {
-            parameters["tags"] = try tags.makeNode()
-        }
-        
-        do {
-            if let user = try request.auth.user() as? BlogUser {
-                parameters["user"] = try user.makeNode()
-            }
-        }
-        catch {}
-        
-        parameters["blogIndexPage"] = true
-        
-        if let disqusName = getDisqusName() {
-            parameters["disqusName"] = disqusName.makeNode()
-        }
-        
-        return try drop.view.make("blog/blog", parameters)
+        return try viewFactory.blogIndexView(paginatedPosts: paginatedBlogPosts, tags: tags, loggedInUser: getLoggedInUser(in: request), disqusName: getDisqusName())
     }
     
     func blogPostHandler(request: Request, blogSlugUrl: String) throws -> ResponseRepresentable {
@@ -72,25 +51,8 @@ struct BlogController {
         guard let author = try blogPost.getAuthor() else {
             throw Abort.badRequest
         }
-                
-        var parameters = try Node(node: [
-                "post": try blogPost.makeNode(context: BlogPostContext.all),
-                "author": try author.makeNode(),
-                "blogPostPage": true.makeNode()
-            ])
         
-        do {
-            if let user = try request.auth.user() as? BlogUser {
-                parameters["user"] = try user.makeNode()
-            }
-        }
-        catch {}
-        
-        if let disqusName = getDisqusName() {
-            parameters["disqusName"] = disqusName.makeNode()
-        }
-        
-        return try drop.view.make("blog/blogpost", parameters)
+        return try viewFactory.blogPostView(post: blogPost, author: author, user: getLoggedInUser(in: request), disqusName: getDisqusName())
     }
     
     func tagViewHandler(request: Request, tagName: String) throws -> ResponseRepresentable {
@@ -99,20 +61,7 @@ struct BlogController {
         }
         let posts = try tag.blogPosts()
         
-        var parameters: [String: Node] = [
-            "tag": try tag.makeNode(),
-            "tagPage": true.makeNode(),
-            "posts": try posts.makeNode(context: BlogPostContext.shortSnippet)
-        ]
-        
-        do {
-            if let user = try request.auth.user() as? BlogUser {
-                parameters["user"] = try user.makeNode()
-            }
-        }
-        catch {}
-        
-        return try drop.view.make("blog/tag", parameters)
+        return try viewFactory.tagView(tag: tag, posts: posts, user: getLoggedInUser(in: request), disqusName: getDisqusName())
     }
     
     func authorViewHandler(request: Request, authorUsername: String) throws -> ResponseRepresentable {
@@ -120,7 +69,22 @@ struct BlogController {
             throw Abort.notFound
         }
         
-        return try viewFactory.createProfileView(user: author, isMyProfile: false)
+        let posts = try author.posts()
+        
+        return try viewFactory.createProfileView(user: author, isMyProfile: false, posts: posts, disqusName: getDisqusName())
+    }
+    
+    private func getLoggedInUser(in request: Request) -> BlogUser? {
+        var loggedInUser: BlogUser? = nil
+        
+        do {
+            if let user = try request.auth.user() as? BlogUser {
+                loggedInUser = user
+            }
+        }
+        catch {}
+        
+        return loggedInUser
     }
     
     private func getDisqusName() -> String? {
