@@ -151,6 +151,7 @@ This is the page for viewing a profile of a user. This is generally used for vie
 * `myProfile` - a boolean set to true if we are viewing the my profile page
 * `profilePage` - a boolean set to to true if we are viewing the profile page
 * `posts` - all the posts the user has written if they have written any in `shortSnippet` form
+* `user` - the currently logged in user if a user is currently logged in
 * `disqusName` - the name of your Disqus site if configured
 
 ## Admin Site

@@ -181,9 +181,9 @@ struct LeafViewFactory: ViewFactory {
         return try drop.view.make("blog/admin/resetPassword", parameters)
     }
 
-    func createProfileView(user: BlogUser, isMyProfile: Bool, posts: [BlogPost], disqusName: String?) throws -> View {
+    func createProfileView(author: BlogUser, isMyProfile: Bool, posts: [BlogPost], loggedInUser: BlogUser?, disqusName: String?) throws -> View {
         var parameters: [String: Node] = [
-            "author": try user.makeNode()
+            "author": try author.makeNode()
         ]
 
         if isMyProfile {
@@ -195,6 +195,10 @@ struct LeafViewFactory: ViewFactory {
 
         if posts.count > 0 {
             parameters["posts"] = try posts.makeNode(context: BlogPostContext.shortSnippet)
+        }
+        
+        if let user = loggedInUser {
+            parameters["user"] = try user.makeNode()
         }
 
         if let disqusName = disqusName {

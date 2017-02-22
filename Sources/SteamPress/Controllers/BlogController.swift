@@ -71,7 +71,7 @@ struct BlogController {
         
         let posts = try author.posts()
         
-        return try viewFactory.createProfileView(user: author, isMyProfile: false, posts: posts, disqusName: getDisqusName())
+        return try viewFactory.createProfileView(author: author, isMyProfile: false, posts: posts, loggedInUser: getLoggedInUser(in: request), disqusName: getDisqusName())
     }
     
     private func getLoggedInUser(in request: Request) -> BlogUser? {

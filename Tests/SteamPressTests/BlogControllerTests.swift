@@ -217,8 +217,8 @@ class CapturingViewFactory: ViewFactory {
     private(set) var isMyProfile: Bool? = nil
     private(set) var authorPosts: [BlogPost]? = nil
     private(set) var authorDisqusName: String? = nil
-    func createProfileView(user: BlogUser, isMyProfile: Bool, posts: [BlogPost], disqusName: String?) throws -> View {
-        self.author = user
+    func createProfileView(author: BlogUser, isMyProfile: Bool, posts: [BlogPost], loggedInUser: BlogUser?, disqusName: String?) throws -> View {
+        self.author = author
         self.isMyProfile = isMyProfile
         self.authorPosts = posts
         self.authorDisqusName = disqusName
