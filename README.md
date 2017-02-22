@@ -10,7 +10,7 @@ SteamPress is a Swift blogging engine for use with the Vapor Framework to deploy
 
 The blog can either be used as the root of your website (i.e. appearing at https://www.acme.org) or in a subpath (i.e. https://www.acme.org/blog/).
 
-There is an example of how it can work in a site (and what it requires in terms of Leaf templates and the parameteres is passes to them) at https://github.com/brokenhandsio/SteamPressExample.
+There is an example of how it can work in a site (and what it requires in terms of Leaf templates and the parameters is passes to them) at https://github.com/brokenhandsio/SteamPressExample.
 
 ## Features:
 
@@ -72,7 +72,7 @@ drop.addProvider(steampress)
 This will initialise it as the root path of your site. If you wish to have it in a subdirectory, initialise it with:
 
 ```swift
-let steamPress = SteamPress.Provider(postsPerPage: 5, blogPath: "blog")
+let steampress = SteamPress.Provider(postsPerPage: 5, blogPath: "blog")
 drop.addProvider(steampress)
 ```
 
@@ -162,7 +162,7 @@ This is the main Admin page for the blog where you can create and edit users and
 
 * `users` - all the users for the site
 * `posts` - all the posts that have been written if there are any, with the `all` Context
-* `errors` - any error messages for errors that have occured when trying to delete posts or users (for instance trying to delete yourself or the last user)
+* `errors` - any error messages for errors that have occurred when trying to delete posts or users (for instance trying to delete yourself or the last user)
 * `blogAdminPage` - a boolean set to true, useful for navigation
 
 ### `login.leaf`
@@ -171,7 +171,7 @@ This is the page for logging in to the admin section of the blog. The parameters
 
 * `usernameError` - a boolean set if there was an issue with the username
 * `passwordError` - a boolean set if there was an error with the password (note that we do not pass any password submitted back to any pages if there was an error for security reasons)
-* `usernameSupplied` - the username supplied (if any) when originally submitting the login for and there (useful for prepopulating the form)
+* `usernameSupplied` - the username supplied (if any) when originally submitting the login for and there (useful for pre-populating the form)
 * `errors` - an array of error messages if there were any errors logging in
 
 ### `resetPassword.leaf`
@@ -191,23 +191,23 @@ This is the page for creating a new blog post, or editing an existing one. The p
 * `errors` - an array of error messages if there were any errors creating or editing the blog post
 * `titleSupplied` - the title of the blog post to edit, or the post that failed to be created
 * `contentsSupplied` - the contents of the blog post to edit, or the post that failed to be created
-* `tagssSupplied` - a space-seperated string of all of the tags that have been specified for the blog post
+* `tagsSupplied` - a space-separated string of all of the tags that have been specified for the blog post
 * `editing` - a boolean set to true if we are currently editing the a blog post rather than creating a new one
 * `post` - the post object we are currently editing
 * `createBlogPostPage` - a boolean set to true, useful for the navbar etc
 
 ### `createLogin.leaf`
 
-This is the page for creating a nw user, or editing an existing one. The parameters are:
+This is the page for creating a new user, or editing an existing one. The parameters are:
 
 * `nameError` - a boolean set if there was an error with the name
 * `usernameError` - a boolean set if there was an error with the username
 * `errors` - an array of error messages if there were any errors editing or creating the user
 * `nameSupplied` - the name of the user we are editing or that we failed to create
-* `usernameSupplied` - the userame of the user we are editing or that we failed to create
+* `usernameSupplied` - the username of the user we are editing or that we failed to create
 * `passwordError` - a boolean set to true if there was an error with the password
 * `confirmPasswordError` - a boolean set to true if there was an error with the password confirm
-* `resetPasswordOnLoginSupplied` - a boolean set to true if the edit/create submission was asked to reset the users password on next login (this is only supplied in an error so you can prepopulate the form for a user to correct without losing any information)
+* `resetPasswordOnLoginSupplied` - a boolean set to true if the edit/create submission was asked to reset the users password on next login (this is only supplied in an error so you can pre-populate the form for a user to correct without losing any information)
 * `editing` - a boolean set to true if we are editing a user
 * `userId` - this is the ID of the user if we are editing one. This allows you to send the edit user `POST` back to the correct route
 
@@ -268,7 +268,7 @@ I anticipate SteamPress staying on a version 0 for some time, whilst some of the
 
 On the roadmap we have:
 
-* Code tidyup - in some places in the code you can tell it evolved quickly from a hacky spike - there is a lot of repeated code lying around and I'm not taking advatange of all of Swift or Vapor; this needs to be improved
+* Code tidyup - in some places in the code you can tell it evolved quickly from a hacky spike - there is a lot of repeated code lying around and I'm not taking advantage of all of Swift or Vapor; this needs to be improved
 * Proper testing! Even now I have had too many bugs that would have been picked up by unit tests so I need to start them! Better late than never right...
 * JSON endpoints for validating things like tags
 * Image uploading - you can link to images easily but can't upload any without redeploying the site - I may implement some functionality for this depending on whether people want images going to the same site as the code or something like an S3 bucket (I'm leaning towards the S3 option so answers on a postcard!)
@@ -276,4 +276,4 @@ On the roadmap we have:
 * Sitemap/RSS feed - again for SEO
 * AMP endpoints for posts
 * Searching through the blog
-* Saving state when logging in - if you go to a page (e.g. edit post) but need to be logged in, it would be great if you could head back to that page once logged in. Also, if you have edited a post and your session expires before you post it, wouldn't it be great if it rememebered everything!
+* Saving state when logging in - if you go to a page (e.g. edit post) but need to be logged in, it would be great if you could head back to that page once logged in. Also, if you have edited a post and your session expires before you post it, wouldn't it be great if it remembered everything!
