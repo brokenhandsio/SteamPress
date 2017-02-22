@@ -119,7 +119,7 @@ This is the index page of the blog. The parameters it will receive are:
 * `posts` - a Node containing data about the posts and metadata for the paginator. You can access the posts by calling the `.data` object on it, which is an array of blog posts if there are any. The posts will be made with a `longSnippet` context (see below)
 * `tags` - an array of tags if there are any
 * `user` - the currently logged in user if a user is currently logged in
-* `disqusName` - the name of your Disqus site it configured
+* `disqusName` - the name of your Disqus site if configured
 * `blogIndexPage` - a boolean saying we are on the index page of the blog - useful for navbars
 
 
@@ -131,25 +131,27 @@ This is the page for viewing a single entire blog post. The parameters set are:
 * `author` - the author of the post
 * `blogPostPage` - a boolean saying we are on the blog post page
 * `user` - the currently logged in user if a user is currently logged in
-* `disqusName` - the name of your Disqus site it configured
+* `disqusName` - the name of your Disqus site if configured
 
 ### `tag.leaf`
 
 This is the page for a tag. A blog post can be tagged with many tags and a tag can be tagged on many blog posts. This page is generally used for viewing all posts under that tag. The parameters are:
 
 * `tag` - the tag
-* `posts` - all the posts that have been tagged with this tag, in `shortSnippet` form
+* `posts` - all the posts that have been tagged with this tag, in `longSnippet` form
 * `tagPage` - a boolean saying we are on the tag page
 * `user` - the currently logged in user if a user is currently logged in
+* `disqusName` - the name of your Disqus site if configured
 
 ### `profile.leaf`
 
 This is the page for viewing a profile of a user. This is generally used for viewing all posts written by a user, as well as some information about them. This template is also used by the Admin section for viewing a 'My Profile' page when logged in. The parameters it can have set are:
 
-* `user` - the user the page is for
+* `author` - the user the page is for
 * `myProfile` - a boolean set to true if we are viewing the my profile page
 * `profilePage` - a boolean set to to true if we are viewing the profile page
 * `posts` - all the posts the user has written if they have written any in `shortSnippet` form
+* `disqusName` - the name of your Disqus site if configured
 
 ## Admin Site
 
