@@ -116,7 +116,7 @@ The basic structure of your `Resources/View` directory should be:
 
 This is the index page of the blog. The parameters it will receive are:
 
-* `posts` - a Node containing data about the posts and metadata for the paginator. You can access the posts by calling the `.data` object on it, which is an array of blog posts if there are any. The posts will be made with a `longSnippet` context (see below)
+* `posts` - a Node containing data about the posts and metadata for the paginator. You can access the posts by calling the `.data` object on it, which is an array of blog posts if there are any, in date descending order. The posts will be made with a `longSnippet` context (see below)
 * `tags` - an array of tags if there are any
 * `user` - the currently logged in user if a user is currently logged in
 * `disqusName` - the name of your Disqus site if configured
@@ -138,7 +138,7 @@ This is the page for viewing a single entire blog post. The parameters set are:
 This is the page for a tag. A blog post can be tagged with many tags and a tag can be tagged on many blog posts. This page is generally used for viewing all posts under that tag. The parameters are:
 
 * `tag` - the tag
-* `posts` - all the posts that have been tagged with this tag, in `longSnippet` form
+* `posts` - a Node containing data about the posts and metadata for the paginator. You can access the posts by calling the `.data` object on it, which is an array of blog posts if there are any, in date descending order. The posts will be made with a `longSnippet` context (see below)
 * `tagPage` - a boolean saying we are on the tag page
 * `user` - the currently logged in user if a user is currently logged in
 * `disqusName` - the name of your Disqus site if configured

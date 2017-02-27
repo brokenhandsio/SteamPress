@@ -168,9 +168,9 @@ class BlogControllerTests: XCTestCase {
         try setupDrop()
         _ = try drop.respond(to: tagRequest)
         
-        XCTAssertEqual(1, viewFactory.tagPosts?.count)
-        XCTAssertEqual(post.title, viewFactory.tagPosts?.first?.title)
-        XCTAssertEqual("tatooine", viewFactory.tag?.name)
+        XCTAssertEqual(viewFactory.tagPosts?.total, 1)
+        XCTAssertEqual(viewFactory.tagPosts?.data?[0].title, post.title)
+        XCTAssertEqual(viewFactory.tag?.name, "tatooine")
     }
     
     func testTagViewGetsDisquqNameIfSet() throws {
@@ -236,12 +236,12 @@ class CapturingViewFactory: ViewFactory {
     }
     
     private(set) var tag: BlogTag? = nil
-    private(set) var tagPosts: [BlogPost]? = nil
+    private(set) var tagPosts: Paginator<BlogPost>? = nil
     private(set) var tagUser: BlogUser? = nil
     private(set) var tagDisqusName: String? = nil
-    func tagView(tag: BlogTag, posts: [BlogPost], user: BlogUser?, disqusName: String?) throws -> View {
+    func tagView(tag: BlogTag, paginatedPosts: Paginator<BlogPost>, user: BlogUser?, disqusName: String?) throws -> View {
         self.tag = tag
-        self.tagPosts = posts
+        self.tagPosts = paginatedPosts
         self.tagUser = user
         self.tagDisqusName = disqusName
         

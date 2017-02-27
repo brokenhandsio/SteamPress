@@ -36,8 +36,6 @@ struct BlogController {
     
     func indexHandler(request: Request) throws -> ResponseRepresentable {
         let tags = try BlogTag.all()
-        let allposts = try BlogPost.all()
-        print("We have \(allposts.count) posts")
         let paginatedBlogPosts = try BlogPost.query().sort("created", .descending).paginator(postsPerPage, request: request)
 
         return try viewFactory.blogIndexView(paginatedPosts: paginatedBlogPosts, tags: tags, loggedInUser: getLoggedInUser(in: request), disqusName: getDisqusName())
@@ -59,9 +57,9 @@ struct BlogController {
         guard let tag = try BlogTag.query().filter("name", tagName).first() else {
             throw Abort.notFound
         }
-        let posts = try tag.blogPosts()
+        let paginatedBlogPosts = try BlogPost.query().sort("created", .descending).paginator(postsPerPage, request: request)
         
-        return try viewFactory.tagView(tag: tag, posts: posts, user: getLoggedInUser(in: request), disqusName: getDisqusName())
+        return try viewFactory.tagView(tag: tag, paginatedPosts: paginatedBlogPosts, user: getLoggedInUser(in: request), disqusName: getDisqusName())
     }
     
     func authorViewHandler(request: Request, authorUsername: String) throws -> ResponseRepresentable {

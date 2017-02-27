@@ -255,15 +255,15 @@ struct LeafViewFactory: ViewFactory {
         return try drop.view.make("blog/blogpost", parameters)
     }
 
-    func tagView(tag: BlogTag, posts: [BlogPost], user: BlogUser?, disqusName: String?) throws -> View {
+    func tagView(tag: BlogTag, paginatedPosts: Paginator<BlogPost>, user: BlogUser?, disqusName: String?) throws -> View {
 
         var parameters: [String: Node] = [
             "tag": try tag.makeNode(),
             "tagPage": true.makeNode(),
         ]
 
-        if posts.count > 0 {
-            parameters["posts"] = try posts.makeNode(context: BlogPostContext.longSnippet)
+        if paginatedPosts.totalPages ?? 0 > 0 {
+            parameters["posts"] = try paginatedPosts.makeNode(context: BlogPostContext.longSnippet)
         }
 
         if let user = user {
