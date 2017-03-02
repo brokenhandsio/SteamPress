@@ -55,8 +55,11 @@ struct BlogAdminController {
     func createPostPostHandler(_ request: Request) throws -> ResponseRepresentable {
         let rawTitle = request.data["inputTitle"]?.string
         let rawContents = request.data["inputPostContents"]?.string
-        let rawTags = request.data["inputTags"]?.string
+        let rawTags = request.data["inputTags"]?.array as? [Node]
+        let rawTag = request.data["inputTags"]?.array as? [String]
         let rawSlugUrl = request.data["inputSlugUrl"]?.string
+        
+        print("Raw tag input is \(request.data["inputTags"]), raw Tag is \(rawTag)")
 
         if let createPostErrors = validatePostCreation(title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl) {
             return try viewFactory.createBlogPostView(uri: request.uri, errors: createPostErrors, title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl, tags: rawTags, isEditing: false, postToEdit: nil)
@@ -68,18 +71,22 @@ struct BlogAdminController {
 
         let creationDate = Date()
 
-        // Sort out our tags if we have any
-        let tags = parseTags(rawTags)
-
         // Make sure slugUrl is unique
         slugUrl = BlogPost.generateUniqueSlugUrl(from: slugUrl)
 
         var newPost = BlogPost(title: title, contents: contents, author: user, creationDate: creationDate, slugUrl: slugUrl)
         try newPost.save()
+        
+        if rawTags == nil {
+            print("Tags == nil")
+        }
 
         // Save the tags
-        for tagString in tags {
-            try BlogTag.addTag(tagString, to: newPost)
+        for tagNode in rawTags ?? [] {
+            if let tagName = tagNode.string {
+                print("Adding tag \(tagName) to blog post")
+                try BlogTag.addTag(tagName, to: newPost)
+            }
         }
 
         // Should probably redirect to the page once created
@@ -106,20 +113,14 @@ struct BlogAdminController {
 
     func editPostHandler(request: Request, post: BlogPost) throws -> ResponseRepresentable {
         let tags = try post.tags()
-        var tagsString = tags.reduce("",{$0 + $1.name + " "})
-        var tagsSupplied: String? = nil
-        if !tagsString.isEmpty {
-            // Remove final ' '
-            tagsString.remove(at: tagsString.index(before: tagsString.endIndex))
-            tagsSupplied = tagsString
-        }
-        return try viewFactory.createBlogPostView(uri: request.uri, errors: nil, title: post.title, contents: post.contents, slugUrl: post.slugUrl, tags: tagsSupplied, isEditing: true, postToEdit: post)
+        let tagsArray: [Node] = tags.map { $0.name.makeNode() }
+        return try viewFactory.createBlogPostView(uri: request.uri, errors: nil, title: post.title, contents: post.contents, slugUrl: post.slugUrl, tags: tagsArray, isEditing: true, postToEdit: post)
     }
 
     func editPostPostHandler(request: Request, post: BlogPost) throws -> ResponseRepresentable {
         let rawTitle = request.data["inputTitle"]?.string
         let rawContents = request.data["inputPostContents"]?.string
-        let rawTags = request.data["inputTags"]?.string
+        let rawTags = request.data["inputTags"]?.array as? [Node]
         let rawSlugUrl = request.data["inputSlugUrl"]?.string
 
         if let errors = validatePostCreation(title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl) {
@@ -142,34 +143,35 @@ struct BlogAdminController {
         let existingString = existing.map { $0.name }
         let newTags: [String]
 
-        if let newTagsString = rawTags {
-            newTags = parseTags(newTagsString)
-        }
-        else {
-            newTags = []
-        }
+        // TODO
+//        if let newTagsString = rawTags {
+//            newTags = parseTags(newTagsString)
+//        }
+//        else {
+//            newTags = []
+//        }
 
         // Work out new tags and tags to delete
-        let existingSet:Set<String> = Set(existingString)
-        let newTagSet:Set<String> = Set(newTags)
-
-        let tagsToDelete = existingSet.subtracting(newTagSet)
-        let tagsToAdd = newTagSet.subtracting(existingSet)
-
-        for deleteTag in tagsToDelete {
-            let tag = try BlogTag.query().filter("name", deleteTag).first()
-            guard let tagToCleanUp = tag else {
-                throw Abort.badRequest
-            }
-            try tagToCleanUp.deletePivot(for: post)
-            if try tagToCleanUp.blogPosts().count == 0 {
-                try tagToCleanUp.delete()
-            }
-        }
-
-        for newTagString in tagsToAdd {
-            try BlogTag.addTag(newTagString, to: post)
-        }
+//        let existingSet:Set<String> = Set(existingString)
+//        let newTagSet:Set<String> = Set(newTags)
+//
+//        let tagsToDelete = existingSet.subtracting(newTagSet)
+//        let tagsToAdd = newTagSet.subtracting(existingSet)
+//
+//        for deleteTag in tagsToDelete {
+//            let tag = try BlogTag.query().filter("name", deleteTag).first()
+//            guard let tagToCleanUp = tag else {
+//                throw Abort.badRequest
+//            }
+//            try tagToCleanUp.deletePivot(for: post)
+//            if try tagToCleanUp.blogPosts().count == 0 {
+//                try tagToCleanUp.delete()
+//            }
+//        }
+//
+//        for newTagString in tagsToAdd {
+//            try BlogTag.addTag(newTagString, to: post)
+//        }
 
         try post.save()
 
@@ -551,16 +553,6 @@ struct BlogAdminController {
 
         return (userSaveErrors, passwordError, confirmPasswordError)
 
-
-    }
-
-    fileprivate func parseTags(_ tagsString: String?) -> [String] {
-        guard let tagsString = tagsString else {
-            return []
-        }
-
-        let tags = tagsString.components(separatedBy: " ")
-        return tags
     }
 
 }

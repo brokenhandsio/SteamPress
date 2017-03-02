@@ -9,6 +9,7 @@ struct BlogController {
     fileprivate let blogPostsPath = "posts"
     fileprivate let tagsPath = "tags"
     fileprivate let authorsPath = "authors"
+    fileprivate let apiPath = "api"
     fileprivate let drop: Droplet
     fileprivate let pathCreator: BlogPathCreator
     fileprivate let viewFactory: ViewFactory
@@ -29,6 +30,7 @@ struct BlogController {
             index.get(blogPostsPath, String.self, handler: blogPostHandler)
             index.get(tagsPath, String.self, handler: tagViewHandler)
             index.get(authorsPath, String.self, handler: authorViewHandler)
+            index.get(apiPath, tagsPath, handler: tagApiHandler)
         }
     }
     
@@ -70,6 +72,10 @@ struct BlogController {
         let posts = try author.posts()
         
         return try viewFactory.createProfileView(author: author, isMyProfile: false, posts: posts, loggedInUser: getLoggedInUser(in: request), disqusName: getDisqusName())
+    }
+    
+    func tagApiHandler(request: Request) throws -> ResponseRepresentable {
+        return try BlogTag.all().makeJSON()
     }
     
     private func getLoggedInUser(in request: Request) -> BlogUser? {
