@@ -55,14 +55,20 @@ struct BlogAdminController {
     func createPostPostHandler(_ request: Request) throws -> ResponseRepresentable {
         let rawTitle = request.data["inputTitle"]?.string
         let rawContents = request.data["inputPostContents"]?.string
-        let rawTags = request.data["inputTags"]?.array as? [Node]
-        let rawTag = request.data["inputTags"]?.array as? [String]
+        let rawTags = request.data["inputTags"]?.array //as? [Node] ?? (request.data["inputTags"]?.array as? [String]).map { $0.makeNode() } ?? []
         let rawSlugUrl = request.data["inputSlugUrl"]?.string
         
-        print("Raw tag input is \(request.data["inputTags"]), raw Tag is \(rawTag)")
+        var tagsArray: [Node] = []
+        
+        if let tagsNodeArray = rawTags as? [Node] {
+            tagsArray = tagsNodeArray
+        }
+        else if let tagsStringArray = rawTags as? [String] {
+            tagsArray = tagsStringArray.map { $0.makeNode() }
+        }
 
         if let createPostErrors = validatePostCreation(title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl) {
-            return try viewFactory.createBlogPostView(uri: request.uri, errors: createPostErrors, title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl, tags: rawTags, isEditing: false, postToEdit: nil)
+            return try viewFactory.createBlogPostView(uri: request.uri, errors: createPostErrors, title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl, tags: tagsArray, isEditing: false, postToEdit: nil)
         }
 
         guard let user = try request.auth.user() as? BlogUser, let title = rawTitle, let contents = rawContents, var slugUrl = rawSlugUrl else {
@@ -76,13 +82,9 @@ struct BlogAdminController {
 
         var newPost = BlogPost(title: title, contents: contents, author: user, creationDate: creationDate, slugUrl: slugUrl)
         try newPost.save()
-        
-        if rawTags == nil {
-            print("Tags == nil")
-        }
 
         // Save the tags
-        for tagNode in rawTags ?? [] {
+        for tagNode in tagsArray {
             if let tagName = tagNode.string {
                 print("Adding tag \(tagName) to blog post")
                 try BlogTag.addTag(tagName, to: newPost)
