@@ -191,7 +191,7 @@ This is the page for creating a new blog post, or editing an existing one. The p
 * `errors` - an array of error messages if there were any errors creating or editing the blog post
 * `titleSupplied` - the title of the blog post to edit, or the post that failed to be created
 * `contentsSupplied` - the contents of the blog post to edit, or the post that failed to be created
-* `tagsSupplied` - a space-separated string of all of the tags that have been specified for the blog post
+* `tagsSupplied` - an array of all of the tags that have been specified for the blog post
 * `editing` - a boolean set to true if we are currently editing the a blog post rather than creating a new one
 * `post` - the post object we are currently editing
 * `createBlogPostPage` - a boolean set to true, useful for the navbar etc
@@ -257,6 +257,12 @@ LeafMarkdown allows you to render markdown as HTML in your Leaf files. To use, j
 
 This will convert the `Node` object `myObject`'s `markdownContent` to HTML (you pass in `myObject` as a parameter to your Leaf view). It uses CommonMark under the hood, but for more details, see the [LeafMarkdown repo](https://github.com/brokenhandsio/LeafMarkdown).
 
+# API
+
+SteamPress also contains an API for accessing certain things that may be useful. The current endpoints are:
+
+* `/<blog-path>/api/tags/` - returns all the tags that have been saved in JSON
+
 # Known issues
 
 * When the admin user is created when first accessing the login screen, sometimes two are created so you need to use the first password displayed. You can then delete the second Admin user in the Admin pane.
@@ -270,7 +276,6 @@ On the roadmap we have:
 
 * Code tidyup - in some places in the code you can tell it evolved quickly from a hacky spike - there is a lot of repeated code lying around and I'm not taking advantage of all of Swift or Vapor; this needs to be improved
 * Proper testing! Even now I have had too many bugs that would have been picked up by unit tests so I need to start them! Better late than never right...
-* JSON endpoints for validating things like tags
 * Image uploading - you can link to images easily but can't upload any without redeploying the site - I may implement some functionality for this depending on whether people want images going to the same site as the code or something like an S3 bucket (I'm leaning towards the S3 option so answers on a postcard!)
 * Blog drafts - it would be nice not to publish posts until you want to
 * Sitemap/RSS feed - again for SEO
