@@ -12,7 +12,6 @@ struct BlogAdminController {
     fileprivate let pathCreator: BlogPathCreator
     fileprivate let viewFactory: ViewFactory
 
-    
     // MARK: - Initialiser
     init(drop: Droplet, pathCreator: BlogPathCreator, viewFactory: ViewFactory) {
         self.drop = drop
@@ -56,7 +55,7 @@ struct BlogAdminController {
     func createPostPostHandler(_ request: Request) throws -> ResponseRepresentable {
         let rawTitle = request.data["inputTitle"]?.string
         let rawContents = request.data["inputPostContents"]?.string
-        let rawTags = request.data["inputTags"]?.array //as? [Node] ?? (request.data["inputTags"]?.array as? [String]).map { $0.makeNode() } ?? []
+        let rawTags = request.data["inputTags"]?.array
         let rawSlugUrl = request.data["inputSlugUrl"]?.string
         
         // I must be able to inline all of this
@@ -475,7 +474,6 @@ struct BlogAdminController {
         }
 
         return createPostErrors
-
     }
 
     private func validateUserSaveDataExists(edit: Bool, name: String?, username: String?, password: String?, confirmPassword: String?) -> ([String]?, Bool?, Bool?) {
@@ -556,7 +554,6 @@ struct BlogAdminController {
         }
 
         return (userSaveErrors, passwordError, confirmPasswordError)
-
     }
 
 }
