@@ -12,6 +12,7 @@ struct BlogAdminController {
     fileprivate let pathCreator: BlogPathCreator
     fileprivate let viewFactory: ViewFactory
 
+    
     // MARK: - Initialiser
     init(drop: Droplet, pathCreator: BlogPathCreator, viewFactory: ViewFactory) {
         self.drop = drop
@@ -87,7 +88,6 @@ struct BlogAdminController {
         // Save the tags
         for tagNode in tagsArray {
             if let tagName = tagNode.string {
-                print("Adding tag \(tagName) to blog post")
                 try BlogTag.addTag(tagName, to: newPost)
             }
         }
@@ -153,7 +153,6 @@ struct BlogAdminController {
 
         let existing = try post.tags()
         let existingStringArray = existing.map { $0.name }
-        
         let newTagsStringArray = tagsArray.map { $0.string ?? "" }.filter { $0 != "" }
 
         // Work out new tags and tags to delete
