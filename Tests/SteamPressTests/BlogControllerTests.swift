@@ -60,7 +60,7 @@ class BlogControllerTests: XCTestCase {
         
         if loginUser {
             let userCredentials = BlogUserCredentials(username: "luke", password: "1234", name: "Luke")
-            user = BlogUser(credentials: userCredentials)
+            user = try BlogUser(credentials: userCredentials)
         }
         else {
             user = BlogUser(name: "Luke", username: "luke", password: "1234")
