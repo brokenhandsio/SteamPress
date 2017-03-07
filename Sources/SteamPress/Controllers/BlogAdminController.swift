@@ -268,7 +268,7 @@ struct BlogAdminController {
 
         if let password = rawPassword {
             let newCreds = BlogUserCredentials(username: username, password: password, name: name)
-            let newUserPassword = BlogUser(credentials: newCreds)
+            let newUserPassword = try BlogUser(credentials: newCreds)
             userToUpdate.password = newUserPassword.password
         }
 
@@ -444,7 +444,7 @@ struct BlogAdminController {
 
         // Use the credentials class to hash the password
         let newCreds = BlogUserCredentials(username: user.username, password: password, name: user.name)
-        let updatedUser = BlogUser(credentials: newCreds)
+        let updatedUser = try BlogUser(credentials: newCreds)
         user.password = updatedUser.password
         user.resetPasswordRequired = false
         try user.save()

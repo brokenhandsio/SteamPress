@@ -63,8 +63,8 @@ final class BlogUser: Model {
 
 extension BlogUser: Auth.User {
     
-    convenience init(credentials: BlogUserCredentials) {
-        self.init(name: credentials.name ?? "", username: credentials.username, password: BCrypt.hash(password: credentials.password))
+    convenience init(credentials: BlogUserCredentials) throws {
+        self.init(name: credentials.name ?? "", username: credentials.username, password: try BCrypt.digest(password: credentials.password))
     }
     
     static func register(credentials: Credentials) throws -> Auth.User {
@@ -72,7 +72,7 @@ extension BlogUser: Auth.User {
             throw Abort.custom(status: .forbidden, message: "Unsupported credentials type \(type(of: credentials))")
         }
         
-        let user = BlogUser(credentials: usernamePassword)
+        let user = try BlogUser(credentials: usernamePassword)
         return user
     }
     
