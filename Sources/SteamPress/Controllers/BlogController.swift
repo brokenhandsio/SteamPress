@@ -52,7 +52,7 @@ struct BlogController {
             throw Abort.badRequest
         }
         
-        return try viewFactory.blogPostView(post: blogPost, author: author, user: getLoggedInUser(in: request), disqusName: getDisqusName())
+        return try viewFactory.blogPostView(uri: request.uri, post: blogPost, author: author, user: getLoggedInUser(in: request), disqusName: getDisqusName())
     }
     
     func tagViewHandler(request: Request, tagName: String) throws -> ResponseRepresentable {

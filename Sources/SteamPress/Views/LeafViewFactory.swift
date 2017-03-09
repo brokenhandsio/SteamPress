@@ -236,12 +236,13 @@ struct LeafViewFactory: ViewFactory {
 
     }
 
-    func blogPostView(post: BlogPost, author: BlogUser, user: BlogUser?, disqusName: String?) throws -> View {
+    func blogPostView(uri: URI, post: BlogPost, author: BlogUser, user: BlogUser?, disqusName: String?) throws -> View {
 
         var parameters = try Node(node: [
             "post": try post.makeNode(context: BlogPostContext.all),
             "author": try author.makeNode(),
-            "blogPostPage": true.makeNode()
+            "blogPostPage": true.makeNode(),
+            "post_uri": uri.description.makeNode()
             ])
 
         if let user = user {

@@ -228,7 +228,7 @@ class CapturingViewFactory: ViewFactory {
     private(set) var blogPost: BlogPost? = nil
     private(set) var blogPostAuthor: BlogUser? = nil
     private(set) var disqusName: String? = nil
-    func blogPostView(post: BlogPost, author: BlogUser, user: BlogUser?, disqusName: String?) throws -> View {
+    func blogPostView(uri: URI, post: BlogPost, author: BlogUser, user: BlogUser?, disqusName: String?) throws -> View {
         self.blogPost = post
         self.blogPostAuthor = author
         self.disqusName = disqusName
