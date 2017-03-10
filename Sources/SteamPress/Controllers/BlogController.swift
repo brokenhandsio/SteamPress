@@ -31,6 +31,7 @@ struct BlogController {
             index.get(tagsPath, String.self, handler: tagViewHandler)
             index.get(authorsPath, String.self, handler: authorViewHandler)
             index.get(apiPath, tagsPath, handler: tagApiHandler)
+            index.get(blogPostsPath, handler: blogPostIndexRedirectHandler)
         }
     }
     
@@ -41,6 +42,10 @@ struct BlogController {
         let paginatedBlogPosts = try BlogPost.query().sort("created", .descending).paginator(postsPerPage, request: request)
 
         return try viewFactory.blogIndexView(paginatedPosts: paginatedBlogPosts, tags: tags, loggedInUser: getLoggedInUser(in: request), disqusName: getDisqusName(), siteTwitterHandle: getSiteTwitterHandle())
+    }
+    
+    func blogPostIndexRedirectHandler(request: Request) throws -> ResponseRepresentable {
+        return Response(redirect: pathCreator.createPath(for: pathCreator.blogPath), permanently: true)
     }
     
     func blogPostHandler(request: Request, blogSlugUrl: String) throws -> ResponseRepresentable {
