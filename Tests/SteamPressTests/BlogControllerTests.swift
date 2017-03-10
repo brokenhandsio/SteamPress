@@ -217,7 +217,7 @@ class CapturingViewFactory: ViewFactory {
     private(set) var isMyProfile: Bool? = nil
     private(set) var authorPosts: [BlogPost]? = nil
     private(set) var authorDisqusName: String? = nil
-    func createProfileView(author: BlogUser, isMyProfile: Bool, posts: [BlogPost], loggedInUser: BlogUser?, disqusName: String?) throws -> View {
+    func createProfileView(author: BlogUser, isMyProfile: Bool, posts: [BlogPost], loggedInUser: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
         self.author = author
         self.isMyProfile = isMyProfile
         self.authorPosts = posts
@@ -228,7 +228,7 @@ class CapturingViewFactory: ViewFactory {
     private(set) var blogPost: BlogPost? = nil
     private(set) var blogPostAuthor: BlogUser? = nil
     private(set) var disqusName: String? = nil
-    func blogPostView(uri: URI, post: BlogPost, author: BlogUser, user: BlogUser?, disqusName: String?) throws -> View {
+    func blogPostView(uri: URI, post: BlogPost, author: BlogUser, user: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
         self.blogPost = post
         self.blogPostAuthor = author
         self.disqusName = disqusName
@@ -239,7 +239,7 @@ class CapturingViewFactory: ViewFactory {
     private(set) var tagPosts: Paginator<BlogPost>? = nil
     private(set) var tagUser: BlogUser? = nil
     private(set) var tagDisqusName: String? = nil
-    func tagView(tag: BlogTag, paginatedPosts: Paginator<BlogPost>, user: BlogUser?, disqusName: String?) throws -> View {
+    func tagView(tag: BlogTag, paginatedPosts: Paginator<BlogPost>, user: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
         self.tag = tag
         self.tagPosts = paginatedPosts
         self.tagUser = user
@@ -251,7 +251,7 @@ class CapturingViewFactory: ViewFactory {
     private(set) var blogIndexTags: [BlogTag]? = nil
     private(set) var indexDisqusName: String? = nil
     private(set) var paginatedPosts: Paginator<BlogPost>? = nil
-    func blogIndexView(paginatedPosts: Paginator<BlogPost>, tags: [BlogTag], loggedInUser: BlogUser?, disqusName: String?) throws -> View {
+    func blogIndexView(paginatedPosts: Paginator<BlogPost>, tags: [BlogTag], loggedInUser: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
         self.blogIndexTags = tags
         self.paginatedPosts = paginatedPosts
         self.indexDisqusName = disqusName
