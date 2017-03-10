@@ -2,6 +2,7 @@ import Vapor
 import URI
 import HTTP
 import Paginator
+import SwiftMarkdown
 
 struct LeafViewFactory: ViewFactory {
 
@@ -237,12 +238,15 @@ struct LeafViewFactory: ViewFactory {
     }
 
     func blogPostView(uri: URI, post: BlogPost, author: BlogUser, user: BlogUser?, disqusName: String?) throws -> View {
-
+        
         var parameters = try Node(node: [
             "post": try post.makeNode(context: BlogPostContext.all),
             "author": try author.makeNode(),
             "blogPostPage": true.makeNode(),
-            "post_uri": uri.description.makeNode()
+            "post_uri": uri.description.makeNode(),
+            "post_uri_encoded": uri.description.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+            "site_uri": uri.getRootUri().description.makeNode(),
+            "post_description": markdownToHTML(post.shortSnippet()).replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression, range: nil).replacingOccurrences(of: "\n", with: " ").replacingOccurrences(of: "\r", with: "").makeNode()
             ])
 
         if let user = user {
@@ -253,6 +257,8 @@ struct LeafViewFactory: ViewFactory {
             parameters["disqusName"] = disqusName.makeNode()
         }
 
+        print("Parameters for post view are\n\(parameters)")
+        
         return try drop.view.make("blog/blogpost", parameters)
     }
 
@@ -276,5 +282,11 @@ struct LeafViewFactory: ViewFactory {
         }
 
         return try drop.view.make("blog/tag", parameters)
+    }
+}
+
+extension URI {
+    func getRootUri() -> URI {
+        return URI(scheme: self.scheme, userInfo: nil, host: self.host, port: self.port, path: "", query: nil, rawQuery: nil, fragment: nil).removingPath()
     }
 }
