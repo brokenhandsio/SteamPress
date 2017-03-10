@@ -40,7 +40,7 @@ struct BlogController {
         let tags = try BlogTag.all()
         let paginatedBlogPosts = try BlogPost.query().sort("created", .descending).paginator(postsPerPage, request: request)
 
-        return try viewFactory.blogIndexView(paginatedPosts: paginatedBlogPosts, tags: tags, loggedInUser: getLoggedInUser(in: request), disqusName: getDisqusName())
+        return try viewFactory.blogIndexView(paginatedPosts: paginatedBlogPosts, tags: tags, loggedInUser: getLoggedInUser(in: request), disqusName: getDisqusName(), siteTwitterHandle: getSiteTwitterHandle())
     }
     
     func blogPostHandler(request: Request, blogSlugUrl: String) throws -> ResponseRepresentable {
@@ -52,7 +52,7 @@ struct BlogController {
             throw Abort.badRequest
         }
         
-        return try viewFactory.blogPostView(uri: request.uri, post: blogPost, author: author, user: getLoggedInUser(in: request), disqusName: getDisqusName())
+        return try viewFactory.blogPostView(uri: request.uri, post: blogPost, author: author, user: getLoggedInUser(in: request), disqusName: getDisqusName(), siteTwitterHandle: getSiteTwitterHandle())
     }
     
     func tagViewHandler(request: Request, tagName: String) throws -> ResponseRepresentable {
@@ -61,7 +61,7 @@ struct BlogController {
         }
         let paginatedBlogPosts = try BlogPost.query().sort("created", .descending).paginator(postsPerPage, request: request)
         
-        return try viewFactory.tagView(tag: tag, paginatedPosts: paginatedBlogPosts, user: getLoggedInUser(in: request), disqusName: getDisqusName())
+        return try viewFactory.tagView(tag: tag, paginatedPosts: paginatedBlogPosts, user: getLoggedInUser(in: request), disqusName: getDisqusName(), siteTwitterHandle: getSiteTwitterHandle())
     }
     
     func authorViewHandler(request: Request, authorUsername: String) throws -> ResponseRepresentable {
@@ -71,7 +71,7 @@ struct BlogController {
         
         let posts = try author.posts()
         
-        return try viewFactory.createProfileView(author: author, isMyProfile: false, posts: posts, loggedInUser: getLoggedInUser(in: request), disqusName: getDisqusName())
+        return try viewFactory.createProfileView(author: author, isMyProfile: false, posts: posts, loggedInUser: getLoggedInUser(in: request), disqusName: getDisqusName(), siteTwitterHandle: getSiteTwitterHandle())
     }
     
     func tagApiHandler(request: Request) throws -> ResponseRepresentable {
@@ -93,6 +93,10 @@ struct BlogController {
     
     private func getDisqusName() -> String? {
         return drop.config["disqus", "disqusName"]?.string
+    }
+    
+    private func getSiteTwitterHandle() -> String? {
+        return drop.config["twitter", "siteHandle"]?.string
     }
     
 }

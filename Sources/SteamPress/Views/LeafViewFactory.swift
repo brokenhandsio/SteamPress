@@ -182,7 +182,7 @@ struct LeafViewFactory: ViewFactory {
         return try drop.view.make("blog/admin/resetPassword", parameters)
     }
 
-    func createProfileView(author: BlogUser, isMyProfile: Bool, posts: [BlogPost], loggedInUser: BlogUser?, disqusName: String?) throws -> View {
+    func createProfileView(author: BlogUser, isMyProfile: Bool, posts: [BlogPost], loggedInUser: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
         var parameters: [String: Node] = [
             "author": try author.makeNode()
         ]
@@ -205,13 +205,17 @@ struct LeafViewFactory: ViewFactory {
         if let disqusName = disqusName {
             parameters["disqusName"] = disqusName.makeNode()
         }
+        
+        if let siteTwitterHandle = siteTwitterHandle {
+            parameters["site_twitter_handle"] = siteTwitterHandle.makeNode()
+        }
 
         return try drop.view.make("blog/profile", parameters)
     }
 
     // MARK: - Blog Controller Views
 
-    func blogIndexView(paginatedPosts: Paginator<BlogPost>, tags: [BlogTag], loggedInUser: BlogUser?, disqusName: String?) throws -> View {
+    func blogIndexView(paginatedPosts: Paginator<BlogPost>, tags: [BlogTag], loggedInUser: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
 
         var parameters: [String: Node] = [:]
 
@@ -232,12 +236,16 @@ struct LeafViewFactory: ViewFactory {
         if let disqusName = disqusName {
             parameters["disqusName"] = disqusName.makeNode()
         }
+        
+        if let siteTwitterHandle = siteTwitterHandle {
+            parameters["site_twitter_handle"] = siteTwitterHandle.makeNode()
+        }
 
         return try drop.view.make("blog/blog", parameters)
 
     }
 
-    func blogPostView(uri: URI, post: BlogPost, author: BlogUser, user: BlogUser?, disqusName: String?) throws -> View {
+    func blogPostView(uri: URI, post: BlogPost, author: BlogUser, user: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
         
         var parameters = try Node(node: [
             "post": try post.makeNode(context: BlogPostContext.all),
@@ -256,13 +264,17 @@ struct LeafViewFactory: ViewFactory {
         if let disqusName = disqusName {
             parameters["disqusName"] = disqusName.makeNode()
         }
+        
+        if let siteTwitterHandle = siteTwitterHandle {
+            parameters["site_twitter_handle"] = siteTwitterHandle.makeNode()
+        }
 
         print("Parameters for post view are\n\(parameters)")
         
         return try drop.view.make("blog/blogpost", parameters)
     }
 
-    func tagView(tag: BlogTag, paginatedPosts: Paginator<BlogPost>, user: BlogUser?, disqusName: String?) throws -> View {
+    func tagView(tag: BlogTag, paginatedPosts: Paginator<BlogPost>, user: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
 
         var parameters: [String: Node] = [
             "tag": try tag.makeNode(),
@@ -279,6 +291,10 @@ struct LeafViewFactory: ViewFactory {
 
         if let disqusName = disqusName {
             parameters["disqusName"] = disqusName.makeNode()
+        }
+        
+        if let siteTwitterHandle = siteTwitterHandle {
+            parameters["site_twitter_handle"] = siteTwitterHandle.makeNode()
         }
 
         return try drop.view.make("blog/tag", parameters)
