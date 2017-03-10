@@ -132,6 +132,14 @@ class BlogControllerTests: XCTestCase {
         XCTAssertEqual(expectedName, viewFactory.disqusName)
     }
     
+    func testThatAccessingPathsRouteRedirectsToBlogIndex() throws {
+        try setupDrop()
+        let request = try! Request(method: .get, uri: "/posts/")
+        let response = try drop.respond(to: request)
+        XCTAssertEqual(response.status, .movedPermanently)
+        XCTAssertEqual(response.headers[HeaderKey.location], "/")
+    }
+    
 //    func testUserPassedToBlogPostIfLoggedIn() throws {
 //        try setupDrop(loginUser: true)
 //        let requestData = "{\"username\": \"\(user.name)\", \"password\": \"1234\"}"
