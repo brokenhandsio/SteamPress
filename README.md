@@ -131,6 +131,7 @@ This is the index page of the blog. The parameters it will receive are:
 * `disqusName` - the name of your Disqus site if configured
 * `blogIndexPage` - a boolean saying we are on the index page of the blog - useful for navbars
 * `site_twitter_handle` - the Twitter handle for the site if configured
+* `uri` - the URI of the page - useful for Open Graph
 
 
 ### `blogpost.leaf`
@@ -158,6 +159,7 @@ This is the page for a tag. A blog post can be tagged with many tags and a tag c
 * `user` - the currently logged in user if a user is currently logged in
 * `disqusName` - the name of your Disqus site if configured
 * `site_twitter_handle` - the Twitter handle for the site if configured
+* `uri` - the URI of the page - useful for Open Graph
 
 ### `profile.leaf`
 
@@ -170,6 +172,7 @@ This is the page for viewing a profile of a user. This is generally used for vie
 * `user` - the currently logged in user if a user is currently logged in
 * `disqusName` - the name of your Disqus site if configured
 * `site_twitter_handle` - the Twitter handle for the site if configured
+* `uri` - the URI of the page - useful for Open Graph
 
 ## Admin Site
 
