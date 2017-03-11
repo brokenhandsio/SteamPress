@@ -41,7 +41,7 @@ struct BlogController {
         let tags = try BlogTag.all()
         let paginatedBlogPosts = try BlogPost.query().sort("created", .descending).paginator(postsPerPage, request: request)
 
-        return try viewFactory.blogIndexView(paginatedPosts: paginatedBlogPosts, tags: tags, loggedInUser: getLoggedInUser(in: request), disqusName: getDisqusName(), siteTwitterHandle: getSiteTwitterHandle())
+        return try viewFactory.blogIndexView(uri: request.uri, paginatedPosts: paginatedBlogPosts, tags: tags, loggedInUser: getLoggedInUser(in: request), disqusName: getDisqusName(), siteTwitterHandle: getSiteTwitterHandle())
     }
     
     func blogPostIndexRedirectHandler(request: Request) throws -> ResponseRepresentable {
@@ -66,7 +66,7 @@ struct BlogController {
         }
         let paginatedBlogPosts = try BlogPost.query().sort("created", .descending).paginator(postsPerPage, request: request)
         
-        return try viewFactory.tagView(tag: tag, paginatedPosts: paginatedBlogPosts, user: getLoggedInUser(in: request), disqusName: getDisqusName(), siteTwitterHandle: getSiteTwitterHandle())
+        return try viewFactory.tagView(uri: request.uri, tag: tag, paginatedPosts: paginatedBlogPosts, user: getLoggedInUser(in: request), disqusName: getDisqusName(), siteTwitterHandle: getSiteTwitterHandle())
     }
     
     func authorViewHandler(request: Request, authorUsername: String) throws -> ResponseRepresentable {
@@ -76,7 +76,7 @@ struct BlogController {
         
         let posts = try author.posts()
         
-        return try viewFactory.createProfileView(author: author, isMyProfile: false, posts: posts, loggedInUser: getLoggedInUser(in: request), disqusName: getDisqusName(), siteTwitterHandle: getSiteTwitterHandle())
+        return try viewFactory.createProfileView(uri: request.uri, author: author, isMyProfile: false, posts: posts, loggedInUser: getLoggedInUser(in: request), disqusName: getDisqusName(), siteTwitterHandle: getSiteTwitterHandle())
     }
     
     func tagApiHandler(request: Request) throws -> ResponseRepresentable {
