@@ -4,6 +4,6 @@ os:
 language: generic
 sudo: required
 dist: trusty
-osx_image: xcode8
+osx_image: xcode8.2
 script:
   - eval "$(curl -sL https://swift.vapor.sh/ci)"
