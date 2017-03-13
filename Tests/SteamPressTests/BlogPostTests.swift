@@ -94,6 +94,13 @@ class BlogPostTests: XCTestCase {
         let shortSnippet = post.longSnippet()
         XCTAssertLessThan(shortSnippet.count, 1500)
     }
+    
+    func testCreatedAndEditedDateInISOFormForAllContext() throws {
+        let created = Date()
+        let post = TestDataBuilder.anyPost(creationDate: created)
+        let node = try post.makeNode(context: BlogPostContext.all)
+        XCTAssertEqual(node["created_date_iso8601"], "date")
+    }
 
     // TODO test tag pivot logic
     // TODO test context make node stuff
@@ -123,8 +130,8 @@ struct TestDataBuilder {
         return BlogUser(name: "Tim C", username: "timc", password: "password")
     }
 
-    static func anyPost(slugUrl: String = "some-exciting-title")  -> BlogPost {
-        return BlogPost(title: "An Exciting Post!", contents: "<p>This is a blog post</p>", author: anyUser(), creationDate: Date(), slugUrl: slugUrl)
+    static func anyPost(slugUrl: String = "some-exciting-title", creationDate: Date = Date())  -> BlogPost {
+        return BlogPost(title: "An Exciting Post!", contents: "<p>This is a blog post</p>", author: anyUser(), creationDate: creationDate, slugUrl: slugUrl)
     }
     
     static func anyLongPost() -> BlogPost {
