@@ -104,6 +104,8 @@ class BlogPostTests: XCTestCase {
         post.lastEdited = Date(timeIntervalSince1970: 10.0)
         try post.save()
         let node = try post.makeNode(context: BlogPostContext.all)
+        print("Dates made are: \nCreated: \(node["created_date_iso8601"]?.string)\nLast Edited:\(node["last_edited_date_iso8601"]?.string)")
+        
         XCTAssertTrue(node["created_date_iso8601"]?.string?.hasPrefix("1970-01-01T01:00:01+") ?? false)
         XCTAssertTrue(node["last_edited_date_iso8601"]?.string?.hasPrefix("1970-01-01T01:00:10+") ?? false)
     }
