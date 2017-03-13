@@ -25,6 +25,10 @@ class BlogControllerTests: XCTestCase {
         ("testAuthorViewGetsDisqusNameIfSet", testAuthorViewGetsDisqusNameIfSet),
         ("testTagView", testTagView),
         ("testTagViewGetsDisquqNameIfSet", testTagViewGetsDisquqNameIfSet),
+        ("testIndexPageGetsTwitterHandleIfSet", testIndexPageGetsTwitterHandleIfSet),
+        ("testBlogPageGetsTwitterHandleIfSet", testBlogPageGetsTwitterHandleIfSet),
+        ("testProfilePageGetsTwitterHandleIfSet", testProfilePageGetsTwitterHandleIfSet),
+        ("testTagPageGetsTwitterHandleIfSet", testTagPageGetsTwitterHandleIfSet)
     ]
 
     private var drop: Droplet!
@@ -195,6 +199,62 @@ class BlogControllerTests: XCTestCase {
 
         XCTAssertEqual(expectedName, viewFactory.tagDisqusName)
     }
+    
+    func testIndexPageGetsTwitterHandleIfSet() throws {
+        let expectedTwitterHandle = "brokenhandsio"
+        let config = Config(try Node(node: [
+            "twitter": try Node(node: [
+                "siteHandle": expectedTwitterHandle.makeNode()
+                ])
+            ]))
+        try setupDrop(config: config)
+        
+        _ = try drop.respond(to: blogIndexRequest)
+        
+        XCTAssertEqual(expectedTwitterHandle, viewFactory.blogIndexTwitterHandle)
+    }
+    
+    func testBlogPageGetsTwitterHandleIfSet() throws {
+        let expectedTwitterHandle = "brokenhandsio"
+        let config = Config(try Node(node: [
+            "twitter": try Node(node: [
+                "siteHandle": expectedTwitterHandle.makeNode()
+                ])
+            ]))
+        try setupDrop(config: config)
+        
+        _ = try drop.respond(to: blogPostRequest)
+        
+        XCTAssertEqual(expectedTwitterHandle, viewFactory.blogPostTwitterHandle)
+    }
+    
+    func testProfilePageGetsTwitterHandleIfSet() throws {
+        let expectedTwitterHandle = "brokenhandsio"
+        let config = Config(try Node(node: [
+            "twitter": try Node(node: [
+                "siteHandle": expectedTwitterHandle.makeNode()
+                ])
+            ]))
+        try setupDrop(config: config)
+        
+        _ = try drop.respond(to: authorRequest)
+        
+        XCTAssertEqual(expectedTwitterHandle, viewFactory.authorTwitterHandle)
+    }
+    
+    func testTagPageGetsTwitterHandleIfSet() throws {
+        let expectedTwitterHandle = "brokenhandsio"
+        let config = Config(try Node(node: [
+            "twitter": try Node(node: [
+                "siteHandle": expectedTwitterHandle.makeNode()
+                ])
+            ]))
+        try setupDrop(config: config)
+        
+        _ = try drop.respond(to: tagRequest)
+        
+        XCTAssertEqual(expectedTwitterHandle, viewFactory.tagTwitterHandle)
+    }
 }
 
 import URI
@@ -226,21 +286,25 @@ class CapturingViewFactory: ViewFactory {
     private(set) var isMyProfile: Bool? = nil
     private(set) var authorPosts: [BlogPost]? = nil
     private(set) var authorDisqusName: String? = nil
+    private(set) var authorTwitterHandle: String? = nil
     func createProfileView(uri: URI, author: BlogUser, isMyProfile: Bool, posts: [BlogPost], loggedInUser: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
         self.author = author
         self.isMyProfile = isMyProfile
         self.authorPosts = posts
         self.authorDisqusName = disqusName
+        self.authorTwitterHandle = siteTwitterHandle
         return View(data: try "Test".makeBytes())
     }
 
     private(set) var blogPost: BlogPost? = nil
     private(set) var blogPostAuthor: BlogUser? = nil
     private(set) var disqusName: String? = nil
+    private(set) var blogPostTwitterHandle: String? = nil
     func blogPostView(uri: URI, post: BlogPost, author: BlogUser, user: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
         self.blogPost = post
         self.blogPostAuthor = author
         self.disqusName = disqusName
+        self.blogPostTwitterHandle = siteTwitterHandle
         return View(data: try "Test".makeBytes())
     }
 
@@ -248,22 +312,25 @@ class CapturingViewFactory: ViewFactory {
     private(set) var tagPosts: Paginator<BlogPost>? = nil
     private(set) var tagUser: BlogUser? = nil
     private(set) var tagDisqusName: String? = nil
+    private(set) var tagTwitterHandle: String? = nil
     func tagView(uri: URI, tag: BlogTag, paginatedPosts: Paginator<BlogPost>, user: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
         self.tag = tag
         self.tagPosts = paginatedPosts
         self.tagUser = user
         self.tagDisqusName = disqusName
-
+        self.tagTwitterHandle = siteTwitterHandle
         return View(data: try "Test".makeBytes())
     }
 
     private(set) var blogIndexTags: [BlogTag]? = nil
     private(set) var indexDisqusName: String? = nil
     private(set) var paginatedPosts: Paginator<BlogPost>? = nil
+    private(set) var blogIndexTwitterHandle: String? = nil
     func blogIndexView(uri: URI, paginatedPosts: Paginator<BlogPost>, tags: [BlogTag], loggedInUser: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
         self.blogIndexTags = tags
         self.paginatedPosts = paginatedPosts
         self.indexDisqusName = disqusName
+        self.blogIndexTwitterHandle = siteTwitterHandle
         return View(data: try "Test".makeBytes())
     }
 }
