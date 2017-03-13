@@ -104,8 +104,8 @@ class BlogPostTests: XCTestCase {
         post.lastEdited = Date(timeIntervalSince1970: 10.0)
         try post.save()
         let node = try post.makeNode(context: BlogPostContext.all)
-        XCTAssertEqual(node["created_date_iso8601"], "1970-01-01T01:00:01+0100")
-        XCTAssertEqual(node["last_edited_date_iso8601"], "1970-01-01T01:00:10+0100")
+        XCTAssertTrue(node["created_date_iso8601"]?.string?.hasPrefix("1970-01-01T01:00:01+") ?? false)
+        XCTAssertTrue(node["last_edited_date_iso8601"]?.string?.hasPrefix("1970-01-01T01:00:10+") ?? false)
     }
 
     // TODO test tag pivot logic
