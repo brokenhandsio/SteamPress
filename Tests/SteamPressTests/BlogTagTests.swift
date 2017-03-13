@@ -19,24 +19,15 @@ class BlogTagTests: XCTestCase {
     ]
 
     func testNonDatabaseContextNodeContainsUrlEncodedName() throws {
-        XCTFail()
+        let tag = BlogTag(name: "Luke's Tatooine")
+        let node = try tag.makeNode()
+        XCTAssertEqual(node["url_encoded_name"], "Luke's%20Tatooine")
     }
     
     func testDatabaseNodeDoesNotContainUrlEncodedName() throws {
-        XCTFail()
+        let tag = BlogTag(name: "Tatooine")
+        let node = try tag.makeNode(context: DatabaseContext(Database(MemoryDriver())))
+        XCTAssertNil(node["url_encoded_name"])
     }
-//
-//    func setupDatabase(preparations: [Preparation.Type]) {
-//        let database = Database(MemoryDriver())
-//        BlogPost.database = database
-//        let printConsole = PrintConsole()
-//        let prepare = Prepare(console: printConsole, preparations: preparations, database: database)
-//        do {
-//            try prepare.run(arguments: [])
-//        }
-//        catch {
-//            XCTFail("failed to prepapre DB")
-//        }
-//    }
-//    
+
 }

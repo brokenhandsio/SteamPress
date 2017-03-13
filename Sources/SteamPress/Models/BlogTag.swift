@@ -36,7 +36,7 @@ extension BlogTag: NodeRepresentable {
             return node
         }
         
-        node["name-url-encoded"] = urlEncodedName.makeNode()
+        node["url_encoded_name"] = urlEncodedName.makeNode()
         
         return node
     }
