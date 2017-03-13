@@ -69,7 +69,7 @@ struct BlogController {
             throw Abort.notFound
         }
         
-        let paginatedBlogPosts = try tag.blogPosts().sorted { $1.created > $0.created }.paginator(postsPerPage, request: request)
+        let paginatedBlogPosts = try tag.blogPosts().sorted { $0.created > $1.created }.paginator(postsPerPage, request: request)
         
         return try viewFactory.tagView(uri: request.uri, tag: tag, paginatedPosts: paginatedBlogPosts, user: getLoggedInUser(in: request), disqusName: getDisqusName(), siteTwitterHandle: getSiteTwitterHandle())
     }
