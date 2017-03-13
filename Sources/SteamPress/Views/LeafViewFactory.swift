@@ -219,7 +219,7 @@ struct LeafViewFactory: ViewFactory {
     func blogIndexView(uri: URI, paginatedPosts: Paginator<BlogPost>, tags: [BlogTag], loggedInUser: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
 
         var parameters: [String: Node] = [
-            "url": uri.description.makeNode(),
+            "uri": uri.description.makeNode(),
             "blogIndexPage": true.makeNode()
         ]
 
@@ -270,8 +270,6 @@ struct LeafViewFactory: ViewFactory {
         if let siteTwitterHandle = siteTwitterHandle {
             parameters["site_twitter_handle"] = siteTwitterHandle.makeNode()
         }
-
-        print("Parameters for post view are\n\(parameters)")
         
         return try drop.view.make("blog/blogpost", parameters)
     }

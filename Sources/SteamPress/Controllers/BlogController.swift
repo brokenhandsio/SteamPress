@@ -61,10 +61,15 @@ struct BlogController {
     }
     
     func tagViewHandler(request: Request, tagName: String) throws -> ResponseRepresentable {
-        guard let tag = try BlogTag.query().filter("name", tagName).first() else {
+        guard let decodedTagName = tagName.removingPercentEncoding else {
+            throw Abort.badRequest
+        }
+        
+        guard let tag = try BlogTag.query().filter("name", decodedTagName).first() else {
             throw Abort.notFound
         }
-        let paginatedBlogPosts = try BlogPost.query().sort("created", .descending).paginator(postsPerPage, request: request)
+        
+        let paginatedBlogPosts = try tag.blogPosts().sorted { $1.created > $0.created }.paginator(postsPerPage, request: request)
         
         return try viewFactory.tagView(uri: request.uri, tag: tag, paginatedPosts: paginatedBlogPosts, user: getLoggedInUser(in: request), disqusName: getDisqusName(), siteTwitterHandle: getSiteTwitterHandle())
     }

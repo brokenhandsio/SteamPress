@@ -22,10 +22,23 @@ class BlogTag: Model {
 
 extension BlogTag: NodeRepresentable {
     func makeNode(context: Context) throws -> Node {
-        return try Node(node: [
+        
+        var node = try Node(node: [
             "id": id,
             "name": name
             ])
+        
+        if context is DatabaseContext {
+            return node
+        }
+        
+        guard let urlEncodedName = name.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) else {
+            return node
+        }
+        
+        node["name-url-encoded"] = urlEncodedName.makeNode()
+        
+        return node
     }
 }
 
