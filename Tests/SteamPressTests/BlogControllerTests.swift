@@ -37,6 +37,8 @@ class BlogControllerTests: XCTestCase {
         ("testAllTagsPageGetsUri", testAllTagsPageGetsUri),
         ("testAllAuthorsPageGetsTwitterHandleIfSet", testAllAuthorsPageGetsTwitterHandleIfSet),
         ("testAllTagsPageGetsTwitterHandleIfSet", testAllTagsPageGetsTwitterHandleIfSet),
+        ("testAllTagsPageGetsAllTags", testAllTagsPageGetsAllTags),
+        ("testAllAuthorsPageGetAllAuthors", testAllAuthorsPageGetAllAuthors),
     ]
 
     private var drop: Droplet!
@@ -349,6 +351,22 @@ class BlogControllerTests: XCTestCase {
         
         XCTAssertEqual(expectedTwitterHandle, viewFactory.allTagsTwitterHandle)
     }
+    
+    func testAllTagsPageGetsAllTags() throws {
+        try setupDrop()
+        _ = try drop.respond(to: allTagsRequest)
+        
+        XCTAssertEqual(1, viewFactory.allTagsPageTags?.count)
+        XCTAssertEqual("tatooine", viewFactory.allTagsPageTags?.first?.name)
+    }
+    
+    func testAllAuthorsPageGetAllAuthors() throws {
+        try setupDrop()
+        _ = try drop.respond(to: allAuthorsRequest)
+        
+        XCTAssertEqual(1, viewFactory.allAuthorsPageAuthors?.count)
+        XCTAssertEqual("Luke", viewFactory.allAuthorsPageAuthors?.first?.name)
+    }
 }
 
 import URI
@@ -438,17 +456,21 @@ class CapturingViewFactory: ViewFactory {
     
     private(set) var allAuthorsTwitterHandle: String? = nil
     private(set) var allAuthorsURI: URI? = nil
-    func allAuthorsView(uri: URI, siteTwitterHandle: String?) throws -> View {
+    private(set) var allAuthorsPageAuthors: [BlogUser]? = nil
+    func allAuthorsView(uri: URI, allAuthors: [BlogUser], siteTwitterHandle: String?) throws -> View {
         self.allAuthorsURI = uri
         self.allAuthorsTwitterHandle = siteTwitterHandle
+        self.allAuthorsPageAuthors = allAuthors
         return View(data: try "Test".makeBytes())
     }
     
     private(set) var allTagsTwitterHandle: String? = nil
     private(set) var allTagsURI: URI? = nil
-    func allTagsView(uri: URI, siteTwitterHandle: String?) throws -> View {
+    private(set) var allTagsPageTags: [BlogTag]? = nil
+    func allTagsView(uri: URI, allTags: [BlogTag], siteTwitterHandle: String?) throws -> View {
         self.allTagsURI = uri
         self.allTagsTwitterHandle = siteTwitterHandle
+        self.allTagsPageTags = allTags
         return View(data: try "Test".makeBytes())
     }
 }

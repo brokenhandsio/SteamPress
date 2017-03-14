@@ -301,11 +301,11 @@ struct LeafViewFactory: ViewFactory {
         return try drop.view.make("blog/tag", parameters)
     }
     
-    func allTagsView(uri: URI, siteTwitterHandle: String?) throws -> View {
+    func allTagsView(uri: URI, allTags: [BlogTag], siteTwitterHandle: String?) throws -> View {
         return try drop.view.make("blog/tags")
     }
     
-    func allAuthorsView(uri: URI, siteTwitterHandle: String?) throws -> View {
+    func allAuthorsView(uri: URI, allAuthors: [BlogUser], siteTwitterHandle: String?) throws -> View {
         return try drop.view.make("blog/authors")
     }
 }

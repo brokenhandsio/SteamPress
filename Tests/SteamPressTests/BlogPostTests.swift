@@ -17,6 +17,7 @@ class BlogPostTests: XCTestCase {
         ("testSlugUrlGivenUniqueNameIfDuplicate", testSlugUrlGivenUniqueNameIfDuplicate),
         ("testShortSnippet", testShortSnippet),
         ("testLongSnippet", testLongSnippet),
+        ("testCreatedAndEditedDateInISOFormForAllContext", testCreatedAndEditedDateInISOFormForAllContext)
     ]
 
     func testThatSlugUrlCalculatedCorrectlyForTitleWithSpaces() {
