@@ -106,12 +106,6 @@ class BlogPostTests: XCTestCase {
         try post.save()
         let node = try post.makeNode(context: BlogPostContext.all)
         
-        let formatter = DateFormatter()
-        formatter.calendar = Calendar(identifier: .iso8601)
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.timeZone = TimeZone(secondsFromGMT: 0)
-        print("Dates made are: \nCreated: \(node["created_date_iso8601"]?.string)\nLast Edited:\(node["last_edited_date_iso8601"]?.string)")
-                
         XCTAssertEqual(node["created_date_iso8601"]?.string, "1970-01-01T00:00:01+0000")
         XCTAssertEqual(node["last_edited_date_iso8601"]?.string, "1970-01-01T00:00:10+0000")
     }
