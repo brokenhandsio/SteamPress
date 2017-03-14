@@ -31,6 +31,7 @@ struct BlogController {
             index.get(tagsPath, String.self, handler: tagViewHandler)
             index.get(authorsPath, String.self, handler: authorViewHandler)
             index.get(apiPath, tagsPath, handler: tagApiHandler)
+            index.get(blogPostsPath, handler: blogPostIndexRedirectHandler)
         }
     }
     
@@ -40,7 +41,11 @@ struct BlogController {
         let tags = try BlogTag.all()
         let paginatedBlogPosts = try BlogPost.query().sort("created", .descending).paginator(postsPerPage, request: request)
 
-        return try viewFactory.blogIndexView(paginatedPosts: paginatedBlogPosts, tags: tags, loggedInUser: getLoggedInUser(in: request), disqusName: getDisqusName())
+        return try viewFactory.blogIndexView(uri: request.uri, paginatedPosts: paginatedBlogPosts, tags: tags, loggedInUser: getLoggedInUser(in: request), disqusName: getDisqusName(), siteTwitterHandle: getSiteTwitterHandle())
+    }
+    
+    func blogPostIndexRedirectHandler(request: Request) throws -> ResponseRepresentable {
+        return Response(redirect: pathCreator.createPath(for: pathCreator.blogPath), permanently: true)
     }
     
     func blogPostHandler(request: Request, blogSlugUrl: String) throws -> ResponseRepresentable {
@@ -52,16 +57,21 @@ struct BlogController {
             throw Abort.badRequest
         }
         
-        return try viewFactory.blogPostView(post: blogPost, author: author, user: getLoggedInUser(in: request), disqusName: getDisqusName())
+        return try viewFactory.blogPostView(uri: request.uri, post: blogPost, author: author, user: getLoggedInUser(in: request), disqusName: getDisqusName(), siteTwitterHandle: getSiteTwitterHandle())
     }
     
     func tagViewHandler(request: Request, tagName: String) throws -> ResponseRepresentable {
-        guard let tag = try BlogTag.query().filter("name", tagName).first() else {
+        guard let decodedTagName = tagName.removingPercentEncoding else {
+            throw Abort.badRequest
+        }
+        
+        guard let tag = try BlogTag.query().filter("name", decodedTagName).first() else {
             throw Abort.notFound
         }
-        let paginatedBlogPosts = try BlogPost.query().sort("created", .descending).paginator(postsPerPage, request: request)
         
-        return try viewFactory.tagView(tag: tag, paginatedPosts: paginatedBlogPosts, user: getLoggedInUser(in: request), disqusName: getDisqusName())
+        let paginatedBlogPosts = try tag.blogPosts().sorted { $0.created > $1.created }.paginator(postsPerPage, request: request)
+        
+        return try viewFactory.tagView(uri: request.uri, tag: tag, paginatedPosts: paginatedBlogPosts, user: getLoggedInUser(in: request), disqusName: getDisqusName(), siteTwitterHandle: getSiteTwitterHandle())
     }
     
     func authorViewHandler(request: Request, authorUsername: String) throws -> ResponseRepresentable {
@@ -71,7 +81,7 @@ struct BlogController {
         
         let posts = try author.posts()
         
-        return try viewFactory.createProfileView(author: author, isMyProfile: false, posts: posts, loggedInUser: getLoggedInUser(in: request), disqusName: getDisqusName())
+        return try viewFactory.createProfileView(uri: request.uri, author: author, isMyProfile: false, posts: posts, loggedInUser: getLoggedInUser(in: request), disqusName: getDisqusName(), siteTwitterHandle: getSiteTwitterHandle())
     }
     
     func tagApiHandler(request: Request) throws -> ResponseRepresentable {
@@ -93,6 +103,10 @@ struct BlogController {
     
     private func getDisqusName() -> String? {
         return drop.config["disqus", "disqusName"]?.string
+    }
+    
+    private func getSiteTwitterHandle() -> String? {
+        return drop.config["twitter", "siteHandle"]?.string
     }
     
 }

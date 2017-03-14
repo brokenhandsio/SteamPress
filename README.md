@@ -23,6 +23,7 @@ There is an example of how it can work in a site (and what it requires in terms 
 * Pagination on the main blog page
 * Slug URLs for SEO optimisation and easy linking to posts
 * Support for comments via Disqus
+* Open Graph and Twitter Card support
 
 # How to Use
 
@@ -90,7 +91,15 @@ SteamPress currently supports using [Disqus](https://disqus.com) for the comment
 }
 ```
 
-This will pass it through to the Leaf templates for the Blog index (`blog.leaf`) and blog posts (`blogpost.leaf`) so you can include it if needs be. If you want to manually set up comments you can do this yourself and just include the necessary files for your provider. This is mainly to provide easily configuration for the [Platform site](https://github.com/brokenhandsio/SteamPressExample).
+This will pass it through to the Leaf templates for the Blog index (`blog.leaf`), blog posts (`blogpost.leaf`), author page (`profile.leaf`) and tag page (`tag.leaf`) so you can include it if needs be. If you want to manually set up comments you can do this yourself and just include the necessary files for your provider. This is mainly to provide easily configuration for the [Platform site](https://github.com/brokenhandsio/SteamPressExample).
+
+## Open Graph Twitter Card Support
+
+SteamPress supports both Open Graph and Twitter Cards. The Blog Post `all` Context (see below) will pass in the created date and last edited date (if applicable) in ISO 8601 format for Open Graph article support, under the parameters `create_date_iso8601` and `last_edited_date_iso8601`.
+
+The Blog Post page will also be passed a number of other useful parameters for Open Graph and Twitter Cards. See the `blogpost.leaf` section below.
+
+The Twitter handle of the site can be configured with a `twitter.json` config file (or injected in) with a property `siteHandle` (the site's twitter handle without the `@`). If set, this will be injected into the public pages as described below. This is for the `twitter:site` tag for Twitter Cards
 
 # Expected Leaf Templates
 
@@ -121,6 +130,8 @@ This is the index page of the blog. The parameters it will receive are:
 * `user` - the currently logged in user if a user is currently logged in
 * `disqusName` - the name of your Disqus site if configured
 * `blogIndexPage` - a boolean saying we are on the index page of the blog - useful for navbars
+* `site_twitter_handle` - the Twitter handle for the site if configured
+* `uri` - the URI of the page - useful for Open Graph
 
 
 ### `blogpost.leaf`
@@ -132,6 +143,11 @@ This is the page for viewing a single entire blog post. The parameters set are:
 * `blogPostPage` - a boolean saying we are on the blog post page
 * `user` - the currently logged in user if a user is currently logged in
 * `disqusName` - the name of your Disqus site if configured
+* `post_uri` - The URI of the post
+* `post_uri_encoded` - A URL-query encoded for of the URI for passing to Share buttons
+* `site_uri`: The URI of the root site - this is useful for creating links to author pages for `article:author` Open Graph support
+* `post_description` - The HTML of the short snippet of the post on a single line with all HTML tags stripped out for the `description` tags
+* `site_twitter_handle` - the Twitter handle for the site if configured
 
 ### `tag.leaf`
 
@@ -142,6 +158,8 @@ This is the page for a tag. A blog post can be tagged with many tags and a tag c
 * `tagPage` - a boolean saying we are on the tag page
 * `user` - the currently logged in user if a user is currently logged in
 * `disqusName` - the name of your Disqus site if configured
+* `site_twitter_handle` - the Twitter handle for the site if configured
+* `uri` - the URI of the page - useful for Open Graph
 
 ### `profile.leaf`
 
@@ -153,6 +171,8 @@ This is the page for viewing a profile of a user. This is generally used for vie
 * `posts` - all the posts the user has written if they have written any in `shortSnippet` form
 * `user` - the currently logged in user if a user is currently logged in
 * `disqusName` - the name of your Disqus site if configured
+* `site_twitter_handle` - the Twitter handle for the site if configured
+* `uri` - the URI of the page - useful for Open Graph
 
 ## Admin Site
 
@@ -228,7 +248,7 @@ You can pass in a `BlogPostContext` to the `makeNode()` call to provide more inf
 
 * `.shortSnippet` - this will return the post with an `id`, `title`, `author_name`, `author_username`, `slug_url`, `created_date` (Human readable) and `short_snippet`
 * `.longSnippet` - this will return the post with an `id`, `title`, `author_name`, `author_username`, `slug_url`, `created_date` (Human readable) and `long_snippet`. It will also include all of the tags in a `tags` object if there are any associated with that post
-* `.all` - this returns the post with all information, including both snippet lengths, including author names and human readable dates
+* `.all` - this returns the post with all information, including both snippet lengths, including author names and human readable dates, as well as both dates in ISO 8601 format under the parameter names `created_date_iso8601` and `last_edited_date_iso8601`
 
 You can also call them directly on a `BlogPost` object (such as from a `Query()`):
 

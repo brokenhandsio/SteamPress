@@ -101,11 +101,19 @@ extension BlogPost: NodeRepresentable {
             }
 
             node["long_snippet"] = longSnippet().makeNode()
+            
+            let iso8601Formatter = DateFormatter()
+            iso8601Formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
+            iso8601Formatter.locale = Locale(identifier: "en_US_POSIX")
+            iso8601Formatter.timeZone = TimeZone(secondsFromGMT: 0)
+            
             node["created_date"] = createdDate.makeNode()
+            node["created_date_iso8601"] = iso8601Formatter.string(from: created).makeNode()
 
             if let lastEdited = lastEdited {
                 let lastEditedDate = dateFormatter.string(from: lastEdited)
                 node["last_edited_date"] = lastEditedDate.makeNode()
+                node["last_edited_date_iso8601"] = iso8601Formatter.string(from: lastEdited).makeNode()
             }
 
             node["author_name"] = try getAuthor()?.name.makeNode()

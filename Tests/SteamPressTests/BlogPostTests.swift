@@ -94,6 +94,21 @@ class BlogPostTests: XCTestCase {
         let shortSnippet = post.longSnippet()
         XCTAssertLessThan(shortSnippet.count, 1500)
     }
+    
+    func testCreatedAndEditedDateInISOFormForAllContext() throws {
+        setupDatabase(preparations: [BlogPost.self, BlogTag.self, BlogUser.self, Pivot<BlogPost, BlogTag>.self])
+        let created = Date(timeIntervalSince1970: 1.0)
+        let lastEdited = Date(timeIntervalSince1970: 10.0)
+        var author = TestDataBuilder.anyUser()
+        try author.save()
+        var post = TestDataBuilder.anyPost(author: author, creationDate: created)
+        post.lastEdited = lastEdited
+        try post.save()
+        let node = try post.makeNode(context: BlogPostContext.all)
+        
+        XCTAssertEqual(node["created_date_iso8601"]?.string, "1970-01-01T00:00:01+0000")
+        XCTAssertEqual(node["last_edited_date_iso8601"]?.string, "1970-01-01T00:00:10+0000")
+    }
 
     // TODO test tag pivot logic
     // TODO test context make node stuff
@@ -123,8 +138,8 @@ struct TestDataBuilder {
         return BlogUser(name: "Tim C", username: "timc", password: "password")
     }
 
-    static func anyPost(slugUrl: String = "some-exciting-title")  -> BlogPost {
-        return BlogPost(title: "An Exciting Post!", contents: "<p>This is a blog post</p>", author: anyUser(), creationDate: Date(), slugUrl: slugUrl)
+    static func anyPost(slugUrl: String = "some-exciting-title", author: BlogUser = TestDataBuilder.anyUser(), creationDate: Date = Date())  -> BlogPost {
+        return BlogPost(title: "An Exciting Post!", contents: "<p>This is a blog post</p>", author: author, creationDate: creationDate, slugUrl: slugUrl)
     }
     
     static func anyLongPost() -> BlogPost {

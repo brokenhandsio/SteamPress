@@ -2,6 +2,7 @@ import Vapor
 import URI
 import HTTP
 import Paginator
+import SwiftMarkdown
 
 struct LeafViewFactory: ViewFactory {
 
@@ -181,9 +182,10 @@ struct LeafViewFactory: ViewFactory {
         return try drop.view.make("blog/admin/resetPassword", parameters)
     }
 
-    func createProfileView(author: BlogUser, isMyProfile: Bool, posts: [BlogPost], loggedInUser: BlogUser?, disqusName: String?) throws -> View {
+    func createProfileView(uri: URI, author: BlogUser, isMyProfile: Bool, posts: [BlogPost], loggedInUser: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
         var parameters: [String: Node] = [
-            "author": try author.makeNode()
+            "author": try author.makeNode(),
+            "uri": uri.description.makeNode()
         ]
 
         if isMyProfile {
@@ -204,15 +206,22 @@ struct LeafViewFactory: ViewFactory {
         if let disqusName = disqusName {
             parameters["disqusName"] = disqusName.makeNode()
         }
+        
+        if let siteTwitterHandle = siteTwitterHandle {
+            parameters["site_twitter_handle"] = siteTwitterHandle.makeNode()
+        }
 
         return try drop.view.make("blog/profile", parameters)
     }
 
     // MARK: - Blog Controller Views
 
-    func blogIndexView(paginatedPosts: Paginator<BlogPost>, tags: [BlogTag], loggedInUser: BlogUser?, disqusName: String?) throws -> View {
+    func blogIndexView(uri: URI, paginatedPosts: Paginator<BlogPost>, tags: [BlogTag], loggedInUser: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
 
-        var parameters: [String: Node] = [:]
+        var parameters: [String: Node] = [
+            "uri": uri.description.makeNode(),
+            "blogIndexPage": true.makeNode()
+        ]
 
         if paginatedPosts.totalPages ?? 0 > 0 {
             parameters["posts"] = try paginatedPosts.makeNode(context: BlogPostContext.longSnippet)
@@ -226,22 +235,28 @@ struct LeafViewFactory: ViewFactory {
             parameters["user"] = try user.makeNode()
         }
 
-        parameters["blogIndexPage"] = true
-
         if let disqusName = disqusName {
             parameters["disqusName"] = disqusName.makeNode()
+        }
+        
+        if let siteTwitterHandle = siteTwitterHandle {
+            parameters["site_twitter_handle"] = siteTwitterHandle.makeNode()
         }
 
         return try drop.view.make("blog/blog", parameters)
 
     }
 
-    func blogPostView(post: BlogPost, author: BlogUser, user: BlogUser?, disqusName: String?) throws -> View {
-
+    func blogPostView(uri: URI, post: BlogPost, author: BlogUser, user: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
+        
         var parameters = try Node(node: [
             "post": try post.makeNode(context: BlogPostContext.all),
             "author": try author.makeNode(),
-            "blogPostPage": true.makeNode()
+            "blogPostPage": true.makeNode(),
+            "post_uri": uri.description.makeNode(),
+            "post_uri_encoded": uri.description.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+            "site_uri": uri.getRootUri().description.makeNode(),
+            "post_description": markdownToHTML(post.shortSnippet()).replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression, range: nil).replacingOccurrences(of: "\n", with: " ").replacingOccurrences(of: "\r", with: "").makeNode()
             ])
 
         if let user = user {
@@ -251,15 +266,20 @@ struct LeafViewFactory: ViewFactory {
         if let disqusName = disqusName {
             parameters["disqusName"] = disqusName.makeNode()
         }
-
+        
+        if let siteTwitterHandle = siteTwitterHandle {
+            parameters["site_twitter_handle"] = siteTwitterHandle.makeNode()
+        }
+        
         return try drop.view.make("blog/blogpost", parameters)
     }
 
-    func tagView(tag: BlogTag, paginatedPosts: Paginator<BlogPost>, user: BlogUser?, disqusName: String?) throws -> View {
+    func tagView(uri: URI, tag: BlogTag, paginatedPosts: Paginator<BlogPost>, user: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
 
         var parameters: [String: Node] = [
             "tag": try tag.makeNode(),
             "tagPage": true.makeNode(),
+            "uri": uri.description.makeNode()
         ]
 
         if paginatedPosts.totalPages ?? 0 > 0 {
@@ -273,7 +293,17 @@ struct LeafViewFactory: ViewFactory {
         if let disqusName = disqusName {
             parameters["disqusName"] = disqusName.makeNode()
         }
+        
+        if let siteTwitterHandle = siteTwitterHandle {
+            parameters["site_twitter_handle"] = siteTwitterHandle.makeNode()
+        }
 
         return try drop.view.make("blog/tag", parameters)
+    }
+}
+
+extension URI {
+    func getRootUri() -> URI {
+        return URI(scheme: self.scheme, userInfo: nil, host: self.host, port: self.port, path: "", query: nil, rawQuery: nil, fragment: nil).removingPath()
     }
 }
