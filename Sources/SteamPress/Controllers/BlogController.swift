@@ -87,7 +87,7 @@ struct BlogController {
     }
     
     func allTagsViewHandler(request: Request) throws -> ResponseRepresentable {
-        return try viewFactory.allTagsView(uri: request.uri, allTags: BlogTag.all(), siteTwitterHandle: getSiteTwitterHandle())
+        return try viewFactory.allTagsView(uri: request.uri, allTags: BlogTag.all(), user: getLoggedInUser(in: request), siteTwitterHandle: getSiteTwitterHandle())
     }
     
     func allAuthorsViewHandler(request: Request) throws -> ResponseRepresentable {

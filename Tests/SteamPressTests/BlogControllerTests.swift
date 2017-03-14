@@ -1,11 +1,3 @@
-//
-//  BlogControllerTests.swift
-//  SteamPress
-//
-//  Created by Tim Condon on 20/02/2017.
-//
-//
-
 import XCTest
 @testable import SteamPress
 @testable import Vapor
@@ -467,7 +459,7 @@ class CapturingViewFactory: ViewFactory {
     private(set) var allTagsTwitterHandle: String? = nil
     private(set) var allTagsURI: URI? = nil
     private(set) var allTagsPageTags: [BlogTag]? = nil
-    func allTagsView(uri: URI, allTags: [BlogTag], siteTwitterHandle: String?) throws -> View {
+    func allTagsView(uri: URI, allTags: [BlogTag], user: BlogUser?, siteTwitterHandle: String?) throws -> View {
         self.allTagsURI = uri
         self.allTagsTwitterHandle = siteTwitterHandle
         self.allTagsPageTags = allTags

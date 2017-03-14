@@ -301,8 +301,24 @@ struct LeafViewFactory: ViewFactory {
         return try drop.view.make("blog/tag", parameters)
     }
     
-    func allTagsView(uri: URI, allTags: [BlogTag], siteTwitterHandle: String?) throws -> View {
-        return try drop.view.make("blog/tags")
+    func allTagsView(uri: URI, allTags: [BlogTag], user: BlogUser?, siteTwitterHandle: String?) throws -> View {
+        var parameters = [
+            "uri": uri.description.makeNode()
+        ]
+        
+        if allTags.count > 0 {
+            parameters["tags"] = try allTags.makeNode()
+        }
+        
+        if let user = user {
+            parameters["user"] = try user.makeNode()
+        }
+        
+        if let siteTwitterHandle = siteTwitterHandle {
+            parameters["site_twitter_handle"] = siteTwitterHandle.makeNode()
+        }
+        
+        return try drop.view.make("blog/tags", parameters)
     }
     
     func allAuthorsView(uri: URI, allAuthors: [BlogUser], siteTwitterHandle: String?) throws -> View {
