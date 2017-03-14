@@ -449,7 +449,7 @@ class CapturingViewFactory: ViewFactory {
     private(set) var allAuthorsTwitterHandle: String? = nil
     private(set) var allAuthorsURI: URI? = nil
     private(set) var allAuthorsPageAuthors: [BlogUser]? = nil
-    func allAuthorsView(uri: URI, allAuthors: [BlogUser], siteTwitterHandle: String?) throws -> View {
+    func allAuthorsView(uri: URI, allAuthors: [BlogUser], user: BlogUser?, siteTwitterHandle: String?) throws -> View {
         self.allAuthorsURI = uri
         self.allAuthorsTwitterHandle = siteTwitterHandle
         self.allAuthorsPageAuthors = allAuthors
