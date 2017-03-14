@@ -32,6 +32,8 @@ struct BlogController {
             index.get(authorsPath, String.self, handler: authorViewHandler)
             index.get(apiPath, tagsPath, handler: tagApiHandler)
             index.get(blogPostsPath, handler: blogPostIndexRedirectHandler)
+            index.get(tagsPath, handler: allTagsViewHandler)
+            index.get(authorsPath, handler: allAuthorsViewHandler)
         }
     }
     
@@ -82,6 +84,14 @@ struct BlogController {
         let posts = try author.posts()
         
         return try viewFactory.createProfileView(uri: request.uri, author: author, isMyProfile: false, posts: posts, loggedInUser: getLoggedInUser(in: request), disqusName: getDisqusName(), siteTwitterHandle: getSiteTwitterHandle())
+    }
+    
+    func allTagsViewHandler(request: Request) throws -> ResponseRepresentable {
+        return "Tags"
+    }
+    
+    func allAuthorsViewHandler(request: Request) throws -> ResponseRepresentable {
+        return "Authors"
     }
     
     func tagApiHandler(request: Request) throws -> ResponseRepresentable {
