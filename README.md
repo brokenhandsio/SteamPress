@@ -112,6 +112,8 @@ The basic structure of your `Resources/View` directory should be:
  * `blogpost.leaf` - the page for a single blog post
  * `tag.leaf` - the page for a tag
  * `profile.leaf` - the page for a user profile
+ * `tags.leaf` - the page for displaying all of the tags
+ * `authors.leaf` - the page for displaying all of the authors
  * `admin`
   * `createPost.leaf` - the page for creating and editing a blog post
   * `createUser.leaf` - the page for creating and editing a user
@@ -173,6 +175,14 @@ This is the page for viewing a profile of a user. This is generally used for vie
 * `disqusName` - the name of your Disqus site if configured
 * `site_twitter_handle` - the Twitter handle for the site if configured
 * `uri` - the URI of the page - useful for Open Graph
+
+### `tags.leaf`
+
+This is the page for viewing all of the tags on the blog.
+
+### `authors.leaf`
+
+This is the page for viewing all of the authors on the blog.
 
 ## Admin Site
 

@@ -87,11 +87,11 @@ struct BlogController {
     }
     
     func allTagsViewHandler(request: Request) throws -> ResponseRepresentable {
-        return "Tags"
+        return try viewFactory.allTagsView(uri: request.uri, siteTwitterHandle: getSiteTwitterHandle())
     }
     
     func allAuthorsViewHandler(request: Request) throws -> ResponseRepresentable {
-        return "Authors"
+        return try viewFactory.allAuthorsView(uri: request.uri, siteTwitterHandle: getSiteTwitterHandle())
     }
     
     func tagApiHandler(request: Request) throws -> ResponseRepresentable {

@@ -33,6 +33,10 @@ class BlogControllerTests: XCTestCase {
         ("testBlogPageGetsUri", testBlogPageGetsUri),
         ("testProfilePageGetsUri", testProfilePageGetsUri),
         ("testTagPageGetsUri", testTagPageGetsUri),
+        ("testAllAuthorsPageGetsUri", testAllAuthorsPageGetsUri),
+        ("testAllTagsPageGetsUri", testAllTagsPageGetsUri),
+        ("testAllAuthorsPageGetsTwitterHandleIfSet", testAllAuthorsPageGetsTwitterHandleIfSet),
+        ("testAllTagsPageGetsTwitterHandleIfSet", testAllTagsPageGetsTwitterHandleIfSet),
     ]
 
     private var drop: Droplet!
@@ -43,16 +47,22 @@ class BlogControllerTests: XCTestCase {
     private let blogPostPath = "/posts/test-path/"
     private let tagPath = "/tags/tatooine/"
     private let authorPath = "/authors/luke/"
+    private let allAuthorsPath = "/authors/"
+    private let allTagsPath = "/tags/"
     private var blogPostRequest: Request!
     private var authorRequest: Request!
     private var tagRequest: Request!
     private var blogIndexRequest: Request!
+    private var allTagsRequest: Request!
+    private var allAuthorsRequest: Request!
 
     override func setUp() {
         blogPostRequest = try! Request(method: .get, uri: blogPostPath)
         authorRequest = try! Request(method: .get, uri: authorPath)
         tagRequest = try! Request(method: .get, uri: tagPath)
         blogIndexRequest = try! Request(method: .get, uri: blogIndexPath)
+        allTagsRequest = try! Request(method: .get, uri: allTagsPath)
+        allAuthorsRequest = try! Request(method: .get, uri: allAuthorsPath)
     }
 
     func setupDrop(config: Config? = nil, loginUser: Bool = false) throws {
@@ -295,6 +305,50 @@ class BlogControllerTests: XCTestCase {
         
         XCTAssertEqual(tagPath, viewFactory.tagURI?.description)
     }
+    
+    func testAllAuthorsPageGetsUri() throws {
+        try setupDrop()
+        
+        _ = try drop.respond(to: allAuthorsRequest)
+        
+        XCTAssertEqual(allAuthorsPath, viewFactory.allAuthorsURI?.description)
+    }
+    
+    func testAllTagsPageGetsUri() throws {
+        try setupDrop()
+        
+        _ = try drop.respond(to: allTagsRequest)
+        
+        XCTAssertEqual(allTagsPath, viewFactory.allTagsURI?.description)
+    }
+    
+    func testAllAuthorsPageGetsTwitterHandleIfSet() throws {
+        let expectedTwitterHandle = "brokenhandsio"
+        let config = Config(try Node(node: [
+            "twitter": try Node(node: [
+                "siteHandle": expectedTwitterHandle.makeNode()
+                ])
+            ]))
+        try setupDrop(config: config)
+        
+        _ = try drop.respond(to: allAuthorsRequest)
+        
+        XCTAssertEqual(expectedTwitterHandle, viewFactory.allAuthorsTwitterHandle)
+    }
+    
+    func testAllTagsPageGetsTwitterHandleIfSet() throws {
+        let expectedTwitterHandle = "brokenhandsio"
+        let config = Config(try Node(node: [
+            "twitter": try Node(node: [
+                "siteHandle": expectedTwitterHandle.makeNode()
+                ])
+            ]))
+        try setupDrop(config: config)
+        
+        _ = try drop.respond(to: allTagsRequest)
+        
+        XCTAssertEqual(expectedTwitterHandle, viewFactory.allTagsTwitterHandle)
+    }
 }
 
 import URI
@@ -379,6 +433,22 @@ class CapturingViewFactory: ViewFactory {
         self.indexDisqusName = disqusName
         self.blogIndexTwitterHandle = siteTwitterHandle
         self.blogIndexURI = uri
+        return View(data: try "Test".makeBytes())
+    }
+    
+    private(set) var allAuthorsTwitterHandle: String? = nil
+    private(set) var allAuthorsURI: URI? = nil
+    func allAuthorsView(uri: URI, siteTwitterHandle: String?) throws -> View {
+        self.allAuthorsURI = uri
+        self.allAuthorsTwitterHandle = siteTwitterHandle
+        return View(data: try "Test".makeBytes())
+    }
+    
+    private(set) var allTagsTwitterHandle: String? = nil
+    private(set) var allTagsURI: URI? = nil
+    func allTagsView(uri: URI, siteTwitterHandle: String?) throws -> View {
+        self.allTagsURI = uri
+        self.allTagsTwitterHandle = siteTwitterHandle
         return View(data: try "Test".makeBytes())
     }
 }
