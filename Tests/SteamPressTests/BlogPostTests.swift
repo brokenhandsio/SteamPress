@@ -98,16 +98,22 @@ class BlogPostTests: XCTestCase {
     func testCreatedAndEditedDateInISOFormForAllContext() throws {
         setupDatabase(preparations: [BlogPost.self, BlogTag.self, BlogUser.self, Pivot<BlogPost, BlogTag>.self])
         let created = Date(timeIntervalSince1970: 1.0)
+        let lastEdited = Date(timeIntervalSince1970: 10.0)
         var author = TestDataBuilder.anyUser()
         try author.save()
         var post = TestDataBuilder.anyPost(author: author, creationDate: created)
-        post.lastEdited = Date(timeIntervalSince1970: 10.0)
+        post.lastEdited = lastEdited
         try post.save()
         let node = try post.makeNode(context: BlogPostContext.all)
-        print("Dates made are: \nCreated: \(node["created_date_iso8601"]?.string)\nLast Edited:\(node["last_edited_date_iso8601"]?.string)")
         
-        XCTAssertTrue(node["created_date_iso8601"]?.string?.hasPrefix("1970-01-01T01:00:01+") ?? false)
-        XCTAssertTrue(node["last_edited_date_iso8601"]?.string?.hasPrefix("1970-01-01T01:00:10+") ?? false)
+        let formatter = DateFormatter()
+        formatter.calendar = Calendar(identifier: .iso8601)
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        print("Dates made are: \nCreated: \(node["created_date_iso8601"]?.string)\nLast Edited:\(node["last_edited_date_iso8601"]?.string)")
+                
+        XCTAssertEqual(node["created_date_iso8601"]?.string, "1970-01-01T00:00:01+0000")
+        XCTAssertEqual(node["last_edited_date_iso8601"]?.string, "1970-01-01T00:00:10+0000")
     }
 
     // TODO test tag pivot logic

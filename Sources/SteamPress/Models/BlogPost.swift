@@ -104,6 +104,8 @@ extension BlogPost: NodeRepresentable {
             
             let iso8601Formatter = DateFormatter()
             iso8601Formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
+            iso8601Formatter.locale = Locale(identifier: "en_US_POSIX")
+            iso8601Formatter.timeZone = TimeZone(secondsFromGMT: 0)
             
             node["created_date"] = createdDate.makeNode()
             node["created_date_iso8601"] = iso8601Formatter.string(from: created).makeNode()
