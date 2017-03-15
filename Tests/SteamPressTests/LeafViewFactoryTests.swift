@@ -1,6 +1,7 @@
 import XCTest
 import Vapor
 import URI
+import Fluent
 @testable import SteamPress
 
 class LeafViewFactoryTests: XCTestCase {
@@ -13,6 +14,7 @@ class LeafViewFactoryTests: XCTestCase {
         ("testLoggedInUserSetOnAllTagsPageIfPassedIn", testLoggedInUserSetOnAllTagsPageIfPassedIn),
         ("testNoTagsGivenIfEmptyArrayPassedToAllTagsPage", testNoTagsGivenIfEmptyArrayPassedToAllTagsPage),
         ("testParametersAreSetCorrectlyOnAllAuthorsPage", testParametersAreSetCorrectlyOnAllAuthorsPage),
+        ("testAuthorsPageGetsPassedAllAuthorsWithBlogCount", testAuthorsPageGetsPassedAllAuthorsWithBlogCount),
         ("testTwitterHandleSetOnAllAuthorsPageIfProvided", testTwitterHandleSetOnAllAuthorsPageIfProvided),
         ("testNoLoggedInUserPassedToAllAuthorsPageIfNoneProvided", testNoLoggedInUserPassedToAllAuthorsPageIfNoneProvided),
         ]
@@ -30,6 +32,7 @@ class LeafViewFactoryTests: XCTestCase {
         let drop = Droplet(arguments: ["dummy/path/", "prepare"], config: nil)
         viewRenderer = CapturingViewRenderer()
         drop.view = viewRenderer
+        drop.database = Database(MemoryDriver())
         viewFactory = LeafViewFactory(drop: drop)
     }
     
@@ -64,9 +67,12 @@ class LeafViewFactoryTests: XCTestCase {
     }
     
     func testParametersAreSetCorrectlyOnAllAuthorsPage() throws {
-        let user = BlogUser(name: "Luke", username: "luke", password: "")
-        let authors = [user, BlogUser(name: "Han", username: "han", password: "")]
-        _ = try viewFactory.allAuthorsView(uri: authorsURI, allAuthors: authors, user: user, siteTwitterHandle: nil)
+        var user1 = BlogUser(name: "Luke", username: "luke", password: "")
+        try user1.save()
+        var user2 = BlogUser(name: "Han", username: "han", password: "")
+        try user2.save()
+        let authors = [user1, user2]
+        _ = try viewFactory.allAuthorsView(uri: authorsURI, allAuthors: authors, user: user1, siteTwitterHandle: nil)
         
         XCTAssertEqual(viewRenderer.capturedContext?["authors"]?.array?.count, 2)
         XCTAssertEqual((viewRenderer.capturedContext?["authors"]?.array?.first as? Node)?["name"], "Luke")
@@ -74,6 +80,15 @@ class LeafViewFactoryTests: XCTestCase {
         XCTAssertEqual(viewRenderer.capturedContext?["uri"]?.string, "https://test.com:443/authors/")
         XCTAssertNil(viewRenderer.capturedContext?["site_twitter_handle"]?.string)
         XCTAssertEqual(viewRenderer.capturedContext?["user"]?["name"]?.string, "Luke")
+    }
+    
+    func testAuthorsPageGetsPassedAllAuthorsWithBlogCount() throws {
+        var user1 = BlogUser(name: "Luke", username: "luke", password: "")
+        try user1.save()
+        var post1 = TestDataBuilder.anyPost(author: user1)
+        try post1.save()
+        _ = try viewFactory.allAuthorsView(uri: authorsURI, allAuthors: [user1], user: nil, siteTwitterHandle: nil)
+        XCTAssertEqual((viewRenderer.capturedContext?["authors"]?.array?.first as? Node)?["post_count"], 1)
     }
     
     func testTwitterHandleSetOnAllAuthorsPageIfProvided() throws {

@@ -39,6 +39,8 @@ final class BlogUser: Model {
         switch context {
         case is DatabaseContext:
             userNode["password"] = password.makeNode()
+        case BlogUserContext.withPostCount:
+            userNode["post_count"] = try posts().count.makeNode()
         default:
             break
         }
@@ -59,6 +61,10 @@ final class BlogUser: Model {
     static func revert(_ database: Database) throws {
         try database.delete(databaseTableName)
     }
+}
+
+public enum BlogUserContext: Context {
+    case withPostCount
 }
 
 extension BlogUser: Auth.User {

@@ -189,7 +189,7 @@ This is the page for viewing all of the tags on the blog. This provides some mor
 
 This is the page for viewing all of the authors on the blog. It provides a useful page for user's to see everyone who has contributed to the site.
 
-* `authors` - an array of all the `BlogUser`s on the blog
+* `authors` - an array of all the `BlogUser`s on the blog, in `withPostCount` context (see below)
 * `user` - the currently logged in user if a user is currently logged in
 * `site_twitter_handle` - the Twitter handle for the site if configured
 * `uri` - the URI of the page - useful for Open Graph
@@ -258,25 +258,15 @@ There are a number of `POST` routes to the Admin site for creating and editing u
 
 This section needs to be filled out, but you can view the Controllers in the code to work out what they should be, or see the [Example Site](https://github.com/brokenhandsio/SteamPressExample).
 
-# Snippets
+# Contexts
 
-SteamPress supports two type of snippets for blog posts - short and long. Short snippets will provide the first paragraph or so of the blog post, whereas long snippets will show several paragraphs (such as for use on the main blog page, when listing all of the posts).
+## Blog Post
 
-## Usage
-
-You can pass in a `BlogPostContext` to the `makeNode()` call to provide more information when getting `BlogPost` objects. Currently there are three contexts supported:
+The blog post has a number of `Context`s you can pass to the `makeNode()` function to provide more information when getting a `BlogPost`. Currently there are three contexts supported:
 
 * `.shortSnippet` - this will return the post with an `id`, `title`, `author_name`, `author_username`, `slug_url`, `created_date` (Human readable) and `short_snippet`
 * `.longSnippet` - this will return the post with an `id`, `title`, `author_name`, `author_username`, `slug_url`, `created_date` (Human readable) and `long_snippet`. It will also include all of the tags in a `tags` object if there are any associated with that post
 * `.all` - this returns the post with all information, including both snippet lengths, including author names and human readable dates, as well as both dates in ISO 8601 format under the parameter names `created_date_iso8601` and `last_edited_date_iso8601`
-
-You can also call them directly on a `BlogPost` object (such as from a `Query()`):
-
-```swift
-// These both return the some of the contents of a blog post (as a String)
-let shortSnippet = post.shortSnippet()
-let longSnippet = post.longSnippet()
-```
 
 If no `Context` is supplied to the `makeNode()` call you will get:
 
@@ -286,6 +276,26 @@ If no `Context` is supplied to the `makeNode()` call you will get:
 * `bloguser_id` - The ID of the Author of the post
 * `created` - The time the post was created as a `Double`
 * `slug_url`
+
+## Blog User
+
+The blog user has a `withPostCount` `BlogUserContext` available to pass into the `makeNode()` function that provides an extra `post_count` parameter to the user node.
+
+# Snippets
+
+SteamPress supports two type of snippets for blog posts - short and long. Short snippets will provide the first paragraph or so of the blog post, whereas long snippets will show several paragraphs (such as for use on the main blog page, when listing all of the posts)
+
+## Usage
+
+You can pass in a `BlogPostContext` to the `makeNode()` call to provide more information when getting `BlogPost` objects, as shown above.
+
+You can also call them directly on a `BlogPost` object (such as from a `Query()`):
+
+```swift
+// These both return the some of the contents of a blog post (as a String)
+let shortSnippet = post.shortSnippet()
+let longSnippet = post.longSnippet()
+```
 
 # Leaf Markdown
 
