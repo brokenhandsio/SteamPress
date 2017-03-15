@@ -281,7 +281,7 @@ struct LeafViewFactory: ViewFactory {
     func tagView(uri: URI, tag: BlogTag, paginatedPosts: Paginator<BlogPost>, user: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
 
         var parameters: [String: Node] = [
-            "tag": try tag.makeNode(),
+            "tag": try tag.makeNode(context: BlogTagContext.withPostCount),
             "tagPage": true.makeNode(),
             "uri": uri.description.makeNode()
         ]
