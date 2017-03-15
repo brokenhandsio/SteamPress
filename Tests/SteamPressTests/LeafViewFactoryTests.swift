@@ -91,6 +91,22 @@ class LeafViewFactoryTests: XCTestCase {
         XCTAssertEqual((viewRenderer.capturedContext?["authors"]?.array?.first as? Node)?["post_count"], 1)
     }
     
+    func testAuthorsPageGetsPassedAuthorsSortedByPageCount() throws {
+        var user1 = BlogUser(name: "Luke", username: "luke", password: "")
+        try user1.save()
+        var user2 = BlogUser(name: "Han", username: "han", password: "")
+        try user2.save()
+        var post1 = TestDataBuilder.anyPost(author: user1)
+        try post1.save()
+        var post2 = TestDataBuilder.anyPost(author: user2)
+        try post2.save()
+        var post3 = TestDataBuilder.anyPost(author: user2)
+        try post3.save()
+        _ = try viewFactory.allAuthorsView(uri: authorsURI, allAuthors: [user1, user2], user: nil, siteTwitterHandle: nil)
+        XCTAssertEqual(viewRenderer.capturedContext?["authors"]?.array?.count, 2)
+        XCTAssertEqual((viewRenderer.capturedContext?["authors"]?.array?.first as? Node)?["name"], "Han")
+    }
+    
     func testTwitterHandleSetOnAllAuthorsPageIfProvided() throws {
         _ = try viewFactory.allAuthorsView(uri: authorsURI, allAuthors: [], user: nil, siteTwitterHandle: "brokenhandsio")
         XCTAssertEqual(viewRenderer.capturedContext?["site_twitter_handle"]?.string, "brokenhandsio")

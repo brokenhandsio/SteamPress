@@ -327,7 +327,8 @@ struct LeafViewFactory: ViewFactory {
         ]
         
         if allAuthors.count > 0 {
-            parameters["authors"] = try allAuthors.makeNode(context: BlogUserContext.withPostCount)
+            let sortedAuthors = allAuthors.sorted { return (try? $0.posts().count > $1.posts().count) ?? false }
+            parameters["authors"] = try sortedAuthors.makeNode(context: BlogUserContext.withPostCount)
         }
         
         if let user = user {

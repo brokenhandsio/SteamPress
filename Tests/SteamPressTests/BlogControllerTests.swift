@@ -110,6 +110,14 @@ class BlogControllerTests: XCTestCase {
         XCTAssertEqual(viewFactory.blogIndexTags?.count, 1)
         XCTAssertEqual(viewFactory.blogIndexTags?.first?.name, "tatooine")
     }
+    
+    func testBlogIndexGetsAllAuthors() throws {
+        try setupDrop()
+        _ = try drop.respond(to: blogIndexRequest)
+        
+        XCTAssertEqual(viewFactory.blogIndexAuthors?.count, 1)
+        XCTAssertEqual(viewFactory.blogIndexAuthors?.first?.name, "Luke")
+    }
 
     func testBlogIndexGetsDisqusNameIfSetInConfig() throws {
         let expectedName = "steampress"
@@ -433,6 +441,7 @@ class CapturingViewFactory: ViewFactory {
     }
 
     private(set) var blogIndexTags: [BlogTag]? = nil
+    private(set) var blogIndexAuthors: [BlogUser]? = nil
     private(set) var indexDisqusName: String? = nil
     private(set) var paginatedPosts: Paginator<BlogPost>? = nil
     private(set) var blogIndexTwitterHandle: String? = nil
