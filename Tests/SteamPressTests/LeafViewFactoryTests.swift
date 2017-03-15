@@ -10,6 +10,7 @@ class LeafViewFactoryTests: XCTestCase {
     
     static var allTests = [
         ("testParametersAreSetCorrectlyOnAllTagsPage", testParametersAreSetCorrectlyOnAllTagsPage),
+        ("testTagsPageGetsPassedAllTagsWithBlogCount", testTagsPageGetsPassedAllTagsWithBlogCount),
         ("testTwitterHandleSetOnAllTagsPageIfGiven", testTwitterHandleSetOnAllTagsPageIfGiven),
         ("testLoggedInUserSetOnAllTagsPageIfPassedIn", testLoggedInUserSetOnAllTagsPageIfPassedIn),
         ("testNoTagsGivenIfEmptyArrayPassedToAllTagsPage", testNoTagsGivenIfEmptyArrayPassedToAllTagsPage),
@@ -22,6 +23,7 @@ class LeafViewFactoryTests: XCTestCase {
     // MARK: - Properties
     private var viewFactory: LeafViewFactory!
     private var viewRenderer: CapturingViewRenderer!
+    private let database = Database(MemoryDriver())
     
     private let tagsURI = URI(scheme: "https", host: "test.com", path: "tags/")
     private let authorsURI = URI(scheme: "https", host: "test.com", path: "authors/")
@@ -32,14 +34,25 @@ class LeafViewFactoryTests: XCTestCase {
         let drop = Droplet(arguments: ["dummy/path/", "prepare"], config: nil)
         viewRenderer = CapturingViewRenderer()
         drop.view = viewRenderer
-        drop.database = Database(MemoryDriver())
+        drop.database = database
         viewFactory = LeafViewFactory(drop: drop)
+        let printConsole = PrintConsole()
+        let prepare = Prepare(console: printConsole, preparations: [BlogUser.self, BlogPost.self, BlogTag.self, Pivot<BlogPost, BlogTag>.self], database: database)
+        do {
+            try prepare.run(arguments: [])
+        }
+        catch {
+            XCTFail("failed to prepapre DB")
+        }
     }
     
     // MARK: - Tests
     
     func testParametersAreSetCorrectlyOnAllTagsPage() throws {
         let tags = [BlogTag(name: "tag1"), BlogTag(name: "tag2")]
+        for var tag in tags {
+            try tag.save()
+        }
         _ = try viewFactory.allTagsView(uri: tagsURI, allTags: tags, user: nil, siteTwitterHandle: nil)
         
         XCTAssertEqual(viewRenderer.capturedContext?["tags"]?.array?.count, 2)
@@ -48,6 +61,17 @@ class LeafViewFactoryTests: XCTestCase {
         XCTAssertEqual(viewRenderer.capturedContext?["uri"]?.string, "https://test.com:443/tags/")
         XCTAssertNil(viewRenderer.capturedContext?["site_twitter_handle"]?.string)
         XCTAssertNil(viewRenderer.capturedContext?["user"])
+    }
+    
+    func testTagsPageGetsPassedAllTagsWithBlogCount() throws {
+        var tag = BlogTag(name: "test tag")
+        try tag.save()
+        var post1 = TestDataBuilder.anyPost()
+        try post1.save()
+        try BlogTag.addTag(tag.name, to: post1)
+        
+        _ = try viewFactory.allTagsView(uri: tagsURI, allTags: [tag], user: nil, siteTwitterHandle: nil)
+        XCTAssertEqual((viewRenderer.capturedContext?["tags"]?.array?.first as? Node)?["post_count"], 1)
     }
     
     func testTwitterHandleSetOnAllTagsPageIfGiven() throws {

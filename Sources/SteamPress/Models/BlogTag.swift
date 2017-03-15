@@ -28,18 +28,26 @@ extension BlogTag: NodeRepresentable {
             "name": name
             ])
         
-        if context is DatabaseContext {
+        switch context {
+        case is DatabaseContext:
             return node
+        case BlogTagContext.withPostCount:
+            node["post_count"] = try blogPosts().count.makeNode()
+            fallthrough
+        default:
+            guard let urlEncodedName = name.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) else {
+                return node
+            }
+            
+            node["url_encoded_name"] = urlEncodedName.makeNode()
         }
-        
-        guard let urlEncodedName = name.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) else {
-            return node
-        }
-        
-        node["url_encoded_name"] = urlEncodedName.makeNode()
         
         return node
     }
+}
+
+public enum BlogTagContext: Context {
+    case withPostCount
 }
 
 extension BlogTag {

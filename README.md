@@ -129,6 +129,7 @@ This is the index page of the blog. The parameters it will receive are:
 
 * `posts` - a Node containing data about the posts and metadata for the paginator. You can access the posts by calling the `.data` object on it, which is an array of blog posts if there are any, in date descending order. The posts will be made with a `longSnippet` context (see below)
 * `tags` - an array of tags if there are any
+* `authors` - an array of the authors if there are any
 * `user` - the currently logged in user if a user is currently logged in
 * `disqusName` - the name of your Disqus site if configured
 * `blogIndexPage` - a boolean saying we are on the index page of the blog - useful for navbars
@@ -279,7 +280,11 @@ If no `Context` is supplied to the `makeNode()` call you will get:
 
 ## Blog User
 
-The blog user has a `withPostCount` `BlogUserContext` available to pass into the `makeNode()` function that provides an extra `post_count` parameter to the user node.
+The blog user has a `withPostCount` `BlogUserContext` available to pass into the `makeNode()` function that provides an extra `post_count` parameter to the user node, which contains the number of posts that author has written.
+
+## Blog Tag
+
+The blog user has a `withPostCount` `BlogTagContext` available to pass into the `makeNode()` function that provides an extra `post_count` parameter to the tag node, which contains the number of posts tagged with that tag.
 
 # Snippets
 

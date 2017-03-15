@@ -311,7 +311,7 @@ struct LeafViewFactory: ViewFactory {
         ]
         
         if allTags.count > 0 {
-            parameters["tags"] = try allTags.makeNode()
+            parameters["tags"] = try allTags.makeNode(context: BlogTagContext.withPostCount)
         }
         
         if let user = user {
