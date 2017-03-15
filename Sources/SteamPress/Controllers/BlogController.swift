@@ -41,9 +41,10 @@ struct BlogController {
     
     func indexHandler(request: Request) throws -> ResponseRepresentable {
         let tags = try BlogTag.all()
+        let authors = try BlogUser.all()
         let paginatedBlogPosts = try BlogPost.query().sort("created", .descending).paginator(postsPerPage, request: request)
 
-        return try viewFactory.blogIndexView(uri: request.uri, paginatedPosts: paginatedBlogPosts, tags: tags, loggedInUser: getLoggedInUser(in: request), disqusName: getDisqusName(), siteTwitterHandle: getSiteTwitterHandle())
+        return try viewFactory.blogIndexView(uri: request.uri, paginatedPosts: paginatedBlogPosts, tags: tags, authors: authors, loggedInUser: getLoggedInUser(in: request), disqusName: getDisqusName(), siteTwitterHandle: getSiteTwitterHandle())
     }
     
     func blogPostIndexRedirectHandler(request: Request) throws -> ResponseRepresentable {

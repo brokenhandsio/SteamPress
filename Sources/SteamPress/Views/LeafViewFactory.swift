@@ -216,7 +216,7 @@ struct LeafViewFactory: ViewFactory {
 
     // MARK: - Blog Controller Views
 
-    func blogIndexView(uri: URI, paginatedPosts: Paginator<BlogPost>, tags: [BlogTag], loggedInUser: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
+    func blogIndexView(uri: URI, paginatedPosts: Paginator<BlogPost>, tags: [BlogTag], authors: [BlogUser], loggedInUser: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
 
         var parameters: [String: Node] = [
             "uri": uri.description.makeNode(),
@@ -229,6 +229,10 @@ struct LeafViewFactory: ViewFactory {
 
         if tags.count > 0 {
             parameters["tags"] = try tags.makeNode()
+        }
+        
+        if authors.count > 0 {
+            parameters["authors"] = try authors.makeNode()
         }
 
         if let user = loggedInUser {

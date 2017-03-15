@@ -446,12 +446,13 @@ class CapturingViewFactory: ViewFactory {
     private(set) var paginatedPosts: Paginator<BlogPost>? = nil
     private(set) var blogIndexTwitterHandle: String? = nil
     private(set) var blogIndexURI: URI? = nil
-    func blogIndexView(uri: URI, paginatedPosts: Paginator<BlogPost>, tags: [BlogTag], loggedInUser: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
+    func blogIndexView(uri: URI, paginatedPosts: Paginator<BlogPost>, tags: [BlogTag], authors: [BlogUser], loggedInUser: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
         self.blogIndexTags = tags
         self.paginatedPosts = paginatedPosts
         self.indexDisqusName = disqusName
         self.blogIndexTwitterHandle = siteTwitterHandle
         self.blogIndexURI = uri
+        self.blogIndexAuthors = authors
         return View(data: try "Test".makeBytes())
     }
     
