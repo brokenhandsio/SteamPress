@@ -261,7 +261,7 @@ struct LeafViewFactory: ViewFactory {
             "post_uri": uri.description.makeNode(),
             "post_uri_encoded": uri.description.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
             "site_uri": uri.getRootUri().description.makeNode(),
-            "post_description": markdownToHTML(post.shortSnippet()).replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression, range: nil).replacingOccurrences(of: "\n", with: " ").replacingOccurrences(of: "\r", with: "").makeNode()
+            "post_description": SwiftSoup.parse(markdownToHTML(post.shortSnippet())).text().makeNode()
             ])
         
         let image = try SwiftSoup.parse(markdownToHTML(post.contents)).select("img").first()

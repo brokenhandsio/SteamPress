@@ -150,6 +150,7 @@ This is the page for viewing a single entire blog post. The parameters set are:
 * `post_uri_encoded` - A URL-query encoded for of the URI for passing to Share buttons
 * `site_uri`: The URI of the root site - this is useful for creating links to author pages for `article:author` Open Graph support
 * `post_description` - The HTML of the short snippet of the post on a single line with all HTML tags stripped out for the `description` tags
+* `post_image` - The first image in the blog post if one is there. Useful for OpenGraph
 * `site_twitter_handle` - the Twitter handle for the site if configured
 
 ### `tag.leaf`
