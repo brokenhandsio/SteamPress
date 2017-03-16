@@ -3,6 +3,7 @@ import XCTest
 @testable import SteamPress
 import Fluent
 import Vapor
+import Foundation
 
 class BlogPostTests: XCTestCase {
 
