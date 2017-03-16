@@ -3,6 +3,7 @@ import URI
 import HTTP
 import Paginator
 import SwiftMarkdown
+import SwiftSoup
 
 struct LeafViewFactory: ViewFactory {
 
@@ -10,7 +11,7 @@ struct LeafViewFactory: ViewFactory {
 
     // MARK: - Admin Controller Views
 
-    func createBlogPostView(uri: URI, errors: [String]? = nil, title: String? = nil, contents: String? = nil, slugUrl: String? = nil, tags: [Node]? = nil, isEditing: Bool = false, postToEdit: BlogPost? = nil) throws -> View {
+    func createBlogPostView(uri: URI, errors: [String]? = nil, title: String? = nil, contents: String? = nil, slugUrl: String? = nil, tags: [Vapor.Node]? = nil, isEditing: Bool = false, postToEdit: BlogPost? = nil) throws -> View {
         let titleError = (title == nil || (title?.isWhitespace())!) && errors != nil
         let contentsError = (contents == nil || (contents?.isWhitespace())!) && errors != nil
 
@@ -68,7 +69,7 @@ struct LeafViewFactory: ViewFactory {
         return try drop.view.make("blog/admin/createPost", parameters)
     }
 
-    func createUserView(editing: Bool = false, errors: [String]? = nil, name: String? = nil, username: String? = nil, passwordError: Bool? = nil, confirmPasswordError: Bool? = nil, resetPasswordRequired: Bool? = nil, userId: Node? = nil) throws -> View {
+    func createUserView(editing: Bool = false, errors: [String]? = nil, name: String? = nil, username: String? = nil, passwordError: Bool? = nil, confirmPasswordError: Bool? = nil, resetPasswordRequired: Bool? = nil, userId: Vapor.Node? = nil) throws -> View {
         let nameError = name == nil && errors != nil
         let usernameError = username == nil && errors != nil
 
@@ -163,7 +164,7 @@ struct LeafViewFactory: ViewFactory {
 
     func createResetPasswordView(errors: [String]? = nil, passwordError: Bool? = nil, confirmPasswordError: Bool? = nil) throws -> View {
 
-        var parameters: [String: Node] = [:]
+        var parameters: [String: Vapor.Node] = [:]
 
         if let resetPasswordErrors = errors {
             parameters["errors"] = try resetPasswordErrors.makeNode()
@@ -183,7 +184,7 @@ struct LeafViewFactory: ViewFactory {
     }
 
     func createProfileView(uri: URI, author: BlogUser, isMyProfile: Bool, posts: [BlogPost], loggedInUser: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
-        var parameters: [String: Node] = [
+        var parameters: [String: Vapor.Node] = [
             "author": try author.makeNode(),
             "uri": uri.description.makeNode()
         ]
@@ -218,7 +219,7 @@ struct LeafViewFactory: ViewFactory {
 
     func blogIndexView(uri: URI, paginatedPosts: Paginator<BlogPost>, tags: [BlogTag], authors: [BlogUser], loggedInUser: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
 
-        var parameters: [String: Node] = [
+        var parameters: [String: Vapor.Node] = [
             "uri": uri.description.makeNode(),
             "blogIndexPage": true.makeNode()
         ]
@@ -262,6 +263,12 @@ struct LeafViewFactory: ViewFactory {
             "site_uri": uri.getRootUri().description.makeNode(),
             "post_description": markdownToHTML(post.shortSnippet()).replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression, range: nil).replacingOccurrences(of: "\n", with: " ").replacingOccurrences(of: "\r", with: "").makeNode()
             ])
+        
+        let image = try SwiftSoup.parse(markdownToHTML(post.contents)).select("img").first()
+        
+        if let imageFound = image {
+            parameters["post_image"] = try imageFound.attr("src").makeNode()
+        }
 
         if let user = user {
             parameters["user"] = try user.makeNode()
@@ -280,7 +287,7 @@ struct LeafViewFactory: ViewFactory {
 
     func tagView(uri: URI, tag: BlogTag, paginatedPosts: Paginator<BlogPost>, user: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
 
-        var parameters: [String: Node] = [
+        var parameters: [String: Vapor.Node] = [
             "tag": try tag.makeNode(context: BlogTagContext.withPostCount),
             "tagPage": true.makeNode(),
             "uri": uri.description.makeNode()

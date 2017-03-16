@@ -367,6 +367,7 @@ class BlogControllerTests: XCTestCase {
         XCTAssertEqual(1, viewFactory.allAuthorsPageAuthors?.count)
         XCTAssertEqual("Luke", viewFactory.allAuthorsPageAuthors?.first?.name)
     }
+    
 }
 
 import URI

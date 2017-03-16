@@ -24,6 +24,7 @@ class LeafViewFactoryTests: XCTestCase {
         ("testNoLoggedInUserPassedToTagPageIfNoneProvided", testNoLoggedInUserPassedToTagPageIfNoneProvided),
         ("testDisqusNamePassedToTagPageIfSet", testDisqusNamePassedToTagPageIfSet),
         ("testTwitterHandlePassedToTagPageIfSet", testTwitterHandlePassedToTagPageIfSet),
+        ("testBlogPageGetsImageUrlIfOneInPostMarkdown", testBlogPageGetsImageUrlIfOneInPostMarkdown)
         ]
     
     // MARK: - Properties
@@ -35,6 +36,7 @@ class LeafViewFactoryTests: XCTestCase {
     private let authorsURI = URI(scheme: "https", host: "test.com", path: "authors/")
     private let tagURI = URI(scheme: "https", host: "test.com", path: "tags/tatooine/")
     private var tagRequest: Request!
+    private let postURI = URI(scheme: "https", host: "test.com", path: "posts/test-post/")
     
     // MARK: - Overrides
     
@@ -205,6 +207,28 @@ class LeafViewFactoryTests: XCTestCase {
         let testTag = try setupTagPage()
         _ = try viewFactory.tagView(uri: tagURI, tag: testTag, paginatedPosts: try testTag.blogPosts().paginator(5, request: tagRequest), user: nil, disqusName: nil, siteTwitterHandle: "brokenhandsio")
         XCTAssertEqual(viewRenderer.capturedContext?["site_twitter_handle"]?.string, "brokenhandsio")
+    }
+    
+    func testBlogPageGetsImageUrlIfOneInPostMarkdown() throws {
+        var user = BlogUser(name: "Luke", username: "luke", password: "")
+        try user.save()
+        var postWithImage = TestDataBuilder.anyPostWithImage(author: user)
+        try postWithImage.save()
+        _ = try viewFactory.blogPostView(uri: postURI, post: postWithImage, author: user, user: nil, disqusName: nil, siteTwitterHandle: nil)
+        
+        XCTAssertNotNil((viewRenderer.capturedContext?["post_image"])?.string)
+    }
+    
+    func testDescriptionOnBlogPostPageIsShortSnippetTextCleaned() throws {
+        var user = BlogUser(name: "Luke", username: "luke", password: "")
+        try user.save()
+        var postWithImage = TestDataBuilder.anyPostWithImage(author: user)
+        try postWithImage.save()
+        _ = try viewFactory.blogPostView(uri: postURI, post: postWithImage, author: user, user: nil, disqusName: nil, siteTwitterHandle: nil)
+        
+        let expectedDescription = "Welcome to SteamPress! SteamPress started out as an idea - after all, I was porting sites and backends over to Swift and would like to have a blog as well. Being early days for Server-Side Swift, and embracing Vapor, there wasn't anything available to put a blog on my site, so I did what any self-respecting engineer would do - I made one! Besides, what better way to learn a framework than build a blog!"
+        
+        XCTAssertEqual((viewRenderer.capturedContext?["post_description"])?.string?.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines), expectedDescription)
     }
     
     private func setupTagPage() throws -> BlogTag {
