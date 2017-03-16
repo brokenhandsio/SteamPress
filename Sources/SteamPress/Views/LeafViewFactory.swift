@@ -311,7 +311,8 @@ struct LeafViewFactory: ViewFactory {
         ]
         
         if allTags.count > 0 {
-            parameters["tags"] = try allTags.makeNode(context: BlogTagContext.withPostCount)
+            let sortedTags = allTags.sorted { return (try? $0.blogPosts().count > $1.blogPosts().count) ?? false }
+            parameters["tags"] = try sortedTags.makeNode(context: BlogTagContext.withPostCount)
         }
         
         if let user = user {

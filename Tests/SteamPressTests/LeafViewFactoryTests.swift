@@ -12,6 +12,7 @@ class LeafViewFactoryTests: XCTestCase {
     static var allTests = [
         ("testParametersAreSetCorrectlyOnAllTagsPage", testParametersAreSetCorrectlyOnAllTagsPage),
         ("testTagsPageGetsPassedAllTagsWithBlogCount", testTagsPageGetsPassedAllTagsWithBlogCount),
+        ("testTagsPageGetsPassedTagsSortedByPageCount", testTagsPageGetsPassedTagsSortedByPageCount),
         ("testTwitterHandleSetOnAllTagsPageIfGiven", testTwitterHandleSetOnAllTagsPageIfGiven),
         ("testLoggedInUserSetOnAllTagsPageIfPassedIn", testLoggedInUserSetOnAllTagsPageIfPassedIn),
         ("testNoTagsGivenIfEmptyArrayPassedToAllTagsPage", testNoTagsGivenIfEmptyArrayPassedToAllTagsPage),
@@ -80,6 +81,26 @@ class LeafViewFactoryTests: XCTestCase {
         
         _ = try viewFactory.allTagsView(uri: tagsURI, allTags: [tag], user: nil, siteTwitterHandle: nil)
         XCTAssertEqual((viewRenderer.capturedContext?["tags"]?.array?.first as? Node)?["post_count"], 1)
+    }
+    
+    func testTagsPageGetsPassedTagsSortedByPageCount() throws {
+        var tag = BlogTag(name: "test tag")
+        var tag2 = BlogTag(name: "tatooine")
+        try tag.save()
+        try tag2.save()
+        var post1 = TestDataBuilder.anyPost()
+        try post1.save()
+        try BlogTag.addTag(tag.name, to: post1)
+        var post2 = TestDataBuilder.anyPost()
+        try post2.save()
+        try BlogTag.addTag(tag2.name, to: post2)
+        var post3 = TestDataBuilder.anyLongPost()
+        try post3.save()
+        try BlogTag.addTag(tag2.name, to: post3)
+        
+        _ = try viewFactory.allTagsView(uri: tagsURI, allTags: [tag, tag2], user: nil, siteTwitterHandle: nil)
+        XCTAssertEqual(viewRenderer.capturedContext?["tags"]?.array?.count, 2)
+        XCTAssertEqual((viewRenderer.capturedContext?["tags"]?.array?.first as? Node)?["name"], "tatooine")
     }
     
     func testTwitterHandleSetOnAllTagsPageIfGiven() throws {
