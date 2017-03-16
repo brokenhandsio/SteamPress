@@ -181,7 +181,7 @@ This is the page for viewing a profile of a user. This is generally used for vie
 
 This is the page for viewing all of the tags on the blog. This provides some more navigation points for the blog as well as providing a page in case the user strips off the tag from the Tag's URL. The parameters that can be passed to it are:
 
-* `tags` - an array of all the tags on the blog
+* `tags` - an array of all the tags on the blog, in `withPostCount` context (see below) sorted by post count
 * `user` - the currently logged in user if a user is currently logged in
 * `site_twitter_handle` - the Twitter handle for the site if configured
 * `uri` - the URI of the page - useful for Open Graph
@@ -190,7 +190,7 @@ This is the page for viewing all of the tags on the blog. This provides some mor
 
 This is the page for viewing all of the authors on the blog. It provides a useful page for user's to see everyone who has contributed to the site.
 
-* `authors` - an array of all the `BlogUser`s on the blog, in `withPostCount` context (see below)
+* `authors` - an array of all the `BlogUser`s on the blog, in `withPostCount` context (see below) sorted by post count
 * `user` - the currently logged in user if a user is currently logged in
 * `site_twitter_handle` - the Twitter handle for the site if configured
 * `uri` - the URI of the page - useful for Open Graph
