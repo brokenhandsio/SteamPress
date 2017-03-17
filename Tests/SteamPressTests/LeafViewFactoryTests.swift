@@ -46,6 +46,11 @@ class LeafViewFactoryTests: XCTestCase {
         ("testAuthorViewGetsLoggedInUserIfProvider", testAuthorViewGetsLoggedInUserIfProvider),
         ("testAuthorViewGetsDisqusNameIfProvided", testAuthorViewGetsDisqusNameIfProvided),
         ("testAuthorViewGetsTwitterHandleIfProvided", testAuthorViewGetsTwitterHandleIfProvided),
+        ("testPasswordViewGivenCorrectParameters", testPasswordViewGivenCorrectParameters),
+        ("testPasswordViewHasCorrectParametersWhenError", testPasswordViewHasCorrectParametersWhenError),
+        ("testLoginViewGetsCorrectParameters", testLoginViewGetsCorrectParameters),
+        ("testLoginViewWhenErrored", testLoginViewWhenErrored),
+        ("testLoginPageUsernamePasswordErrorsMarkedWhenNotSuppliedAndErrored", testLoginPageUsernamePasswordErrorsMarkedWhenNotSuppliedAndErrored),
         ]
     
     // MARK: - Properties
@@ -404,6 +409,35 @@ class LeafViewFactoryTests: XCTestCase {
         XCTAssertTrue((viewRenderer.capturedContext?["passwordError"]?.bool) ?? false)
         XCTAssertTrue((viewRenderer.capturedContext?["confirmPasswordError"]?.bool) ?? false)
     }
+    
+    func testLoginViewGetsCorrectParameters() throws {
+        let _ = try viewFactory.createLoginView(loginWarning: false, errors: nil, username: nil, password: nil)
+        XCTAssertFalse((viewRenderer.capturedContext?["usernameError"]?.bool) ?? true)
+        XCTAssertFalse((viewRenderer.capturedContext?["passwordError"]?.bool) ?? true)
+        XCTAssertNil(viewRenderer.capturedContext?["usernameSupplied"])
+        XCTAssertNil(viewRenderer.capturedContext?["errors"])
+        XCTAssertNil(viewRenderer.capturedContext?["loginWarning"])
+        XCTAssertEqual(viewRenderer.leafPath, "blog/admin/login")
+    }
+    
+    func testLoginViewWhenErrored() throws {
+        let expectedError = "Username/password incorrect"
+        let _ = try viewFactory.createLoginView(loginWarning: true, errors: [expectedError], username: "tim", password: "password")
+        XCTAssertFalse((viewRenderer.capturedContext?["usernameError"]?.bool) ?? true)
+        XCTAssertFalse((viewRenderer.capturedContext?["passwordError"]?.bool) ?? true)
+        XCTAssertEqual(viewRenderer.capturedContext?["usernameSupplied"]?.string, "tim")
+        XCTAssertTrue((viewRenderer.capturedContext?["loginWarning"]?.bool) ?? false)
+        XCTAssertEqual(viewRenderer.capturedContext?["errors"]?.nodeArray?.first?.string, expectedError)
+    }
+    
+    func testLoginPageUsernamePasswordErrorsMarkedWhenNotSuppliedAndErrored() throws {
+        let expectedError = "Username/password incorrect"
+        let _ = try viewFactory.createLoginView(loginWarning: true, errors: [expectedError], username: nil, password: nil)
+        XCTAssertTrue((viewRenderer.capturedContext?["usernameError"]?.bool) ?? false)
+        XCTAssertTrue((viewRenderer.capturedContext?["passwordError"]?.bool) ?? false)
+    }
+    
+    
     
     // MARK: - Helpers
     
