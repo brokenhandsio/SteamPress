@@ -39,6 +39,12 @@ class LeafViewFactoryTests: XCTestCase {
         ("testUserPassedToBlogIndexIfUserPassedIn", testUserPassedToBlogIndexIfUserPassedIn),
         ("testDisqusNamePassedToBlogIndexIfPassedIn", testDisqusNamePassedToBlogIndexIfPassedIn),
         ("testTwitterHandlePassedToBlogIndexIfPassedIn", testTwitterHandlePassedToBlogIndexIfPassedIn),
+        ("testAuthorViewHasCorrectParametersSet", testAuthorViewHasCorrectParametersSet),
+        ("testAuthorViewMyProfileSetIfViewingMyProfile", testAuthorViewMyProfileSetIfViewingMyProfile),
+        ("testAuthorViewHasNoPostsSetIfNoneCreated", testAuthorViewHasNoPostsSetIfNoneCreated),
+        ("testAuthorViewGetsLoggedInUserIfProvider", testAuthorViewGetsLoggedInUserIfProvider),
+        ("testAuthorViewGetsDisqusNameIfProvided", testAuthorViewGetsDisqusNameIfProvided),
+        ("testAuthorViewGetsTwitterHandleIfProvided", testAuthorViewGetsTwitterHandleIfProvided),
         ]
     
     // MARK: - Properties
@@ -53,6 +59,7 @@ class LeafViewFactoryTests: XCTestCase {
     private let postURI = URI(scheme: "https", host: "test.com", path: "posts/test-post/")
     private let indexURI = URI(scheme: "https", host: "test.com", path: "/")
     private var indexRequest: Request!
+    private let authorURI = URI(scheme: "https", host: "test.com", path: "authors/luke/")
     
     // MARK: - Overrides
     
@@ -328,6 +335,54 @@ class LeafViewFactoryTests: XCTestCase {
         XCTAssertEqual(viewRenderer.capturedContext?["site_twitter_handle"]?.string, "brokenhandsio")
     }
     
+    func testAuthorViewHasCorrectParametersSet() throws {
+        let (author, posts) = try setupAuthorPage()
+        let _ = try viewFactory.createProfileView(uri: authorURI, author: author, isMyProfile: false, posts: posts, loggedInUser: nil, disqusName: nil, siteTwitterHandle: nil)
+        
+        XCTAssertEqual(viewRenderer.capturedContext?["author"]?["name"]?.string, author.name)
+        XCTAssertEqual(viewRenderer.capturedContext?["posts"]?.array?.count, posts.count)
+        XCTAssertEqual((viewRenderer.capturedContext?["posts"]?.array?.first as? Node)?["title"]?.string, posts.first?.title)
+        XCTAssertEqual(viewRenderer.capturedContext?["uri"]?.string, authorURI.description)
+        XCTAssertTrue((viewRenderer.capturedContext?["profilePage"]?.bool) ?? false)
+        XCTAssertNil(viewRenderer.capturedContext?["myProfile"])
+        XCTAssertNil(viewRenderer.capturedContext?["user"])
+        XCTAssertNil(viewRenderer.capturedContext?["disqusName"])
+        XCTAssertNil(viewRenderer.capturedContext?["site_twitter_handle"])
+    }
+    
+    func testAuthorViewMyProfileSetIfViewingMyProfile() throws {
+        let (author, posts) = try setupAuthorPage()
+        let _ = try viewFactory.createProfileView(uri: authorURI, author: author, isMyProfile: true, posts: posts, loggedInUser: nil, disqusName: nil, siteTwitterHandle: nil)
+        XCTAssertTrue((viewRenderer.capturedContext?["myProfile"]?.bool) ?? false)
+        XCTAssertNil(viewRenderer.capturedContext?["profilePage"])
+    }
+    
+    func testAuthorViewHasNoPostsSetIfNoneCreated() throws {
+        let (author, _) = try setupAuthorPage()
+        let _ = try viewFactory.createProfileView(uri: authorURI, author: author, isMyProfile: true, posts: [], loggedInUser: nil, disqusName: nil, siteTwitterHandle: nil)
+        XCTAssertNil(viewRenderer.capturedContext?["posts"])
+    }
+    
+    func testAuthorViewGetsLoggedInUserIfProvider() throws {
+        let (author, posts) = try setupAuthorPage()
+        let _ = try viewFactory.createProfileView(uri: authorURI, author: author, isMyProfile: true, posts: posts, loggedInUser: author, disqusName: nil, siteTwitterHandle: nil)
+        XCTAssertEqual(viewRenderer.capturedContext?["user"]?["name"]?.string, author.name)
+    }
+    
+    func testAuthorViewGetsDisqusNameIfProvided() throws {
+        let (author, posts) = try setupAuthorPage()
+        let _ = try viewFactory.createProfileView(uri: authorURI, author: author, isMyProfile: true, posts: posts, loggedInUser: nil, disqusName: "brokenhands", siteTwitterHandle: nil)
+        XCTAssertEqual(viewRenderer.capturedContext?["disqusName"]?.string, "brokenhands")
+    }
+    
+    func testAuthorViewGetsTwitterHandleIfProvided() throws {
+        let (author, posts) = try setupAuthorPage()
+        let _ = try viewFactory.createProfileView(uri: authorURI, author: author, isMyProfile: true, posts: posts, loggedInUser: nil, disqusName: nil, siteTwitterHandle: "brokenhandsio")
+        XCTAssertEqual(viewRenderer.capturedContext?["site_twitter_handle"]?.string, "brokenhandsio")
+    }
+    
+    // MARK: - Helpers
+    
     private func setupBlogIndex() throws -> ([BlogPost], [BlogTag], [BlogUser]) {
         var user1 = TestDataBuilder.anyUser()
         try user1.save()
@@ -360,6 +415,16 @@ class LeafViewFactoryTests: XCTestCase {
         try post1.save()
         try BlogTag.addTag(tag.name, to: post1)
         return tag
+    }
+    
+    private func setupAuthorPage() throws -> (BlogUser, [BlogPost]) {
+        var user = BlogUser(name: "Luke", username: "luke", password: "")
+        try user.save()
+        var postWithImage = TestDataBuilder.anyPostWithImage(author: user)
+        try postWithImage.save()
+        var post2 = TestDataBuilder.anyPost(author: user)
+        try post2.save()
+        return (user, [postWithImage, post2])
     }
     
 }
