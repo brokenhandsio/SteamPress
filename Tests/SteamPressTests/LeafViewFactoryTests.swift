@@ -59,6 +59,10 @@ class LeafViewFactoryTests: XCTestCase {
         ("testCreateUserViewWhenNoNameOrUsernameSupplied", testCreateUserViewWhenNoNameOrUsernameSupplied),
         ("testCreateUserViewForEditing", testCreateUserViewForEditing),
         ("testCreateUserViewThrowsWhenTryingToEditWithoutUserId", testCreateUserViewThrowsWhenTryingToEditWithoutUserId),
+        ("testCreateBlogPostViewGetsCorrectParameters", testCreateBlogPostViewGetsCorrectParameters),
+        ("testCreateBlogPostViewWhenEditing", testCreateBlogPostViewWhenEditing),
+        ("testEditBlogPostViewThrowsWithNoPostToEdit", testEditBlogPostViewThrowsWithNoPostToEdit),
+        ("testCreateBlogPostViewWithErrorsAndNoTitleOrContentsSupplied", testCreateBlogPostViewWithErrorsAndNoTitleOrContentsSupplied),
         ]
     
     // MARK: - Properties
@@ -74,6 +78,8 @@ class LeafViewFactoryTests: XCTestCase {
     private let indexURI = URI(scheme: "https", host: "test.com", path: "/")
     private var indexRequest: Request!
     private let authorURI = URI(scheme: "https", host: "test.com", path: "authors/luke/")
+    private let createPostURI = URI(scheme: "https", host: "test.com", path: "admin/createPost/")
+    private let editPostURI = URI(scheme: "https", host: "test.com", path: "admin/posts/1/edit/")
     
     // MARK: - Overrides
     
@@ -515,12 +521,64 @@ class LeafViewFactoryTests: XCTestCase {
     func testCreateUserViewThrowsWhenTryingToEditWithoutUserId() throws {
         var errored = false
         do {
-            let _ = try viewFactory.createUserView(editing: true, errors: nil, name: "Luke", username: "luke")
+            let _ = try viewFactory.createUserView(editing: true, errors: nil, name: "Luke", username: "luke", userId: nil)
         } catch {
             errored = true
         }
         
         XCTAssertTrue(errored)
+    }
+    
+    func testCreateBlogPostViewGetsCorrectParameters() throws {
+        let _ = try viewFactory.createBlogPostView(uri: createPostURI)
+        XCTAssertEqual(viewRenderer.capturedContext?["postPathPrefix"]?.string, "https://test.com:443/posts/")
+        XCTAssertFalse((viewRenderer.capturedContext?["titleError"]?.bool) ?? true)
+        XCTAssertFalse((viewRenderer.capturedContext?["contentsError"]?.bool) ?? true)
+        XCTAssertNil(viewRenderer.capturedContext?["errors"])
+        XCTAssertNil(viewRenderer.capturedContext?["titleSupplied"])
+        XCTAssertNil(viewRenderer.capturedContext?["contentsSupplied"])
+        XCTAssertNil(viewRenderer.capturedContext?["slugUrlSupplied"])
+        XCTAssertNil(viewRenderer.capturedContext?["tagsSupplied"])
+        XCTAssertEqual(viewRenderer.leafPath, "blog/admin/createPost")
+        XCTAssertTrue((viewRenderer.capturedContext?["createBlogPostPage"]?.bool) ?? false)
+        XCTAssertNil(viewRenderer.capturedContext?["editing"])
+    }
+    
+    func testCreateBlogPostViewWhenEditing() throws {
+        let postToEdit = TestDataBuilder.anyPost()
+        let _ = try viewFactory.createBlogPostView(uri: editPostURI, title: postToEdit.title, contents: postToEdit.contents, slugUrl: postToEdit.slugUrl, tags: ["test".makeNode()], isEditing: true, postToEdit: postToEdit)
+        XCTAssertEqual(viewRenderer.capturedContext?["postPathPrefix"]?.string, "https://test.com:443/posts/")
+        XCTAssertFalse((viewRenderer.capturedContext?["titleError"]?.bool) ?? true)
+        XCTAssertFalse((viewRenderer.capturedContext?["contentsError"]?.bool) ?? true)
+        XCTAssertNil(viewRenderer.capturedContext?["errors"])
+        XCTAssertEqual(viewRenderer.capturedContext?["titleSupplied"]?.string, postToEdit.title)
+        XCTAssertEqual(viewRenderer.capturedContext?["contentsSupplied"]?.string, postToEdit.contents)
+        XCTAssertEqual(viewRenderer.capturedContext?["slugUrlSupplied"]?.string, postToEdit.slugUrl)
+        XCTAssertEqual(viewRenderer.capturedContext?["tagsSupplied"]?.array?.count, 1)
+        XCTAssertEqual(viewRenderer.capturedContext?["tagsSupplied"]?.nodeArray?.first?.string, "test")
+        XCTAssertTrue((viewRenderer.capturedContext?["editing"]?.bool) ?? false)
+        XCTAssertEqual(viewRenderer.capturedContext?["post"]?["title"]?.string, postToEdit.title)
+        XCTAssertNil(viewRenderer.capturedContext?["createBlogPostPage"])
+    }
+    
+    func testEditBlogPostViewThrowsWithNoPostToEdit() throws {
+        var errored = false
+        do {
+            let _ = try viewFactory.createBlogPostView(uri: createPostURI, isEditing: true, postToEdit: nil)
+        } catch {
+            errored = true
+        }
+        
+        XCTAssertTrue(errored)
+    }
+    
+    func testCreateBlogPostViewWithErrorsAndNoTitleOrContentsSupplied() throws {
+        let expectedError = "Please enter a title"
+        let _ = try viewFactory.createBlogPostView(uri: createPostURI, errors: [expectedError], title: nil, contents: nil, slugUrl: nil, tags: nil, isEditing: false)
+        XCTAssertTrue((viewRenderer.capturedContext?["titleError"]?.bool) ?? false)
+        XCTAssertTrue((viewRenderer.capturedContext?["contentsError"]?.bool) ?? false)
+        XCTAssertEqual(viewRenderer.capturedContext?["errors"]?.nodeArray?.count, 1)
+        XCTAssertEqual(viewRenderer.capturedContext?["errors"]?.nodeArray?.first?.string, expectedError)
     }
     
     // MARK: - Helpers
