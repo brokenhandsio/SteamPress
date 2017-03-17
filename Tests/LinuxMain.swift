@@ -7,4 +7,5 @@ XCTMain([
     testCase(BlogControllerTests.allTests),
     testCase(BlogAdminControllerTests.allTests),
     testCase(BlogTagTests.allTests),
+    testCase(LeafViewFactoryTests.allTests),
 ])

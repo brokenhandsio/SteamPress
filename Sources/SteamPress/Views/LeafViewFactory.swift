@@ -3,6 +3,7 @@ import URI
 import HTTP
 import Paginator
 import SwiftMarkdown
+import SwiftSoup
 
 struct LeafViewFactory: ViewFactory {
 
@@ -10,7 +11,7 @@ struct LeafViewFactory: ViewFactory {
 
     // MARK: - Admin Controller Views
 
-    func createBlogPostView(uri: URI, errors: [String]? = nil, title: String? = nil, contents: String? = nil, slugUrl: String? = nil, tags: [Node]? = nil, isEditing: Bool = false, postToEdit: BlogPost? = nil) throws -> View {
+    func createBlogPostView(uri: URI, errors: [String]? = nil, title: String? = nil, contents: String? = nil, slugUrl: String? = nil, tags: [Vapor.Node]? = nil, isEditing: Bool = false, postToEdit: BlogPost? = nil) throws -> View {
         let titleError = (title == nil || (title?.isWhitespace())!) && errors != nil
         let contentsError = (contents == nil || (contents?.isWhitespace())!) && errors != nil
 
@@ -63,12 +64,10 @@ struct LeafViewFactory: ViewFactory {
             parameters["createBlogPostPage"] = true
         }
 
-        print("Create Post view parameters created with titleError set to \(titleError), contentsError set to \(contentsError), editing set to \(isEditing) and errors set to \(errors)")
-
         return try drop.view.make("blog/admin/createPost", parameters)
     }
 
-    func createUserView(editing: Bool = false, errors: [String]? = nil, name: String? = nil, username: String? = nil, passwordError: Bool? = nil, confirmPasswordError: Bool? = nil, resetPasswordRequired: Bool? = nil, userId: Node? = nil) throws -> View {
+    func createUserView(editing: Bool = false, errors: [String]? = nil, name: String? = nil, username: String? = nil, passwordError: Bool? = nil, confirmPasswordError: Bool? = nil, resetPasswordRequired: Bool? = nil, userId: Vapor.Node? = nil) throws -> View {
         let nameError = name == nil && errors != nil
         let usernameError = username == nil && errors != nil
 
@@ -109,8 +108,6 @@ struct LeafViewFactory: ViewFactory {
             parameters["userId"] = userId
         }
 
-        print("Create User view parameters created with nameError set to \(nameError), usernameError set to \(usernameError), passwordError set to \(passwordError), confirmPasswordError set to \(confirmPasswordError) and errors set to \(errors)")
-
         return try drop.view.make("blog/admin/createUser", parameters)
     }
 
@@ -134,8 +131,6 @@ struct LeafViewFactory: ViewFactory {
         if loginWarning {
             parameters["loginWarning"] = true
         }
-
-        print("Login view parameters created with usernameError set to \(usernameError), passwordError set to \(passwordError) and errors set to \(errors)")
 
         return try drop.view.make("blog/admin/login", parameters)
     }
@@ -163,7 +158,7 @@ struct LeafViewFactory: ViewFactory {
 
     func createResetPasswordView(errors: [String]? = nil, passwordError: Bool? = nil, confirmPasswordError: Bool? = nil) throws -> View {
 
-        var parameters: [String: Node] = [:]
+        var parameters: [String: Vapor.Node] = [:]
 
         if let resetPasswordErrors = errors {
             parameters["errors"] = try resetPasswordErrors.makeNode()
@@ -177,15 +172,12 @@ struct LeafViewFactory: ViewFactory {
             parameters["confirmPasswordError"] = confirmPasswordError.makeNode()
         }
 
-        print("Reset Password view parameters created with passwordError set to \(passwordError), confirmPasswordError set to \(confirmPasswordError) and errors set to \(errors)")
-
         return try drop.view.make("blog/admin/resetPassword", parameters)
     }
 
     func createProfileView(uri: URI, author: BlogUser, isMyProfile: Bool, posts: [BlogPost], loggedInUser: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
-        var parameters: [String: Node] = [
+        var parameters: [String: Vapor.Node] = [
             "author": try author.makeNode(),
-            "uri": uri.description.makeNode()
         ]
 
         if isMyProfile {
@@ -199,27 +191,14 @@ struct LeafViewFactory: ViewFactory {
             parameters["posts"] = try posts.makeNode(context: BlogPostContext.shortSnippet)
         }
         
-        if let user = loggedInUser {
-            parameters["user"] = try user.makeNode()
-        }
-
-        if let disqusName = disqusName {
-            parameters["disqusName"] = disqusName.makeNode()
-        }
-        
-        if let siteTwitterHandle = siteTwitterHandle {
-            parameters["site_twitter_handle"] = siteTwitterHandle.makeNode()
-        }
-
-        return try drop.view.make("blog/profile", parameters)
+        return try createPublicView(template: "blog/profile", uri: uri, parameters: parameters, user: loggedInUser, disqusName: disqusName, siteTwitterHandle: siteTwitterHandle)
     }
 
     // MARK: - Blog Controller Views
 
-    func blogIndexView(uri: URI, paginatedPosts: Paginator<BlogPost>, tags: [BlogTag], loggedInUser: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
+    func blogIndexView(uri: URI, paginatedPosts: Paginator<BlogPost>, tags: [BlogTag], authors: [BlogUser], loggedInUser: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
 
-        var parameters: [String: Node] = [
-            "uri": uri.description.makeNode(),
+        var parameters: [String: Vapor.Node] = [
             "blogIndexPage": true.makeNode()
         ]
 
@@ -230,75 +209,89 @@ struct LeafViewFactory: ViewFactory {
         if tags.count > 0 {
             parameters["tags"] = try tags.makeNode()
         }
-
-        if let user = loggedInUser {
-            parameters["user"] = try user.makeNode()
-        }
-
-        if let disqusName = disqusName {
-            parameters["disqusName"] = disqusName.makeNode()
+        
+        if authors.count > 0 {
+            parameters["authors"] = try authors.makeNode()
         }
         
-        if let siteTwitterHandle = siteTwitterHandle {
-            parameters["site_twitter_handle"] = siteTwitterHandle.makeNode()
-        }
-
-        return try drop.view.make("blog/blog", parameters)
-
+        return try createPublicView(template: "blog/blog", uri: uri, parameters: parameters, user: loggedInUser, disqusName: disqusName, siteTwitterHandle: siteTwitterHandle)
     }
 
     func blogPostView(uri: URI, post: BlogPost, author: BlogUser, user: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
         
-        var parameters = try Node(node: [
+        var parameters: [String: NodeRepresentable] = [
             "post": try post.makeNode(context: BlogPostContext.all),
             "author": try author.makeNode(),
             "blogPostPage": true.makeNode(),
             "post_uri": uri.description.makeNode(),
-            "post_uri_encoded": uri.description.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+            "post_uri_encoded": uri.description.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? uri.description,
             "site_uri": uri.getRootUri().description.makeNode(),
-            "post_description": markdownToHTML(post.shortSnippet()).replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression, range: nil).replacingOccurrences(of: "\n", with: " ").replacingOccurrences(of: "\r", with: "").makeNode()
-            ])
-
-        if let user = user {
-            parameters["user"] = try user.makeNode()
-        }
-
-        if let disqusName = disqusName {
-            parameters["disqusName"] = disqusName.makeNode()
-        }
+            "post_description": try SwiftSoup.parse(markdownToHTML(post.shortSnippet())).text().makeNode()
+        ]
         
-        if let siteTwitterHandle = siteTwitterHandle {
-            parameters["site_twitter_handle"] = siteTwitterHandle.makeNode()
-        }
+        let image = try SwiftSoup.parse(markdownToHTML(post.contents)).select("img").first()
         
-        return try drop.view.make("blog/blogpost", parameters)
+        if let imageFound = image {
+            parameters["post_image"] = try imageFound.attr("src").makeNode()
+        }
+
+        return try createPublicView(template: "blog/blogpost", uri: uri, parameters: parameters, user: user, disqusName: disqusName, siteTwitterHandle: siteTwitterHandle)
     }
 
     func tagView(uri: URI, tag: BlogTag, paginatedPosts: Paginator<BlogPost>, user: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
 
-        var parameters: [String: Node] = [
-            "tag": try tag.makeNode(),
+        var parameters: [String: Vapor.Node] = [
+            "tag": try tag.makeNode(context: BlogTagContext.withPostCount),
             "tagPage": true.makeNode(),
-            "uri": uri.description.makeNode()
         ]
 
         if paginatedPosts.totalPages ?? 0 > 0 {
             parameters["posts"] = try paginatedPosts.makeNode(context: BlogPostContext.longSnippet)
         }
-
-        if let user = user {
-            parameters["user"] = try user.makeNode()
+        
+        return try createPublicView(template: "blog/tag", uri: uri, parameters: parameters, user: user, disqusName: disqusName, siteTwitterHandle: siteTwitterHandle)
+    }
+    
+    func allTagsView(uri: URI, allTags: [BlogTag], user: BlogUser?, siteTwitterHandle: String?) throws -> View {
+        var parameters: [String: NodeRepresentable] = [:]
+        
+        if allTags.count > 0 {
+            let sortedTags = allTags.sorted { return (try? $0.blogPosts().count > $1.blogPosts().count) ?? false }
+            parameters["tags"] = try sortedTags.makeNode(context: BlogTagContext.withPostCount)
         }
-
+        
+        return try createPublicView(template: "blog/tags", uri: uri, parameters: parameters, user: user, siteTwitterHandle: siteTwitterHandle)
+    }
+    
+    func allAuthorsView(uri: URI, allAuthors: [BlogUser], user: BlogUser?, siteTwitterHandle: String?) throws -> View {
+        var parameters: [String: NodeRepresentable] = [:]
+        
+        if allAuthors.count > 0 {
+            let sortedAuthors = allAuthors.sorted { return (try? $0.posts().count > $1.posts().count) ?? false }
+            parameters["authors"] = try sortedAuthors.makeNode(context: BlogUserContext.withPostCount)
+        }
+        
+        return try createPublicView(template: "blog/authors", uri: uri, parameters: parameters, user: user, siteTwitterHandle: siteTwitterHandle)
+    }
+    
+    private func createPublicView(template: String, uri: URI, parameters: [String: NodeRepresentable], user: BlogUser? = nil, disqusName: String? = nil, siteTwitterHandle: String? = nil) throws -> View {
+        var viewParameters = parameters
+        
+        viewParameters["uri"] = uri.description.makeNode()
+        
+        if let user = user {
+            viewParameters["user"] = try user.makeNode()
+        }
+        
         if let disqusName = disqusName {
-            parameters["disqusName"] = disqusName.makeNode()
+            viewParameters["disqusName"] = disqusName.makeNode()
         }
         
         if let siteTwitterHandle = siteTwitterHandle {
-            parameters["site_twitter_handle"] = siteTwitterHandle.makeNode()
+            viewParameters["site_twitter_handle"] = siteTwitterHandle.makeNode()
         }
-
-        return try drop.view.make("blog/tag", parameters)
+        
+        return try drop.view.make(template, viewParameters.makeNode())
     }
 }
 

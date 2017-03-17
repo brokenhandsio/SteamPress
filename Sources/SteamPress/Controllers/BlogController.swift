@@ -32,6 +32,8 @@ struct BlogController {
             index.get(authorsPath, String.self, handler: authorViewHandler)
             index.get(apiPath, tagsPath, handler: tagApiHandler)
             index.get(blogPostsPath, handler: blogPostIndexRedirectHandler)
+            index.get(tagsPath, handler: allTagsViewHandler)
+            index.get(authorsPath, handler: allAuthorsViewHandler)
         }
     }
     
@@ -39,9 +41,10 @@ struct BlogController {
     
     func indexHandler(request: Request) throws -> ResponseRepresentable {
         let tags = try BlogTag.all()
+        let authors = try BlogUser.all()
         let paginatedBlogPosts = try BlogPost.query().sort("created", .descending).paginator(postsPerPage, request: request)
 
-        return try viewFactory.blogIndexView(uri: request.uri, paginatedPosts: paginatedBlogPosts, tags: tags, loggedInUser: getLoggedInUser(in: request), disqusName: getDisqusName(), siteTwitterHandle: getSiteTwitterHandle())
+        return try viewFactory.blogIndexView(uri: request.uri, paginatedPosts: paginatedBlogPosts, tags: tags, authors: authors, loggedInUser: getLoggedInUser(in: request), disqusName: getDisqusName(), siteTwitterHandle: getSiteTwitterHandle())
     }
     
     func blogPostIndexRedirectHandler(request: Request) throws -> ResponseRepresentable {
@@ -82,6 +85,14 @@ struct BlogController {
         let posts = try author.posts()
         
         return try viewFactory.createProfileView(uri: request.uri, author: author, isMyProfile: false, posts: posts, loggedInUser: getLoggedInUser(in: request), disqusName: getDisqusName(), siteTwitterHandle: getSiteTwitterHandle())
+    }
+    
+    func allTagsViewHandler(request: Request) throws -> ResponseRepresentable {
+        return try viewFactory.allTagsView(uri: request.uri, allTags: BlogTag.all(), user: getLoggedInUser(in: request), siteTwitterHandle: getSiteTwitterHandle())
+    }
+    
+    func allAuthorsViewHandler(request: Request) throws -> ResponseRepresentable {
+        return try viewFactory.allAuthorsView(uri: request.uri, allAuthors: BlogUser.all(), user: getLoggedInUser(in: request), siteTwitterHandle: getSiteTwitterHandle())
     }
     
     func tagApiHandler(request: Request) throws -> ResponseRepresentable {

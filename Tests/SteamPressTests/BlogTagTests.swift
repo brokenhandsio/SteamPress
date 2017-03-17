@@ -1,11 +1,3 @@
-//
-//  BlogTagTests.swift
-//  SteamPress
-//
-//  Created by Tim Condon on 13/03/2017.
-//
-//
-
 import XCTest
 @testable import SteamPress
 import Fluent

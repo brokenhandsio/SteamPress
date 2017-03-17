@@ -112,6 +112,8 @@ The basic structure of your `Resources/View` directory should be:
  * `blogpost.leaf` - the page for a single blog post
  * `tag.leaf` - the page for a tag
  * `profile.leaf` - the page for a user profile
+ * `tags.leaf` - the page for displaying all of the tags
+ * `authors.leaf` - the page for displaying all of the authors
  * `admin`
   * `createPost.leaf` - the page for creating and editing a blog post
   * `createUser.leaf` - the page for creating and editing a user
@@ -127,6 +129,7 @@ This is the index page of the blog. The parameters it will receive are:
 
 * `posts` - a Node containing data about the posts and metadata for the paginator. You can access the posts by calling the `.data` object on it, which is an array of blog posts if there are any, in date descending order. The posts will be made with a `longSnippet` context (see below)
 * `tags` - an array of tags if there are any
+* `authors` - an array of the authors if there are any
 * `user` - the currently logged in user if a user is currently logged in
 * `disqusName` - the name of your Disqus site if configured
 * `blogIndexPage` - a boolean saying we are on the index page of the blog - useful for navbars
@@ -147,6 +150,7 @@ This is the page for viewing a single entire blog post. The parameters set are:
 * `post_uri_encoded` - A URL-query encoded for of the URI for passing to Share buttons
 * `site_uri`: The URI of the root site - this is useful for creating links to author pages for `article:author` Open Graph support
 * `post_description` - The HTML of the short snippet of the post on a single line with all HTML tags stripped out for the `description` tags
+* `post_image` - The first image in the blog post if one is there. Useful for OpenGraph
 * `site_twitter_handle` - the Twitter handle for the site if configured
 
 ### `tag.leaf`
@@ -171,6 +175,24 @@ This is the page for viewing a profile of a user. This is generally used for vie
 * `posts` - all the posts the user has written if they have written any in `shortSnippet` form
 * `user` - the currently logged in user if a user is currently logged in
 * `disqusName` - the name of your Disqus site if configured
+* `site_twitter_handle` - the Twitter handle for the site if configured
+* `uri` - the URI of the page - useful for Open Graph
+
+### `tags.leaf`
+
+This is the page for viewing all of the tags on the blog. This provides some more navigation points for the blog as well as providing a page in case the user strips off the tag from the Tag's URL. The parameters that can be passed to it are:
+
+* `tags` - an array of all the tags on the blog, in `withPostCount` context (see below) sorted by post count
+* `user` - the currently logged in user if a user is currently logged in
+* `site_twitter_handle` - the Twitter handle for the site if configured
+* `uri` - the URI of the page - useful for Open Graph
+
+### `authors.leaf`
+
+This is the page for viewing all of the authors on the blog. It provides a useful page for user's to see everyone who has contributed to the site.
+
+* `authors` - an array of all the `BlogUser`s on the blog, in `withPostCount` context (see below) sorted by post count
+* `user` - the currently logged in user if a user is currently logged in
 * `site_twitter_handle` - the Twitter handle for the site if configured
 * `uri` - the URI of the page - useful for Open Graph
 
@@ -238,25 +260,15 @@ There are a number of `POST` routes to the Admin site for creating and editing u
 
 This section needs to be filled out, but you can view the Controllers in the code to work out what they should be, or see the [Example Site](https://github.com/brokenhandsio/SteamPressExample).
 
-# Snippets
+# Contexts
 
-SteamPress supports two type of snippets for blog posts - short and long. Short snippets will provide the first paragraph or so of the blog post, whereas long snippets will show several paragraphs (such as for use on the main blog page, when listing all of the posts).
+## Blog Post
 
-## Usage
-
-You can pass in a `BlogPostContext` to the `makeNode()` call to provide more information when getting `BlogPost` objects. Currently there are three contexts supported:
+The blog post has a number of `Context`s you can pass to the `makeNode()` function to provide more information when getting a `BlogPost`. Currently there are three contexts supported:
 
 * `.shortSnippet` - this will return the post with an `id`, `title`, `author_name`, `author_username`, `slug_url`, `created_date` (Human readable) and `short_snippet`
 * `.longSnippet` - this will return the post with an `id`, `title`, `author_name`, `author_username`, `slug_url`, `created_date` (Human readable) and `long_snippet`. It will also include all of the tags in a `tags` object if there are any associated with that post
 * `.all` - this returns the post with all information, including both snippet lengths, including author names and human readable dates, as well as both dates in ISO 8601 format under the parameter names `created_date_iso8601` and `last_edited_date_iso8601`
-
-You can also call them directly on a `BlogPost` object (such as from a `Query()`):
-
-```swift
-// These both return the some of the contents of a blog post (as a String)
-let shortSnippet = post.shortSnippet()
-let longSnippet = post.longSnippet()
-```
 
 If no `Context` is supplied to the `makeNode()` call you will get:
 
@@ -266,6 +278,30 @@ If no `Context` is supplied to the `makeNode()` call you will get:
 * `bloguser_id` - The ID of the Author of the post
 * `created` - The time the post was created as a `Double`
 * `slug_url`
+
+## Blog User
+
+The blog user has a `withPostCount` `BlogUserContext` available to pass into the `makeNode()` function that provides an extra `post_count` parameter to the user node, which contains the number of posts that author has written.
+
+## Blog Tag
+
+The blog user has a `withPostCount` `BlogTagContext` available to pass into the `makeNode()` function that provides an extra `post_count` parameter to the tag node, which contains the number of posts tagged with that tag.
+
+# Snippets
+
+SteamPress supports two type of snippets for blog posts - short and long. Short snippets will provide the first paragraph or so of the blog post, whereas long snippets will show several paragraphs (such as for use on the main blog page, when listing all of the posts)
+
+## Usage
+
+You can pass in a `BlogPostContext` to the `makeNode()` call to provide more information when getting `BlogPost` objects, as shown above.
+
+You can also call them directly on a `BlogPost` object (such as from a `Query()`):
+
+```swift
+// These both return the some of the contents of a blog post (as a String)
+let shortSnippet = post.shortSnippet()
+let longSnippet = post.longSnippet()
+```
 
 # Leaf Markdown
 
@@ -294,8 +330,6 @@ I anticipate SteamPress staying on a version 0 for some time, whilst some of the
 
 On the roadmap we have:
 
-* Code tidyup - in some places in the code you can tell it evolved quickly from a hacky spike - there is a lot of repeated code lying around and I'm not taking advantage of all of Swift or Vapor; this needs to be improved
-* Proper testing! Even now I have had too many bugs that would have been picked up by unit tests so I need to start them! Better late than never right...
 * Image uploading - you can link to images easily but can't upload any without redeploying the site - I may implement some functionality for this depending on whether people want images going to the same site as the code or something like an S3 bucket (I'm leaning towards the S3 option so answers on a postcard!)
 * Blog drafts - it would be nice not to publish posts until you want to
 * Sitemap/RSS feed - again for SEO
