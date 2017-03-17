@@ -3,6 +3,7 @@ import Vapor
 import URI
 import Fluent
 import HTTP
+import Foundation
 @testable import SteamPress
 
 class LeafViewFactoryTests: XCTestCase {
@@ -388,7 +389,20 @@ class LeafViewFactoryTests: XCTestCase {
     }
     
     func testPasswordViewGivenCorrectParameters() throws {
-        
+        let _ = try viewFactory.createResetPasswordView(errors: nil, passwordError: nil, confirmPasswordError: nil)
+        XCTAssertNil(viewRenderer.capturedContext?["errors"])
+        XCTAssertNil(viewRenderer.capturedContext?["passwordError"])
+        XCTAssertNil(viewRenderer.capturedContext?["confirmPasswordError"])
+        XCTAssertEqual(viewRenderer.leafPath, "blog/admin/resetPassword")
+    }
+    
+    func testPasswordViewHasCorrectParametersWhenError() throws {
+        let expectedError = "Passwords do not match"
+        let _ = try viewFactory.createResetPasswordView(errors: [expectedError], passwordError: true, confirmPasswordError: true)
+        XCTAssertEqual(viewRenderer.capturedContext?["errors"]?.array?.count, 1)
+        XCTAssertEqual((viewRenderer.capturedContext?["errors"]?.array?.first as? Node)?.string, expectedError)
+        XCTAssertTrue((viewRenderer.capturedContext?["passwordError"]?.bool) ?? false)
+        XCTAssertTrue((viewRenderer.capturedContext?["confirmPasswordError"]?.bool) ?? false)
     }
     
     // MARK: - Helpers
