@@ -96,6 +96,7 @@ class LeafViewFactoryTests: XCTestCase {
         XCTAssertEqual(viewRenderer.capturedContext?["uri"]?.string, "https://test.com:443/tags/")
         XCTAssertNil(viewRenderer.capturedContext?["site_twitter_handle"]?.string)
         XCTAssertNil(viewRenderer.capturedContext?["user"])
+        XCTAssertEqual(viewRenderer.leafPath, "blog/tags")
     }
     
     func testTagsPageGetsPassedAllTagsWithBlogCount() throws {
@@ -159,6 +160,7 @@ class LeafViewFactoryTests: XCTestCase {
         XCTAssertEqual(viewRenderer.capturedContext?["uri"]?.string, "https://test.com:443/authors/")
         XCTAssertNil(viewRenderer.capturedContext?["site_twitter_handle"]?.string)
         XCTAssertEqual(viewRenderer.capturedContext?["user"]?["name"]?.string, "Luke")
+        XCTAssertEqual(viewRenderer.leafPath, "blog/authors")
     }
     
     func testAuthorsPageGetsPassedAllAuthorsWithBlogCount() throws {
@@ -213,6 +215,7 @@ class LeafViewFactoryTests: XCTestCase {
         XCTAssertEqual(viewRenderer.capturedContext?["user"]?["name"]?.string, "Luke")
         XCTAssertNil(viewRenderer.capturedContext?["disqusName"])
         XCTAssertNil(viewRenderer.capturedContext?["site_twitter_handle"])
+        XCTAssertEqual(viewRenderer.leafPath, "blog/tag")
     }
     
     func testNoLoggedInUserPassedToTagPageIfNoneProvided() throws {
@@ -263,6 +266,7 @@ class LeafViewFactoryTests: XCTestCase {
         XCTAssertEqual(viewRenderer.capturedContext?["post_uri"]?.string, postURI.description)
         XCTAssertEqual(viewRenderer.capturedContext?["site_uri"]?.string, "https://test.com:443")
         XCTAssertEqual(viewRenderer.capturedContext?["post_uri_encoded"]?.string, postURI.description)
+        XCTAssertEqual(viewRenderer.leafPath, "blog/blogpost")
     }
     
     func testUserPassedToBlogPostPageIfUserPassedIn() throws {
@@ -296,6 +300,7 @@ class LeafViewFactoryTests: XCTestCase {
         XCTAssertEqual((viewRenderer.capturedContext?["tags"]?.array?.first as? Node)?["name"]?.string, tags.first?.name)
         XCTAssertEqual(viewRenderer.capturedContext?["authors"]?.array?.count, authors.count)
         XCTAssertEqual((viewRenderer.capturedContext?["authors"]?.array?.first as? Node)?["name"]?.string, authors.first?.name)
+        XCTAssertEqual(viewRenderer.leafPath, "blog/blog")
     }
     
     func testNoPostsPassedIntoBlogIndexIfNoneAvailable() throws {
@@ -348,6 +353,7 @@ class LeafViewFactoryTests: XCTestCase {
         XCTAssertNil(viewRenderer.capturedContext?["user"])
         XCTAssertNil(viewRenderer.capturedContext?["disqusName"])
         XCTAssertNil(viewRenderer.capturedContext?["site_twitter_handle"])
+        XCTAssertEqual(viewRenderer.leafPath, "blog/profile")
     }
     
     func testAuthorViewMyProfileSetIfViewingMyProfile() throws {
@@ -379,6 +385,10 @@ class LeafViewFactoryTests: XCTestCase {
         let (author, posts) = try setupAuthorPage()
         let _ = try viewFactory.createProfileView(uri: authorURI, author: author, isMyProfile: true, posts: posts, loggedInUser: nil, disqusName: nil, siteTwitterHandle: "brokenhandsio")
         XCTAssertEqual(viewRenderer.capturedContext?["site_twitter_handle"]?.string, "brokenhandsio")
+    }
+    
+    func testPasswordViewGivenCorrectParameters() throws {
+        
     }
     
     // MARK: - Helpers
@@ -433,8 +443,10 @@ class CapturingViewRenderer: ViewRenderer {
     required init(viewsDir: String = "tests") {}
     
     private(set) var capturedContext: Node? = nil
+    private(set) var leafPath: String? = nil
     func make(_ path: String, _ context: Node) throws -> View {
         self.capturedContext = context
+        self.leafPath = path
         return View(data: try "Test".makeBytes())
     }
 }
