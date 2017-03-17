@@ -51,6 +51,14 @@ class LeafViewFactoryTests: XCTestCase {
         ("testLoginViewGetsCorrectParameters", testLoginViewGetsCorrectParameters),
         ("testLoginViewWhenErrored", testLoginViewWhenErrored),
         ("testLoginPageUsernamePasswordErrorsMarkedWhenNotSuppliedAndErrored", testLoginPageUsernamePasswordErrorsMarkedWhenNotSuppliedAndErrored),
+        ("testBlogAdminViewGetsCorrectParameters", testBlogAdminViewGetsCorrectParameters),
+        ("testNoPostsPassedToAdminViewIfNone", testNoPostsPassedToAdminViewIfNone),
+        ("testAdminPageWithErrors", testAdminPageWithErrors),
+        ("testCreateUserViewGetsCorrectParameters", testCreateUserViewGetsCorrectParameters),
+        ("testCreateUserViewWhenErrors", testCreateUserViewWhenErrors),
+        ("testCreateUserViewWhenNoNameOrUsernameSupplied", testCreateUserViewWhenNoNameOrUsernameSupplied),
+        ("testCreateUserViewForEditing", testCreateUserViewForEditing),
+        ("testCreateUserViewThrowsWhenTryingToEditWithoutUserId", testCreateUserViewThrowsWhenTryingToEditWithoutUserId),
         ]
     
     // MARK: - Properties
@@ -437,7 +445,83 @@ class LeafViewFactoryTests: XCTestCase {
         XCTAssertTrue((viewRenderer.capturedContext?["passwordError"]?.bool) ?? false)
     }
     
+    func testBlogAdminViewGetsCorrectParameters() throws {
+        // Add some stuff to the database
+        let (posts, _, users) = try setupBlogIndex()
+        let _ = try viewFactory.createBlogAdminView()
+        XCTAssertNil(viewRenderer.capturedContext?["errors"])
+        XCTAssertTrue((viewRenderer.capturedContext?["blogAdminPage"]?.bool) ?? false)
+        XCTAssertEqual(viewRenderer.capturedContext?["users"]?.nodeArray?.count, 2)
+        XCTAssertEqual(viewRenderer.capturedContext?["users"]?.nodeArray?.first?["name"]?.string, users.first?.name)
+        XCTAssertEqual(viewRenderer.capturedContext?["posts"]?.nodeArray?.count, 2)
+        XCTAssertEqual(viewRenderer.capturedContext?["posts"]?.nodeArray?.first?["title"]?.string, posts.first?.title)
+        XCTAssertEqual(viewRenderer.leafPath, "blog/admin/index")
+    }
     
+    func testNoPostsPassedToAdminViewIfNone() throws {
+        let _ = try viewFactory.createBlogAdminView()
+        XCTAssertNil(viewRenderer.capturedContext?["posts"])
+    }
+    
+    func testAdminPageWithErrors() throws {
+        let expectedError = "You cannot delete yourself!"
+        let _ = try viewFactory.createBlogAdminView(errors: [expectedError])
+        XCTAssertEqual(viewRenderer.capturedContext?["errors"]?.nodeArray?.first?.string, expectedError)
+    }
+    
+    func testCreateUserViewGetsCorrectParameters() throws {
+        let _ = try viewFactory.createUserView()
+        XCTAssertFalse((viewRenderer.capturedContext?["nameError"]?.bool) ?? true)
+        XCTAssertFalse((viewRenderer.capturedContext?["usernameError"]?.bool) ?? true)
+        XCTAssertNil(viewRenderer.capturedContext?["errors"])
+        XCTAssertNil(viewRenderer.capturedContext?["nameSupplied"])
+        XCTAssertNil(viewRenderer.capturedContext?["usernameSupplied"])
+        XCTAssertNil(viewRenderer.capturedContext?["passwordError"])
+        XCTAssertNil(viewRenderer.capturedContext?["confirmPasswordError"])
+        XCTAssertNil(viewRenderer.capturedContext?["resetPasswordOnLoginSupplied"])
+        XCTAssertNil(viewRenderer.capturedContext?["editing"])
+        XCTAssertNil(viewRenderer.capturedContext?["userId"])
+        XCTAssertEqual(viewRenderer.leafPath, "blog/admin/createUser")
+    }
+    
+    func testCreateUserViewWhenErrors() throws {
+        let expectedError = "Not valid password"
+        let _ = try viewFactory.createUserView(errors: [expectedError], name: "Luke", username: "luke", passwordError: true, confirmPasswordError: true, resetPasswordRequired: true)
+        XCTAssertFalse((viewRenderer.capturedContext?["nameError"]?.bool) ?? true)
+        XCTAssertFalse((viewRenderer.capturedContext?["usernameError"]?.bool) ?? true)
+        XCTAssertEqual(viewRenderer.capturedContext?["errors"]?.nodeArray?.first?.string, expectedError)
+        XCTAssertEqual(viewRenderer.capturedContext?["nameSupplied"]?.string, "Luke")
+        XCTAssertEqual(viewRenderer.capturedContext?["usernameSupplied"]?.string, "luke")
+        XCTAssertTrue((viewRenderer.capturedContext?["passwordError"]?.bool) ?? false)
+        XCTAssertTrue((viewRenderer.capturedContext?["confirmPasswordError"]?.bool) ?? false)
+        XCTAssertTrue((viewRenderer.capturedContext?["resetPasswordOnLoginSupplied"]?.bool) ?? false)
+    }
+    
+    func testCreateUserViewWhenNoNameOrUsernameSupplied() throws {
+        let expectedError = "No name supplied"
+        let _ = try viewFactory.createUserView(errors: [expectedError], name: nil, username: nil, passwordError: true, confirmPasswordError: true, resetPasswordRequired: true)
+        XCTAssertTrue((viewRenderer.capturedContext?["nameError"]?.bool) ?? false)
+        XCTAssertTrue((viewRenderer.capturedContext?["usernameError"]?.bool) ?? false)
+    }
+    
+    func testCreateUserViewForEditing() throws {
+        let _ = try viewFactory.createUserView(editing: true, errors: nil, name: "Luke", username: "luke", userId: 1.makeNode())
+        XCTAssertEqual(viewRenderer.capturedContext?["nameSupplied"]?.string, "Luke")
+        XCTAssertEqual(viewRenderer.capturedContext?["usernameSupplied"]?.string, "luke")
+        XCTAssertTrue((viewRenderer.capturedContext?["editing"]?.bool) ?? false)
+        XCTAssertEqual(viewRenderer.capturedContext?["userId"], try 1.makeNode())
+    }
+    
+    func testCreateUserViewThrowsWhenTryingToEditWithoutUserId() throws {
+        var errored = false
+        do {
+            let _ = try viewFactory.createUserView(editing: true, errors: nil, name: "Luke", username: "luke")
+        } catch {
+            errored = true
+        }
+        
+        XCTAssertTrue(errored)
+    }
     
     // MARK: - Helpers
     

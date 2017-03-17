@@ -64,8 +64,6 @@ struct LeafViewFactory: ViewFactory {
             parameters["createBlogPostPage"] = true
         }
 
-        print("Create Post view parameters created with titleError set to \(titleError), contentsError set to \(contentsError), editing set to \(isEditing) and errors set to \(errors)")
-
         return try drop.view.make("blog/admin/createPost", parameters)
     }
 
@@ -110,8 +108,6 @@ struct LeafViewFactory: ViewFactory {
             parameters["userId"] = userId
         }
 
-        print("Create User view parameters created with nameError set to \(nameError), usernameError set to \(usernameError), passwordError set to \(passwordError), confirmPasswordError set to \(confirmPasswordError) and errors set to \(errors)")
-
         return try drop.view.make("blog/admin/createUser", parameters)
     }
 
@@ -135,8 +131,6 @@ struct LeafViewFactory: ViewFactory {
         if loginWarning {
             parameters["loginWarning"] = true
         }
-
-        print("Login view parameters created with usernameError set to \(usernameError), passwordError set to \(passwordError) and errors set to \(errors)")
 
         return try drop.view.make("blog/admin/login", parameters)
     }
@@ -177,8 +171,6 @@ struct LeafViewFactory: ViewFactory {
         if let confirmPasswordError = confirmPasswordError {
             parameters["confirmPasswordError"] = confirmPasswordError.makeNode()
         }
-
-        print("Reset Password view parameters created with passwordError set to \(passwordError), confirmPasswordError set to \(confirmPasswordError) and errors set to \(errors)")
 
         return try drop.view.make("blog/admin/resetPassword", parameters)
     }
