@@ -83,7 +83,7 @@ class BlogControllerTests: XCTestCase {
             user = BlogUser(name: "Luke", username: "luke", password: "1234")
         }
         try user.save()
-        post = BlogPost(title: "Test Path", contents: "A long time ago", author: user, creationDate: Date(), slugUrl: "test-path")
+        post = BlogPost(title: "Test Path", contents: "A long time ago", author: user, creationDate: Date(), slugUrl: "test-path", published: true)
         try post.save()
 
         try BlogTag.addTag("tatooine", to: post)
@@ -92,7 +92,7 @@ class BlogControllerTests: XCTestCase {
     func testBlogIndexGetsPostsInReverseOrder() throws {
         try setupDrop()
 
-        var post2 = BlogPost(title: "A New Path", contents: "In a galaxy far, far, away", author: user, creationDate: Date(), slugUrl: "a-new-path")
+        var post2 = BlogPost(title: "A New Path", contents: "In a galaxy far, far, away", author: user, creationDate: Date(), slugUrl: "a-new-path", published: true)
         try post2.save()
 
         _ = try drop.respond(to: blogIndexRequest)

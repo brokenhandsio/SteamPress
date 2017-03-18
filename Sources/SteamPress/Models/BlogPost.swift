@@ -14,8 +14,9 @@ public class BlogPost: Model {
     public var created: Date
     public var lastEdited: Date?
     public var slugUrl: String
+    public var published: Bool
 
-    init(title: String, contents: String, author: BlogUser, creationDate: Date, slugUrl: String) {
+    init(title: String, contents: String, author: BlogUser, creationDate: Date, slugUrl: String, published: Bool) {
         self.id = nil
         self.title = title
         self.contents = contents
@@ -23,6 +24,7 @@ public class BlogPost: Model {
         self.created = creationDate
         self.slugUrl = BlogPost.generateUniqueSlugUrl(from: slugUrl)
         self.lastEdited = nil
+        self.published = published
     }
 
     required public init(node: Node, in context: Context) throws {
@@ -31,6 +33,7 @@ public class BlogPost: Model {
         contents = try node.extract("contents")
         author = try node.extract("bloguser_id")
         slugUrl = try node.extract("slug_url")
+        published = try node.extract("published")
         let createdTime: Double = try node.extract("created")
         let lastEditedTime: Double? = try? node.extract("last_edited")
 
@@ -52,7 +55,8 @@ extension BlogPost: NodeRepresentable {
             "contents": contents,
             "bloguser_id": author,
             "created": createdTime,
-            "slug_url": slugUrl
+            "slug_url": slugUrl,
+            "published": published,
             ])
 
         if let lastEdited = lastEdited {
@@ -74,6 +78,7 @@ extension BlogPost: NodeRepresentable {
                 "author_username": try getAuthor()?.username.makeNode(),
                 "short_snippet": shortSnippet().makeNode(),
                 "created_date": createdDate.makeNode(),
+                "published": published,
                 "slug_url": slugUrl
                 ])
         case BlogPostContext.longSnippet:
@@ -84,6 +89,7 @@ extension BlogPost: NodeRepresentable {
                 "author_username": try getAuthor()?.username.makeNode(),
                 "long_snippet": longSnippet().makeNode(),
                 "created_date": createdDate.makeNode(),
+                "published": published,
                 "slug_url": slugUrl
                 ])
 
@@ -138,6 +144,7 @@ extension BlogPost {
             posts.double("created")
             posts.double("last_edited", optional: true)
             posts.string("slug_url", unique: true)
+            posts.bool("published")
         }
     }
 

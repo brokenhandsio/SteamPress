@@ -81,7 +81,7 @@ struct BlogAdminController {
         // Make sure slugUrl is unique
         slugUrl = BlogPost.generateUniqueSlugUrl(from: slugUrl)
 
-        var newPost = BlogPost(title: title, contents: contents, author: user, creationDate: creationDate, slugUrl: slugUrl)
+        var newPost = BlogPost(title: title, contents: contents, author: user, creationDate: creationDate, slugUrl: slugUrl, published: true)
         try newPost.save()
 
         // Save the tags

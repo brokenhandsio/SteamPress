@@ -10,17 +10,17 @@ struct TestDataBuilder {
     }
     
     static func anyPost(slugUrl: String = "some-exciting-title", author: BlogUser = TestDataBuilder.anyUser(), creationDate: Date = Date())  -> BlogPost {
-        return BlogPost(title: "An Exciting Post!", contents: "<p>This is a blog post</p>", author: author, creationDate: creationDate, slugUrl: slugUrl)
+        return BlogPost(title: "An Exciting Post!", contents: "<p>This is a blog post</p>", author: author, creationDate: creationDate, slugUrl: slugUrl, published: true)
     }
     
     static func anyPostWithImage(author: BlogUser = TestDataBuilder.anyUser()) -> BlogPost {
         let contents = "# Welcome to SteamPress! SteamPress started out as an idea - after all, I was porting sites and backends over to Swift and would like to have a blog as well. Being early days for Server-Side Swift, and embracing Vapor, there wasn't anything available to put a blog on my site, so I did what any self-respecting engineer would do - I made one! Besides, what better way to learn a framework than build a blog!\n\nI plan to put some more posts up going into how I actually wrote SteamPress, going into some Vapor basics like Authentication and other popular #help topics on [Slack](qutheory.slack.com) (I probably need to rewrite a lot of it properly first!) either on here or on https://geeks.brokenhands.io, which will be the engineering site for Broken Hands, which is what a lot of future projects I have planned will be under.\n\n![Octodex](https://octodex.github.com/images/privateinvestocat.jpg)\n\nHappy blogging!\n\nTim\n"
         
-        return BlogPost(title: "An Exciting Post With Image", contents: contents, author: author, creationDate: Date(), slugUrl: "an-exciting-post-with-image")
+        return BlogPost(title: "An Exciting Post With Image", contents: contents, author: author, creationDate: Date(), slugUrl: "an-exciting-post-with-image", published: true)
     }
     
     static func anyLongPost() -> BlogPost {
         let title = "Introduction To Steampress"
-        return BlogPost(title: title, contents: longContents, author: anyUser(), creationDate: Date(), slugUrl: title)
+        return BlogPost(title: title, contents: longContents, author: anyUser(), creationDate: Date(), slugUrl: title, published: true)
     }
 }

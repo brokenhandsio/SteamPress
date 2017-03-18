@@ -34,6 +34,7 @@ public struct Provider: Vapor.Provider {
         drop.preparations.append(BlogUser.self)
         drop.preparations.append(BlogTag.self)
         drop.preparations.append(Pivot<BlogPost, BlogTag>.self)
+        drop.preparations.append(BlogPostDraft.self)
         
         // Middleware
         let authMiddleware = BlogAuthMiddleware()
