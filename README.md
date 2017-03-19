@@ -330,9 +330,7 @@ I anticipate SteamPress staying on a version 0 for some time, whilst some of the
 
 On the roadmap we have:
 
-* Image uploading - you can link to images easily but can't upload any without redeploying the site - I may implement some functionality for this depending on whether people want images going to the same site as the code or something like an S3 bucket (I'm leaning towards the S3 option so answers on a postcard!)
-* Blog drafts - it would be nice not to publish posts until you want to
-* Sitemap/RSS feed - again for SEO
-* AMP endpoints for posts
+* Sitemap/RSS feed for SEO
+* AMP/Facebook instant articles endpoints for posts
 * Searching through the blog
 * Saving state when logging in - if you go to a page (e.g. edit post) but need to be logged in, it would be great if you could head back to that page once logged in. Also, if you have edited a post and your session expires before you post it, wouldn't it be great if it remembered everything!

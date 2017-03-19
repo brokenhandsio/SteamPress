@@ -541,6 +541,7 @@ class LeafViewFactoryTests: XCTestCase {
         XCTAssertNil(viewRenderer.capturedContext?["tagsSupplied"])
         XCTAssertEqual(viewRenderer.leafPath, "blog/admin/createPost")
         XCTAssertTrue((viewRenderer.capturedContext?["createBlogPostPage"]?.bool) ?? false)
+        XCTAssertTrue((viewRenderer.capturedContext?["draft"]?.bool) ?? false)
         XCTAssertNil(viewRenderer.capturedContext?["editing"])
     }
     
