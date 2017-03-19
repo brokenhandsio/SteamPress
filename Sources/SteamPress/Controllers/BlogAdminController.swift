@@ -57,7 +57,7 @@ struct BlogAdminController {
         let rawContents = request.data["inputPostContents"]?.string
         let rawTags = request.data["inputTags"]?.array
         let rawSlugUrl = request.data["inputSlugUrl"]?.string
-        let draft = request.data["draft"]?.string
+        let draft = request.data["save-draft"]?.string
         let publish = request.data["publish"]?.string
         
         // I must be able to inline all of this
