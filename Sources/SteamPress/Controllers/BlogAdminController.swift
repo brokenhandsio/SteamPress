@@ -128,7 +128,7 @@ struct BlogAdminController {
     func editPostHandler(request: Request, post: BlogPost) throws -> ResponseRepresentable {
         let tags = try post.tags()
         let tagsArray: [Node] = tags.map { $0.name.makeNode() }
-        return try viewFactory.createBlogPostView(uri: request.uri, errors: nil, title: post.title, contents: post.contents, slugUrl: post.slugUrl, tags: tagsArray, isEditing: true, postToEdit: post, draft: false)
+        return try viewFactory.createBlogPostView(uri: request.uri, errors: nil, title: post.title, contents: post.contents, slugUrl: post.slugUrl, tags: tagsArray, isEditing: true, postToEdit: post, draft: !post.published)
     }
 
     func editPostPostHandler(request: Request, post: BlogPost) throws -> ResponseRepresentable {
