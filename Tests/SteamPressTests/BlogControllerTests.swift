@@ -375,7 +375,7 @@ import Paginator
 
 class CapturingViewFactory: ViewFactory {
 
-    func createBlogPostView(uri: URI, errors: [String]?, title: String?, contents: String?, slugUrl: String?, tags: [Node]?, isEditing: Bool, postToEdit: BlogPost?) throws -> View {
+    func createBlogPostView(uri: URI, errors: [String]?, title: String?, contents: String?, slugUrl: String?, tags: [Node]?, isEditing: Bool, postToEdit: BlogPost?, draft: Bool) throws -> View {
         return View(data: try "Test".makeBytes())
     }
 

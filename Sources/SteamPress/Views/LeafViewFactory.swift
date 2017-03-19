@@ -11,7 +11,7 @@ struct LeafViewFactory: ViewFactory {
 
     // MARK: - Admin Controller Views
 
-    func createBlogPostView(uri: URI, errors: [String]? = nil, title: String? = nil, contents: String? = nil, slugUrl: String? = nil, tags: [Vapor.Node]? = nil, isEditing: Bool = false, postToEdit: BlogPost? = nil) throws -> View {
+    func createBlogPostView(uri: URI, errors: [String]? = nil, title: String? = nil, contents: String? = nil, slugUrl: String? = nil, tags: [Vapor.Node]? = nil, isEditing: Bool = false, postToEdit: BlogPost? = nil, draft: Bool = true) throws -> View {
         let titleError = (title == nil || (title?.isWhitespace())!) && errors != nil
         let contentsError = (contents == nil || (contents?.isWhitespace())!) && errors != nil
 
@@ -51,6 +51,10 @@ struct LeafViewFactory: ViewFactory {
 
         if let tagsSupplied = tags, tagsSupplied.count > 0 {
             parameters["tagsSupplied"] = try tagsSupplied.makeNode()
+        }
+        
+        if draft {
+            parameters["draft"] = true.makeNode()
         }
 
         if isEditing {
