@@ -60,6 +60,10 @@ struct BlogAdminController {
         let draft = request.data["save-draft"]?.string
         let publish = request.data["publish"]?.string
         
+        if draft == nil && publish == nil {
+            throw Abort.badRequest
+        }
+        
         // I must be able to inline all of this
         var tagsArray: [Node] = []
         
@@ -68,10 +72,6 @@ struct BlogAdminController {
         }
         else if let tagsStringArray = rawTags as? [String] {
             tagsArray = tagsStringArray.map { $0.makeNode() }
-        }
-        
-        if draft == nil && publish == nil {
-            throw Abort.badRequest
         }
 
         if let createPostErrors = validatePostCreation(title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl) {
@@ -136,6 +136,12 @@ struct BlogAdminController {
         let rawContents = request.data["inputPostContents"]?.string
         let rawTags = request.data["inputTags"]?.array
         let rawSlugUrl = request.data["inputSlugUrl"]?.string
+        let draft = request.data["save-draft"]?.string
+        let publish = request.data["publish"]?.string
+        
+        if draft == nil && publish == nil {
+            throw Abort.badRequest
+        }
         
         var tagsArray: [Node] = []
         
@@ -157,7 +163,6 @@ struct BlogAdminController {
         var post = post
         post.title = title
         post.contents = contents
-        post.lastEdited = Date()
         if (post.slugUrl != slugUrl) {
             post.slugUrl = BlogPost.generateUniqueSlugUrl(from: slugUrl)
         }
@@ -186,6 +191,16 @@ struct BlogAdminController {
 
         for newTagString in tagsToAdd {
             try BlogTag.addTag(newTagString, to: post)
+        }
+        
+        if post.published {
+            post.lastEdited = Date()
+        }
+        else {
+            post.created = Date()
+            if let _ = publish {
+                post.published = true
+            }
         }
 
         try post.save()
