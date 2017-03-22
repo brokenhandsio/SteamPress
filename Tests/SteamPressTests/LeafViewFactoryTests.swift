@@ -84,11 +84,8 @@ class LeafViewFactoryTests: XCTestCase {
     // MARK: - Overrides
     
     override func setUp() {
-        let drop = Droplet(arguments: ["dummy/path/", "prepare"], config: nil)
         viewRenderer = CapturingViewRenderer()
-        drop.view = viewRenderer
-        drop.database = database
-        viewFactory = LeafViewFactory(drop: drop)
+        viewFactory = LeafViewFactory(viewRenderer: viewRenderer)
         tagRequest = try! Request(method: .get, uri: tagURI)
         indexRequest = try! Request(method: .get, uri: indexURI)
         let printConsole = PrintConsole()

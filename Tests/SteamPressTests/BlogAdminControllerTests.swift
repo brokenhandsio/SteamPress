@@ -20,7 +20,7 @@ class BlogAdminControllerTests: XCTestCase {
         let pathCreator = BlogPathCreator(blogPath: nil)
         // TODO change to Stub
         let viewFactory = CapturingViewFactory()
-        let blogController = BlogController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, postsPerPage: 5)
+        let blogController = BlogController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, postsPerPage: 5, config: drop.config)
         blogController.addRoutes()
         try drop.runCommands()
         

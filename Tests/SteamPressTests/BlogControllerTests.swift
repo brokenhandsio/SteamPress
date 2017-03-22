@@ -68,7 +68,7 @@ class BlogControllerTests: XCTestCase {
 
         viewFactory = CapturingViewFactory()
         let pathCreator = BlogPathCreator(blogPath: nil)
-        let blogController = BlogController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, postsPerPage: 5)
+        let blogController = BlogController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, postsPerPage: 5, config: config ?? drop.config)
         blogController.addRoutes()
 
         let blogAdminController = BlogAdminController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory)
