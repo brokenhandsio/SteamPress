@@ -18,6 +18,7 @@ There is an example of how it can work in a site (and what it requires in terms 
 * Multiple user accounts
 * Tags on blog posts
 * Snippet for posts
+* Draft Posts
 * Works with any Fluent driver
 * Protected Admin route for creating blog posts
 * Pagination on the main blog page
