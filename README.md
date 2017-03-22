@@ -268,7 +268,7 @@ The blog post has a number of `Context`s you can pass to the `makeNode()` functi
 
 * `.shortSnippet` - this will return the post with an `id`, `title`, `author_name`, `author_username`, `slug_url`, `created_date` (Human readable) and `short_snippet`
 * `.longSnippet` - this will return the post with an `id`, `title`, `author_name`, `author_username`, `slug_url`, `created_date` (Human readable) and `long_snippet`. It will also include all of the tags in a `tags` object if there are any associated with that post
-* `.all` - this returns the post with all information, including both snippet lengths, including author names and human readable dates, as well as both dates in ISO 8601 format under the parameter names `created_date_iso8601` and `last_edited_date_iso8601`
+* `.all` - this returns the post with all information, including both snippet lengths, including author names and human readable dates, as well as both dates in ISO 8601 format under the parameter names `created_date_iso8601` and `last_edited_date_iso8601`.
 
 If no `Context` is supplied to the `makeNode()` call you will get:
 
@@ -278,6 +278,7 @@ If no `Context` is supplied to the `makeNode()` call you will get:
 * `bloguser_id` - The ID of the Author of the post
 * `created` - The time the post was created as a `Double`
 * `slug_url`
+* `published` - Whether the post has been published or not
 
 ## Blog User
 
