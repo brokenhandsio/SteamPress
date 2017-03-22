@@ -7,7 +7,7 @@ import SwiftSoup
 
 struct LeafViewFactory: ViewFactory {
 
-    let drop: Droplet
+    let viewRenderer: ViewRenderer
 
     // MARK: - Admin Controller Views
 
@@ -68,7 +68,7 @@ struct LeafViewFactory: ViewFactory {
             parameters["createBlogPostPage"] = true
         }
 
-        return try drop.view.make("blog/admin/createPost", parameters)
+        return try viewRenderer.make("blog/admin/createPost", parameters)
     }
 
     func createUserView(editing: Bool = false, errors: [String]? = nil, name: String? = nil, username: String? = nil, passwordError: Bool? = nil, confirmPasswordError: Bool? = nil, resetPasswordRequired: Bool? = nil, userId: Vapor.Node? = nil) throws -> View {
@@ -112,7 +112,7 @@ struct LeafViewFactory: ViewFactory {
             parameters["userId"] = userId
         }
 
-        return try drop.view.make("blog/admin/createUser", parameters)
+        return try viewRenderer.make("blog/admin/createUser", parameters)
     }
 
     func createLoginView(loginWarning: Bool = false, errors: [String]? = nil, username: String? = nil, password: String? = nil) throws -> View {
@@ -136,7 +136,7 @@ struct LeafViewFactory: ViewFactory {
             parameters["loginWarning"] = true
         }
 
-        return try drop.view.make("blog/admin/login", parameters)
+        return try viewRenderer.make("blog/admin/login", parameters)
     }
 
     func createBlogAdminView(errors: [String]? = nil) throws -> View {
@@ -157,7 +157,7 @@ struct LeafViewFactory: ViewFactory {
 
         parameters["blogAdminPage"] = true
 
-        return try drop.view.make("blog/admin/index", parameters)
+        return try viewRenderer.make("blog/admin/index", parameters)
     }
 
     func createResetPasswordView(errors: [String]? = nil, passwordError: Bool? = nil, confirmPasswordError: Bool? = nil) throws -> View {
@@ -176,7 +176,7 @@ struct LeafViewFactory: ViewFactory {
             parameters["confirmPasswordError"] = confirmPasswordError.makeNode()
         }
 
-        return try drop.view.make("blog/admin/resetPassword", parameters)
+        return try viewRenderer.make("blog/admin/resetPassword", parameters)
     }
 
     func createProfileView(uri: URI, author: BlogUser, isMyProfile: Bool, posts: [BlogPost], loggedInUser: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
@@ -295,7 +295,7 @@ struct LeafViewFactory: ViewFactory {
             viewParameters["site_twitter_handle"] = siteTwitterHandle.makeNode()
         }
         
-        return try drop.view.make(template, viewParameters.makeNode())
+        return try viewRenderer.make(template, viewParameters.makeNode())
     }
 }
 

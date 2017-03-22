@@ -14,13 +14,15 @@ struct BlogController {
     fileprivate let pathCreator: BlogPathCreator
     fileprivate let viewFactory: ViewFactory
     fileprivate let postsPerPage: Int
+    fileprivate let config: Config
     
     // MARK: - Initialiser
-    init(drop: Droplet, pathCreator: BlogPathCreator, viewFactory: ViewFactory, postsPerPage: Int) {
+    init(drop: Droplet, pathCreator: BlogPathCreator, viewFactory: ViewFactory, postsPerPage: Int, config: Config) {
         self.drop = drop
         self.pathCreator = pathCreator
         self.viewFactory = viewFactory
         self.postsPerPage = postsPerPage
+        self.config = config
     }
     
     // MARK: - Add routes
@@ -113,11 +115,11 @@ struct BlogController {
     }
     
     private func getDisqusName() -> String? {
-        return drop.config["disqus", "disqusName"]?.string
+        return config["disqus", "disqusName"]?.string
     }
     
     private func getSiteTwitterHandle() -> String? {
-        return drop.config["twitter", "siteHandle"]?.string
+        return config["twitter", "siteHandle"]?.string
     }
     
 }
