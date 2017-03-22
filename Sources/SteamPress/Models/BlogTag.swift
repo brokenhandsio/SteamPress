@@ -66,7 +66,7 @@ extension BlogTag {
 
 extension BlogTag {
     func blogPosts() throws -> [BlogPost] {
-        return try siblings().all()
+        return try siblings().filter("published", true).all()
     }
     
     func deletePivot(for post: BlogPost) throws {
