@@ -91,7 +91,7 @@ SteamPress currently supports using [Disqus](https://disqus.com) for the comment
 }
 ```
 
-This will pass it through to the Leaf templates for the Blog index (`blog.leaf`), blog posts (`blogpost.leaf`), author page (`profile.leaf`) and tag page (`tag.leaf`) so you can include it if needs be. If you want to manually set up comments you can do this yourself and just include the necessary files for your provider. This is mainly to provide easily configuration for the [Platform site](https://github.com/brokenhandsio/SteamPressExample).
+This will pass it through to the Leaf templates for the Blog index (`blog.leaf`), blog posts (`blogpost.leaf`), author page (`profile.leaf`) and tag page (`tag.leaf`) so you can include it if needs be. If you want to manually set up comments you can do this yourself and just include the necessary files for your provider. This is mainly to provide easy configuration for the [Platform site](https://github.com/brokenhandsio/SteamPressExample).
 
 ## Open Graph Twitter Card Support
 
@@ -108,18 +108,18 @@ SteamPress expects there to be a number of Leaf template files in the correct lo
 The basic structure of your `Resources/View` directory should be:
 
 * `blog`
- * `blog.leaf` - the main index page
- * `blogpost.leaf` - the page for a single blog post
- * `tag.leaf` - the page for a tag
- * `profile.leaf` - the page for a user profile
- * `tags.leaf` - the page for displaying all of the tags
- * `authors.leaf` - the page for displaying all of the authors
- * `admin`
-  * `createPost.leaf` - the page for creating and editing a blog post
-  * `createUser.leaf` - the page for creating and editing a user
-  * `index.leaf` - the index page for the Admin site
-  * `login.leaf` - the login page for the Admin site
-  * `resetPassword.leaf` - the page for resetting your password
+  * `blog.leaf` - the main index page
+  * `blogpost.leaf` - the page for a single blog post
+  * `tag.leaf` - the page for a tag
+  * `profile.leaf` - the page for a user profile
+  * `tags.leaf` - the page for displaying all of the tags
+  * `authors.leaf` - the page for displaying all of the authors
+  * `admin`
+    * `createPost.leaf` - the page for creating and editing a blog post
+    * `createUser.leaf` - the page for creating and editing a user
+    * `index.leaf` - the index page for the Admin site
+    * `login.leaf` - the login page for the Admin site
+    * `resetPassword.leaf` - the page for resetting your password
 
 ## Main Blog Site
 
@@ -322,7 +322,6 @@ SteamPress also contains an API for accessing certain things that may be useful.
 # Known issues
 
 * When the admin user is created when first accessing the login screen, sometimes two are created so you need to use the first password displayed. You can then delete the second Admin user in the Admin pane.
-* Despite me being a big believer in TDD and it saving me on many occasions, I neglected to actually write any tests for this. So despite the fact that I have been tripped up due to no tests, I haven't written the unit tests yet, mainly because this started out as a Spike to see how easy it would be. They will definitely be coming soon!
 
 # Roadmap
 
