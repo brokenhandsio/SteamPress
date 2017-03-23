@@ -459,7 +459,7 @@ class LeafViewFactoryTests: XCTestCase {
         XCTAssertEqual(viewRenderer.capturedContext?["users"]?.nodeArray?.count, 2)
         XCTAssertEqual(viewRenderer.capturedContext?["users"]?.nodeArray?.first?["name"]?.string, users.first?.name)
         XCTAssertEqual(viewRenderer.capturedContext?["published-posts"]?.nodeArray?.count, 2)
-        XCTAssertEqual(viewRenderer.capturedContext?["published-posts"]?.nodeArray?.first?["title"]?.string, posts.first?.title)
+        XCTAssertEqual(viewRenderer.capturedContext?["published-posts"]?.nodeArray?.first?["title"]?.string, posts[1].title)
         XCTAssertEqual(viewRenderer.capturedContext?["draft-posts"]?.nodeArray?.count, 1)
         XCTAssertEqual(viewRenderer.capturedContext?["draft-posts"]?.nodeArray?.first?["title"]?.string, draftPost.title)
         XCTAssertEqual(viewRenderer.leafPath, "blog/admin/index")
