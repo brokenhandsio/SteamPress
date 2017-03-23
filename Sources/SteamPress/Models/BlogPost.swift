@@ -49,15 +49,14 @@ extension BlogPost: NodeRepresentable {
     public func makeNode(context: Context) throws -> Node {
         let createdTime = created.timeIntervalSince1970
 
-        var node = try Node(node: [
-            "id": id,
-            "title": title,
-            "contents": contents,
-            "bloguser_id": author,
-            "created": createdTime,
-            "slug_url": slugUrl,
-            "published": published,
-            ])
+        var node: [String: Node]  = [:]
+        node["id"] = id
+        node["title"] = title.makeNode()
+        node["contents"] = contents.makeNode()
+        node["bloguser_id"] = author?.makeNode()
+        node["created"] = createdTime.makeNode()
+        node["slug_url"] = slugUrl.makeNode()
+        node["published"] = published.makeNode()
 
         if let lastEdited = lastEdited {
             node["last_edited"] = lastEdited.timeIntervalSince1970.makeNode()
@@ -71,27 +70,25 @@ extension BlogPost: NodeRepresentable {
 
         switch context {
         case BlogPostContext.shortSnippet:
-            node = try Node(node: [
-                "id": id,
-                "title": title,
-                "author_name": try getAuthor()?.name.makeNode(),
-                "author_username": try getAuthor()?.username.makeNode(),
-                "short_snippet": shortSnippet().makeNode(),
-                "created_date": createdDate.makeNode(),
-                "published": published,
-                "slug_url": slugUrl
-                ])
+            node = [:]
+            node["id"] = id
+            node["title"] = title.makeNode()
+            node["author_name"] = try getAuthor()?.name.makeNode()
+            node["author_username"] = try getAuthor()?.username.makeNode()
+            node["short_snippet"] = shortSnippet().makeNode()
+            node["created_date"] = createdDate.makeNode()
+            node["slug_url"] = slugUrl.makeNode()
+            node["published"] = published.makeNode()
         case BlogPostContext.longSnippet:
-            node = try Node(node: [
-                "id": id,
-                "title": title,
-                "author_name": try getAuthor()?.name.makeNode(),
-                "author_username": try getAuthor()?.username.makeNode(),
-                "long_snippet": longSnippet().makeNode(),
-                "created_date": createdDate.makeNode(),
-                "published": published,
-                "slug_url": slugUrl
-                ])
+            node = [:]
+            node["id"] = id
+            node["title"] = title.makeNode()
+            node["author_name"] = try getAuthor()?.name.makeNode()
+            node["author_username"] = try getAuthor()?.username.makeNode()
+            node["long_snippet"] = longSnippet().makeNode()
+            node["created_date"] = createdDate.makeNode()
+            node["slug_url"] = slugUrl.makeNode()
+            node["published"] = published.makeNode()
 
             let allTags = try tags()
 
@@ -129,7 +126,7 @@ extension BlogPost: NodeRepresentable {
         default: break
         }
 
-        return node
+        return try node.makeNode()
     }
 }
 
