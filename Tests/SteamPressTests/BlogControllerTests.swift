@@ -32,6 +32,7 @@ class BlogControllerTests: XCTestCase {
         ("testAllTagsPageGetsAllTags", testAllTagsPageGetsAllTags),
         ("testAllAuthorsPageGetAllAuthors", testAllAuthorsPageGetAllAuthors),
         ("testTagPageGetsOnlyPublishedPostsInDescendingOrder", testTagPageGetsOnlyPublishedPostsInDescendingOrder),
+        ("testAuthorPageGetsOnlyPublishedPostsInDescendingOrder", testAuthorPageGetsOnlyPublishedPostsInDescendingOrder),
     ]
 
     private var drop: Droplet!
@@ -381,6 +382,18 @@ class BlogControllerTests: XCTestCase {
         
         XCTAssertEqual(2, viewFactory.tagPosts?.total)
         XCTAssertEqual(post2.title, viewFactory.tagPosts?.data?.first?.title)
+    }
+    
+    func testAuthorPageGetsOnlyPublishedPostsInDescendingOrder() throws {
+        try setupDrop()
+        var post2 = TestDataBuilder.anyPost(title: "A later post", author: self.user)
+        try post2.save()
+        var draftPost = TestDataBuilder.anyPost(author: self.user, published: false)
+        try draftPost.save()
+        _ = try drop.respond(to: authorRequest)
+        
+        XCTAssertEqual(2, viewFactory.authorPosts?.count)
+        XCTAssertEqual(post2.title, viewFactory.authorPosts?.first?.title)
     }
     
 }
