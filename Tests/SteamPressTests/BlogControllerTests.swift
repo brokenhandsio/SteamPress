@@ -31,6 +31,7 @@ class BlogControllerTests: XCTestCase {
         ("testAllTagsPageGetsTwitterHandleIfSet", testAllTagsPageGetsTwitterHandleIfSet),
         ("testAllTagsPageGetsAllTags", testAllTagsPageGetsAllTags),
         ("testAllAuthorsPageGetAllAuthors", testAllAuthorsPageGetAllAuthors),
+        ("testTagPageGetsOnlyPublishedPostsInDescendingOrder", testTagPageGetsOnlyPublishedPostsInDescendingOrder),
     ]
 
     private var drop: Droplet!
@@ -366,6 +367,20 @@ class BlogControllerTests: XCTestCase {
         
         XCTAssertEqual(1, viewFactory.allAuthorsPageAuthors?.count)
         XCTAssertEqual("Luke", viewFactory.allAuthorsPageAuthors?.first?.name)
+    }
+    
+    func testTagPageGetsOnlyPublishedPostsInDescendingOrder() throws {
+        try setupDrop()
+        var post2 = TestDataBuilder.anyPost(title: "A later post", author: self.user)
+        try post2.save()
+        var draftPost = TestDataBuilder.anyPost(author: self.user, published: false)
+        try draftPost.save()
+        try BlogTag.addTag("tatooine", to: post2)
+        try BlogTag.addTag("tatooine", to: draftPost)
+        _ = try drop.respond(to: tagRequest)
+        
+        XCTAssertEqual(2, viewFactory.tagPosts?.total)
+        XCTAssertEqual(post2.title, viewFactory.tagPosts?.data?.first?.title)
     }
     
 }

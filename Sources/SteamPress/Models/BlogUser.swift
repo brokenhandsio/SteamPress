@@ -107,7 +107,7 @@ extension BlogUser: Auth.User {
 
 extension BlogUser {
     func posts() throws -> [BlogPost] {
-        return try children("bloguser_id", BlogPost.self).filter("published", true).all()
+        return try children("bloguser_id", BlogPost.self).sort("created", .descending).filter("published", true).all()
     }
 }
 
