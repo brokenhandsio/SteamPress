@@ -149,11 +149,11 @@ struct LeafViewFactory: ViewFactory {
             ])
 
         if publishedBlogPosts.count > 0 {
-            parameters["published-posts"] = try publishedBlogPosts.makeNode(context: BlogPostContext.all)
+            parameters["published_posts"] = try publishedBlogPosts.makeNode(context: BlogPostContext.all)
         }
         
         if draftBlogPosts.count > 0 {
-            parameters["draft-posts"] = try draftBlogPosts.makeNode(context: BlogPostContext.all)
+            parameters["draft_posts"] = try draftBlogPosts.makeNode(context: BlogPostContext.all)
         }
 
         if let errors = errors {
