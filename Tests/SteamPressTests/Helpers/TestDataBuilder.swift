@@ -9,8 +9,8 @@ struct TestDataBuilder {
         return BlogUser(name: name, username: "timc", password: "password")
     }
     
-    static func anyPost(slugUrl: String = "some-exciting-title", author: BlogUser = TestDataBuilder.anyUser(), creationDate: Date = Date())  -> BlogPost {
-        return BlogPost(title: "An Exciting Post!", contents: "<p>This is a blog post</p>", author: author, creationDate: creationDate, slugUrl: slugUrl, published: true)
+    static func anyPost(title: String = "An Exciting Post!", slugUrl: String = "some-exciting-title", author: BlogUser = TestDataBuilder.anyUser(), creationDate: Date = Date(), published: Bool = true)  -> BlogPost {
+        return BlogPost(title: title, contents: "<p>This is a blog post</p>", author: author, creationDate: creationDate, slugUrl: slugUrl, published: published)
     }
     
     static func anyPostWithImage(author: BlogUser = TestDataBuilder.anyUser()) -> BlogPost {

@@ -451,13 +451,17 @@ class LeafViewFactoryTests: XCTestCase {
     func testBlogAdminViewGetsCorrectParameters() throws {
         // Add some stuff to the database
         let (posts, _, users) = try setupBlogIndex()
+        var draftPost = TestDataBuilder.anyPost(title: "[DRAFT] This will be awesome", author: users.first!, published: false)
+        try draftPost.save()
         let _ = try viewFactory.createBlogAdminView()
         XCTAssertNil(viewRenderer.capturedContext?["errors"])
         XCTAssertTrue((viewRenderer.capturedContext?["blogAdminPage"]?.bool) ?? false)
         XCTAssertEqual(viewRenderer.capturedContext?["users"]?.nodeArray?.count, 2)
         XCTAssertEqual(viewRenderer.capturedContext?["users"]?.nodeArray?.first?["name"]?.string, users.first?.name)
-        XCTAssertEqual(viewRenderer.capturedContext?["posts"]?.nodeArray?.count, 2)
-        XCTAssertEqual(viewRenderer.capturedContext?["posts"]?.nodeArray?.first?["title"]?.string, posts.first?.title)
+        XCTAssertEqual(viewRenderer.capturedContext?["published-posts"]?.nodeArray?.count, 2)
+        XCTAssertEqual(viewRenderer.capturedContext?["published-posts"]?.nodeArray?.first?["title"]?.string, posts.first?.title)
+        XCTAssertEqual(viewRenderer.capturedContext?["draft-posts"]?.nodeArray?.count, 1)
+        XCTAssertEqual(viewRenderer.capturedContext?["draft-posts"]?.nodeArray?.first?["title"]?.string, draftPost.title)
         XCTAssertEqual(viewRenderer.leafPath, "blog/admin/index")
     }
     
