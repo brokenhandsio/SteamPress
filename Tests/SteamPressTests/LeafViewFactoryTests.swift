@@ -63,6 +63,7 @@ class LeafViewFactoryTests: XCTestCase {
         ("testCreateBlogPostViewWhenEditing", testCreateBlogPostViewWhenEditing),
         ("testEditBlogPostViewThrowsWithNoPostToEdit", testEditBlogPostViewThrowsWithNoPostToEdit),
         ("testCreateBlogPostViewWithErrorsAndNoTitleOrContentsSupplied", testCreateBlogPostViewWithErrorsAndNoTitleOrContentsSupplied),
+        ("testDraftPassedThroughWhenEditingABlogPostThatHasNotBeenPublished", testDraftPassedThroughWhenEditingABlogPostThatHasNotBeenPublished)
         ]
     
     // MARK: - Properties
@@ -458,10 +459,10 @@ class LeafViewFactoryTests: XCTestCase {
         XCTAssertTrue((viewRenderer.capturedContext?["blogAdminPage"]?.bool) ?? false)
         XCTAssertEqual(viewRenderer.capturedContext?["users"]?.nodeArray?.count, 2)
         XCTAssertEqual(viewRenderer.capturedContext?["users"]?.nodeArray?.first?["name"]?.string, users.first?.name)
-        XCTAssertEqual(viewRenderer.capturedContext?["published-posts"]?.nodeArray?.count, 2)
-        XCTAssertEqual(viewRenderer.capturedContext?["published-posts"]?.nodeArray?.first?["title"]?.string, posts[1].title)
-        XCTAssertEqual(viewRenderer.capturedContext?["draft-posts"]?.nodeArray?.count, 1)
-        XCTAssertEqual(viewRenderer.capturedContext?["draft-posts"]?.nodeArray?.first?["title"]?.string, draftPost.title)
+        XCTAssertEqual(viewRenderer.capturedContext?["published_posts"]?.nodeArray?.count, 2)
+        XCTAssertEqual(viewRenderer.capturedContext?["published_posts"]?.nodeArray?.first?["title"]?.string, posts[1].title)
+        XCTAssertEqual(viewRenderer.capturedContext?["draft_posts"]?.nodeArray?.count, 1)
+        XCTAssertEqual(viewRenderer.capturedContext?["draft_posts"]?.nodeArray?.first?["title"]?.string, draftPost.title)
         XCTAssertEqual(viewRenderer.leafPath, "blog/admin/index")
     }
     
@@ -561,6 +562,7 @@ class LeafViewFactoryTests: XCTestCase {
         XCTAssertTrue((viewRenderer.capturedContext?["editing"]?.bool) ?? false)
         XCTAssertEqual(viewRenderer.capturedContext?["post"]?["title"]?.string, postToEdit.title)
         XCTAssertNil(viewRenderer.capturedContext?["createBlogPostPage"])
+        XCTAssertEqual(viewRenderer.capturedContext?["post"]?["published"]?.bool, true)
     }
     
     func testEditBlogPostViewThrowsWithNoPostToEdit() throws {
@@ -582,6 +584,13 @@ class LeafViewFactoryTests: XCTestCase {
         XCTAssertEqual(viewRenderer.capturedContext?["errors"]?.nodeArray?.count, 1)
         XCTAssertEqual(viewRenderer.capturedContext?["errors"]?.nodeArray?.first?.string, expectedError)
     }
+    
+    func testDraftPassedThroughWhenEditingABlogPostThatHasNotBeenPublished() throws {
+        let postToEdit = TestDataBuilder.anyPost(published: false)
+        let _ = try viewFactory.createBlogPostView(uri: editPostURI, title: postToEdit.title, contents: postToEdit.contents, slugUrl: postToEdit.slugUrl, tags: ["test".makeNode()], isEditing: true, postToEdit: postToEdit)
+        XCTAssertEqual(viewRenderer.capturedContext?["post"]?["published"]?.bool, false)
+    }
+
     
     // MARK: - Helpers
     
