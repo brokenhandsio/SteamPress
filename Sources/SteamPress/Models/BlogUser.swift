@@ -2,6 +2,7 @@ import Vapor
 import Fluent
 import Auth
 import BCrypt
+import URI
 
 final class BlogUser: Model {
     
@@ -13,11 +14,19 @@ final class BlogUser: Model {
     var username: String
     var password: String
     var resetPasswordRequired: Bool = false
+    var profilePicture: String?
+    var tagline: String?
+    var biography: String?
+    var twitterHandle: String?
     
-    init(name: String, username: String, password: String) {
+    init(name: String, username: String, password: String, profilePicture: String?, tagline: String?, biography: String?, twitterHandle: String?) {
         self.name = name
         self.username = username.lowercased()
         self.password = password
+        self.profilePicture = profilePicture
+        self.tagline = tagline
+        self.biography = biography
+        self.twitterHandle = twitterHandle
     }
     
     init(node: Node, in context: Context) throws {
@@ -26,6 +35,10 @@ final class BlogUser: Model {
         username = try node.extract("username")
         password = try node.extract("password")
         resetPasswordRequired = try node.extract("reset_password_required")
+        profilePicture = try? node.extract("profile_picture")
+        tagline = try? node.extract("tagline")
+        biography = try? node.extract("biography")
+        twitterHandle = try? node.extract("twitter_handle")
     }
     
     func makeNode(context: Context) throws -> Node {
@@ -34,6 +47,22 @@ final class BlogUser: Model {
         userNode["name"] = name.makeNode()
         userNode["username"] = username.makeNode()
         userNode["reset_password_required"] = resetPasswordRequired.makeNode()
+        
+        if let profilePicture = profilePicture {
+            userNode["profile_picture"] = profilePicture.makeNode()
+        }
+        
+        if let tagline = tagline {
+            userNode["tagline"] = tagline.makeNode()
+        }
+        
+        if let biography = biography {
+            userNode["biography"] = biography.makeNode()
+        }
+        
+        if let twitterHandle = twitterHandle {
+            userNode["twitter_handle"] = twitterHandle.makeNode()
+        }
         
         switch context {
         case is DatabaseContext:
@@ -54,6 +83,10 @@ final class BlogUser: Model {
             users.string("username", unique: true)
             users.string("password")
             users.bool("reset_password_required")
+            users.string("profile_picture", optional: true)
+            users.string("tagline", optional: true)
+            users.custom("biography", type: "TEXT", optional: true)
+            users.string("twitter_handle", optional: true)
         }
     }
     
@@ -69,7 +102,7 @@ public enum BlogUserContext: Context {
 extension BlogUser: Auth.User {
     
     convenience init(credentials: BlogUserCredentials) throws {
-        self.init(name: credentials.name ?? "", username: credentials.username, password: try BCrypt.digest(password: credentials.password))
+        self.init(name: credentials.name ?? "", username: credentials.username, password: try BCrypt.digest(password: credentials.password), profilePicture: credentials.profilePicture, tagline: credentials.tagline, biography: credentials.biography, twitterHandle: credentials.twitterHandle)
     }
     
     static func register(credentials: Credentials) throws -> Auth.User {
@@ -113,13 +146,21 @@ extension BlogUser {
 struct BlogUserCredentials: Credentials {
     
     let username: String
-    let name: String?
     let password: String
+    let name: String?
+    let profilePicture: String?
+    let tagline: String?
+    let biography: String?
+    let twitterHandle: String?
     
-    public init(username: String, password: String, name: String? = nil) {
+    public init(username: String, password: String, name: String?, profilePicture: String?, tagline: String?, biography: String?, twitterHandle: String?) {
         self.username = username.lowercased()
         self.password = password
         self.name = name
+        self.profilePicture = profilePicture
+        self.tagline = tagline
+        self.biography = biography
+        self.twitterHandle = twitterHandle
     }
 }
 

@@ -78,11 +78,11 @@ class BlogControllerTests: XCTestCase {
         try drop.runCommands()
 
         if loginUser {
-            let userCredentials = BlogUserCredentials(username: "luke", password: "1234", name: "Luke")
-            user = try BlogUser(credentials: userCredentials)
+//            let userCredentials = BlogUserCredentials(username: "luke", password: "1234", name: "Luke")
+//            user = try BlogUser(credentials: userCredentials)
         }
         else {
-            user = BlogUser(name: "Luke", username: "luke", password: "1234")
+            user = TestDataBuilder.anyUser()
         }
         try user.save()
         post = BlogPost(title: "Test Path", contents: "A long time ago", author: user, creationDate: Date(), slugUrl: "test-path", published: true)

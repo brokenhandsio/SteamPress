@@ -154,7 +154,7 @@ class LeafViewFactoryTests: XCTestCase {
     }
     
     func testLoggedInUserSetOnAllTagsPageIfPassedIn() throws {
-        let user = BlogUser(name: "Luke", username: "luke", password: "")
+        let user = TestDataBuilder.anyUser()
         _ = try viewFactory.allTagsView(uri: tagsURI, allTags: [], user: user, siteTwitterHandle: nil)
         XCTAssertEqual(viewRenderer.capturedContext?["user"]?["name"]?.string, "Luke")
     }
@@ -165,9 +165,9 @@ class LeafViewFactoryTests: XCTestCase {
     }
     
     func testParametersAreSetCorrectlyOnAllAuthorsPage() throws {
-        var user1 = BlogUser(name: "Luke", username: "luke", password: "")
+        var user1 = TestDataBuilder.anyUser()
         try user1.save()
-        var user2 = BlogUser(name: "Han", username: "han", password: "")
+        var user2 = TestDataBuilder.anyUser(name: "Han", username: "han")
         try user2.save()
         let authors = [user1, user2]
         _ = try viewFactory.allAuthorsView(uri: authorsURI, allAuthors: authors, user: user1, siteTwitterHandle: nil)
@@ -182,7 +182,7 @@ class LeafViewFactoryTests: XCTestCase {
     }
     
     func testAuthorsPageGetsPassedAllAuthorsWithBlogCount() throws {
-        var user1 = BlogUser(name: "Luke", username: "luke", password: "")
+        var user1 = TestDataBuilder.anyUser()
         try user1.save()
         var post1 = TestDataBuilder.anyPost(author: user1)
         try post1.save()
@@ -191,9 +191,9 @@ class LeafViewFactoryTests: XCTestCase {
     }
     
     func testAuthorsPageGetsPassedAuthorsSortedByPageCount() throws {
-        var user1 = BlogUser(name: "Luke", username: "luke", password: "")
+        var user1 = TestDataBuilder.anyUser()
         try user1.save()
-        var user2 = BlogUser(name: "Han", username: "han", password: "")
+        var user2 = TestDataBuilder.anyUser(name: "Han", username: "han")
         try user2.save()
         var post1 = TestDataBuilder.anyPost(author: user1)
         try post1.save()
@@ -610,7 +610,7 @@ class LeafViewFactoryTests: XCTestCase {
     }
     
     private func setupBlogPost() throws -> (BlogPost, BlogUser) {
-        var user = BlogUser(name: "Luke", username: "luke", password: "")
+        var user = TestDataBuilder.anyUser()
         try user.save()
         var postWithImage = TestDataBuilder.anyPostWithImage(author: user)
         try postWithImage.save()
@@ -620,7 +620,7 @@ class LeafViewFactoryTests: XCTestCase {
     private func setupTagPage() throws -> BlogTag {
         var tag = BlogTag(name: "tatooine")
         try tag.save()
-        var user = BlogUser(name: "Luke", username: "luke", password: "")
+        var user = TestDataBuilder.anyUser()
         try user.save()
         var post1 = TestDataBuilder.anyPost(author: user)
         try post1.save()
@@ -629,7 +629,7 @@ class LeafViewFactoryTests: XCTestCase {
     }
     
     private func setupAuthorPage() throws -> (BlogUser, [BlogPost]) {
-        var user = BlogUser(name: "Luke", username: "luke", password: "")
+        var user = TestDataBuilder.anyUser()
         try user.save()
         var postWithImage = TestDataBuilder.anyPostWithImage(author: user)
         try postWithImage.save()
