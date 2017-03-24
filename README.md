@@ -204,7 +204,8 @@ This is the page for viewing all of the authors on the blog. It provides a usefu
 This is the main Admin page for the blog where you can create and edit users and posts. The parameters for this page are:
 
 * `users` - all the users for the site
-* `posts` - all the posts that have been written if there are any, with the `all` Context
+* `published_posts` - all the posts that have been published if there are any, with the `all` Context
+* `draft_posts` - all the draft posts that have been saved but not published, if there are any, with the `all` Context
 * `errors` - any error messages for errors that have occurred when trying to delete posts or users (for instance trying to delete yourself or the last user)
 * `blogAdminPage` - a boolean set to true, useful for navigation
 
