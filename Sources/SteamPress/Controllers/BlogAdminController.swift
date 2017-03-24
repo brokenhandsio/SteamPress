@@ -49,7 +49,7 @@ struct BlogAdminController {
 
     // MARK: - Blog Posts handlers
     func createPostHandler(_ request: Request) throws -> ResponseRepresentable {
-        return try viewFactory.createBlogPostView(uri: request.uri, errors: nil, title: nil, contents: nil, slugUrl: nil, tags: nil, isEditing: false, postToEdit: nil)
+        return try viewFactory.createBlogPostView(uri: request.uri, errors: nil, title: nil, contents: nil, slugUrl: nil, tags: nil, isEditing: false, postToEdit: nil, draft: true)
     }
 
     func createPostPostHandler(_ request: Request) throws -> ResponseRepresentable {
@@ -57,6 +57,12 @@ struct BlogAdminController {
         let rawContents = request.data["inputPostContents"]?.string
         let rawTags = request.data["inputTags"]?.array
         let rawSlugUrl = request.data["inputSlugUrl"]?.string
+        let draft = request.data["save-draft"]?.string
+        let publish = request.data["publish"]?.string
+        
+        if draft == nil && publish == nil {
+            throw Abort.badRequest
+        }
         
         // I must be able to inline all of this
         var tagsArray: [Node] = []
@@ -69,7 +75,7 @@ struct BlogAdminController {
         }
 
         if let createPostErrors = validatePostCreation(title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl) {
-            return try viewFactory.createBlogPostView(uri: request.uri, errors: createPostErrors, title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl, tags: tagsArray, isEditing: false, postToEdit: nil)
+            return try viewFactory.createBlogPostView(uri: request.uri, errors: createPostErrors, title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl, tags: tagsArray, isEditing: false, postToEdit: nil, draft: true)
         }
 
         guard let user = try request.auth.user() as? BlogUser, let title = rawTitle, let contents = rawContents, var slugUrl = rawSlugUrl else {
@@ -80,8 +86,14 @@ struct BlogAdminController {
 
         // Make sure slugUrl is unique
         slugUrl = BlogPost.generateUniqueSlugUrl(from: slugUrl)
+        
+        var published = false
+        
+        if let _ = publish {
+            published = true
+        }
 
-        var newPost = BlogPost(title: title, contents: contents, author: user, creationDate: creationDate, slugUrl: slugUrl)
+        var newPost = BlogPost(title: title, contents: contents, author: user, creationDate: creationDate, slugUrl: slugUrl, published: published)
         try newPost.save()
 
         // Save the tags
@@ -116,7 +128,7 @@ struct BlogAdminController {
     func editPostHandler(request: Request, post: BlogPost) throws -> ResponseRepresentable {
         let tags = try post.tags()
         let tagsArray: [Node] = tags.map { $0.name.makeNode() }
-        return try viewFactory.createBlogPostView(uri: request.uri, errors: nil, title: post.title, contents: post.contents, slugUrl: post.slugUrl, tags: tagsArray, isEditing: true, postToEdit: post)
+        return try viewFactory.createBlogPostView(uri: request.uri, errors: nil, title: post.title, contents: post.contents, slugUrl: post.slugUrl, tags: tagsArray, isEditing: true, postToEdit: post, draft: !post.published)
     }
 
     func editPostPostHandler(request: Request, post: BlogPost) throws -> ResponseRepresentable {
@@ -124,6 +136,12 @@ struct BlogAdminController {
         let rawContents = request.data["inputPostContents"]?.string
         let rawTags = request.data["inputTags"]?.array
         let rawSlugUrl = request.data["inputSlugUrl"]?.string
+        let draft = request.data["save-draft"]?.string
+        let publish = request.data["publish"]?.string
+        
+        if draft == nil && publish == nil {
+            throw Abort.badRequest
+        }
         
         var tagsArray: [Node] = []
         
@@ -135,7 +153,7 @@ struct BlogAdminController {
         }
 
         if let errors = validatePostCreation(title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl) {
-            return try viewFactory.createBlogPostView(uri: request.uri, errors: errors, title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl, tags: tagsArray, isEditing: true, postToEdit: post)
+            return try viewFactory.createBlogPostView(uri: request.uri, errors: errors, title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl, tags: tagsArray, isEditing: true, postToEdit: post, draft: false)
         }
 
         guard let title = rawTitle, let contents = rawContents, let slugUrl = rawSlugUrl else {
@@ -145,7 +163,6 @@ struct BlogAdminController {
         var post = post
         post.title = title
         post.contents = contents
-        post.lastEdited = Date()
         if (post.slugUrl != slugUrl) {
             post.slugUrl = BlogPost.generateUniqueSlugUrl(from: slugUrl)
         }
@@ -174,6 +191,16 @@ struct BlogAdminController {
 
         for newTagString in tagsToAdd {
             try BlogTag.addTag(newTagString, to: post)
+        }
+        
+        if post.published {
+            post.lastEdited = Date()
+        }
+        else {
+            post.created = Date()
+            if let _ = publish {
+                post.published = true
+            }
         }
 
         try post.save()

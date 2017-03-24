@@ -7,11 +7,11 @@ import SwiftSoup
 
 struct LeafViewFactory: ViewFactory {
 
-    let drop: Droplet
+    let viewRenderer: ViewRenderer
 
     // MARK: - Admin Controller Views
 
-    func createBlogPostView(uri: URI, errors: [String]? = nil, title: String? = nil, contents: String? = nil, slugUrl: String? = nil, tags: [Vapor.Node]? = nil, isEditing: Bool = false, postToEdit: BlogPost? = nil) throws -> View {
+    func createBlogPostView(uri: URI, errors: [String]? = nil, title: String? = nil, contents: String? = nil, slugUrl: String? = nil, tags: [Vapor.Node]? = nil, isEditing: Bool = false, postToEdit: BlogPost? = nil, draft: Bool = true) throws -> View {
         let titleError = (title == nil || (title?.isWhitespace())!) && errors != nil
         let contentsError = (contents == nil || (contents?.isWhitespace())!) && errors != nil
 
@@ -52,6 +52,10 @@ struct LeafViewFactory: ViewFactory {
         if let tagsSupplied = tags, tagsSupplied.count > 0 {
             parameters["tagsSupplied"] = try tagsSupplied.makeNode()
         }
+        
+        if draft {
+            parameters["draft"] = true.makeNode()
+        }
 
         if isEditing {
             parameters["editing"] = isEditing.makeNode()
@@ -64,7 +68,7 @@ struct LeafViewFactory: ViewFactory {
             parameters["createBlogPostPage"] = true
         }
 
-        return try drop.view.make("blog/admin/createPost", parameters)
+        return try viewRenderer.make("blog/admin/createPost", parameters)
     }
 
     func createUserView(editing: Bool = false, errors: [String]? = nil, name: String? = nil, username: String? = nil, passwordError: Bool? = nil, confirmPasswordError: Bool? = nil, resetPasswordRequired: Bool? = nil, userId: Vapor.Node? = nil) throws -> View {
@@ -108,7 +112,7 @@ struct LeafViewFactory: ViewFactory {
             parameters["userId"] = userId
         }
 
-        return try drop.view.make("blog/admin/createUser", parameters)
+        return try viewRenderer.make("blog/admin/createUser", parameters)
     }
 
     func createLoginView(loginWarning: Bool = false, errors: [String]? = nil, username: String? = nil, password: String? = nil) throws -> View {
@@ -132,19 +136,24 @@ struct LeafViewFactory: ViewFactory {
             parameters["loginWarning"] = true
         }
 
-        return try drop.view.make("blog/admin/login", parameters)
+        return try viewRenderer.make("blog/admin/login", parameters)
     }
 
     func createBlogAdminView(errors: [String]? = nil) throws -> View {
-        let blogPosts = try BlogPost.all()
+        let publishedBlogPosts = try BlogPost.query().filter("published", true).sort("created", .descending).all()
+        let draftBlogPosts = try BlogPost.query().filter("published", false).sort("created", .descending).all()
         let users = try BlogUser.all()
 
         var parameters = try Node(node: [
             "users": users.makeNode()
             ])
 
-        if blogPosts.count > 0 {
-            parameters["posts"] = try blogPosts.makeNode(context: BlogPostContext.all)
+        if publishedBlogPosts.count > 0 {
+            parameters["published_posts"] = try publishedBlogPosts.makeNode(context: BlogPostContext.all)
+        }
+        
+        if draftBlogPosts.count > 0 {
+            parameters["draft_posts"] = try draftBlogPosts.makeNode(context: BlogPostContext.all)
         }
 
         if let errors = errors {
@@ -153,7 +162,7 @@ struct LeafViewFactory: ViewFactory {
 
         parameters["blogAdminPage"] = true
 
-        return try drop.view.make("blog/admin/index", parameters)
+        return try viewRenderer.make("blog/admin/index", parameters)
     }
 
     func createResetPasswordView(errors: [String]? = nil, passwordError: Bool? = nil, confirmPasswordError: Bool? = nil) throws -> View {
@@ -172,7 +181,7 @@ struct LeafViewFactory: ViewFactory {
             parameters["confirmPasswordError"] = confirmPasswordError.makeNode()
         }
 
-        return try drop.view.make("blog/admin/resetPassword", parameters)
+        return try viewRenderer.make("blog/admin/resetPassword", parameters)
     }
 
     func createProfileView(uri: URI, author: BlogUser, isMyProfile: Bool, posts: [BlogPost], loggedInUser: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
@@ -291,7 +300,7 @@ struct LeafViewFactory: ViewFactory {
             viewParameters["site_twitter_handle"] = siteTwitterHandle.makeNode()
         }
         
-        return try drop.view.make(template, viewParameters.makeNode())
+        return try viewRenderer.make(template, viewParameters.makeNode())
     }
 }
 

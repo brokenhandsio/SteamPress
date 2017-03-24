@@ -17,10 +17,10 @@ public struct Provider: Vapor.Provider {
 
         setup(drop)
         
-        let viewFactory = LeafViewFactory(drop: drop)
+        let viewFactory = LeafViewFactory(viewRenderer: drop.view)
 
         // Set up the controllers
-        let blogController = BlogController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, postsPerPage: postsPerPage)
+        let blogController = BlogController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, postsPerPage: postsPerPage, config: drop.config)
         let blogAdminController = BlogAdminController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory)
 
         // Add the routes
@@ -34,6 +34,7 @@ public struct Provider: Vapor.Provider {
         drop.preparations.append(BlogUser.self)
         drop.preparations.append(BlogTag.self)
         drop.preparations.append(Pivot<BlogPost, BlogTag>.self)
+        drop.preparations.append(BlogPostDraft.self)
         
         // Middleware
         let authMiddleware = BlogAuthMiddleware()

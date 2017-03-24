@@ -18,6 +18,7 @@ There is an example of how it can work in a site (and what it requires in terms 
 * Multiple user accounts
 * Tags on blog posts
 * Snippet for posts
+* Draft Posts
 * Works with any Fluent driver
 * Protected Admin route for creating blog posts
 * Pagination on the main blog page
@@ -91,7 +92,7 @@ SteamPress currently supports using [Disqus](https://disqus.com) for the comment
 }
 ```
 
-This will pass it through to the Leaf templates for the Blog index (`blog.leaf`), blog posts (`blogpost.leaf`), author page (`profile.leaf`) and tag page (`tag.leaf`) so you can include it if needs be. If you want to manually set up comments you can do this yourself and just include the necessary files for your provider. This is mainly to provide easily configuration for the [Platform site](https://github.com/brokenhandsio/SteamPressExample).
+This will pass it through to the Leaf templates for the Blog index (`blog.leaf`), blog posts (`blogpost.leaf`), author page (`profile.leaf`) and tag page (`tag.leaf`) so you can include it if needs be. If you want to manually set up comments you can do this yourself and just include the necessary files for your provider. This is mainly to provide easy configuration for the [Platform site](https://github.com/brokenhandsio/SteamPressExample).
 
 ## Open Graph Twitter Card Support
 
@@ -108,18 +109,18 @@ SteamPress expects there to be a number of Leaf template files in the correct lo
 The basic structure of your `Resources/View` directory should be:
 
 * `blog`
- * `blog.leaf` - the main index page
- * `blogpost.leaf` - the page for a single blog post
- * `tag.leaf` - the page for a tag
- * `profile.leaf` - the page for a user profile
- * `tags.leaf` - the page for displaying all of the tags
- * `authors.leaf` - the page for displaying all of the authors
- * `admin`
-  * `createPost.leaf` - the page for creating and editing a blog post
-  * `createUser.leaf` - the page for creating and editing a user
-  * `index.leaf` - the index page for the Admin site
-  * `login.leaf` - the login page for the Admin site
-  * `resetPassword.leaf` - the page for resetting your password
+  * `blog.leaf` - the main index page
+  * `blogpost.leaf` - the page for a single blog post
+  * `tag.leaf` - the page for a tag
+  * `profile.leaf` - the page for a user profile
+  * `tags.leaf` - the page for displaying all of the tags
+  * `authors.leaf` - the page for displaying all of the authors
+  * `admin`
+    * `createPost.leaf` - the page for creating and editing a blog post
+    * `createUser.leaf` - the page for creating and editing a user
+    * `index.leaf` - the index page for the Admin site
+    * `login.leaf` - the login page for the Admin site
+    * `resetPassword.leaf` - the page for resetting your password
 
 ## Main Blog Site
 
@@ -268,7 +269,7 @@ The blog post has a number of `Context`s you can pass to the `makeNode()` functi
 
 * `.shortSnippet` - this will return the post with an `id`, `title`, `author_name`, `author_username`, `slug_url`, `created_date` (Human readable) and `short_snippet`
 * `.longSnippet` - this will return the post with an `id`, `title`, `author_name`, `author_username`, `slug_url`, `created_date` (Human readable) and `long_snippet`. It will also include all of the tags in a `tags` object if there are any associated with that post
-* `.all` - this returns the post with all information, including both snippet lengths, including author names and human readable dates, as well as both dates in ISO 8601 format under the parameter names `created_date_iso8601` and `last_edited_date_iso8601`
+* `.all` - this returns the post with all information, including both snippet lengths, including author names and human readable dates, as well as both dates in ISO 8601 format under the parameter names `created_date_iso8601` and `last_edited_date_iso8601`.
 
 If no `Context` is supplied to the `makeNode()` call you will get:
 
@@ -278,6 +279,7 @@ If no `Context` is supplied to the `makeNode()` call you will get:
 * `bloguser_id` - The ID of the Author of the post
 * `created` - The time the post was created as a `Double`
 * `slug_url`
+* `published` - Whether the post has been published or not
 
 ## Blog User
 
@@ -322,7 +324,6 @@ SteamPress also contains an API for accessing certain things that may be useful.
 # Known issues
 
 * When the admin user is created when first accessing the login screen, sometimes two are created so you need to use the first password displayed. You can then delete the second Admin user in the Admin pane.
-* Despite me being a big believer in TDD and it saving me on many occasions, I neglected to actually write any tests for this. So despite the fact that I have been tripped up due to no tests, I haven't written the unit tests yet, mainly because this started out as a Spike to see how easy it would be. They will definitely be coming soon!
 
 # Roadmap
 
@@ -330,9 +331,7 @@ I anticipate SteamPress staying on a version 0 for some time, whilst some of the
 
 On the roadmap we have:
 
-* Image uploading - you can link to images easily but can't upload any without redeploying the site - I may implement some functionality for this depending on whether people want images going to the same site as the code or something like an S3 bucket (I'm leaning towards the S3 option so answers on a postcard!)
-* Blog drafts - it would be nice not to publish posts until you want to
-* Sitemap/RSS feed - again for SEO
-* AMP endpoints for posts
+* Sitemap/RSS feed for SEO
+* AMP/Facebook instant articles endpoints for posts
 * Searching through the blog
 * Saving state when logging in - if you go to a page (e.g. edit post) but need to be logged in, it would be great if you could head back to that page once logged in. Also, if you have edited a post and your session expires before you post it, wouldn't it be great if it remembered everything!

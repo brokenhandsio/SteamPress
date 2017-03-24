@@ -14,13 +14,15 @@ struct BlogController {
     fileprivate let pathCreator: BlogPathCreator
     fileprivate let viewFactory: ViewFactory
     fileprivate let postsPerPage: Int
+    fileprivate let config: Config
     
     // MARK: - Initialiser
-    init(drop: Droplet, pathCreator: BlogPathCreator, viewFactory: ViewFactory, postsPerPage: Int) {
+    init(drop: Droplet, pathCreator: BlogPathCreator, viewFactory: ViewFactory, postsPerPage: Int, config: Config) {
         self.drop = drop
         self.pathCreator = pathCreator
         self.viewFactory = viewFactory
         self.postsPerPage = postsPerPage
+        self.config = config
     }
     
     // MARK: - Add routes
@@ -42,7 +44,7 @@ struct BlogController {
     func indexHandler(request: Request) throws -> ResponseRepresentable {
         let tags = try BlogTag.all()
         let authors = try BlogUser.all()
-        let paginatedBlogPosts = try BlogPost.query().sort("created", .descending).paginator(postsPerPage, request: request)
+        let paginatedBlogPosts = try BlogPost.query().filter("published", true).sort("created", .descending).paginator(postsPerPage, request: request)
 
         return try viewFactory.blogIndexView(uri: request.uri, paginatedPosts: paginatedBlogPosts, tags: tags, authors: authors, loggedInUser: getLoggedInUser(in: request), disqusName: getDisqusName(), siteTwitterHandle: getSiteTwitterHandle())
     }
@@ -72,7 +74,7 @@ struct BlogController {
             throw Abort.notFound
         }
         
-        let paginatedBlogPosts = try tag.blogPosts().sorted { $0.created > $1.created }.paginator(postsPerPage, request: request)
+        let paginatedBlogPosts = try tag.blogPosts().paginator(postsPerPage, request: request)
         
         return try viewFactory.tagView(uri: request.uri, tag: tag, paginatedPosts: paginatedBlogPosts, user: getLoggedInUser(in: request), disqusName: getDisqusName(), siteTwitterHandle: getSiteTwitterHandle())
     }
@@ -113,11 +115,11 @@ struct BlogController {
     }
     
     private func getDisqusName() -> String? {
-        return drop.config["disqus", "disqusName"]?.string
+        return config["disqus", "disqusName"]?.string
     }
     
     private func getSiteTwitterHandle() -> String? {
-        return drop.config["twitter", "siteHandle"]?.string
+        return config["twitter", "siteHandle"]?.string
     }
     
 }

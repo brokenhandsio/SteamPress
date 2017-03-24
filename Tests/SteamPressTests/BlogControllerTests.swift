@@ -31,6 +31,8 @@ class BlogControllerTests: XCTestCase {
         ("testAllTagsPageGetsTwitterHandleIfSet", testAllTagsPageGetsTwitterHandleIfSet),
         ("testAllTagsPageGetsAllTags", testAllTagsPageGetsAllTags),
         ("testAllAuthorsPageGetAllAuthors", testAllAuthorsPageGetAllAuthors),
+        ("testTagPageGetsOnlyPublishedPostsInDescendingOrder", testTagPageGetsOnlyPublishedPostsInDescendingOrder),
+        ("testAuthorPageGetsOnlyPublishedPostsInDescendingOrder", testAuthorPageGetsOnlyPublishedPostsInDescendingOrder),
     ]
 
     private var drop: Droplet!
@@ -68,7 +70,7 @@ class BlogControllerTests: XCTestCase {
 
         viewFactory = CapturingViewFactory()
         let pathCreator = BlogPathCreator(blogPath: nil)
-        let blogController = BlogController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, postsPerPage: 5)
+        let blogController = BlogController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, postsPerPage: 5, config: config ?? drop.config)
         blogController.addRoutes()
 
         let blogAdminController = BlogAdminController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory)
@@ -83,7 +85,7 @@ class BlogControllerTests: XCTestCase {
             user = BlogUser(name: "Luke", username: "luke", password: "1234")
         }
         try user.save()
-        post = BlogPost(title: "Test Path", contents: "A long time ago", author: user, creationDate: Date(), slugUrl: "test-path")
+        post = BlogPost(title: "Test Path", contents: "A long time ago", author: user, creationDate: Date(), slugUrl: "test-path", published: true)
         try post.save()
 
         try BlogTag.addTag("tatooine", to: post)
@@ -92,7 +94,7 @@ class BlogControllerTests: XCTestCase {
     func testBlogIndexGetsPostsInReverseOrder() throws {
         try setupDrop()
 
-        var post2 = BlogPost(title: "A New Path", contents: "In a galaxy far, far, away", author: user, creationDate: Date(), slugUrl: "a-new-path")
+        var post2 = BlogPost(title: "A New Path", contents: "In a galaxy far, far, away", author: user, creationDate: Date(), slugUrl: "a-new-path", published: true)
         try post2.save()
 
         _ = try drop.respond(to: blogIndexRequest)
@@ -368,6 +370,32 @@ class BlogControllerTests: XCTestCase {
         XCTAssertEqual("Luke", viewFactory.allAuthorsPageAuthors?.first?.name)
     }
     
+    func testTagPageGetsOnlyPublishedPostsInDescendingOrder() throws {
+        try setupDrop()
+        var post2 = TestDataBuilder.anyPost(title: "A later post", author: self.user)
+        try post2.save()
+        var draftPost = TestDataBuilder.anyPost(author: self.user, published: false)
+        try draftPost.save()
+        try BlogTag.addTag("tatooine", to: post2)
+        try BlogTag.addTag("tatooine", to: draftPost)
+        _ = try drop.respond(to: tagRequest)
+        
+        XCTAssertEqual(2, viewFactory.tagPosts?.total)
+        XCTAssertEqual(post2.title, viewFactory.tagPosts?.data?.first?.title)
+    }
+    
+    func testAuthorPageGetsOnlyPublishedPostsInDescendingOrder() throws {
+        try setupDrop()
+        var post2 = TestDataBuilder.anyPost(title: "A later post", author: self.user)
+        try post2.save()
+        var draftPost = TestDataBuilder.anyPost(author: self.user, published: false)
+        try draftPost.save()
+        _ = try drop.respond(to: authorRequest)
+        
+        XCTAssertEqual(2, viewFactory.authorPosts?.count)
+        XCTAssertEqual(post2.title, viewFactory.authorPosts?.first?.title)
+    }
+    
 }
 
 import URI
@@ -375,7 +403,7 @@ import Paginator
 
 class CapturingViewFactory: ViewFactory {
 
-    func createBlogPostView(uri: URI, errors: [String]?, title: String?, contents: String?, slugUrl: String?, tags: [Node]?, isEditing: Bool, postToEdit: BlogPost?) throws -> View {
+    func createBlogPostView(uri: URI, errors: [String]?, title: String?, contents: String?, slugUrl: String?, tags: [Node]?, isEditing: Bool, postToEdit: BlogPost?, draft: Bool) throws -> View {
         return View(data: try "Test".makeBytes())
     }
 
