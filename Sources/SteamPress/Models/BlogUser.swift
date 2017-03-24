@@ -29,12 +29,11 @@ final class BlogUser: Model {
     }
     
     func makeNode(context: Context) throws -> Node {
-        var userNode = try Node(node: [
-            "id": id,
-            "name": name,
-            "username": username,
-            "reset_password_required": resetPasswordRequired,
-            ])
+        var userNode: [String: NodeRepresentable] = [:]
+        userNode["id"] = id
+        userNode["name"] = name.makeNode()
+        userNode["username"] = username.makeNode()
+        userNode["reset_password_required"] = resetPasswordRequired.makeNode()
         
         switch context {
         case is DatabaseContext:
@@ -45,7 +44,7 @@ final class BlogUser: Model {
             break
         }
         
-        return userNode
+        return try userNode.makeNode()
     }
     
     static func prepare(_ database: Database) throws {
