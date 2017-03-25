@@ -70,25 +70,15 @@ extension BlogPost: NodeRepresentable {
 
         switch context {
         case BlogPostContext.shortSnippet:
-            node = [:]
-            node["id"] = id
-            node["title"] = title.makeNode()
             node["author_name"] = try getAuthor()?.name.makeNode()
             node["author_username"] = try getAuthor()?.username.makeNode()
             node["short_snippet"] = shortSnippet().makeNode()
             node["created_date"] = createdDate.makeNode()
-            node["slug_url"] = slugUrl.makeNode()
-            node["published"] = published.makeNode()
         case BlogPostContext.longSnippet:
-            node = [:]
-            node["id"] = id
-            node["title"] = title.makeNode()
             node["author_name"] = try getAuthor()?.name.makeNode()
             node["author_username"] = try getAuthor()?.username.makeNode()
             node["long_snippet"] = longSnippet().makeNode()
             node["created_date"] = createdDate.makeNode()
-            node["slug_url"] = slugUrl.makeNode()
-            node["published"] = published.makeNode()
 
             let allTags = try tags()
 
@@ -102,8 +92,6 @@ extension BlogPost: NodeRepresentable {
             if allTags.count > 0 {
                 node["tags"] = try allTags.makeNode()
             }
-
-            node["long_snippet"] = longSnippet().makeNode()
             
             let iso8601Formatter = DateFormatter()
             iso8601Formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
