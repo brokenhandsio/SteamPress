@@ -48,6 +48,8 @@ public class BlogPost: Model {
 extension BlogPost: NodeRepresentable {
     public func makeNode(context: Context) throws -> Node {
         let createdTime = created.timeIntervalSince1970
+        
+        print("Context is \(context)")
 
         var node: [String: Node]  = [:]
         node["id"] = id
@@ -61,31 +63,33 @@ extension BlogPost: NodeRepresentable {
         if let lastEdited = lastEdited {
             node["last_edited"] = lastEdited.timeIntervalSince1970.makeNode()
         }
+        
+        if type(of: context) != BlogPostContext.self {
+            return try node.makeNode()
+        }
 
         let dateFormatter = DateFormatter()
         dateFormatter.timeZone = TimeZone(abbreviation: "UTC")
         dateFormatter.dateStyle = .full
         dateFormatter.timeStyle = .none
         let createdDate = dateFormatter.string(from: created)
+        
+        node["author_name"] = try getAuthor()?.name.makeNode()
+        node["author_username"] = try getAuthor()?.username.makeNode()
+        node["created_date"] = createdDate.makeNode()
 
         switch context {
         case BlogPostContext.shortSnippet:
-            node["author_name"] = try getAuthor()?.name.makeNode()
-            node["author_username"] = try getAuthor()?.username.makeNode()
             node["short_snippet"] = shortSnippet().makeNode()
-            node["created_date"] = createdDate.makeNode()
+            break
         case BlogPostContext.longSnippet:
-            node["author_name"] = try getAuthor()?.name.makeNode()
-            node["author_username"] = try getAuthor()?.username.makeNode()
             node["long_snippet"] = longSnippet().makeNode()
-            node["created_date"] = createdDate.makeNode()
 
             let allTags = try tags()
-
             if allTags.count > 0 {
                 node["tags"] = try allTags.makeNode()
             }
-
+            break
         case BlogPostContext.all:
             let allTags = try tags()
 
@@ -98,7 +102,6 @@ extension BlogPost: NodeRepresentable {
             iso8601Formatter.locale = Locale(identifier: "en_US_POSIX")
             iso8601Formatter.timeZone = TimeZone(secondsFromGMT: 0)
             
-            node["created_date"] = createdDate.makeNode()
             node["created_date_iso8601"] = iso8601Formatter.string(from: created).makeNode()
 
             if let lastEdited = lastEdited {
@@ -106,9 +109,6 @@ extension BlogPost: NodeRepresentable {
                 node["last_edited_date"] = lastEditedDate.makeNode()
                 node["last_edited_date_iso8601"] = iso8601Formatter.string(from: lastEdited).makeNode()
             }
-
-            node["author_name"] = try getAuthor()?.name.makeNode()
-            node["author_username"] = try getAuthor()?.username.makeNode()
             node["short_snippet"] = shortSnippet().makeNode()
             node["long_snippet"] = longSnippet().makeNode()
         default: break
