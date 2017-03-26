@@ -132,8 +132,8 @@ This is the index page of the blog. The parameters it will receive are:
 * `tags` - an array of tags if there are any
 * `authors` - an array of the authors if there are any
 * `user` - the currently logged in user if a user is currently logged in
-* `disqusName` - the name of your Disqus site if configured
-* `blogIndexPage` - a boolean saying we are on the index page of the blog - useful for navbars
+* `disqus_name` - the name of your Disqus site if configured
+* `blog_index_page` - a boolean saying we are on the index page of the blog - useful for navbars
 * `site_twitter_handle` - the Twitter handle for the site if configured
 * `uri` - the URI of the page - useful for Open Graph
 
@@ -144,9 +144,9 @@ This is the page for viewing a single entire blog post. The parameters set are:
 
 * `post` - the full current post, with the `all` context
 * `author` - the author of the post
-* `blogPostPage` - a boolean saying we are on the blog post page
+* `blog_post_page` - a boolean saying we are on the blog post page
 * `user` - the currently logged in user if a user is currently logged in
-* `disqusName` - the name of your Disqus site if configured
+* `disqus_name` - the name of your Disqus site if configured
 * `post_uri` - The URI of the post
 * `post_uri_encoded` - A URL-query encoded for of the URI for passing to Share buttons
 * `site_uri`: The URI of the root site - this is useful for creating links to author pages for `article:author` Open Graph support
@@ -160,9 +160,9 @@ This is the page for a tag. A blog post can be tagged with many tags and a tag c
 
 * `tag` - the tag
 * `posts` - a Node containing data about the posts and metadata for the paginator. You can access the posts by calling the `.data` object on it, which is an array of blog posts if there are any, in date descending order. The posts will be made with a `longSnippet` context (see below)
-* `tagPage` - a boolean saying we are on the tag page
+* `tag_page` - a boolean saying we are on the tag page
 * `user` - the currently logged in user if a user is currently logged in
-* `disqusName` - the name of your Disqus site if configured
+* `disqus_name` - the name of your Disqus site if configured
 * `site_twitter_handle` - the Twitter handle for the site if configured
 * `uri` - the URI of the page - useful for Open Graph
 
@@ -171,11 +171,11 @@ This is the page for a tag. A blog post can be tagged with many tags and a tag c
 This is the page for viewing a profile of a user. This is generally used for viewing all posts written by a user, as well as some information about them. This template is also used by the Admin section for viewing a 'My Profile' page when logged in. The parameters it can have set are:
 
 * `author` - the user the page is for
-* `myProfile` - a boolean set to true if we are viewing the my profile page
-* `profilePage` - a boolean set to to true if we are viewing the profile page
+* `my_profile` - a boolean set to true if we are viewing the my profile page
+* `profile_page` - a boolean set to to true if we are viewing the profile page
 * `posts` - all the posts the user has written if they have written any in `shortSnippet` form
 * `user` - the currently logged in user if a user is currently logged in
-* `disqusName` - the name of your Disqus site if configured
+* `disqus_name` - the name of your Disqus site if configured
 * `site_twitter_handle` - the Twitter handle for the site if configured
 * `uri` - the URI of the page - useful for Open Graph
 
@@ -207,15 +207,15 @@ This is the main Admin page for the blog where you can create and edit users and
 * `published_posts` - all the posts that have been published if there are any, with the `all` Context
 * `draft_posts` - all the draft posts that have been saved but not published, if there are any, with the `all` Context
 * `errors` - any error messages for errors that have occurred when trying to delete posts or users (for instance trying to delete yourself or the last user)
-* `blogAdminPage` - a boolean set to true, useful for navigation
+* `blog_admin_page` - a boolean set to true, useful for navigation
 
 ### `login.leaf`
 
 This is the page for logging in to the admin section of the blog. The parameters are:
 
-* `usernameError` - a boolean set if there was an issue with the username
-* `passwordError` - a boolean set if there was an error with the password (note that we do not pass any password submitted back to any pages if there was an error for security reasons)
-* `usernameSupplied` - the username supplied (if any) when originally submitting the login for and there (useful for pre-populating the form)
+* `username_error` - a boolean set if there was an issue with the username
+* `password_error` - a boolean set if there was an error with the password (note that we do not pass any password submitted back to any pages if there was an error for security reasons)
+* `username_supplied` - the username supplied (if any) when originally submitting the login for and there (useful for pre-populating the form)
 * `errors` - an array of error messages if there were any errors logging in
 
 ### `resetPassword.leaf`
@@ -223,37 +223,37 @@ This is the page for logging in to the admin section of the blog. The parameters
 This is the page you will be redirected to if you need to reset your password. The parameters are:
 
 * `errors` - an array of errors if there were any errors resetting your password
-* `passwordError` - a boolean set if there was an error with the password (for instance it was blank)
-* `confirmPasswordError` - a boolean set if there was an error with the password confirm (for instance it was blank)
+* `password_error` - a boolean set if there was an error with the password (for instance it was blank)
+* `confirm_password_error` - a boolean set if there was an error with the password confirm (for instance it was blank)
 
 ### `createPost.leaf`
 
 This is the page for creating a new blog post, or editing an existing one. The parameters for this page are:
 
-* `titleError` - a boolean set to true if there was an error with the title
-* `contentsError` - a boolean set to true if there was an error with the blog contents
+* `title_error` - a boolean set to true if there was an error with the title
+* `contents_error` - a boolean set to true if there was an error with the blog contents
 * `errors` - an array of error messages if there were any errors creating or editing the blog post
-* `titleSupplied` - the title of the blog post to edit, or the post that failed to be created
-* `contentsSupplied` - the contents of the blog post to edit, or the post that failed to be created
-* `tagsSupplied` - an array of all of the tags that have been specified for the blog post
+* `title_supplied` - the title of the blog post to edit, or the post that failed to be created
+* `contents_supplied` - the contents of the blog post to edit, or the post that failed to be created
+* `tags_supplied` - an array of all of the tags that have been specified for the blog post
 * `editing` - a boolean set to true if we are currently editing the a blog post rather than creating a new one
 * `post` - the post object we are currently editing
-* `createBlogPostPage` - a boolean set to true, useful for the navbar etc
+* `create_blog_post_page` - a boolean set to true, useful for the navbar etc
 
 ### `createLogin.leaf`
 
 This is the page for creating a new user, or editing an existing one. The parameters are:
 
-* `nameError` - a boolean set if there was an error with the name
-* `usernameError` - a boolean set if there was an error with the username
+* `name_error` - a boolean set if there was an error with the name
+* `username_error` - a boolean set if there was an error with the username
 * `errors` - an array of error messages if there were any errors editing or creating the user
-* `nameSupplied` - the name of the user we are editing or that we failed to create
-* `usernameSupplied` - the username of the user we are editing or that we failed to create
-* `passwordError` - a boolean set to true if there was an error with the password
-* `confirmPasswordError` - a boolean set to true if there was an error with the password confirm
-* `resetPasswordOnLoginSupplied` - a boolean set to true if the edit/create submission was asked to reset the users password on next login (this is only supplied in an error so you can pre-populate the form for a user to correct without losing any information)
+* `name_supplied` - the name of the user we are editing or that we failed to create
+* `username_supplied` - the username of the user we are editing or that we failed to create
+* `password_error` - a boolean set to true if there was an error with the password
+* `confirm_password_error` - a boolean set to true if there was an error with the password confirm
+* `reset_password_on_login_supplied` - a boolean set to true if the edit/create submission was asked to reset the users password on next login (this is only supplied in an error so you can pre-populate the form for a user to correct without losing any information)
 * `editing` - a boolean set to true if we are editing a user
-* `userId` - this is the ID of the user if we are editing one. This allows you to send the edit user `POST` back to the correct route
+* `user_id` - this is the ID of the user if we are editing one. This allows you to send the edit user `POST` back to the correct route
 
 
 ## `POST` Routes
