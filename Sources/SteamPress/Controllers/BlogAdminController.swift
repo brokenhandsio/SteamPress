@@ -244,7 +244,7 @@ struct BlogAdminController {
         }
 
         // We now have valid data
-        let creds = BlogUserCredentials(username: username.lowercased(), password: password, name: name, profilePicture: profilePicture, tagline: tagline, biography: biography, twitterHandle: twitterHandle)
+        let creds = BlogUserCredentials(username: username.lowercased(), password: password, name: name, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline)
         if var user = try BlogUser.register(credentials: creds) as? BlogUser {
             if resetPasswordRequired {
                 user.resetPasswordRequired = true
@@ -296,13 +296,17 @@ struct BlogAdminController {
         }
         userToUpdate.name = name
         userToUpdate.username = username
+        userToUpdate.profilePicture = profilePicture
+        userToUpdate.twitterHandle = twitterHandle
+        userToUpdate.biography = biography
+        userToUpdate.tagline = tagline
 
         if resetPasswordRequired {
             userToUpdate.resetPasswordRequired = true
         }
 
         if let password = rawPassword {
-            let newCreds = BlogUserCredentials(username: username, password: password, name: name, profilePicture: "TODO", tagline: "TODO", biography: "TODO", twitterHandle: "TODO")
+            let newCreds = BlogUserCredentials(username: username, password: password, name: name, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline)
             let newUserPassword = try BlogUser(credentials: newCreds)
             userToUpdate.password = newUserPassword.password
         }
@@ -338,7 +342,7 @@ struct BlogAdminController {
             let users = try BlogUser.all()
             if users.count == 0 {
                 let password = String.random()
-                let creds = BlogUserCredentials(username: "admin", password: password, name: "Admin", profilePicture: nil, tagline: "Admin for the blog", biography: nil, twitterHandle: nil)
+                let creds = BlogUserCredentials(username: "admin", password: password, name: "Admin", profilePicture: nil, twitterHandle: nil, biography: nil, tagline: "Admin for the blog")
                 if var user = try BlogUser.register(credentials: creds) as? BlogUser {
                     user.resetPasswordRequired = true
                     try user.save()
@@ -379,7 +383,7 @@ struct BlogAdminController {
             throw Abort.badRequest
         }
         
-        let credentials = BlogUserCredentials(username: username.lowercased(), password: password, name: nil, profilePicture: nil, tagline: nil, biography: nil, twitterHandle: nil)
+        let credentials = BlogUserCredentials(username: username.lowercased(), password: password, name: nil, profilePicture: nil, twitterHandle: nil, biography: nil, tagline: nil)
         
         if rememberMe {
             request.storage["remember_me"] = true
@@ -478,7 +482,7 @@ struct BlogAdminController {
         }
 
         // Use the credentials class to hash the password
-        let newCreds = BlogUserCredentials(username: user.username, password: password, name: user.name, profilePicture: user.profilePicture, tagline: user.tagline, biography: user.biography, twitterHandle: user.twitterHandle)
+        let newCreds = BlogUserCredentials(username: user.username, password: password, name: user.name, profilePicture: user.profilePicture, twitterHandle: user.twitterHandle, biography: user.biography, tagline: user.tagline)
         let updatedUser = try BlogUser(credentials: newCreds)
         user.password = updatedUser.password
         user.resetPasswordRequired = false

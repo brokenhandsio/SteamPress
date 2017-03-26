@@ -15,18 +15,18 @@ final class BlogUser: Model {
     var password: String
     var resetPasswordRequired: Bool = false
     var profilePicture: String?
-    var tagline: String?
-    var biography: String?
     var twitterHandle: String?
+    var biography: String?
+    var tagline: String?
     
-    init(name: String, username: String, password: String, profilePicture: String?, tagline: String?, biography: String?, twitterHandle: String?) {
+    init(name: String, username: String, password: String, profilePicture: String?, twitterHandle: String?, biography: String?, tagline: String?) {
         self.name = name
         self.username = username.lowercased()
         self.password = password
         self.profilePicture = profilePicture
-        self.tagline = tagline
-        self.biography = biography
         self.twitterHandle = twitterHandle
+        self.biography = biography
+        self.tagline = tagline
     }
     
     init(node: Node, in context: Context) throws {
@@ -36,9 +36,9 @@ final class BlogUser: Model {
         password = try node.extract("password")
         resetPasswordRequired = try node.extract("reset_password_required")
         profilePicture = try? node.extract("profile_picture")
-        tagline = try? node.extract("tagline")
-        biography = try? node.extract("biography")
         twitterHandle = try? node.extract("twitter_handle")
+        biography = try? node.extract("biography")
+        tagline = try? node.extract("tagline")
     }
     
     func makeNode(context: Context) throws -> Node {
@@ -52,16 +52,16 @@ final class BlogUser: Model {
             userNode["profile_picture"] = profilePicture.makeNode()
         }
         
-        if let tagline = tagline {
-            userNode["tagline"] = tagline.makeNode()
+        if let twitterHandle = twitterHandle {
+            userNode["twitter_handle"] = twitterHandle.makeNode()
         }
         
         if let biography = biography {
             userNode["biography"] = biography.makeNode()
         }
         
-        if let twitterHandle = twitterHandle {
-            userNode["twitter_handle"] = twitterHandle.makeNode()
+        if let tagline = tagline {
+            userNode["tagline"] = tagline.makeNode()
         }
         
         switch context {
@@ -84,9 +84,9 @@ final class BlogUser: Model {
             users.string("password")
             users.bool("reset_password_required")
             users.string("profile_picture", optional: true)
-            users.string("tagline", optional: true)
-            users.custom("biography", type: "TEXT", optional: true)
             users.string("twitter_handle", optional: true)
+            users.custom("biography", type: "TEXT", optional: true)
+            users.string("tagline", optional: true)
         }
     }
     
@@ -102,7 +102,7 @@ public enum BlogUserContext: Context {
 extension BlogUser: Auth.User {
     
     convenience init(credentials: BlogUserCredentials) throws {
-        self.init(name: credentials.name ?? "", username: credentials.username, password: try BCrypt.digest(password: credentials.password), profilePicture: credentials.profilePicture, tagline: credentials.tagline, biography: credentials.biography, twitterHandle: credentials.twitterHandle)
+        self.init(name: credentials.name ?? "", username: credentials.username, password: try BCrypt.digest(password: credentials.password), profilePicture: credentials.profilePicture, twitterHandle: credentials.twitterHandle, biography: credentials.biography, tagline: credentials.tagline)
     }
     
     static func register(credentials: Credentials) throws -> Auth.User {
@@ -149,18 +149,18 @@ struct BlogUserCredentials: Credentials {
     let password: String
     let name: String?
     let profilePicture: String?
-    let tagline: String?
-    let biography: String?
     let twitterHandle: String?
+    let biography: String?
+    let tagline: String?
     
-    public init(username: String, password: String, name: String?, profilePicture: String?, tagline: String?, biography: String?, twitterHandle: String?) {
+    public init(username: String, password: String, name: String?, profilePicture: String?, twitterHandle: String?, biography: String?, tagline: String?) {
         self.username = username.lowercased()
         self.password = password
         self.name = name
         self.profilePicture = profilePicture
-        self.tagline = tagline
-        self.biography = biography
         self.twitterHandle = twitterHandle
+        self.biography = biography
+        self.tagline = tagline
     }
 }
 
