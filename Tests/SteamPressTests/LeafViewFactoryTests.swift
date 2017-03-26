@@ -371,6 +371,10 @@ class LeafViewFactoryTests: XCTestCase {
         XCTAssertNil(viewRenderer.capturedContext?["user"])
         XCTAssertNil(viewRenderer.capturedContext?["disqusName"])
         XCTAssertNil(viewRenderer.capturedContext?["site_twitter_handle"])
+        XCTAssertEqual(viewRenderer.capturedContext?["author"]?["tagline"]?.string, author.tagline)
+        XCTAssertEqual(viewRenderer.capturedContext?["author"]?["twitter_handle"]?.string, author.twitterHandle)
+        XCTAssertEqual(viewRenderer.capturedContext?["author"]?["biography"]?.string, author.biography)
+        XCTAssertEqual(viewRenderer.capturedContext?["author"]?["profile_picture"]?.string, author.profilePicture)
         XCTAssertEqual(viewRenderer.leafPath, "blog/profile")
     }
     
@@ -489,12 +493,16 @@ class LeafViewFactoryTests: XCTestCase {
         XCTAssertNil(viewRenderer.capturedContext?["resetPasswordOnLoginSupplied"])
         XCTAssertNil(viewRenderer.capturedContext?["editing"])
         XCTAssertNil(viewRenderer.capturedContext?["userId"])
+        XCTAssertNil(viewRenderer.capturedContext?["twitter_handle_supplied"])
+        XCTAssertNil(viewRenderer.capturedContext?["profile_picture_supplied"])
+        XCTAssertNil(viewRenderer.capturedContext?["biography_supplied"])
+        XCTAssertNil(viewRenderer.capturedContext?["tagline_supplied"])
         XCTAssertEqual(viewRenderer.leafPath, "blog/admin/createUser")
     }
     
     func testCreateUserViewWhenErrors() throws {
         let expectedError = "Not valid password"
-        let _ = try viewFactory.createUserView(errors: [expectedError], name: "Luke", username: "luke", passwordError: true, confirmPasswordError: true, resetPasswordRequired: true)
+        let _ = try viewFactory.createUserView(errors: [expectedError], name: "Luke", username: "luke", passwordError: true, confirmPasswordError: true, resetPasswordRequired: true, profilePicture: "https://static.brokenhands.io/steampress/images/authors/luke.png", twitterHandle: "luke", biography: "The last Jedi in the Galaxy", tagline: "A son without a father")
         XCTAssertFalse((viewRenderer.capturedContext?["nameError"]?.bool) ?? true)
         XCTAssertFalse((viewRenderer.capturedContext?["usernameError"]?.bool) ?? true)
         XCTAssertEqual(viewRenderer.capturedContext?["errors"]?.nodeArray?.first?.string, expectedError)
@@ -503,6 +511,10 @@ class LeafViewFactoryTests: XCTestCase {
         XCTAssertTrue((viewRenderer.capturedContext?["passwordError"]?.bool) ?? false)
         XCTAssertTrue((viewRenderer.capturedContext?["confirmPasswordError"]?.bool) ?? false)
         XCTAssertTrue((viewRenderer.capturedContext?["resetPasswordOnLoginSupplied"]?.bool) ?? false)
+        XCTAssertEqual(viewRenderer.capturedContext?["profile_picture_supplied"]?.string, "https://static.brokenhands.io/steampress/images/authors/luke.png")
+        XCTAssertEqual(viewRenderer.capturedContext?["twitter_handle_supplied"]?.string, "luke")
+        XCTAssertEqual(viewRenderer.capturedContext?["tagline_supplied"]?.string, "A son without a father")
+        XCTAssertEqual(viewRenderer.capturedContext?["biography_supplied"]?.string, "The last Jedi in the Galaxy")
     }
     
     func testCreateUserViewWhenNoNameOrUsernameSupplied() throws {
@@ -513,11 +525,16 @@ class LeafViewFactoryTests: XCTestCase {
     }
     
     func testCreateUserViewForEditing() throws {
-        let _ = try viewFactory.createUserView(editing: true, errors: nil, name: "Luke", username: "luke", userId: 1.makeNode())
+        let _ = try viewFactory.createUserView(editing: true, errors: nil, name: "Luke", username: "luke", userId: 1.makeNode(), profilePicture: "https://static.brokenhands.io/steampress/images/authors/luke.png", twitterHandle: "luke", biography: "The last Jedi in the Galaxy", tagline: "A son without a father")
         XCTAssertEqual(viewRenderer.capturedContext?["nameSupplied"]?.string, "Luke")
         XCTAssertEqual(viewRenderer.capturedContext?["usernameSupplied"]?.string, "luke")
         XCTAssertTrue((viewRenderer.capturedContext?["editing"]?.bool) ?? false)
         XCTAssertEqual(viewRenderer.capturedContext?["userId"], try 1.makeNode())
+        XCTAssertEqual(viewRenderer.capturedContext?["profile_picture_supplied"]?.string, "https://static.brokenhands.io/steampress/images/authors/luke.png")
+        XCTAssertEqual(viewRenderer.capturedContext?["twitter_handle_supplied"]?.string, "luke")
+        XCTAssertEqual(viewRenderer.capturedContext?["tagline_supplied"]?.string, "A son without a father")
+        XCTAssertEqual(viewRenderer.capturedContext?["biography_supplied"]?.string, "The last Jedi in the Galaxy")
+        XCTAssertEqual(viewRenderer.leafPath, "blog/admin/createUser")
     }
     
     func testCreateUserViewThrowsWhenTryingToEditWithoutUserId() throws {

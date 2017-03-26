@@ -210,7 +210,7 @@ struct BlogAdminController {
 
     // MARK: - User handlers
     func createUserHandler(_ request: Request) throws -> ResponseRepresentable {
-        return try viewFactory.createUserView(editing: false, errors: nil, name: nil, username: nil, passwordError: nil, confirmPasswordError: nil, resetPasswordRequired: nil, userId: nil)
+        return try viewFactory.createUserView(editing: false, errors: nil, name: nil, username: nil, passwordError: nil, confirmPasswordError: nil, resetPasswordRequired: nil, userId: nil, profilePicture: nil, twitterHandle: nil, biography: nil, tagline: nil)
     }
 
     func createUserPostHandler(_ request: Request) throws -> ResponseRepresentable {
@@ -221,12 +221,16 @@ struct BlogAdminController {
         let rawConfirmPassword = request.data["inputConfirmPassword"]?.string
         let rawPasswordResetRequired = request.data["inputResetPasswordOnLogin"]?.string
         let resetPasswordRequired = rawPasswordResetRequired != nil
+        let profilePicture = request.data["inputProfilePicture"]?.string
+        let tagline = request.data["inputTagline"]?.string
+        let biography = request.data["inputBiography"]?.string
+        let twitterHandle = request.data["inputTwitterHandle"]?.string
 
         let (createUserRawErrors, passwordRawError, confirmPasswordRawError) = validateUserSaveDataExists(edit: false, name: rawName, username: rawUsername, password: rawPassword, confirmPassword: rawConfirmPassword)
 
         // Return if we have any missing fields
         if (createUserRawErrors?.count)! > 0 {
-            return try viewFactory.createUserView(editing: false, errors: createUserRawErrors, name: rawName, username: rawUsername, passwordError: passwordRawError, confirmPasswordError: confirmPasswordRawError, resetPasswordRequired: resetPasswordRequired, userId: nil)
+            return try viewFactory.createUserView(editing: false, errors: createUserRawErrors, name: rawName, username: rawUsername, passwordError: passwordRawError, confirmPasswordError: confirmPasswordRawError, resetPasswordRequired: resetPasswordRequired, userId: nil, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline)
         }
 
         guard let name = rawName, let username = rawUsername?.lowercased(), let password = rawPassword, let confirmPassword = rawConfirmPassword else {
@@ -236,11 +240,11 @@ struct BlogAdminController {
         let (createUserErrors, passwordError, confirmPasswordError) = validateUserSaveData(edit: false, name: name, username: username, password: password, confirmPassword: confirmPassword)
 
         if (createUserErrors?.count)! > 0 {
-            return try viewFactory.createUserView(editing: false, errors: createUserErrors, name: name, username: username, passwordError: passwordError, confirmPasswordError: confirmPasswordError, resetPasswordRequired: resetPasswordRequired,userId: nil)
+            return try viewFactory.createUserView(editing: false, errors: createUserErrors, name: name, username: username, passwordError: passwordError, confirmPasswordError: confirmPasswordError, resetPasswordRequired: resetPasswordRequired, userId: nil, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline)
         }
 
         // We now have valid data
-        let creds = BlogUserCredentials(username: username.lowercased(), password: password, name: name, profilePicture: "TODO", tagline: "TODO", biography: "TODO", twitterHandle: "TODO")
+        let creds = BlogUserCredentials(username: username.lowercased(), password: password, name: name, profilePicture: profilePicture, tagline: tagline, biography: biography, twitterHandle: twitterHandle)
         if var user = try BlogUser.register(credentials: creds) as? BlogUser {
             if resetPasswordRequired {
                 user.resetPasswordRequired = true
@@ -249,12 +253,12 @@ struct BlogAdminController {
             return Response(redirect: pathCreator.createPath(for: "admin"))
         }
         else {
-            return try viewFactory.createUserView(editing: false, errors: ["There was an error creating the user. Please try again"], name: name, username: username, passwordError: passwordError, confirmPasswordError: confirmPasswordError, resetPasswordRequired: resetPasswordRequired, userId: nil)
+            return try viewFactory.createUserView(editing: false, errors: ["There was an error creating the user. Please try again"], name: name, username: username, passwordError: passwordError, confirmPasswordError: confirmPasswordError, resetPasswordRequired: resetPasswordRequired, userId: nil, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline)
         }
     }
 
     func editUserHandler(request: Request, user: BlogUser) throws -> ResponseRepresentable {
-        return try viewFactory.createUserView(editing: true, errors: nil, name: user.name, username: user.username, passwordError: nil, confirmPasswordError: nil, resetPasswordRequired: nil, userId: user.id)
+        return try viewFactory.createUserView(editing: true, errors: nil, name: user.name, username: user.username, passwordError: nil, confirmPasswordError: nil, resetPasswordRequired: nil, userId: user.id, profilePicture: user.profilePicture, twitterHandle: user.twitterHandle, biography: user.biography, tagline: user.tagline)
     }
 
     func editUserPostHandler(request: Request, user: BlogUser) throws -> ResponseRepresentable {
@@ -264,12 +268,16 @@ struct BlogAdminController {
         let rawConfirmPassword = request.data["inputConfirmPassword"]?.string
         let rawPasswordResetRequired = request.data["inputResetPasswordOnLogin"]?.string
         let resetPasswordRequired = rawPasswordResetRequired != nil
+        let profilePicture = request.data["inputProfilePicture"]?.string
+        let tagline = request.data["inputTagline"]?.string
+        let biography = request.data["inputBiography"]?.string
+        let twitterHandle = request.data["inputTwitterHandle"]?.string
 
         let (saveUserRawErrors, passwordRawError, confirmPasswordRawError) = validateUserSaveDataExists(edit: true, name: rawName, username: rawUsername, password: rawPassword, confirmPassword: rawConfirmPassword)
 
         // Return if we have any missing fields
         if (saveUserRawErrors?.count)! > 0 {
-            return try viewFactory.createUserView(editing: true, errors: saveUserRawErrors, name: rawName, username: rawUsername, passwordError: passwordRawError, confirmPasswordError: confirmPasswordRawError, resetPasswordRequired: resetPasswordRequired, userId: user.id)
+            return try viewFactory.createUserView(editing: true, errors: saveUserRawErrors, name: rawName, username: rawUsername, passwordError: passwordRawError, confirmPasswordError: confirmPasswordRawError, resetPasswordRequired: resetPasswordRequired, userId: user.id, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline)
         }
 
         guard let name = rawName, let username = rawUsername else {
@@ -279,7 +287,7 @@ struct BlogAdminController {
         let (saveUserErrors, passwordError, confirmPasswordError) = validateUserSaveData(edit: true, name: name, username: username, password: rawPassword, confirmPassword: rawConfirmPassword, previousUsername: user.username)
 
         if (saveUserErrors?.count)! > 0 {
-            return try viewFactory.createUserView(editing: true, errors: saveUserErrors, name: name, username: username, passwordError: passwordError, confirmPasswordError: confirmPasswordError, resetPasswordRequired: resetPasswordRequired, userId: user.id)
+            return try viewFactory.createUserView(editing: true, errors: saveUserErrors, name: name, username: username, passwordError: passwordError, confirmPasswordError: confirmPasswordError, resetPasswordRequired: resetPasswordRequired, userId: user.id, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline)
         }
 
         // We now have valid data
