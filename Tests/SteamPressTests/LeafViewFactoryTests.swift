@@ -229,9 +229,9 @@ class LeafViewFactoryTests: XCTestCase {
         XCTAssertEqual(viewRenderer.capturedContext?["posts"]?["data"]?.array?.count, 1)
         XCTAssertEqual((viewRenderer.capturedContext?["posts"]?["data"]?.array?.first as? Node)?["title"]?.string, TestDataBuilder.anyPost().title)
         XCTAssertEqual(viewRenderer.capturedContext?["uri"]?.string, "https://test.com:443/tags/tatooine/")
-        XCTAssertEqual(viewRenderer.capturedContext?["tagPage"]?.bool, true)
+        XCTAssertEqual(viewRenderer.capturedContext?["tag_page"]?.bool, true)
         XCTAssertEqual(viewRenderer.capturedContext?["user"]?["name"]?.string, "Luke")
-        XCTAssertNil(viewRenderer.capturedContext?["disqusName"])
+        XCTAssertNil(viewRenderer.capturedContext?["disqus_name"])
         XCTAssertNil(viewRenderer.capturedContext?["site_twitter_handle"])
         XCTAssertEqual(viewRenderer.leafPath, "blog/tag")
     }
@@ -245,7 +245,7 @@ class LeafViewFactoryTests: XCTestCase {
     func testDisqusNamePassedToTagPageIfSet() throws {
         let testTag = try setupTagPage()
         _ = try viewFactory.tagView(uri: tagURI, tag: testTag, paginatedPosts: try testTag.blogPosts().paginator(5, request: tagRequest), user: nil, disqusName: "brokenhands", siteTwitterHandle: nil)
-        XCTAssertEqual(viewRenderer.capturedContext?["disqusName"]?.string, "brokenhands")
+        XCTAssertEqual(viewRenderer.capturedContext?["disqus_name"]?.string, "brokenhands")
     }
     
     func testTwitterHandlePassedToTagPageIfSet() throws {
@@ -276,9 +276,9 @@ class LeafViewFactoryTests: XCTestCase {
         
         XCTAssertEqual(viewRenderer.capturedContext?["post"]?["title"]?.string, postWithImage.title)
         XCTAssertEqual(viewRenderer.capturedContext?["author"]?["name"]?.string, user.name)
-        XCTAssertTrue(((viewRenderer.capturedContext?["blogPostPage"])?.bool) ?? false)
+        XCTAssertTrue(((viewRenderer.capturedContext?["blog_post_page"])?.bool) ?? false)
         XCTAssertNil(viewRenderer.capturedContext?["user"])
-        XCTAssertNil(viewRenderer.capturedContext?["disqusName"])
+        XCTAssertNil(viewRenderer.capturedContext?["disqus_name"])
         XCTAssertNil(viewRenderer.capturedContext?["site_twitter_handle"])
         XCTAssertNotNil((viewRenderer.capturedContext?["post_image"])?.string)
         XCTAssertEqual(viewRenderer.capturedContext?["post_uri"]?.string, postURI.description)
@@ -296,7 +296,7 @@ class LeafViewFactoryTests: XCTestCase {
     func testDisqusNamePassedToBlogPostPageIfPassedIn() throws {
         let (postWithImage, user) = try setupBlogPost()
         _ = try viewFactory.blogPostView(uri: postURI, post: postWithImage, author: user, user: nil, disqusName: "brokenhands", siteTwitterHandle: nil)
-        XCTAssertEqual(viewRenderer.capturedContext?["disqusName"]?.string, "brokenhands")
+        XCTAssertEqual(viewRenderer.capturedContext?["disqus_name"]?.string, "brokenhands")
     }
     
     func testTwitterHandlePassedToBlogPostPageIfPassedIn() throws {
@@ -310,7 +310,7 @@ class LeafViewFactoryTests: XCTestCase {
         _ = try viewFactory.blogIndexView(uri: indexURI, paginatedPosts: posts.paginator(5, request: indexRequest), tags: tags, authors: authors, loggedInUser: nil, disqusName: nil, siteTwitterHandle: nil)
 
         XCTAssertEqual(viewRenderer.capturedContext?["uri"]?.string, indexURI.description)
-        XCTAssertTrue((viewRenderer.capturedContext?["blogIndexPage"]?.bool) ?? false)
+        XCTAssertTrue((viewRenderer.capturedContext?["blog_index_page"]?.bool) ?? false)
         
         XCTAssertEqual(viewRenderer.capturedContext?["posts"]?["data"]?.array?.count, posts.count)
         XCTAssertEqual((viewRenderer.capturedContext?["posts"]?["data"]?.array?.first as? Node)?["title"]?.string, posts.first?.title)
@@ -349,7 +349,7 @@ class LeafViewFactoryTests: XCTestCase {
     func testDisqusNamePassedToBlogIndexIfPassedIn() throws {
         let (posts, tags, authors) = try setupBlogIndex()
         _ = try viewFactory.blogIndexView(uri: indexURI, paginatedPosts: posts.paginator(5, request: indexRequest), tags: tags, authors: authors, loggedInUser: nil, disqusName: "brokenhands", siteTwitterHandle: nil)
-        XCTAssertEqual(viewRenderer.capturedContext?["disqusName"]?.string, "brokenhands")
+        XCTAssertEqual(viewRenderer.capturedContext?["disqus_name"]?.string, "brokenhands")
     }
     
     func testTwitterHandlePassedToBlogIndexIfPassedIn() throws {
@@ -366,10 +366,10 @@ class LeafViewFactoryTests: XCTestCase {
         XCTAssertEqual(viewRenderer.capturedContext?["posts"]?.array?.count, posts.count)
         XCTAssertEqual((viewRenderer.capturedContext?["posts"]?.array?.first as? Node)?["title"]?.string, posts.first?.title)
         XCTAssertEqual(viewRenderer.capturedContext?["uri"]?.string, authorURI.description)
-        XCTAssertTrue((viewRenderer.capturedContext?["profilePage"]?.bool) ?? false)
-        XCTAssertNil(viewRenderer.capturedContext?["myProfile"])
+        XCTAssertTrue((viewRenderer.capturedContext?["profile_page"]?.bool) ?? false)
+        XCTAssertNil(viewRenderer.capturedContext?["my_profile"])
         XCTAssertNil(viewRenderer.capturedContext?["user"])
-        XCTAssertNil(viewRenderer.capturedContext?["disqusName"])
+        XCTAssertNil(viewRenderer.capturedContext?["disqus_name"])
         XCTAssertNil(viewRenderer.capturedContext?["site_twitter_handle"])
         XCTAssertEqual(viewRenderer.capturedContext?["author"]?["tagline"]?.string, author.tagline)
         XCTAssertEqual(viewRenderer.capturedContext?["author"]?["twitter_handle"]?.string, author.twitterHandle)
@@ -381,8 +381,8 @@ class LeafViewFactoryTests: XCTestCase {
     func testAuthorViewMyProfileSetIfViewingMyProfile() throws {
         let (author, posts) = try setupAuthorPage()
         let _ = try viewFactory.createProfileView(uri: authorURI, author: author, isMyProfile: true, posts: posts, loggedInUser: nil, disqusName: nil, siteTwitterHandle: nil)
-        XCTAssertTrue((viewRenderer.capturedContext?["myProfile"]?.bool) ?? false)
-        XCTAssertNil(viewRenderer.capturedContext?["profilePage"])
+        XCTAssertTrue((viewRenderer.capturedContext?["my_profile"]?.bool) ?? false)
+        XCTAssertNil(viewRenderer.capturedContext?["profile_page"])
     }
     
     func testAuthorViewHasNoPostsSetIfNoneCreated() throws {
@@ -400,7 +400,7 @@ class LeafViewFactoryTests: XCTestCase {
     func testAuthorViewGetsDisqusNameIfProvided() throws {
         let (author, posts) = try setupAuthorPage()
         let _ = try viewFactory.createProfileView(uri: authorURI, author: author, isMyProfile: true, posts: posts, loggedInUser: nil, disqusName: "brokenhands", siteTwitterHandle: nil)
-        XCTAssertEqual(viewRenderer.capturedContext?["disqusName"]?.string, "brokenhands")
+        XCTAssertEqual(viewRenderer.capturedContext?["disqus_name"]?.string, "brokenhands")
     }
     
     func testAuthorViewGetsTwitterHandleIfProvided() throws {
@@ -412,8 +412,8 @@ class LeafViewFactoryTests: XCTestCase {
     func testPasswordViewGivenCorrectParameters() throws {
         let _ = try viewFactory.createResetPasswordView(errors: nil, passwordError: nil, confirmPasswordError: nil)
         XCTAssertNil(viewRenderer.capturedContext?["errors"])
-        XCTAssertNil(viewRenderer.capturedContext?["passwordError"])
-        XCTAssertNil(viewRenderer.capturedContext?["confirmPasswordError"])
+        XCTAssertNil(viewRenderer.capturedContext?["password_error"])
+        XCTAssertNil(viewRenderer.capturedContext?["confirm_password_error"])
         XCTAssertEqual(viewRenderer.leafPath, "blog/admin/resetPassword")
     }
     
@@ -422,35 +422,35 @@ class LeafViewFactoryTests: XCTestCase {
         let _ = try viewFactory.createResetPasswordView(errors: [expectedError], passwordError: true, confirmPasswordError: true)
         XCTAssertEqual(viewRenderer.capturedContext?["errors"]?.array?.count, 1)
         XCTAssertEqual((viewRenderer.capturedContext?["errors"]?.array?.first as? Node)?.string, expectedError)
-        XCTAssertTrue((viewRenderer.capturedContext?["passwordError"]?.bool) ?? false)
-        XCTAssertTrue((viewRenderer.capturedContext?["confirmPasswordError"]?.bool) ?? false)
+        XCTAssertTrue((viewRenderer.capturedContext?["password_error"]?.bool) ?? false)
+        XCTAssertTrue((viewRenderer.capturedContext?["confirm_password_error"]?.bool) ?? false)
     }
     
     func testLoginViewGetsCorrectParameters() throws {
         let _ = try viewFactory.createLoginView(loginWarning: false, errors: nil, username: nil, password: nil)
-        XCTAssertFalse((viewRenderer.capturedContext?["usernameError"]?.bool) ?? true)
-        XCTAssertFalse((viewRenderer.capturedContext?["passwordError"]?.bool) ?? true)
-        XCTAssertNil(viewRenderer.capturedContext?["usernameSupplied"])
+        XCTAssertFalse((viewRenderer.capturedContext?["username_error"]?.bool) ?? true)
+        XCTAssertFalse((viewRenderer.capturedContext?["password_error"]?.bool) ?? true)
+        XCTAssertNil(viewRenderer.capturedContext?["username_supplied"])
         XCTAssertNil(viewRenderer.capturedContext?["errors"])
-        XCTAssertNil(viewRenderer.capturedContext?["loginWarning"])
+        XCTAssertNil(viewRenderer.capturedContext?["login_warning"])
         XCTAssertEqual(viewRenderer.leafPath, "blog/admin/login")
     }
     
     func testLoginViewWhenErrored() throws {
         let expectedError = "Username/password incorrect"
         let _ = try viewFactory.createLoginView(loginWarning: true, errors: [expectedError], username: "tim", password: "password")
-        XCTAssertFalse((viewRenderer.capturedContext?["usernameError"]?.bool) ?? true)
-        XCTAssertFalse((viewRenderer.capturedContext?["passwordError"]?.bool) ?? true)
-        XCTAssertEqual(viewRenderer.capturedContext?["usernameSupplied"]?.string, "tim")
-        XCTAssertTrue((viewRenderer.capturedContext?["loginWarning"]?.bool) ?? false)
+        XCTAssertFalse((viewRenderer.capturedContext?["username_error"]?.bool) ?? true)
+        XCTAssertFalse((viewRenderer.capturedContext?["password_error"]?.bool) ?? true)
+        XCTAssertEqual(viewRenderer.capturedContext?["username_supplied"]?.string, "tim")
+        XCTAssertTrue((viewRenderer.capturedContext?["login_warning"]?.bool) ?? false)
         XCTAssertEqual(viewRenderer.capturedContext?["errors"]?.nodeArray?.first?.string, expectedError)
     }
     
     func testLoginPageUsernamePasswordErrorsMarkedWhenNotSuppliedAndErrored() throws {
         let expectedError = "Username/password incorrect"
         let _ = try viewFactory.createLoginView(loginWarning: true, errors: [expectedError], username: nil, password: nil)
-        XCTAssertTrue((viewRenderer.capturedContext?["usernameError"]?.bool) ?? false)
-        XCTAssertTrue((viewRenderer.capturedContext?["passwordError"]?.bool) ?? false)
+        XCTAssertTrue((viewRenderer.capturedContext?["username_error"]?.bool) ?? false)
+        XCTAssertTrue((viewRenderer.capturedContext?["password_error"]?.bool) ?? false)
     }
     
     func testBlogAdminViewGetsCorrectParameters() throws {
@@ -460,7 +460,7 @@ class LeafViewFactoryTests: XCTestCase {
         try draftPost.save()
         let _ = try viewFactory.createBlogAdminView()
         XCTAssertNil(viewRenderer.capturedContext?["errors"])
-        XCTAssertTrue((viewRenderer.capturedContext?["blogAdminPage"]?.bool) ?? false)
+        XCTAssertTrue((viewRenderer.capturedContext?["blog_admin_page"]?.bool) ?? false)
         XCTAssertEqual(viewRenderer.capturedContext?["users"]?.nodeArray?.count, 2)
         XCTAssertEqual(viewRenderer.capturedContext?["users"]?.nodeArray?.first?["name"]?.string, users.first?.name)
         XCTAssertEqual(viewRenderer.capturedContext?["published_posts"]?.nodeArray?.count, 2)
@@ -483,16 +483,16 @@ class LeafViewFactoryTests: XCTestCase {
     
     func testCreateUserViewGetsCorrectParameters() throws {
         let _ = try viewFactory.createUserView()
-        XCTAssertFalse((viewRenderer.capturedContext?["nameError"]?.bool) ?? true)
-        XCTAssertFalse((viewRenderer.capturedContext?["usernameError"]?.bool) ?? true)
+        XCTAssertFalse((viewRenderer.capturedContext?["name_error"]?.bool) ?? true)
+        XCTAssertFalse((viewRenderer.capturedContext?["username_error"]?.bool) ?? true)
         XCTAssertNil(viewRenderer.capturedContext?["errors"])
-        XCTAssertNil(viewRenderer.capturedContext?["nameSupplied"])
-        XCTAssertNil(viewRenderer.capturedContext?["usernameSupplied"])
-        XCTAssertNil(viewRenderer.capturedContext?["passwordError"])
-        XCTAssertNil(viewRenderer.capturedContext?["confirmPasswordError"])
-        XCTAssertNil(viewRenderer.capturedContext?["resetPasswordOnLoginSupplied"])
+        XCTAssertNil(viewRenderer.capturedContext?["name_supplied"])
+        XCTAssertNil(viewRenderer.capturedContext?["username_supplied"])
+        XCTAssertNil(viewRenderer.capturedContext?["password_error"])
+        XCTAssertNil(viewRenderer.capturedContext?["confirm_password_error"])
+        XCTAssertNil(viewRenderer.capturedContext?["reset_password_on_login_supplied"])
         XCTAssertNil(viewRenderer.capturedContext?["editing"])
-        XCTAssertNil(viewRenderer.capturedContext?["userId"])
+        XCTAssertNil(viewRenderer.capturedContext?["user_id"])
         XCTAssertNil(viewRenderer.capturedContext?["twitter_handle_supplied"])
         XCTAssertNil(viewRenderer.capturedContext?["profile_picture_supplied"])
         XCTAssertNil(viewRenderer.capturedContext?["biography_supplied"])
@@ -503,14 +503,14 @@ class LeafViewFactoryTests: XCTestCase {
     func testCreateUserViewWhenErrors() throws {
         let expectedError = "Not valid password"
         let _ = try viewFactory.createUserView(errors: [expectedError], name: "Luke", username: "luke", passwordError: true, confirmPasswordError: true, resetPasswordRequired: true, profilePicture: "https://static.brokenhands.io/steampress/images/authors/luke.png", twitterHandle: "luke", biography: "The last Jedi in the Galaxy", tagline: "A son without a father")
-        XCTAssertFalse((viewRenderer.capturedContext?["nameError"]?.bool) ?? true)
-        XCTAssertFalse((viewRenderer.capturedContext?["usernameError"]?.bool) ?? true)
+        XCTAssertFalse((viewRenderer.capturedContext?["name_error"]?.bool) ?? true)
+        XCTAssertFalse((viewRenderer.capturedContext?["username_error"]?.bool) ?? true)
         XCTAssertEqual(viewRenderer.capturedContext?["errors"]?.nodeArray?.first?.string, expectedError)
-        XCTAssertEqual(viewRenderer.capturedContext?["nameSupplied"]?.string, "Luke")
-        XCTAssertEqual(viewRenderer.capturedContext?["usernameSupplied"]?.string, "luke")
-        XCTAssertTrue((viewRenderer.capturedContext?["passwordError"]?.bool) ?? false)
-        XCTAssertTrue((viewRenderer.capturedContext?["confirmPasswordError"]?.bool) ?? false)
-        XCTAssertTrue((viewRenderer.capturedContext?["resetPasswordOnLoginSupplied"]?.bool) ?? false)
+        XCTAssertEqual(viewRenderer.capturedContext?["name_supplied"]?.string, "Luke")
+        XCTAssertEqual(viewRenderer.capturedContext?["username_supplied"]?.string, "luke")
+        XCTAssertTrue((viewRenderer.capturedContext?["password_error"]?.bool) ?? false)
+        XCTAssertTrue((viewRenderer.capturedContext?["confirm_password_error"]?.bool) ?? false)
+        XCTAssertTrue((viewRenderer.capturedContext?["reset_password_on_login_supplied"]?.bool) ?? false)
         XCTAssertEqual(viewRenderer.capturedContext?["profile_picture_supplied"]?.string, "https://static.brokenhands.io/steampress/images/authors/luke.png")
         XCTAssertEqual(viewRenderer.capturedContext?["twitter_handle_supplied"]?.string, "luke")
         XCTAssertEqual(viewRenderer.capturedContext?["tagline_supplied"]?.string, "A son without a father")
@@ -520,16 +520,16 @@ class LeafViewFactoryTests: XCTestCase {
     func testCreateUserViewWhenNoNameOrUsernameSupplied() throws {
         let expectedError = "No name supplied"
         let _ = try viewFactory.createUserView(errors: [expectedError], name: nil, username: nil, passwordError: true, confirmPasswordError: true, resetPasswordRequired: true)
-        XCTAssertTrue((viewRenderer.capturedContext?["nameError"]?.bool) ?? false)
-        XCTAssertTrue((viewRenderer.capturedContext?["usernameError"]?.bool) ?? false)
+        XCTAssertTrue((viewRenderer.capturedContext?["name_error"]?.bool) ?? false)
+        XCTAssertTrue((viewRenderer.capturedContext?["username_error"]?.bool) ?? false)
     }
     
     func testCreateUserViewForEditing() throws {
         let _ = try viewFactory.createUserView(editing: true, errors: nil, name: "Luke", username: "luke", userId: 1.makeNode(), profilePicture: "https://static.brokenhands.io/steampress/images/authors/luke.png", twitterHandle: "luke", biography: "The last Jedi in the Galaxy", tagline: "A son without a father")
-        XCTAssertEqual(viewRenderer.capturedContext?["nameSupplied"]?.string, "Luke")
-        XCTAssertEqual(viewRenderer.capturedContext?["usernameSupplied"]?.string, "luke")
+        XCTAssertEqual(viewRenderer.capturedContext?["name_supplied"]?.string, "Luke")
+        XCTAssertEqual(viewRenderer.capturedContext?["username_supplied"]?.string, "luke")
         XCTAssertTrue((viewRenderer.capturedContext?["editing"]?.bool) ?? false)
-        XCTAssertEqual(viewRenderer.capturedContext?["userId"], try 1.makeNode())
+        XCTAssertEqual(viewRenderer.capturedContext?["user_id"], try 1.makeNode())
         XCTAssertEqual(viewRenderer.capturedContext?["profile_picture_supplied"]?.string, "https://static.brokenhands.io/steampress/images/authors/luke.png")
         XCTAssertEqual(viewRenderer.capturedContext?["twitter_handle_supplied"]?.string, "luke")
         XCTAssertEqual(viewRenderer.capturedContext?["tagline_supplied"]?.string, "A son without a father")
@@ -550,16 +550,16 @@ class LeafViewFactoryTests: XCTestCase {
     
     func testCreateBlogPostViewGetsCorrectParameters() throws {
         let _ = try viewFactory.createBlogPostView(uri: createPostURI)
-        XCTAssertEqual(viewRenderer.capturedContext?["postPathPrefix"]?.string, "https://test.com:443/posts/")
-        XCTAssertFalse((viewRenderer.capturedContext?["titleError"]?.bool) ?? true)
-        XCTAssertFalse((viewRenderer.capturedContext?["contentsError"]?.bool) ?? true)
+        XCTAssertEqual(viewRenderer.capturedContext?["post_path_prefix"]?.string, "https://test.com:443/posts/")
+        XCTAssertFalse((viewRenderer.capturedContext?["title_error"]?.bool) ?? true)
+        XCTAssertFalse((viewRenderer.capturedContext?["contents_error"]?.bool) ?? true)
         XCTAssertNil(viewRenderer.capturedContext?["errors"])
-        XCTAssertNil(viewRenderer.capturedContext?["titleSupplied"])
-        XCTAssertNil(viewRenderer.capturedContext?["contentsSupplied"])
-        XCTAssertNil(viewRenderer.capturedContext?["slugUrlSupplied"])
-        XCTAssertNil(viewRenderer.capturedContext?["tagsSupplied"])
+        XCTAssertNil(viewRenderer.capturedContext?["title_supplied"])
+        XCTAssertNil(viewRenderer.capturedContext?["contents_supplied"])
+        XCTAssertNil(viewRenderer.capturedContext?["slug_url_supplied"])
+        XCTAssertNil(viewRenderer.capturedContext?["tags_supplied"])
         XCTAssertEqual(viewRenderer.leafPath, "blog/admin/createPost")
-        XCTAssertTrue((viewRenderer.capturedContext?["createBlogPostPage"]?.bool) ?? false)
+        XCTAssertTrue((viewRenderer.capturedContext?["create_blog_post_page"]?.bool) ?? false)
         XCTAssertTrue((viewRenderer.capturedContext?["draft"]?.bool) ?? false)
         XCTAssertNil(viewRenderer.capturedContext?["editing"])
     }
@@ -567,18 +567,18 @@ class LeafViewFactoryTests: XCTestCase {
     func testCreateBlogPostViewWhenEditing() throws {
         let postToEdit = TestDataBuilder.anyPost()
         let _ = try viewFactory.createBlogPostView(uri: editPostURI, title: postToEdit.title, contents: postToEdit.contents, slugUrl: postToEdit.slugUrl, tags: ["test".makeNode()], isEditing: true, postToEdit: postToEdit)
-        XCTAssertEqual(viewRenderer.capturedContext?["postPathPrefix"]?.string, "https://test.com:443/posts/")
-        XCTAssertFalse((viewRenderer.capturedContext?["titleError"]?.bool) ?? true)
-        XCTAssertFalse((viewRenderer.capturedContext?["contentsError"]?.bool) ?? true)
+        XCTAssertEqual(viewRenderer.capturedContext?["post_path_prefix"]?.string, "https://test.com:443/posts/")
+        XCTAssertFalse((viewRenderer.capturedContext?["title_error"]?.bool) ?? true)
+        XCTAssertFalse((viewRenderer.capturedContext?["contents_error"]?.bool) ?? true)
         XCTAssertNil(viewRenderer.capturedContext?["errors"])
-        XCTAssertEqual(viewRenderer.capturedContext?["titleSupplied"]?.string, postToEdit.title)
-        XCTAssertEqual(viewRenderer.capturedContext?["contentsSupplied"]?.string, postToEdit.contents)
-        XCTAssertEqual(viewRenderer.capturedContext?["slugUrlSupplied"]?.string, postToEdit.slugUrl)
-        XCTAssertEqual(viewRenderer.capturedContext?["tagsSupplied"]?.array?.count, 1)
-        XCTAssertEqual(viewRenderer.capturedContext?["tagsSupplied"]?.nodeArray?.first?.string, "test")
+        XCTAssertEqual(viewRenderer.capturedContext?["title_supplied"]?.string, postToEdit.title)
+        XCTAssertEqual(viewRenderer.capturedContext?["contents_supplied"]?.string, postToEdit.contents)
+        XCTAssertEqual(viewRenderer.capturedContext?["slug_url_supplied"]?.string, postToEdit.slugUrl)
+        XCTAssertEqual(viewRenderer.capturedContext?["tags_supplied"]?.array?.count, 1)
+        XCTAssertEqual(viewRenderer.capturedContext?["tags_supplied"]?.nodeArray?.first?.string, "test")
         XCTAssertTrue((viewRenderer.capturedContext?["editing"]?.bool) ?? false)
         XCTAssertEqual(viewRenderer.capturedContext?["post"]?["title"]?.string, postToEdit.title)
-        XCTAssertNil(viewRenderer.capturedContext?["createBlogPostPage"])
+        XCTAssertNil(viewRenderer.capturedContext?["create_blog_post_page"])
         XCTAssertEqual(viewRenderer.capturedContext?["post"]?["published"]?.bool, true)
     }
     
@@ -596,8 +596,8 @@ class LeafViewFactoryTests: XCTestCase {
     func testCreateBlogPostViewWithErrorsAndNoTitleOrContentsSupplied() throws {
         let expectedError = "Please enter a title"
         let _ = try viewFactory.createBlogPostView(uri: createPostURI, errors: [expectedError], title: nil, contents: nil, slugUrl: nil, tags: nil, isEditing: false)
-        XCTAssertTrue((viewRenderer.capturedContext?["titleError"]?.bool) ?? false)
-        XCTAssertTrue((viewRenderer.capturedContext?["contentsError"]?.bool) ?? false)
+        XCTAssertTrue((viewRenderer.capturedContext?["title_error"]?.bool) ?? false)
+        XCTAssertTrue((viewRenderer.capturedContext?["contents_error"]?.bool) ?? false)
         XCTAssertEqual(viewRenderer.capturedContext?["errors"]?.nodeArray?.count, 1)
         XCTAssertEqual(viewRenderer.capturedContext?["errors"]?.nodeArray?.first?.string, expectedError)
     }
