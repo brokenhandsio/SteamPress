@@ -63,7 +63,6 @@ public struct Provider: Vapor.Provider {
             blogPath = blogPathFromConfig
         }
         
-        // WARNING TODO
         self.init(postsPerPage: postsPerPage, blogPath: blogPath)
     }
 
