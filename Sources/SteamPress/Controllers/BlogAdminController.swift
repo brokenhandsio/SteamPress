@@ -221,13 +221,18 @@ struct BlogAdminController {
         let rawConfirmPassword = request.data["inputConfirmPassword"]?.string
         let rawPasswordResetRequired = request.data["inputResetPasswordOnLogin"]?.string
         let resetPasswordRequired = rawPasswordResetRequired != nil
-        let profilePicture = request.data["inputProfilePicture"]?.string
+        let rawProfilePicture = request.data["inputProfilePicture"]?.string
         let tagline = request.data["inputTagline"]?.string
         let biography = request.data["inputBiography"]?.string
         let twitterHandle = request.data["inputTwitterHandle"]?.string
 
-        let (createUserRawErrors, passwordRawError, confirmPasswordRawError) = validateUserSaveDataExists(edit: false, name: rawName, username: rawUsername, password: rawPassword, confirmPassword: rawConfirmPassword)
+        let (createUserRawErrors, passwordRawError, confirmPasswordRawError) = validateUserSaveDataExists(edit: false, name: rawName, username: rawUsername, password: rawPassword, confirmPassword: rawConfirmPassword, profilePicture: rawProfilePicture)
 
+        var profilePicture: URL? = nil
+        if let profilePictureString = rawProfilePicture {
+            profilePicture = URL(string: profilePictureString)
+        }
+        
         // Return if we have any missing fields
         if (createUserRawErrors?.count ?? 0) > 0 {
             return try viewFactory.createUserView(editing: false, errors: createUserRawErrors, name: rawName, username: rawUsername, passwordError: passwordRawError, confirmPasswordError: confirmPasswordRawError, resetPasswordRequired: resetPasswordRequired, userId: nil, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline)
@@ -268,12 +273,17 @@ struct BlogAdminController {
         let rawConfirmPassword = request.data["inputConfirmPassword"]?.string
         let rawPasswordResetRequired = request.data["inputResetPasswordOnLogin"]?.string
         let resetPasswordRequired = rawPasswordResetRequired != nil
-        let profilePicture = request.data["inputProfilePicture"]?.string
+        let rawProfilePicture = request.data["inputProfilePicture"]?.string
         let tagline = request.data["inputTagline"]?.string
         let biography = request.data["inputBiography"]?.string
         let twitterHandle = request.data["inputTwitterHandle"]?.string
 
-        let (saveUserRawErrors, passwordRawError, confirmPasswordRawError) = validateUserSaveDataExists(edit: true, name: rawName, username: rawUsername, password: rawPassword, confirmPassword: rawConfirmPassword)
+        let (saveUserRawErrors, passwordRawError, confirmPasswordRawError) = validateUserSaveDataExists(edit: true, name: rawName, username: rawUsername, password: rawPassword, confirmPassword: rawConfirmPassword, profilePicture: rawProfilePicture)
+        
+        var profilePicture: URL? = nil
+        if let profilePictureString = rawProfilePicture {
+            profilePicture = URL(string: profilePictureString)
+        }
 
         // Return if we have any missing fields
         if (saveUserRawErrors?.count ?? 0) > 0 {
@@ -515,7 +525,7 @@ struct BlogAdminController {
         return createPostErrors
     }
 
-    private func validateUserSaveDataExists(edit: Bool, name: String?, username: String?, password: String?, confirmPassword: String?) -> ([String]?, Bool?, Bool?) {
+    private func validateUserSaveDataExists(edit: Bool, name: String?, username: String?, password: String?, confirmPassword: String?, profilePicture: String?) -> ([String]?, Bool?, Bool?) {
         var userSaveErrors: [String] = []
         var passwordError: Bool?
         var confirmPasswordError: Bool?
@@ -537,6 +547,12 @@ struct BlogAdminController {
             if confirmPassword == nil {
                 userSaveErrors.append("You must confirm your password")
                 confirmPasswordError = true
+            }
+        }
+        
+        if let profilePictureString = profilePicture {
+            if URL(string: profilePictureString) == nil {
+                userSaveErrors.append("Profile Picture is not a valid URL")
             }
         }
 
