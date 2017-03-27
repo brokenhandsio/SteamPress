@@ -23,26 +23,25 @@ class BlogTag: Model {
 extension BlogTag: NodeRepresentable {
     func makeNode(context: Context) throws -> Node {
         
-        var node = try Node(node: [
-            "id": id,
-            "name": name
-            ])
+        var node: [String: Node] = [:]
+        node["id"] = id
+        node["name"] = name.makeNode()
         
         switch context {
         case is DatabaseContext:
-            return node
+            return try node.makeNode()
         case BlogTagContext.withPostCount:
             node["post_count"] = try blogPosts().count.makeNode()
             fallthrough
         default:
             guard let urlEncodedName = name.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) else {
-                return node
+                return try node.makeNode()
             }
             
             node["url_encoded_name"] = urlEncodedName.makeNode()
         }
         
-        return node
+        return try node.makeNode()
     }
 }
 

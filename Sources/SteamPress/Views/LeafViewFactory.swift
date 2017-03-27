@@ -27,11 +27,10 @@ struct LeafViewFactory: ViewFactory {
             postPathPrefix = uri.description.replacingOccurrences(of: "admin/createPost", with: "posts")
         }
 
-        var parameters = [
-            "post_path_prefix": postPathPrefix.makeNode(),
-            "title_error": titleError.makeNode(),
-            "contents_error": contentsError.makeNode(),
-            ]
+        var parameters: [String: Vapor.Node] = [:]
+        parameters["post_path_prefix"] = postPathPrefix.makeNode()
+        parameters["title_error"] = titleError.makeNode()
+        parameters["contents_error"] = contentsError.makeNode()
 
         if let createBlogErrors = errors {
             parameters["errors"] = try createBlogErrors.makeNode()
@@ -75,10 +74,9 @@ struct LeafViewFactory: ViewFactory {
         let nameError = name == nil && errors != nil
         let usernameError = username == nil && errors != nil
 
-        var parameters = [
-            "name_error": nameError.makeNode(),
-            "username_error": usernameError.makeNode(),
-            ]
+        var parameters: [String: Vapor.Node] = [:]
+        parameters["name_error"] = nameError.makeNode()
+        parameters["username_error"] = usernameError.makeNode()
 
         if let createUserErrors = errors {
             parameters["errors"] = try createUserErrors.makeNode()
@@ -135,10 +133,9 @@ struct LeafViewFactory: ViewFactory {
         let usernameError = username == nil && errors != nil
         let passwordError = password == nil && errors != nil
 
-        var parameters = [
-            "username_error": usernameError.makeNode(),
-            "password_error": passwordError.makeNode()
-        ]
+        var parameters: [String: Vapor.Node] = [:]
+        parameters["username_error"] = usernameError.makeNode()
+        parameters["password_error"] = passwordError.makeNode()
 
         if let usernameSupplied = username {
             parameters["username_supplied"] = usernameSupplied.makeNode()
@@ -160,9 +157,8 @@ struct LeafViewFactory: ViewFactory {
         let draftBlogPosts = try BlogPost.query().filter("published", false).sort("created", .descending).all()
         let users = try BlogUser.all()
 
-        var parameters = try Node(node: [
-            "users": users.makeNode()
-            ])
+        var parameters: [String: Vapor.Node] = [:]
+        parameters["users"] = try users.makeNode()
 
         if publishedBlogPosts.count > 0 {
             parameters["published_posts"] = try publishedBlogPosts.makeNode(context: BlogPostContext.all)
@@ -201,9 +197,8 @@ struct LeafViewFactory: ViewFactory {
     }
 
     func createProfileView(uri: URI, author: BlogUser, isMyProfile: Bool, posts: [BlogPost], loggedInUser: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
-        var parameters: [String: Vapor.Node] = [
-            "author": try author.makeNode(),
-        ]
+        var parameters: [String: Vapor.Node] = [:]
+        parameters["author"] = try author.makeNode()
 
         if isMyProfile {
             parameters["my_profile"] = true.makeNode()
@@ -223,9 +218,8 @@ struct LeafViewFactory: ViewFactory {
 
     func blogIndexView(uri: URI, paginatedPosts: Paginator<BlogPost>, tags: [BlogTag], authors: [BlogUser], loggedInUser: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
 
-        var parameters: [String: Vapor.Node] = [
-            "blog_index_page": true.makeNode()
-        ]
+        var parameters: [String: Vapor.Node] = [:]
+        parameters["blog_index_page"] = true.makeNode()
 
         if paginatedPosts.totalPages ?? 0 > 0 {
             parameters["posts"] = try paginatedPosts.makeNode(context: BlogPostContext.longSnippet)
@@ -244,15 +238,14 @@ struct LeafViewFactory: ViewFactory {
 
     func blogPostView(uri: URI, post: BlogPost, author: BlogUser, user: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
         
-        var parameters: [String: NodeRepresentable] = [
-            "post": try post.makeNode(context: BlogPostContext.all),
-            "author": try author.makeNode(),
-            "blog_post_page": true.makeNode(),
-            "post_uri": uri.description.makeNode(),
-            "post_uri_encoded": uri.description.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? uri.description,
-            "site_uri": uri.getRootUri().description.makeNode(),
-            "post_description": try SwiftSoup.parse(markdownToHTML(post.shortSnippet())).text().makeNode()
-        ]
+        var parameters: [String: Vapor.Node] = [:]
+        parameters["post"] = try post.makeNode(context: BlogPostContext.all)
+        parameters["author"] = try author.makeNode()
+        parameters["blog_post_page"] = true.makeNode()
+        parameters["post_uri"] = uri.description.makeNode()
+        parameters["post_uri_encoded"] = uri.description.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)?.makeNode() ?? uri.description.makeNode()
+        parameters["site_uri"] = uri.getRootUri().description.makeNode()
+        parameters["post_description"] = try SwiftSoup.parse(markdownToHTML(post.shortSnippet())).text().makeNode()
         
         let image = try SwiftSoup.parse(markdownToHTML(post.contents)).select("img").first()
         
@@ -265,10 +258,9 @@ struct LeafViewFactory: ViewFactory {
 
     func tagView(uri: URI, tag: BlogTag, paginatedPosts: Paginator<BlogPost>, user: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
 
-        var parameters: [String: Vapor.Node] = [
-            "tag": try tag.makeNode(context: BlogTagContext.withPostCount),
-            "tag_page": true.makeNode(),
-        ]
+        var parameters: [String: Vapor.Node] = [:]
+        parameters["tag"] = try tag.makeNode(context: BlogTagContext.withPostCount)
+        parameters["tag_page"] = true.makeNode()
 
         if paginatedPosts.totalPages ?? 0 > 0 {
             parameters["posts"] = try paginatedPosts.makeNode(context: BlogPostContext.longSnippet)
