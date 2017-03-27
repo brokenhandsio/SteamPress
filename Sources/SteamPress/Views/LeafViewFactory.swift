@@ -209,7 +209,7 @@ struct LeafViewFactory: ViewFactory {
         }
 
         if posts.count > 0 {
-            parameters["posts"] = try posts.makeNode(context: BlogPostContext.shortSnippet)
+            parameters["posts"] = try posts.makeNode(context: BlogPostContext.longSnippet)
         }
         
         return try createPublicView(template: "blog/profile", uri: uri, parameters: parameters, user: loggedInUser, disqusName: disqusName, siteTwitterHandle: siteTwitterHandle)

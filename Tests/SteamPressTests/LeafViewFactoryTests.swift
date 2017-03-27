@@ -65,6 +65,7 @@ class LeafViewFactoryTests: XCTestCase {
         ("testCreateBlogPostViewWithErrorsAndNoTitleOrContentsSupplied", testCreateBlogPostViewWithErrorsAndNoTitleOrContentsSupplied),
         ("testDraftPassedThroughWhenEditingABlogPostThatHasNotBeenPublished", testDraftPassedThroughWhenEditingABlogPostThatHasNotBeenPublished),
         ("testAuthorViewGetsPostCount", testAuthorViewGetsPostCount),
+        ("testAuthorViewGetsLongSnippetForPosts", testAuthorViewGetsLongSnippetForPosts),
         ]
     
     // MARK: - Properties
@@ -617,6 +618,15 @@ class LeafViewFactoryTests: XCTestCase {
         try post.save()
         _ = try viewFactory.createProfileView(uri: authorURI, author: author, isMyProfile: false, posts: [post], loggedInUser: nil, disqusName: nil, siteTwitterHandle: nil)
         XCTAssertEqual(viewRenderer.capturedContext?["author"]?["post_count"]?.int, 1)
+    }
+
+    func testAuthorViewGetsLongSnippetForPosts() throws {
+        var author = TestDataBuilder.anyUser()
+        try author.save()
+        var post = TestDataBuilder.anyPost(author: author)
+        try post.save()
+        _ = try viewFactory.createProfileView(uri: authorURI, author: author, isMyProfile: false, posts: [post], loggedInUser: nil, disqusName: nil, siteTwitterHandle: nil)
+        XCTAssertNotNil(viewRenderer.capturedContext?["posts"]?.nodeArray?.first?["long_snippet"]?.string)
     }
 
     
