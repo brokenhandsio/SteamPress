@@ -199,7 +199,7 @@ struct LeafViewFactory: ViewFactory {
 
     func createProfileView(uri: URI, author: BlogUser, isMyProfile: Bool, posts: [BlogPost], loggedInUser: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
         var parameters: [String: Vapor.Node] = [:]
-        parameters["author"] = try author.makeNode()
+        parameters["author"] = try author.makeNode(context: BlogUserContext.withPostCount)
 
         if isMyProfile {
             parameters["my_profile"] = true.makeNode()
