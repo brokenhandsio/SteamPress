@@ -229,7 +229,7 @@ struct BlogAdminController {
         let (createUserRawErrors, passwordRawError, confirmPasswordRawError) = validateUserSaveDataExists(edit: false, name: rawName, username: rawUsername, password: rawPassword, confirmPassword: rawConfirmPassword)
 
         // Return if we have any missing fields
-        if (createUserRawErrors?.count)! > 0 {
+        if (createUserRawErrors?.count ?? 0) > 0 {
             return try viewFactory.createUserView(editing: false, errors: createUserRawErrors, name: rawName, username: rawUsername, passwordError: passwordRawError, confirmPasswordError: confirmPasswordRawError, resetPasswordRequired: resetPasswordRequired, userId: nil, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline)
         }
 
@@ -239,7 +239,7 @@ struct BlogAdminController {
 
         let (createUserErrors, passwordError, confirmPasswordError) = validateUserSaveData(edit: false, name: name, username: username, password: password, confirmPassword: confirmPassword)
 
-        if (createUserErrors?.count)! > 0 {
+        if (createUserErrors?.count ?? 0) > 0 {
             return try viewFactory.createUserView(editing: false, errors: createUserErrors, name: name, username: username, passwordError: passwordError, confirmPasswordError: confirmPasswordError, resetPasswordRequired: resetPasswordRequired, userId: nil, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline)
         }
 
@@ -276,7 +276,7 @@ struct BlogAdminController {
         let (saveUserRawErrors, passwordRawError, confirmPasswordRawError) = validateUserSaveDataExists(edit: true, name: rawName, username: rawUsername, password: rawPassword, confirmPassword: rawConfirmPassword)
 
         // Return if we have any missing fields
-        if (saveUserRawErrors?.count)! > 0 {
+        if (saveUserRawErrors?.count ?? 0) > 0 {
             return try viewFactory.createUserView(editing: true, errors: saveUserRawErrors, name: rawName, username: rawUsername, passwordError: passwordRawError, confirmPasswordError: confirmPasswordRawError, resetPasswordRequired: resetPasswordRequired, userId: user.id, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline)
         }
 
@@ -286,7 +286,7 @@ struct BlogAdminController {
 
         let (saveUserErrors, passwordError, confirmPasswordError) = validateUserSaveData(edit: true, name: name, username: username, password: rawPassword, confirmPassword: rawConfirmPassword, previousUsername: user.username)
 
-        if (saveUserErrors?.count)! > 0 {
+        if (saveUserErrors?.count ?? 0) > 0 {
             return try viewFactory.createUserView(editing: true, errors: saveUserErrors, name: name, username: username, passwordError: passwordError, confirmPasswordError: confirmPasswordError, resetPasswordRequired: resetPasswordRequired, userId: user.id, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline)
         }
 
@@ -495,15 +495,15 @@ struct BlogAdminController {
     private func validatePostCreation(title: String?, contents: String?, slugUrl: String?) -> [String]? {
         var createPostErrors: [String] = []
 
-        if title == nil || (title?.isWhitespace())! {
+        if title == nil || (title?.isWhitespace() ?? false) {
             createPostErrors.append("You must specify a blog post title")
         }
 
-        if contents == nil || (contents?.isWhitespace())! {
+        if contents == nil || (contents?.isWhitespace() ?? false) {
             createPostErrors.append("You must have some content in your blog post")
         }
 
-        if (slugUrl == nil || (slugUrl?.isWhitespace())!) && (!(title == nil || (title?.isWhitespace())!)) {
+        if (slugUrl == nil || (slugUrl?.isWhitespace() ?? false)) && (!(title == nil || (title?.isWhitespace() ?? false))) {
             // The user can't manually edit this so if the title wasn't empty, we should never hit here
             createPostErrors.append("There was an error with your request, please try again")
         }
@@ -520,11 +520,11 @@ struct BlogAdminController {
         var passwordError: Bool?
         var confirmPasswordError: Bool?
 
-        if name == nil || (name?.isWhitespace())! {
+        if name == nil || (name?.isWhitespace() ?? false) {
             userSaveErrors.append("You must specify a name")
         }
 
-        if username == nil || (username?.isWhitespace())! {
+        if username == nil || (username?.isWhitespace() ?? false) {
             userSaveErrors.append("You must specify a username")
         }
 
