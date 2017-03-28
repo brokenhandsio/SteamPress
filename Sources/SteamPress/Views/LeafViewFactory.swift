@@ -197,7 +197,7 @@ struct LeafViewFactory: ViewFactory {
         return try viewRenderer.make("blog/admin/resetPassword", parameters)
     }
 
-    func createProfileView(uri: URI, author: BlogUser, isMyProfile: Bool, posts: [BlogPost], loggedInUser: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
+    func createProfileView(uri: URI, author: BlogUser, isMyProfile: Bool, paginatedPosts: Paginator<BlogPost>, loggedInUser: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
         var parameters: [String: Vapor.Node] = [:]
         parameters["author"] = try author.makeNode(context: BlogUserContext.withPostCount)
 
@@ -208,8 +208,8 @@ struct LeafViewFactory: ViewFactory {
             parameters["profile_page"] = true.makeNode()
         }
 
-        if posts.count > 0 {
-            parameters["posts"] = try posts.makeNode(context: BlogPostContext.longSnippet)
+        if paginatedPosts.totalPages ?? 0 > 0 {
+            parameters["posts"] = try paginatedPosts.makeNode(context: BlogPostContext.longSnippet)
         }
         
         return try createPublicView(template: "blog/profile", uri: uri, parameters: parameters, user: loggedInUser, disqusName: disqusName, siteTwitterHandle: siteTwitterHandle)

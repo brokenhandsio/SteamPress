@@ -73,7 +73,7 @@ class BlogControllerTests: XCTestCase {
         let blogController = BlogController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, postsPerPage: 5, config: config ?? drop.config)
         blogController.addRoutes()
 
-        let blogAdminController = BlogAdminController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory)
+        let blogAdminController = BlogAdminController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, postsPerPage: 5)
         blogAdminController.addRoutes()
         try drop.runCommands()
 
@@ -179,9 +179,9 @@ class BlogControllerTests: XCTestCase {
         _ = try drop.respond(to: authorRequest)
 
         XCTAssertEqual(viewFactory.author?.username, user.username)
-        XCTAssertEqual(viewFactory.authorPosts?.count, 1)
-        XCTAssertEqual(viewFactory.authorPosts?.first?.title, post.title)
-        XCTAssertEqual(viewFactory.authorPosts?.first?.contents, post.contents)
+        XCTAssertEqual(viewFactory.authorPosts?.total, 1)
+        XCTAssertEqual(viewFactory.authorPosts?.data?[0].title, post.title)
+        XCTAssertEqual(viewFactory.authorPosts?.data?[0].contents, post.contents)
         XCTAssertEqual(viewFactory.isMyProfile, false)
     }
 
@@ -392,8 +392,8 @@ class BlogControllerTests: XCTestCase {
         try draftPost.save()
         _ = try drop.respond(to: authorRequest)
         
-        XCTAssertEqual(2, viewFactory.authorPosts?.count)
-        XCTAssertEqual(post2.title, viewFactory.authorPosts?.first?.title)
+        XCTAssertEqual(2, viewFactory.authorPosts?.total)
+        XCTAssertEqual(post2.title, viewFactory.authorPosts?.data?[0].title)
     }
     
 }
@@ -426,14 +426,14 @@ class CapturingViewFactory: ViewFactory {
 
     private(set) var author: BlogUser? = nil
     private(set) var isMyProfile: Bool? = nil
-    private(set) var authorPosts: [BlogPost]? = nil
+    private(set) var authorPosts: Paginator<BlogPost>? = nil
     private(set) var authorDisqusName: String? = nil
     private(set) var authorTwitterHandle: String? = nil
     private(set) var authorURI: URI? = nil
-    func createProfileView(uri: URI, author: BlogUser, isMyProfile: Bool, posts: [BlogPost], loggedInUser: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
+    func createProfileView(uri: URI, author: BlogUser, isMyProfile: Bool, paginatedPosts: Paginator<BlogPost>, loggedInUser: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
         self.author = author
         self.isMyProfile = isMyProfile
-        self.authorPosts = posts
+        self.authorPosts = paginatedPosts
         self.authorDisqusName = disqusName
         self.authorTwitterHandle = siteTwitterHandle
         self.authorURI = uri

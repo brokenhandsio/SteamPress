@@ -4,6 +4,7 @@ import URI
 import Fluent
 import HTTP
 import Foundation
+import Paginator
 @testable import SteamPress
 
 class LeafViewFactoryTests: XCTestCase {
@@ -75,6 +76,7 @@ class LeafViewFactoryTests: XCTestCase {
     
     private let tagsURI = URI(scheme: "https", host: "test.com", path: "tags/")
     private let authorsURI = URI(scheme: "https", host: "test.com", path: "authors/")
+    private var authorRequest: Request!
     private let tagURI = URI(scheme: "https", host: "test.com", path: "tags/tatooine/")
     private var tagRequest: Request!
     private let postURI = URI(scheme: "https", host: "test.com", path: "posts/test-post/")
@@ -90,6 +92,7 @@ class LeafViewFactoryTests: XCTestCase {
         viewRenderer = CapturingViewRenderer()
         viewFactory = LeafViewFactory(viewRenderer: viewRenderer)
         tagRequest = try! Request(method: .get, uri: tagURI)
+        authorRequest = try! Request(method: .get, uri: authorURI)
         indexRequest = try! Request(method: .get, uri: indexURI)
         let printConsole = PrintConsole()
         let prepare = Prepare(console: printConsole, preparations: [BlogUser.self, BlogPost.self, BlogTag.self, Pivot<BlogPost, BlogTag>.self], database: database)
@@ -362,11 +365,11 @@ class LeafViewFactoryTests: XCTestCase {
     
     func testAuthorViewHasCorrectParametersSet() throws {
         let (author, posts) = try setupAuthorPage()
-        let _ = try viewFactory.createProfileView(uri: authorURI, author: author, isMyProfile: false, posts: posts, loggedInUser: nil, disqusName: nil, siteTwitterHandle: nil)
+        let _ = try viewFactory.createProfileView(uri: authorURI, author: author, isMyProfile: false, paginatedPosts: posts, loggedInUser: nil, disqusName: nil, siteTwitterHandle: nil)
         
         XCTAssertEqual(viewRenderer.capturedContext?["author"]?["name"]?.string, author.name)
-        XCTAssertEqual(viewRenderer.capturedContext?["posts"]?.array?.count, posts.count)
-        XCTAssertEqual((viewRenderer.capturedContext?["posts"]?.array?.first as? Node)?["title"]?.string, posts.first?.title)
+        XCTAssertEqual(viewRenderer.capturedContext?["posts"]?["data"]?.array?.count, posts.total)
+        XCTAssertEqual((viewRenderer.capturedContext?["posts"]?["data"]?.nodeArray?.first)?["title"]?.string, TestDataBuilder.anyPostWithImage().title)
         XCTAssertEqual(viewRenderer.capturedContext?["uri"]?.string, authorURI.description)
         XCTAssertTrue((viewRenderer.capturedContext?["profile_page"]?.bool) ?? false)
         XCTAssertNil(viewRenderer.capturedContext?["my_profile"])
@@ -382,32 +385,34 @@ class LeafViewFactoryTests: XCTestCase {
     
     func testAuthorViewMyProfileSetIfViewingMyProfile() throws {
         let (author, posts) = try setupAuthorPage()
-        let _ = try viewFactory.createProfileView(uri: authorURI, author: author, isMyProfile: true, posts: posts, loggedInUser: nil, disqusName: nil, siteTwitterHandle: nil)
+        let _ = try viewFactory.createProfileView(uri: authorURI, author: author, isMyProfile: true, paginatedPosts: posts, loggedInUser: nil, disqusName: nil, siteTwitterHandle: nil)
         XCTAssertTrue((viewRenderer.capturedContext?["my_profile"]?.bool) ?? false)
         XCTAssertNil(viewRenderer.capturedContext?["profile_page"])
     }
     
     func testAuthorViewHasNoPostsSetIfNoneCreated() throws {
         let (author, _) = try setupAuthorPage()
-        let _ = try viewFactory.createProfileView(uri: authorURI, author: author, isMyProfile: true, posts: [], loggedInUser: nil, disqusName: nil, siteTwitterHandle: nil)
+        let emptyPosts: [BlogPost] = []
+        let paginatedEmptyPosts = try emptyPosts.paginator(5, request: authorRequest)
+        let _ = try viewFactory.createProfileView(uri: authorURI, author: author, isMyProfile: true, paginatedPosts: paginatedEmptyPosts, loggedInUser: nil, disqusName: nil, siteTwitterHandle: nil)
         XCTAssertNil(viewRenderer.capturedContext?["posts"])
     }
     
     func testAuthorViewGetsLoggedInUserIfProvider() throws {
         let (author, posts) = try setupAuthorPage()
-        let _ = try viewFactory.createProfileView(uri: authorURI, author: author, isMyProfile: true, posts: posts, loggedInUser: author, disqusName: nil, siteTwitterHandle: nil)
+        let _ = try viewFactory.createProfileView(uri: authorURI, author: author, isMyProfile: true, paginatedPosts: posts, loggedInUser: author, disqusName: nil, siteTwitterHandle: nil)
         XCTAssertEqual(viewRenderer.capturedContext?["user"]?["name"]?.string, author.name)
     }
     
     func testAuthorViewGetsDisqusNameIfProvided() throws {
         let (author, posts) = try setupAuthorPage()
-        let _ = try viewFactory.createProfileView(uri: authorURI, author: author, isMyProfile: true, posts: posts, loggedInUser: nil, disqusName: "brokenhands", siteTwitterHandle: nil)
+        let _ = try viewFactory.createProfileView(uri: authorURI, author: author, isMyProfile: true, paginatedPosts: posts, loggedInUser: nil, disqusName: "brokenhands", siteTwitterHandle: nil)
         XCTAssertEqual(viewRenderer.capturedContext?["disqus_name"]?.string, "brokenhands")
     }
     
     func testAuthorViewGetsTwitterHandleIfProvided() throws {
         let (author, posts) = try setupAuthorPage()
-        let _ = try viewFactory.createProfileView(uri: authorURI, author: author, isMyProfile: true, posts: posts, loggedInUser: nil, disqusName: nil, siteTwitterHandle: "brokenhandsio")
+        let _ = try viewFactory.createProfileView(uri: authorURI, author: author, isMyProfile: true, paginatedPosts: posts, loggedInUser: nil, disqusName: nil, siteTwitterHandle: "brokenhandsio")
         XCTAssertEqual(viewRenderer.capturedContext?["site_twitter_handle"]?.string, "brokenhandsio")
     }
     
@@ -612,21 +617,15 @@ class LeafViewFactoryTests: XCTestCase {
     
     
     func testAuthorViewGetsPostCount() throws {
-        var author = TestDataBuilder.anyUser()
-        try author.save()
-        var post = TestDataBuilder.anyPost(author: author)
-        try post.save()
-        _ = try viewFactory.createProfileView(uri: authorURI, author: author, isMyProfile: false, posts: [post], loggedInUser: nil, disqusName: nil, siteTwitterHandle: nil)
-        XCTAssertEqual(viewRenderer.capturedContext?["author"]?["post_count"]?.int, 1)
+        let (author, posts) = try setupAuthorPage()
+        _ = try viewFactory.createProfileView(uri: authorURI, author: author, isMyProfile: false, paginatedPosts: posts, loggedInUser: nil, disqusName: nil, siteTwitterHandle: nil)
+        XCTAssertEqual(viewRenderer.capturedContext?["author"]?["post_count"]?.int, 2)
     }
 
     func testAuthorViewGetsLongSnippetForPosts() throws {
-        var author = TestDataBuilder.anyUser()
-        try author.save()
-        var post = TestDataBuilder.anyPost(author: author)
-        try post.save()
-        _ = try viewFactory.createProfileView(uri: authorURI, author: author, isMyProfile: false, posts: [post], loggedInUser: nil, disqusName: nil, siteTwitterHandle: nil)
-        XCTAssertNotNil(viewRenderer.capturedContext?["posts"]?.nodeArray?.first?["long_snippet"]?.string)
+        let (author, posts) = try setupAuthorPage()
+        _ = try viewFactory.createProfileView(uri: authorURI, author: author, isMyProfile: false, paginatedPosts: posts, loggedInUser: nil, disqusName: nil, siteTwitterHandle: nil)
+        XCTAssertNotNil(viewRenderer.capturedContext?["posts"]?["data"]?.nodeArray?.first?["long_snippet"]?.string)
     }
 
     
@@ -666,14 +665,15 @@ class LeafViewFactoryTests: XCTestCase {
         return tag
     }
     
-    private func setupAuthorPage() throws -> (BlogUser, [BlogPost]) {
+    private func setupAuthorPage() throws -> (BlogUser, Paginator<BlogPost>) {
         var user = TestDataBuilder.anyUser()
         try user.save()
         var postWithImage = TestDataBuilder.anyPostWithImage(author: user)
         try postWithImage.save()
         var post2 = TestDataBuilder.anyPost(author: user)
         try post2.save()
-        return (user, [postWithImage, post2])
+        let paginator = try [postWithImage, post2].paginator(5, request: authorRequest)
+        return (user, paginator)
     }
     
 }

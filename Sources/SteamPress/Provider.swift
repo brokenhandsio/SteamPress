@@ -21,7 +21,7 @@ public struct Provider: Vapor.Provider {
 
         // Set up the controllers
         let blogController = BlogController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, postsPerPage: postsPerPage, config: drop.config)
-        let blogAdminController = BlogAdminController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory)
+        let blogAdminController = BlogAdminController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, postsPerPage: postsPerPage)
 
         // Add the routes
         blogController.addRoutes()

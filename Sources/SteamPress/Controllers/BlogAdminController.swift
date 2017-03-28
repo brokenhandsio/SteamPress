@@ -11,12 +11,14 @@ struct BlogAdminController {
     fileprivate let drop: Droplet
     fileprivate let pathCreator: BlogPathCreator
     fileprivate let viewFactory: ViewFactory
+    fileprivate let postsPerPage: Int
 
     // MARK: - Initialiser
-    init(drop: Droplet, pathCreator: BlogPathCreator, viewFactory: ViewFactory) {
+    init(drop: Droplet, pathCreator: BlogPathCreator, viewFactory: ViewFactory, postsPerPage: Int) {
         self.drop = drop
         self.pathCreator = pathCreator
         self.viewFactory = viewFactory
+        self.postsPerPage = postsPerPage
     }
 
     // MARK: - Route setup
@@ -435,8 +437,10 @@ struct BlogAdminController {
         guard let user = try request.auth.user() as? BlogUser else {
             throw Abort.badRequest
         }
+        
+        let posts = try user.posts().paginator(postsPerPage, request: request)
 
-        return try viewFactory.createProfileView(uri: request.uri, author: user, isMyProfile: true, posts: try user.posts(), loggedInUser: user, disqusName: nil, siteTwitterHandle: nil)
+        return try viewFactory.createProfileView(uri: request.uri, author: user, isMyProfile: true, paginatedPosts: posts, loggedInUser: user, disqusName: nil, siteTwitterHandle: nil)
     }
 
     // MARK: - Password handlers

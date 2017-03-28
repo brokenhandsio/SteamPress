@@ -84,9 +84,9 @@ struct BlogController {
             throw Abort.notFound
         }
         
-        let posts = try author.posts()
+        let posts = try author.posts().paginator(postsPerPage, request: request)
         
-        return try viewFactory.createProfileView(uri: request.uri, author: author, isMyProfile: false, posts: posts, loggedInUser: getLoggedInUser(in: request), disqusName: getDisqusName(), siteTwitterHandle: getSiteTwitterHandle())
+        return try viewFactory.createProfileView(uri: request.uri, author: author, isMyProfile: false, paginatedPosts: posts, loggedInUser: getLoggedInUser(in: request), disqusName: getDisqusName(), siteTwitterHandle: getSiteTwitterHandle())
     }
     
     func allTagsViewHandler(request: Request) throws -> ResponseRepresentable {
