@@ -52,7 +52,7 @@ struct LeafViewFactory: ViewFactory {
         if let tagsSupplied = tags, tagsSupplied.count > 0 {
             parameters["tags_supplied"] = try tagsSupplied.makeNode()
         }
-        
+
         if draft {
             parameters["draft"] = true.makeNode()
         }
@@ -102,19 +102,19 @@ struct LeafViewFactory: ViewFactory {
         if let _ = resetPasswordRequired {
             parameters["reset_password_on_login_supplied"] = true
         }
-        
+
         if let profilePicture = profilePicture {
             parameters["profile_picture_supplied"] = profilePicture.description.makeNode()
         }
-        
+
         if let twitterHandle = twitterHandle {
             parameters["twitter_handle_supplied"] = twitterHandle.makeNode()
         }
-        
+
         if let biography = biography {
             parameters["biography_supplied"] = biography.makeNode()
         }
-        
+
         if let tagline = tagline {
             parameters["tagline_supplied"] = tagline.makeNode()
         }
@@ -164,7 +164,7 @@ struct LeafViewFactory: ViewFactory {
         if publishedBlogPosts.count > 0 {
             parameters["published_posts"] = try publishedBlogPosts.makeNode(context: BlogPostContext.all)
         }
-        
+
         if draftBlogPosts.count > 0 {
             parameters["draft_posts"] = try draftBlogPosts.makeNode(context: BlogPostContext.all)
         }
@@ -211,7 +211,7 @@ struct LeafViewFactory: ViewFactory {
         if paginatedPosts.totalPages ?? 0 > 0 {
             parameters["posts"] = try paginatedPosts.makeNode(context: BlogPostContext.longSnippet)
         }
-        
+
         return try createPublicView(template: "blog/profile", uri: uri, parameters: parameters, user: loggedInUser, disqusName: disqusName, siteTwitterHandle: siteTwitterHandle)
     }
 
@@ -229,16 +229,16 @@ struct LeafViewFactory: ViewFactory {
         if tags.count > 0 {
             parameters["tags"] = try tags.makeNode()
         }
-        
+
         if authors.count > 0 {
             parameters["authors"] = try authors.makeNode()
         }
-        
+
         return try createPublicView(template: "blog/blog", uri: uri, parameters: parameters, user: loggedInUser, disqusName: disqusName, siteTwitterHandle: siteTwitterHandle)
     }
 
     func blogPostView(uri: URI, post: BlogPost, author: BlogUser, user: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
-        
+
         var parameters: [String: Vapor.Node] = [:]
         parameters["post"] = try post.makeNode(context: BlogPostContext.all)
         parameters["author"] = try author.makeNode()
@@ -247,11 +247,17 @@ struct LeafViewFactory: ViewFactory {
         parameters["post_uri_encoded"] = uri.description.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)?.makeNode() ?? uri.description.makeNode()
         parameters["site_uri"] = uri.getRootUri().description.makeNode()
         parameters["post_description"] = try SwiftSoup.parse(markdownToHTML(post.shortSnippet())).text().makeNode()
-        
+
         let image = try SwiftSoup.parse(markdownToHTML(post.contents)).select("img").first()
-        
+
         if let imageFound = image {
             parameters["post_image"] = try imageFound.attr("src").makeNode()
+            do {
+                let imageAlt = try imageFound.attr("alt")
+                if imageAlt != "" {
+                    parameters["post_image_alt"] = imageAlt.makeNode()
+                }
+            } catch {}
         }
 
         return try createPublicView(template: "blog/blogpost", uri: uri, parameters: parameters, user: user, disqusName: disqusName, siteTwitterHandle: siteTwitterHandle)
@@ -266,49 +272,49 @@ struct LeafViewFactory: ViewFactory {
         if paginatedPosts.totalPages ?? 0 > 0 {
             parameters["posts"] = try paginatedPosts.makeNode(context: BlogPostContext.longSnippet)
         }
-        
+
         return try createPublicView(template: "blog/tag", uri: uri, parameters: parameters, user: user, disqusName: disqusName, siteTwitterHandle: siteTwitterHandle)
     }
-    
+
     func allTagsView(uri: URI, allTags: [BlogTag], user: BlogUser?, siteTwitterHandle: String?) throws -> View {
         var parameters: [String: NodeRepresentable] = [:]
-        
+
         if allTags.count > 0 {
             let sortedTags = allTags.sorted { return (try? $0.blogPosts().count > $1.blogPosts().count) ?? false }
             parameters["tags"] = try sortedTags.makeNode(context: BlogTagContext.withPostCount)
         }
-        
+
         return try createPublicView(template: "blog/tags", uri: uri, parameters: parameters, user: user, siteTwitterHandle: siteTwitterHandle)
     }
-    
+
     func allAuthorsView(uri: URI, allAuthors: [BlogUser], user: BlogUser?, siteTwitterHandle: String?) throws -> View {
         var parameters: [String: NodeRepresentable] = [:]
-        
+
         if allAuthors.count > 0 {
             let sortedAuthors = allAuthors.sorted { return (try? $0.posts().count > $1.posts().count) ?? false }
             parameters["authors"] = try sortedAuthors.makeNode(context: BlogUserContext.withPostCount)
         }
-        
+
         return try createPublicView(template: "blog/authors", uri: uri, parameters: parameters, user: user, siteTwitterHandle: siteTwitterHandle)
     }
-    
+
     private func createPublicView(template: String, uri: URI, parameters: [String: NodeRepresentable], user: BlogUser? = nil, disqusName: String? = nil, siteTwitterHandle: String? = nil) throws -> View {
         var viewParameters = parameters
-        
+
         viewParameters["uri"] = uri.description.makeNode()
-        
+
         if let user = user {
             viewParameters["user"] = try user.makeNode()
         }
-        
+
         if let disqusName = disqusName {
             viewParameters["disqus_name"] = disqusName.makeNode()
         }
-        
+
         if let siteTwitterHandle = siteTwitterHandle {
             viewParameters["site_twitter_handle"] = siteTwitterHandle.makeNode()
         }
-        
+
         return try viewRenderer.make(template, viewParameters.makeNode())
     }
 }
