@@ -49,8 +49,6 @@ extension BlogPost: NodeRepresentable {
     public func makeNode(context: Context) throws -> Node {
         let createdTime = created.timeIntervalSince1970
         
-        print("Context is \(context)")
-
         var node: [String: Node]  = [:]
         node["id"] = id
         node["title"] = title.makeNode()
