@@ -510,7 +510,7 @@ class LeafViewFactoryTests: XCTestCase {
     
     func testCreateUserViewWhenErrors() throws {
         let expectedError = "Not valid password"
-        let _ = try viewFactory.createUserView(errors: [expectedError], name: "Luke", username: "luke", passwordError: true, confirmPasswordError: true, resetPasswordRequired: true, profilePicture: URL(string: "https://static.brokenhands.io/steampress/images/authors/luke.png"), twitterHandle: "luke", biography: "The last Jedi in the Galaxy", tagline: "A son without a father")
+        let _ = try viewFactory.createUserView(errors: [expectedError], name: "Luke", username: "luke", passwordError: true, confirmPasswordError: true, resetPasswordRequired: true, profilePicture: "https://static.brokenhands.io/steampress/images/authors/luke.png", twitterHandle: "luke", biography: "The last Jedi in the Galaxy", tagline: "A son without a father")
         XCTAssertFalse((viewRenderer.capturedContext?["name_error"]?.bool) ?? true)
         XCTAssertFalse((viewRenderer.capturedContext?["username_error"]?.bool) ?? true)
         XCTAssertEqual(viewRenderer.capturedContext?["errors"]?.nodeArray?.first?.string, expectedError)
@@ -533,7 +533,7 @@ class LeafViewFactoryTests: XCTestCase {
     }
     
     func testCreateUserViewForEditing() throws {
-        let _ = try viewFactory.createUserView(editing: true, errors: nil, name: "Luke", username: "luke", userId: 1.makeNode(), profilePicture: URL(string: "https://static.brokenhands.io/steampress/images/authors/luke.png"), twitterHandle: "luke", biography: "The last Jedi in the Galaxy", tagline: "A son without a father")
+        let _ = try viewFactory.createUserView(editing: true, errors: nil, name: "Luke", username: "luke", userId: 1.makeNode(), profilePicture: "https://static.brokenhands.io/steampress/images/authors/luke.png", twitterHandle: "luke", biography: "The last Jedi in the Galaxy", tagline: "A son without a father")
         XCTAssertEqual(viewRenderer.capturedContext?["name_supplied"]?.string, "Luke")
         XCTAssertEqual(viewRenderer.capturedContext?["username_supplied"]?.string, "luke")
         XCTAssertTrue((viewRenderer.capturedContext?["editing"]?.bool) ?? false)

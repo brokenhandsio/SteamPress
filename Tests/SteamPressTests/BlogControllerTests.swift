@@ -408,7 +408,7 @@ class CapturingViewFactory: ViewFactory {
         return View(data: try "Test".makeBytes())
     }
 
-    func createUserView(editing: Bool, errors: [String]?, name: String?, username: String?, passwordError: Bool?, confirmPasswordError: Bool?, resetPasswordRequired: Bool?, userId: Node?, profilePicture: URL?, twitterHandle: String?, biography: String?, tagline: String?) throws -> View {
+    func createUserView(editing: Bool, errors: [String]?, name: String?, username: String?, passwordError: Bool?, confirmPasswordError: Bool?, resetPasswordRequired: Bool?, userId: Node?, profilePicture: String?, twitterHandle: String?, biography: String?, tagline: String?) throws -> View {
         return View(data: try "Test".makeBytes())
     }
 

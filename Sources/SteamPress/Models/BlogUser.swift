@@ -14,12 +14,12 @@ final class BlogUser: Model {
     var username: String
     var password: String
     var resetPasswordRequired: Bool = false
-    var profilePicture: URL?
+    var profilePicture: String?
     var twitterHandle: String?
     var biography: String?
     var tagline: String?
     
-    init(name: String, username: String, password: String, profilePicture: URL?, twitterHandle: String?, biography: String?, tagline: String?) {
+    init(name: String, username: String, password: String, profilePicture: String?, twitterHandle: String?, biography: String?, tagline: String?) {
         self.name = name
         self.username = username.lowercased()
         self.password = password
@@ -35,13 +35,7 @@ final class BlogUser: Model {
         username = try node.extract("username")
         password = try node.extract("password")
         resetPasswordRequired = try node.extract("reset_password_required")
-        let rawProfilePictureString: String? = try? node.extract("profile_picture")
-        if let profilePictureString = rawProfilePictureString {
-            guard let profilePictureURL = URL(string: profilePictureString) else {
-                throw Abort.custom(status: .internalServerError, message: "Profile Picture was not a valid string")
-            }
-            profilePicture = profilePictureURL
-        }
+        profilePicture = try? node.extract("profile_picture")
         twitterHandle = try? node.extract("twitter_handle")
         biography = try? node.extract("biography")
         tagline = try? node.extract("tagline")
@@ -55,7 +49,7 @@ final class BlogUser: Model {
         userNode["reset_password_required"] = resetPasswordRequired.makeNode()
         
         if let profilePicture = profilePicture {
-            userNode["profile_picture"] = profilePicture.description.makeNode()
+            userNode["profile_picture"] = profilePicture.makeNode()
         }
         
         if let twitterHandle = twitterHandle {
@@ -154,12 +148,12 @@ struct BlogUserCredentials: Credentials {
     let username: String
     let password: String
     let name: String?
-    let profilePicture: URL?
+    let profilePicture: String?
     let twitterHandle: String?
     let biography: String?
     let tagline: String?
     
-    public init(username: String, password: String, name: String?, profilePicture: URL?, twitterHandle: String?, biography: String?, tagline: String?) {
+    public init(username: String, password: String, name: String?, profilePicture: String?, twitterHandle: String?, biography: String?, tagline: String?) {
         self.username = username.lowercased()
         self.password = password
         self.name = name

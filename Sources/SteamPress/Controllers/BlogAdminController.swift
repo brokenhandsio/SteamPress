@@ -223,18 +223,13 @@ struct BlogAdminController {
         let rawConfirmPassword = request.data["inputConfirmPassword"]?.string
         let rawPasswordResetRequired = request.data["inputResetPasswordOnLogin"]?.string
         let resetPasswordRequired = rawPasswordResetRequired != nil
-        let rawProfilePicture = request.data["inputProfilePicture"]?.string
+        let profilePicture = request.data["inputProfilePicture"]?.string
         let tagline = request.data["inputTagline"]?.string
         let biography = request.data["inputBiography"]?.string
         let twitterHandle = request.data["inputTwitterHandle"]?.string
 
-        let (createUserRawErrors, passwordRawError, confirmPasswordRawError) = validateUserSaveDataExists(edit: false, name: rawName, username: rawUsername, password: rawPassword, confirmPassword: rawConfirmPassword, profilePicture: rawProfilePicture)
+        let (createUserRawErrors, passwordRawError, confirmPasswordRawError) = validateUserSaveDataExists(edit: false, name: rawName, username: rawUsername, password: rawPassword, confirmPassword: rawConfirmPassword, profilePicture: profilePicture)
 
-        var profilePicture: URL? = nil
-        if let profilePictureString = rawProfilePicture {
-            profilePicture = URL(string: profilePictureString)
-        }
-        
         // Return if we have any missing fields
         if (createUserRawErrors?.count ?? 0) > 0 {
             return try viewFactory.createUserView(editing: false, errors: createUserRawErrors, name: rawName, username: rawUsername, passwordError: passwordRawError, confirmPasswordError: confirmPasswordRawError, resetPasswordRequired: resetPasswordRequired, userId: nil, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline)
@@ -275,18 +270,13 @@ struct BlogAdminController {
         let rawConfirmPassword = request.data["inputConfirmPassword"]?.string
         let rawPasswordResetRequired = request.data["inputResetPasswordOnLogin"]?.string
         let resetPasswordRequired = rawPasswordResetRequired != nil
-        let rawProfilePicture = request.data["inputProfilePicture"]?.string
+        let profilePicture = request.data["inputProfilePicture"]?.string
         let tagline = request.data["inputTagline"]?.string
         let biography = request.data["inputBiography"]?.string
         let twitterHandle = request.data["inputTwitterHandle"]?.string
 
-        let (saveUserRawErrors, passwordRawError, confirmPasswordRawError) = validateUserSaveDataExists(edit: true, name: rawName, username: rawUsername, password: rawPassword, confirmPassword: rawConfirmPassword, profilePicture: rawProfilePicture)
+        let (saveUserRawErrors, passwordRawError, confirmPasswordRawError) = validateUserSaveDataExists(edit: true, name: rawName, username: rawUsername, password: rawPassword, confirmPassword: rawConfirmPassword, profilePicture: profilePicture)
         
-        var profilePicture: URL? = nil
-        if let profilePictureString = rawProfilePicture {
-            profilePicture = URL(string: profilePictureString)
-        }
-
         // Return if we have any missing fields
         if (saveUserRawErrors?.count ?? 0) > 0 {
             return try viewFactory.createUserView(editing: true, errors: saveUserRawErrors, name: rawName, username: rawUsername, passwordError: passwordRawError, confirmPasswordError: confirmPasswordRawError, resetPasswordRequired: resetPasswordRequired, userId: user.id, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline)

@@ -71,7 +71,7 @@ struct LeafViewFactory: ViewFactory {
         return try viewRenderer.make("blog/admin/createPost", parameters)
     }
 
-    func createUserView(editing: Bool = false, errors: [String]? = nil, name: String? = nil, username: String? = nil, passwordError: Bool? = nil, confirmPasswordError: Bool? = nil, resetPasswordRequired: Bool? = nil, userId: Vapor.Node? = nil, profilePicture: URL? = nil, twitterHandle: String? = nil, biography: String? = nil, tagline: String? = nil) throws -> View {
+    func createUserView(editing: Bool = false, errors: [String]? = nil, name: String? = nil, username: String? = nil, passwordError: Bool? = nil, confirmPasswordError: Bool? = nil, resetPasswordRequired: Bool? = nil, userId: Vapor.Node? = nil, profilePicture: String? = nil, twitterHandle: String? = nil, biography: String? = nil, tagline: String? = nil) throws -> View {
         let nameError = name == nil && errors != nil
         let usernameError = username == nil && errors != nil
 
@@ -104,7 +104,7 @@ struct LeafViewFactory: ViewFactory {
         }
 
         if let profilePicture = profilePicture {
-            parameters["profile_picture_supplied"] = profilePicture.description.makeNode()
+            parameters["profile_picture_supplied"] = profilePicture.makeNode()
         }
 
         if let twitterHandle = twitterHandle {
