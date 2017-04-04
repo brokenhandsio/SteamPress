@@ -544,12 +544,6 @@ struct BlogAdminController {
             }
         }
         
-        if let profilePictureString = profilePicture {
-            if URL(string: profilePictureString) == nil {
-                userSaveErrors.append("Profile Picture is not a valid URL")
-            }
-        }
-
         return (userSaveErrors, passwordError, confirmPasswordError)
     }
 
