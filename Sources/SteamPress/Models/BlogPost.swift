@@ -127,7 +127,6 @@ extension BlogPost {
             posts.double("created")
             posts.double("last_edited", optional: true)
             posts.string("slug_url", unique: true)
-            posts.bool("published")
         }
     }
 

@@ -83,10 +83,6 @@ final class BlogUser: Model {
             users.string("username", unique: true)
             users.string("password")
             users.bool("reset_password_required")
-            users.string("profile_picture", optional: true)
-            users.string("twitter_handle", optional: true)
-            users.custom("biography", type: "TEXT", optional: true)
-            users.string("tagline", optional: true)
         }
     }
     
