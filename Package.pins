@@ -35,7 +35,7 @@
       "package": "Fluent",
       "reason": null,
       "repositoryURL": "https://github.com/vapor/fluent.git",
-      "version": "1.4.2"
+      "version": "1.4.3"
     },
     {
       "package": "JSON",
@@ -53,7 +53,7 @@
       "package": "Leaf",
       "reason": null,
       "repositoryURL": "https://github.com/vapor/leaf.git",
-      "version": "1.0.6"
+      "version": "1.0.7"
     },
     {
       "package": "LeafMarkdown",
@@ -113,7 +113,7 @@
       "package": "SwiftSoup",
       "reason": null,
       "repositoryURL": "https://github.com/scinfu/SwiftSoup.git",
-      "version": "1.2.8"
+      "version": "1.2.9"
     },
     {
       "package": "TLS",
@@ -131,7 +131,7 @@
       "package": "Vapor",
       "reason": null,
       "repositoryURL": "https://github.com/vapor/vapor.git",
-      "version": "1.5.13"
+      "version": "1.5.14"
     },
     {
       "package": "cmark",
