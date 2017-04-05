@@ -73,16 +73,16 @@ class BlogControllerTests: XCTestCase {
         let blogController = BlogController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, postsPerPage: 5, config: config ?? drop.config)
         blogController.addRoutes()
 
-        let blogAdminController = BlogAdminController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory)
+        let blogAdminController = BlogAdminController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, postsPerPage: 5)
         blogAdminController.addRoutes()
         try drop.runCommands()
 
         if loginUser {
-            let userCredentials = BlogUserCredentials(username: "luke", password: "1234", name: "Luke")
-            user = try BlogUser(credentials: userCredentials)
+//            let userCredentials = BlogUserCredentials(username: "luke", password: "1234", name: "Luke")
+//            user = try BlogUser(credentials: userCredentials)
         }
         else {
-            user = BlogUser(name: "Luke", username: "luke", password: "1234")
+            user = TestDataBuilder.anyUser()
         }
         try user.save()
         post = BlogPost(title: "Test Path", contents: "A long time ago", author: user, creationDate: Date(), slugUrl: "test-path", published: true)
@@ -179,9 +179,9 @@ class BlogControllerTests: XCTestCase {
         _ = try drop.respond(to: authorRequest)
 
         XCTAssertEqual(viewFactory.author?.username, user.username)
-        XCTAssertEqual(viewFactory.authorPosts?.count, 1)
-        XCTAssertEqual(viewFactory.authorPosts?.first?.title, post.title)
-        XCTAssertEqual(viewFactory.authorPosts?.first?.contents, post.contents)
+        XCTAssertEqual(viewFactory.authorPosts?.total, 1)
+        XCTAssertEqual(viewFactory.authorPosts?.data?[0].title, post.title)
+        XCTAssertEqual(viewFactory.authorPosts?.data?[0].contents, post.contents)
         XCTAssertEqual(viewFactory.isMyProfile, false)
     }
 
@@ -392,14 +392,15 @@ class BlogControllerTests: XCTestCase {
         try draftPost.save()
         _ = try drop.respond(to: authorRequest)
         
-        XCTAssertEqual(2, viewFactory.authorPosts?.count)
-        XCTAssertEqual(post2.title, viewFactory.authorPosts?.first?.title)
+        XCTAssertEqual(2, viewFactory.authorPosts?.total)
+        XCTAssertEqual(post2.title, viewFactory.authorPosts?.data?[0].title)
     }
     
 }
 
 import URI
 import Paginator
+import Foundation
 
 class CapturingViewFactory: ViewFactory {
 
@@ -407,7 +408,7 @@ class CapturingViewFactory: ViewFactory {
         return View(data: try "Test".makeBytes())
     }
 
-    func createUserView(editing: Bool, errors: [String]?, name: String?, username: String?, passwordError: Bool?, confirmPasswordError: Bool?, resetPasswordRequired: Bool?, userId: Node?) throws -> View {
+    func createUserView(editing: Bool, errors: [String]?, name: String?, username: String?, passwordError: Bool?, confirmPasswordError: Bool?, resetPasswordRequired: Bool?, userId: Node?, profilePicture: String?, twitterHandle: String?, biography: String?, tagline: String?) throws -> View {
         return View(data: try "Test".makeBytes())
     }
 
@@ -425,14 +426,14 @@ class CapturingViewFactory: ViewFactory {
 
     private(set) var author: BlogUser? = nil
     private(set) var isMyProfile: Bool? = nil
-    private(set) var authorPosts: [BlogPost]? = nil
+    private(set) var authorPosts: Paginator<BlogPost>? = nil
     private(set) var authorDisqusName: String? = nil
     private(set) var authorTwitterHandle: String? = nil
     private(set) var authorURI: URI? = nil
-    func createProfileView(uri: URI, author: BlogUser, isMyProfile: Bool, posts: [BlogPost], loggedInUser: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
+    func createProfileView(uri: URI, author: BlogUser, isMyProfile: Bool, paginatedPosts: Paginator<BlogPost>, loggedInUser: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
         self.author = author
         self.isMyProfile = isMyProfile
-        self.authorPosts = posts
+        self.authorPosts = paginatedPosts
         self.authorDisqusName = disqusName
         self.authorTwitterHandle = siteTwitterHandle
         self.authorURI = uri
