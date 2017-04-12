@@ -64,7 +64,7 @@ public struct Provider: Vapor.Provider {
             blogPath = blogPathFromConfig
         }
 
-        let useBootstrap4: Bool = config[Provider.configFilename, "paginator", "useBootstrap4"]?.bool ?? true
+        let useBootstrap4 = config[Provider.configFilename, "paginator", "useBootstrap4"]?.bool ?? true
 
         self.init(postsPerPage: postsPerPage, blogPath: blogPath, useBootstrap4: useBootstrap4)
     }
