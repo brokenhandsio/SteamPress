@@ -78,6 +78,26 @@ let steampress = SteamPress.Provider(postsPerPage: 5, blogPath: "blog")
 drop.addProvider(steampress)
 ```
 
+## Bootstrap Versions
+
+By default, the paginator used by SteamPress is expecting to use Bootstrap 4. You can configure it to use Bootstrap 3 by either adding it to the configuration file or the manual initialisation. To add to a config file, in your `steampress.json`, add:
+
+```json
+{
+    "postsPerPage": 5,
+    "blogPath": "blog",
+    "paginator": {
+        "useBootstrap4": false
+    }
+}
+```
+
+To manually iniatialise, set up the Provider like so:
+
+```swift
+let steampress = SteamPress.Provider(postsPerPage: 5, blogPath: "blog", useBootstrap4: false)
+```
+
 ## Logging In
 
 When you first visit the login page of the admin section of the blog it will create a user for you to use for login, with the username `admin`. The password will be printed out to the console and you will be required to reset your password when you first login. It is recommended you do this as soon as your site is up and running.
