@@ -30,12 +30,20 @@ struct BlogController {
         drop.group(pathCreator.blogPath ?? "") { index in
             index.get(handler: indexHandler)
             index.get(blogPostsPath, String.self, handler: blogPostHandler)
-            index.get(tagsPath, String.self, handler: tagViewHandler)
-            index.get(authorsPath, String.self, handler: authorViewHandler)
             index.get(apiPath, tagsPath, handler: tagApiHandler)
             index.get(blogPostsPath, handler: blogPostIndexRedirectHandler)
-            index.get(tagsPath, handler: allTagsViewHandler)
-            index.get(authorsPath, handler: allAuthorsViewHandler)
+            
+            let disabledPaths = config.disabledPaths
+            
+            if (!disabledPaths.contains(authorsPath)) {
+                index.get(authorsPath, String.self, handler: authorViewHandler)
+                index.get(authorsPath, handler: allAuthorsViewHandler)
+            }
+            
+            if (!disabledPaths.contains(tagsPath)) {
+                index.get(tagsPath, String.self, handler: tagViewHandler)
+                index.get(tagsPath, handler: allTagsViewHandler)
+            }
         }
     }
 
