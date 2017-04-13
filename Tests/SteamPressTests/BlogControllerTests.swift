@@ -33,6 +33,8 @@ class BlogControllerTests: XCTestCase {
         ("testAllAuthorsPageGetAllAuthors", testAllAuthorsPageGetAllAuthors),
         ("testTagPageGetsOnlyPublishedPostsInDescendingOrder", testTagPageGetsOnlyPublishedPostsInDescendingOrder),
         ("testAuthorPageGetsOnlyPublishedPostsInDescendingOrder", testAuthorPageGetsOnlyPublishedPostsInDescendingOrder),
+        ("testDisabledBlogAuthorsPath", testDisabledBlogAuthorsPath),
+        ("testDisabledBlogTagsPath", testDisabledBlogTagsPath),
     ]
 
     private var drop: Droplet!
@@ -395,7 +397,34 @@ class BlogControllerTests: XCTestCase {
         XCTAssertEqual(2, viewFactory.authorPosts?.total)
         XCTAssertEqual(post2.title, viewFactory.authorPosts?.data?[0].title)
     }
-    
+
+    func testDisabledBlogAuthorsPath() throws {
+        let config = Config(try Node(node: [
+            "disabledPaths": try Node(node: ["authors".makeNode()])
+        ]))
+
+        try setupDrop(config: config)
+
+        let authorResponse = try drop.respond(to: authorRequest)
+        let allAuthorsResponse = try drop.respond(to: allAuthorsRequest)
+
+        XCTAssertEqual(404, authorResponse.status.statusCode)
+        XCTAssertEqual(404, allAuthorsResponse.status.statusCode)
+    }
+
+    func testDisabledBlogTagsPath() throws {
+        let config = Config(try Node(node: [
+            "disabledPaths": try Node(node: ["tags".makeNode()])
+        ]))
+
+        try setupDrop(config: config)
+
+        let tagResponse = try drop.respond(to: tagRequest)
+        let allTagsResponse = try drop.respond(to: allTagsRequest)
+
+        XCTAssertEqual(404, tagResponse.status.statusCode)
+        XCTAssertEqual(404, allTagsResponse.status.statusCode)
+    }
 }
 
 import URI
