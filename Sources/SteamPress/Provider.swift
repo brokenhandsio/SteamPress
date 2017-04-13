@@ -12,6 +12,7 @@ public struct Provider: Vapor.Provider {
     private let blogPath: String?
     private let postsPerPage: Int
     private let pathCreator: BlogPathCreator
+    private let useBootstrap4: Bool
 
     public func boot(_ drop: Droplet) {
 
@@ -42,7 +43,7 @@ public struct Provider: Vapor.Provider {
         drop.middleware.append(authMiddleware)
         
         // Providers
-        let paginator = PaginatorProvider(useBootstrap4: true, paginationLabel: "Blog Post Pages")
+        let paginator = PaginatorProvider(useBootstrap4: useBootstrap4, paginationLabel: "Blog Post Pages")
         drop.addProvider(paginator)
         
         // Set up Leaf tag
@@ -62,8 +63,10 @@ public struct Provider: Vapor.Provider {
         if let blogPathFromConfig = config[Provider.configFilename, "blogPath"]?.string {
             blogPath = blogPathFromConfig
         }
-        
-        self.init(postsPerPage: postsPerPage, blogPath: blogPath)
+
+        let useBootstrap4 = config[Provider.configFilename, "paginator", "useBootstrap4"]?.bool ?? true
+
+        self.init(postsPerPage: postsPerPage, blogPath: blogPath, useBootstrap4: useBootstrap4)
     }
 
     /**
@@ -71,11 +74,13 @@ public struct Provider: Vapor.Provider {
 
          - Parameter postsPerPage: The number of posts to show per page on the main index page of the blog (integrates with Paginator)
          - Parameter blogPath: The path to add the blog too
+         - Parameter useBootstrap4: Flag used to deterimine whether to use Bootstrap v4 for Paginator
      */
-    public init(postsPerPage: Int, blogPath: String? = nil) {
+    public init(postsPerPage: Int, blogPath: String? = nil, useBootstrap4: Bool = true) {
         self.postsPerPage = postsPerPage
         self.blogPath = blogPath
         self.pathCreator = BlogPathCreator(blogPath: self.blogPath)
+        self.useBootstrap4 = useBootstrap4
     }
     
     enum Error: Swift.Error {
