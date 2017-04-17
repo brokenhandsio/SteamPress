@@ -73,7 +73,11 @@ class BlogControllerTests: XCTestCase {
         viewFactory = CapturingViewFactory()
         let pathCreator = BlogPathCreator(blogPath: nil)
         let configToUse = config ?? drop.config
-        let blogController = BlogController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, postsPerPage: 5, enableAuthorsPages: configToUse.enableAuthorsPages, enableTagsPages: configToUse.enableTagsPages, config: configToUse)
+
+        let enableAuthorsPages = configToUse["enableAuthorsPages"]?.bool ?? true
+        let enableTagsPages = configToUse["enableTagsPages"]?.bool ?? true
+
+        let blogController = BlogController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, postsPerPage: 5, enableAuthorsPages: enableAuthorsPages, enableTagsPages: enableTagsPages, config: configToUse)
         blogController.addRoutes()
 
         let blogAdminController = BlogAdminController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, postsPerPage: 5)

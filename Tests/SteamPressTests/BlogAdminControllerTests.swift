@@ -20,7 +20,11 @@ class BlogAdminControllerTests: XCTestCase {
         let pathCreator = BlogPathCreator(blogPath: nil)
         // TODO change to Stub
         let viewFactory = CapturingViewFactory()
-        let blogController = BlogController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, postsPerPage: 5, enableAuthorsPages: drop.config.enableAuthorsPages, enableTagsPages: drop.config.enableTagsPages, config: drop.config)
+
+        let enableAuthorsPages = drop.config["enableAuthorsPages"]?.bool ?? true
+        let enableTagsPages = drop.config["enableTagsPages"]?.bool ?? true
+
+        let blogController = BlogController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, postsPerPage: 5, enableAuthorsPages: enableAuthorsPages, enableTagsPages: enableTagsPages, config: drop.config)
         blogController.addRoutes()
         try drop.runCommands()
         
