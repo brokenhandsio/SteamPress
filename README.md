@@ -78,7 +78,7 @@ let steampress = SteamPress.Provider(postsPerPage: 5, blogPath: "blog")
 drop.addProvider(steampress)
 ```
 
-## Bootstrap Versions
+### Bootstrap Versions
 
 By default, the paginator used by SteamPress is expecting to use Bootstrap 4. You can configure it to use Bootstrap 3 by either adding it to the configuration file or the manual initialisation. To add to a config file, in your `steampress.json`, add:
 
@@ -96,6 +96,30 @@ To manually iniatialise, set up the Provider like so:
 
 ```swift
 let steampress = SteamPress.Provider(postsPerPage: 5, blogPath: "blog", useBootstrap4: false)
+```
+
+### Disabling Routes
+
+You can disable the routes for authors pages and tags pages (both individual and all) by adding the option in your configuration file. To disable all of the authors pages, in your `steampress.json` add: 
+
+```json
+{
+    "enableAuthorsPages": false
+}
+```
+
+To disable all of the tags pages, set:
+
+```json
+{
+    "enableTagsPages": false
+}
+```
+
+Both of these settings can also be configured if manually setting up the Provider:
+
+```swift
+let steampress = SteamPress.Provider(postsPerPage:5, enableAuthorsPages: true, enableTagsPages: true)
 ```
 
 ## Logging In
