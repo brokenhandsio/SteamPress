@@ -13,6 +13,8 @@ public struct Provider: Vapor.Provider {
     private let postsPerPage: Int
     private let pathCreator: BlogPathCreator
     private let useBootstrap4: Bool
+    private let enableAuthorsPages: Bool
+    private let enableTagsPages: Bool
 
     public func boot(_ drop: Droplet) {
 
@@ -21,7 +23,7 @@ public struct Provider: Vapor.Provider {
         let viewFactory = LeafViewFactory(viewRenderer: drop.view)
 
         // Set up the controllers
-        let blogController = BlogController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, postsPerPage: postsPerPage, enableAuthorsPages: drop.config.enableAuthorsPages, enableTagsPages: drop.config.enableTagsPages, config: drop.config)
+        let blogController = BlogController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, postsPerPage: postsPerPage, enableAuthorsPages: enableAuthorsPages, enableTagsPages: enableTagsPages, config: drop.config)
         let blogAdminController = BlogAdminController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, postsPerPage: postsPerPage)
 
         // Add the routes
@@ -65,8 +67,10 @@ public struct Provider: Vapor.Provider {
         }
 
         let useBootstrap4 = config[Provider.configFilename, "paginator", "useBootstrap4"]?.bool ?? true
+        let enableAuthorsPages = config[Provider.configFilename, "enableAuthorsPages"]?.bool ?? true
+        let enableTagsPages = config[Provider.configFilename, "enableTagsPages"]?.bool ?? true
 
-        self.init(postsPerPage: postsPerPage, blogPath: blogPath, useBootstrap4: useBootstrap4)
+        self.init(postsPerPage: postsPerPage, blogPath: blogPath, useBootstrap4: useBootstrap4, enableAuthorsPages: enableAuthorsPages, enableTagsPages: enableTagsPages)
     }
 
     /**
@@ -74,13 +78,17 @@ public struct Provider: Vapor.Provider {
 
          - Parameter postsPerPage: The number of posts to show per page on the main index page of the blog (integrates with Paginator)
          - Parameter blogPath: The path to add the blog too
-         - Parameter useBootstrap4: Flag used to deterimine whether to use Bootstrap v4 for Paginator
+         - Parameter useBootstrap4: Flag used to deterimine whether to use Bootstrap v4 for Paginator. Defaults to true
+         - Parameter enableAuthorsPages: Flag used to determine whether to publicly expose the authors endpoints or not. Defaults to true
+         - Parameter enableTagsPages: Flag used to determine whether to publicy expose the tags endpoints or not. Defaults to true
      */
-    public init(postsPerPage: Int, blogPath: String? = nil, useBootstrap4: Bool = true) {
+    public init(postsPerPage: Int, blogPath: String? = nil, useBootstrap4: Bool = true, enableAuthorsPages: Bool = true, enableTagsPages: Bool = true) {
         self.postsPerPage = postsPerPage
         self.blogPath = blogPath
         self.pathCreator = BlogPathCreator(blogPath: self.blogPath)
         self.useBootstrap4 = useBootstrap4
+        self.enableAuthorsPages = enableAuthorsPages
+        self.enableTagsPages = enableTagsPages
     }
     
     enum Error: Swift.Error {
