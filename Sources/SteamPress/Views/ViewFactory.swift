@@ -1,6 +1,6 @@
 import Vapor
 import URI
-import Paginator
+//import Paginator
 import Foundation
 
 protocol ViewFactory {

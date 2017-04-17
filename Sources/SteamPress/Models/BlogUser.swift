@@ -1,6 +1,6 @@
 import Vapor
 import Fluent
-import Auth
+//import Auth
 import BCrypt
 import Foundation
 

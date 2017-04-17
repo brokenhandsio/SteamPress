@@ -1,7 +1,7 @@
 import Vapor
 import HTTP
 import Routing
-import Auth
+//import Auth
 import Foundation
 import Fluent
 

@@ -1,11 +1,9 @@
 import Vapor
 import Fluent
-import Paginator
+//import Paginator
 import LeafMarkdown
 
 public struct Provider: Vapor.Provider {
-
-    public var provided: Providable = Providable()
 
     private static let configFilename: String = "steampress"
     
@@ -45,8 +43,8 @@ public struct Provider: Vapor.Provider {
         drop.middleware.append(authMiddleware)
         
         // Providers
-        let paginator = PaginatorProvider(useBootstrap4: useBootstrap4, paginationLabel: "Blog Post Pages")
-        drop.addProvider(paginator)
+//        let paginator = PaginatorProvider(useBootstrap4: useBootstrap4, paginationLabel: "Blog Post Pages")
+//        drop.addProvider(paginator)
         
         // Set up Leaf tag
         if let leaf = drop.view as? LeafRenderer {

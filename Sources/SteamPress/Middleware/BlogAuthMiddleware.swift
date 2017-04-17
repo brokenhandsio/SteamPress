@@ -1,9 +1,9 @@
-import Turnstile
+//import Turnstile
 import HTTP
 import Cookies
 import Foundation
 import Cache
-import Auth
+//import Auth
 
 private let defaultCookieName = "steampress-auth"
 private let oneMonthTime: TimeInterval = 30 * 24 * 60 * 60
