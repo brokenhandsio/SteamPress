@@ -1,7 +1,11 @@
 import Settings
 
 extension Settings.Config {
-  var disabledPaths: [String] {
-    return self["disabledPaths"]?.array?.flatMap { $0.string } ?? []
+  var enableAuthorsPages: Bool {
+    return self["enableAuthorsPages"]?.bool ?? true
+  }
+
+  var enableTagsPages: Bool {
+    return self["enableTagsPages"]?.bool ?? true
   }
 }
