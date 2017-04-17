@@ -32,15 +32,13 @@ struct BlogController {
             index.get(blogPostsPath, String.self, handler: blogPostHandler)
             index.get(apiPath, tagsPath, handler: tagApiHandler)
             index.get(blogPostsPath, handler: blogPostIndexRedirectHandler)
-            
-            let disabledPaths = config.disabledPaths
-            
-            if (!disabledPaths.contains(authorsPath)) {
+
+            if (config.enableAuthorsPages) {
                 index.get(authorsPath, String.self, handler: authorViewHandler)
                 index.get(authorsPath, handler: allAuthorsViewHandler)
             }
-            
-            if (!disabledPaths.contains(tagsPath)) {
+
+            if (config.enableTagsPages) {
                 index.get(tagsPath, String.self, handler: tagViewHandler)
                 index.get(tagsPath, handler: allTagsViewHandler)
             }
