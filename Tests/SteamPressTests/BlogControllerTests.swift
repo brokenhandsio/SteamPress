@@ -400,7 +400,7 @@ class BlogControllerTests: XCTestCase {
 
     func testDisabledBlogAuthorsPath() throws {
         let config = Config(try Node(node: [
-            "disabledPaths": try Node(node: ["authors".makeNode()])
+            "enableAuthorsPages": false
         ]))
 
         try setupDrop(config: config)
@@ -414,7 +414,7 @@ class BlogControllerTests: XCTestCase {
 
     func testDisabledBlogTagsPath() throws {
         let config = Config(try Node(node: [
-            "disabledPaths": try Node(node: ["tags".makeNode()])
+            "enableTagsPages": false
         ]))
 
         try setupDrop(config: config)
