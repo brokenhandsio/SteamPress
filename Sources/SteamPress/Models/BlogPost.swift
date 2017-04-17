@@ -1,12 +1,10 @@
 import Foundation
 import Vapor
-import Fluent
+import FluentProvider
 
 public class BlogPost: Model {
 
-    static fileprivate let databaseTableName = "blogposts"
-    public var id: Node?
-    public var exists: Bool = false
+    public let storage = Storage()
 
     public var title: String
     public var contents: String
@@ -26,44 +24,56 @@ public class BlogPost: Model {
         self.lastEdited = nil
         self.published = published
     }
-
-    required public init(node: Node, in context: Context) throws {
-        id = try node.extract("id")
-        title = try node.extract("title")
-        contents = try node.extract("contents")
-        author = try node.extract("bloguser_id")
-        slugUrl = try node.extract("slug_url")
-        published = try node.extract("published")
-        let createdTime: Double = try node.extract("created")
-        let lastEditedTime: Double? = try? node.extract("last_edited")
-
+    
+    public required init(row: Row) throws {
+        title = try row.get("title")
+        contents = try row.get("contents")
+        author = try row.get("bloguser_id")
+        slugUrl = try row.get("slug_url")
+        published = try row.get("published")
+        let createdTime: Double = try row.get("created")
+        let lastEditedTime: Double? = try? row.get("last_edited")
+        
         created = Date(timeIntervalSince1970: createdTime)
-
+        
         if let lastEditedTime = lastEditedTime {
             lastEdited = Date(timeIntervalSince1970: lastEditedTime)
         }
     }
+    
+    public func makeRow() throws -> Row {
+        let createdTime = created.timeIntervalSince1970
+        
+        var row = Row()
+        try row.set("title", title)
+        try row.set("contents", contents)
+        try row.set("bloguser_id", author)
+        try row.set("created", createdTime)
+        try row.set("slug_url", slugUrl)
+        try row.set("published", published)
+        return row
+    }
 }
 
 extension BlogPost: NodeRepresentable {
-    public func makeNode(context: Context) throws -> Node {
+    public func makeNode(in context: Context?) throws -> Node {
         let createdTime = created.timeIntervalSince1970
         
         var node: [String: Node]  = [:]
-        node["id"] = id
-        node["title"] = title.makeNode()
-        node["contents"] = contents.makeNode()
-        node["bloguser_id"] = author?.makeNode()
-        node["created"] = createdTime.makeNode()
-        node["slug_url"] = slugUrl.makeNode()
-        node["published"] = published.makeNode()
+        node["id"] = try id.makeNode(in: context)
+        node["title"] = title.makeNode(in: context)
+        node["contents"] = contents.makeNode(in: context)
+        node["bloguser_id"] = author?.makeNode(in: context)
+        node["created"] = createdTime.makeNode(in: context)
+        node["slug_url"] = slugUrl.makeNode(in: context)
+        node["published"] = published.makeNode(in: context)
 
         if let lastEdited = lastEdited {
-            node["last_edited"] = lastEdited.timeIntervalSince1970.makeNode()
+            node["last_edited"] = lastEdited.timeIntervalSince1970.makeNode(in: context)
         }
         
         if type(of: context) != BlogPostContext.self {
-            return try node.makeNode()
+            return try node.makeNode(in: context)
         }
 
         let dateFormatter = DateFormatter()
@@ -72,27 +82,31 @@ extension BlogPost: NodeRepresentable {
         dateFormatter.timeStyle = .none
         let createdDate = dateFormatter.string(from: created)
         
-        node["author_name"] = try getAuthor()?.name.makeNode()
-        node["author_username"] = try getAuthor()?.username.makeNode()
-        node["created_date"] = createdDate.makeNode()
+        node["author_name"] = try getAuthor()?.name.makeNode(in: context)
+        node["author_username"] = try getAuthor()?.username.makeNode(in: context)
+        node["created_date"] = createdDate.makeNode(in: context)
 
-        switch context {
+        guard let providedContext = context else {
+            return try node.makeNode(in: context)
+        }
+        
+        switch providedContext {
         case BlogPostContext.shortSnippet:
-            node["short_snippet"] = shortSnippet().makeNode()
+            node["short_snippet"] = shortSnippet().makeNode(in: context)
             break
         case BlogPostContext.longSnippet:
-            node["long_snippet"] = longSnippet().makeNode()
+            node["long_snippet"] = longSnippet().makeNode(in: context)
 
             let allTags = try tags()
             if allTags.count > 0 {
-                node["tags"] = try allTags.makeNode()
+                node["tags"] = try allTags.makeNode(in: context)
             }
             break
         case BlogPostContext.all:
             let allTags = try tags()
 
             if allTags.count > 0 {
-                node["tags"] = try allTags.makeNode()
+                node["tags"] = try allTags.makeNode(in: context)
             }
             
             let iso8601Formatter = DateFormatter()
@@ -100,27 +114,27 @@ extension BlogPost: NodeRepresentable {
             iso8601Formatter.locale = Locale(identifier: "en_US_POSIX")
             iso8601Formatter.timeZone = TimeZone(secondsFromGMT: 0)
             
-            node["created_date_iso8601"] = iso8601Formatter.string(from: created).makeNode()
+            node["created_date_iso8601"] = iso8601Formatter.string(from: created).makeNode(in: context)
 
             if let lastEdited = lastEdited {
                 let lastEditedDate = dateFormatter.string(from: lastEdited)
-                node["last_edited_date"] = lastEditedDate.makeNode()
-                node["last_edited_date_iso8601"] = iso8601Formatter.string(from: lastEdited).makeNode()
+                node["last_edited_date"] = lastEditedDate.makeNode(in: context)
+                node["last_edited_date_iso8601"] = iso8601Formatter.string(from: lastEdited).makeNode(in: context)
             }
-            node["short_snippet"] = shortSnippet().makeNode()
-            node["long_snippet"] = longSnippet().makeNode()
+            node["short_snippet"] = shortSnippet().makeNode(in: context)
+            node["long_snippet"] = longSnippet().makeNode(in: context)
         default: break
         }
 
-        return try node.makeNode()
+        return try node.makeNode(in: context)
     }
 }
 
-extension BlogPost {
+extension BlogPost: Preparation {
 
     public static func prepare(_ database: Database) throws {
-        try database.create(databaseTableName) { posts in
-            posts.id()
+        try database.create(self) { posts in
+            posts.id(for: self)
             posts.string("title")
             posts.custom("contents", type: "TEXT")
             posts.parent(BlogUser.self, optional: false)
@@ -131,7 +145,7 @@ extension BlogPost {
     }
 
     public static func revert(_ database: Database) throws {
-        try database.delete(databaseTableName)
+        try database.delete(self)
     }
 }
 

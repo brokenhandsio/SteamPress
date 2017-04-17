@@ -1,12 +1,10 @@
 import Foundation
 import Vapor
-import Fluent
+import FluentProvider
 
 class BlogTag: Model {
     
-    static fileprivate let databaseTableName = "blogtags"
-    var id: Node?
-    var exists: Bool = false
+    let storage = Storage()
     
     var name: String
     
@@ -14,34 +12,41 @@ class BlogTag: Model {
         self.id = nil
         self.name = name    }
     
-    required init(node: Node, in context: Context) throws {
-        id = try node.extract("id")
-        name = try node.extract("name")
+    required init(row: Row) throws {
+        name = try row.get("name")
+    }
+    
+    func makeRow() throws -> Row {
+        var row = Row()
+        try row.set("name", name)
+        return row
     }
 }
 
 extension BlogTag: NodeRepresentable {
-    func makeNode(context: Context) throws -> Node {
+    func makeNode(in context: Context?) throws -> Node {
         
         var node: [String: Node] = [:]
-        node["id"] = id
-        node["name"] = name.makeNode()
+        node["id"] = try id.makeNode(in: context)
+        node["name"] = name.makeNode(in: context)
         
-        switch context {
-        case is DatabaseContext:
-            return try node.makeNode()
+        guard let providedContext = context else {
+            return try node.makeNode(in: context)
+        }
+        
+        switch providedContext {
         case BlogTagContext.withPostCount:
-            node["post_count"] = try blogPosts().count.makeNode()
+            node["post_count"] = try blogPosts().count.makeNode(in: context)
             fallthrough
         default:
             guard let urlEncodedName = name.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) else {
-                return try node.makeNode()
+                return try node.makeNode(in: context)
             }
             
-            node["url_encoded_name"] = urlEncodedName.makeNode()
+            node["url_encoded_name"] = urlEncodedName.makeNode(in: context)
         }
         
-        return try node.makeNode()
+        return try node.makeNode(in: context)
     }
 }
 
@@ -49,17 +54,17 @@ public enum BlogTagContext: Context {
     case withPostCount
 }
 
-extension BlogTag {
+extension BlogTag: Preparation {
     
     static func prepare(_ database: Database) throws {
-        try database.create(databaseTableName) { posts in
-            posts.id()
-            posts.string("name", unique: true)
+        try database.create(self) { tag in
+            tag.id()
+            tag.string("name", unique: true)
         }
     }
     
     static func revert(_ database: Database) throws {
-        try database.delete(databaseTableName)
+        try database.delete(self)
     }
 }
 

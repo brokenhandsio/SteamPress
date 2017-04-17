@@ -2,6 +2,7 @@ import Vapor
 import Fluent
 //import Paginator
 import LeafMarkdown
+import LeafProvider
 
 public struct Provider: Vapor.Provider {
 

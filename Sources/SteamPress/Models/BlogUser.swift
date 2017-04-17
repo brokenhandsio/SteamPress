@@ -1,15 +1,13 @@
 import Vapor
-import Fluent
+import FluentProvider
 //import Auth
 import BCrypt
 import Foundation
 
 final class BlogUser: Model {
     
-    fileprivate static let databaseTableName = "blogusers"
+    let storage = Storage()
     
-    var id: Node?
-    var exists: Bool = false
     var name: String
     var username: String
     var password: String
@@ -29,55 +27,74 @@ final class BlogUser: Model {
         self.tagline = tagline
     }
     
-    init(node: Node, in context: Context) throws {
-        id = try node.extract("id")
-        name = try node.extract("name")
-        username = try node.extract("username")
-        password = try node.extract("password")
-        resetPasswordRequired = try node.extract("reset_password_required")
-        profilePicture = try? node.extract("profile_picture")
-        twitterHandle = try? node.extract("twitter_handle")
-        biography = try? node.extract("biography")
-        tagline = try? node.extract("tagline")
+    init(row: Row) throws {
+        name = try row.get("name")
+        username = try row.get("username")
+        password = try row.get("password")
+        resetPasswordRequired = try row.get("reset_password_required")
+        profilePicture = try? row.get("profile_picture")
+        twitterHandle = try? row.get("twitter_handle")
+        biography = try? row.get("biography")
+        tagline = try? row.get("tagline")
     }
     
-    func makeNode(context: Context) throws -> Node {
+    func makeRow() throws -> Row {
+        var row = Row()
+        try row.set("name", name)
+        try row.set("username", username)
+        try row.set("reset_password_required", resetPasswordRequired)
+        try row.set("profile_picture", profilePicture)
+        try row.set("twitter_handle", twitterHandle)
+        try row.set("biography", biography)
+        try row.set("tagline", tagline)
+    }
+    
+}
+
+extension BlogUser: NodeRepresentable {
+
+    func makeNode(in context: Context?) throws -> Node {
         var userNode: [String: NodeRepresentable] = [:]
-        userNode["id"] = id
-        userNode["name"] = name.makeNode()
-        userNode["username"] = username.makeNode()
-        userNode["reset_password_required"] = resetPasswordRequired.makeNode()
+        userNode["id"] = try id.makeNode(in: context)
+        userNode["name"] = name.makeNode(in: context)
+        userNode["username"] = username.makeNode(in: context)
+        userNode["reset_password_required"] = resetPasswordRequired.makeNode(in: context)
         
         if let profilePicture = profilePicture {
-            userNode["profile_picture"] = profilePicture.makeNode()
+            userNode["profile_picture"] = profilePicture.makeNode(in: context)
         }
         
         if let twitterHandle = twitterHandle {
-            userNode["twitter_handle"] = twitterHandle.makeNode()
+            userNode["twitter_handle"] = twitterHandle.makeNode(in: context)
         }
         
         if let biography = biography {
-            userNode["biography"] = biography.makeNode()
+            userNode["biography"] = biography.makeNode(in: context)
         }
         
         if let tagline = tagline {
-            userNode["tagline"] = tagline.makeNode()
+            userNode["tagline"] = tagline.makeNode(in: context)
         }
         
-        switch context {
-        case is DatabaseContext:
-            userNode["password"] = password.makeNode()
+        guard let providedContext = context else {
+            return try userNode.makeNode(in: context)
+        }
+        
+        switch providedContext {
         case BlogUserContext.withPostCount:
-            userNode["post_count"] = try posts().count.makeNode()
+            userNode["post_count"] = try posts().count.makeNode(in: context)
         default:
             break
         }
         
-        return try userNode.makeNode()
+        return try userNode.makeNode(in: context)
     }
     
+}
+
+extension BlogUser: Preparation {
     static func prepare(_ database: Database) throws {
-        try database.create(databaseTableName) { users in
+        try database.create(self) { users in
             users.id()
             users.string("name")
             users.string("username", unique: true)
@@ -87,8 +104,9 @@ final class BlogUser: Model {
     }
     
     static func revert(_ database: Database) throws {
-        try database.delete(databaseTableName)
+        try database.delete(self)
     }
+
 }
 
 public enum BlogUserContext: Context {
