@@ -14,14 +14,18 @@ struct BlogController {
     fileprivate let pathCreator: BlogPathCreator
     fileprivate let viewFactory: ViewFactory
     fileprivate let postsPerPage: Int
+    fileprivate let enableAuthorsPages: Bool
+    fileprivate let enableTagsPages: Bool
     fileprivate let config: Config
 
     // MARK: - Initialiser
-    init(drop: Droplet, pathCreator: BlogPathCreator, viewFactory: ViewFactory, postsPerPage: Int, config: Config) {
+    init(drop: Droplet, pathCreator: BlogPathCreator, viewFactory: ViewFactory, postsPerPage: Int, enableAuthorsPages: Bool, enableTagsPages: Bool, config: Config) {
         self.drop = drop
         self.pathCreator = pathCreator
         self.viewFactory = viewFactory
         self.postsPerPage = postsPerPage
+        self.enableAuthorsPages = enableAuthorsPages
+        self.enableTagsPages = enableTagsPages
         self.config = config
     }
 
@@ -30,12 +34,18 @@ struct BlogController {
         drop.group(pathCreator.blogPath ?? "") { index in
             index.get(handler: indexHandler)
             index.get(blogPostsPath, String.self, handler: blogPostHandler)
-            index.get(tagsPath, String.self, handler: tagViewHandler)
-            index.get(authorsPath, String.self, handler: authorViewHandler)
             index.get(apiPath, tagsPath, handler: tagApiHandler)
             index.get(blogPostsPath, handler: blogPostIndexRedirectHandler)
-            index.get(tagsPath, handler: allTagsViewHandler)
-            index.get(authorsPath, handler: allAuthorsViewHandler)
+
+            if (enableAuthorsPages) {
+                index.get(authorsPath, String.self, handler: authorViewHandler)
+                index.get(authorsPath, handler: allAuthorsViewHandler)
+            }
+
+            if (enableTagsPages) {
+                index.get(tagsPath, String.self, handler: tagViewHandler)
+                index.get(tagsPath, handler: allTagsViewHandler)
+            }
         }
     }
 

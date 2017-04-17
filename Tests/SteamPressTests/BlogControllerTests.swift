@@ -33,6 +33,8 @@ class BlogControllerTests: XCTestCase {
         ("testAllAuthorsPageGetAllAuthors", testAllAuthorsPageGetAllAuthors),
         ("testTagPageGetsOnlyPublishedPostsInDescendingOrder", testTagPageGetsOnlyPublishedPostsInDescendingOrder),
         ("testAuthorPageGetsOnlyPublishedPostsInDescendingOrder", testAuthorPageGetsOnlyPublishedPostsInDescendingOrder),
+        ("testDisabledBlogAuthorsPath", testDisabledBlogAuthorsPath),
+        ("testDisabledBlogTagsPath", testDisabledBlogTagsPath),
     ]
 
     private var drop: Droplet!
@@ -70,7 +72,12 @@ class BlogControllerTests: XCTestCase {
 
         viewFactory = CapturingViewFactory()
         let pathCreator = BlogPathCreator(blogPath: nil)
-        let blogController = BlogController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, postsPerPage: 5, config: config ?? drop.config)
+        let configToUse = config ?? drop.config
+
+        let enableAuthorsPages = configToUse["enableAuthorsPages"]?.bool ?? true
+        let enableTagsPages = configToUse["enableTagsPages"]?.bool ?? true
+
+        let blogController = BlogController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, postsPerPage: 5, enableAuthorsPages: enableAuthorsPages, enableTagsPages: enableTagsPages, config: configToUse)
         blogController.addRoutes()
 
         let blogAdminController = BlogAdminController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, postsPerPage: 5)
@@ -395,7 +402,34 @@ class BlogControllerTests: XCTestCase {
         XCTAssertEqual(2, viewFactory.authorPosts?.total)
         XCTAssertEqual(post2.title, viewFactory.authorPosts?.data?[0].title)
     }
-    
+
+    func testDisabledBlogAuthorsPath() throws {
+        let config = Config(try Node(node: [
+            "enableAuthorsPages": false
+        ]))
+
+        try setupDrop(config: config)
+
+        let authorResponse = try drop.respond(to: authorRequest)
+        let allAuthorsResponse = try drop.respond(to: allAuthorsRequest)
+
+        XCTAssertEqual(404, authorResponse.status.statusCode)
+        XCTAssertEqual(404, allAuthorsResponse.status.statusCode)
+    }
+
+    func testDisabledBlogTagsPath() throws {
+        let config = Config(try Node(node: [
+            "enableTagsPages": false
+        ]))
+
+        try setupDrop(config: config)
+
+        let tagResponse = try drop.respond(to: tagRequest)
+        let allTagsResponse = try drop.respond(to: allTagsRequest)
+
+        XCTAssertEqual(404, tagResponse.status.statusCode)
+        XCTAssertEqual(404, allTagsResponse.status.statusCode)
+    }
 }
 
 import URI
