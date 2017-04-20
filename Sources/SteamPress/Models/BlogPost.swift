@@ -206,7 +206,7 @@ extension BlogPost {
         var count = 2
 
         do {
-            while try BlogPost.query().filter("slug_url", newSlugUrl).first() != nil {
+            while try BlogPost.makeQuery().filter("slug_url", newSlugUrl).first() != nil {
               newSlugUrl = "\(slugUrl)-\(count)"
               count += 1
             }

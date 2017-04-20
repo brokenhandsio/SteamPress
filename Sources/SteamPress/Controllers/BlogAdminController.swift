@@ -73,7 +73,7 @@ struct BlogAdminController {
             tagsArray = tagsNodeArray
         }
         else if let tagsStringArray = rawTags as? [String] {
-            tagsArray = tagsStringArray.map { $0.makeNode() }
+            tagsArray = tagsStringArray.map { $0.makeNode(in: nil) }
         }
 
         if let createPostErrors = validatePostCreation(title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl) {
@@ -129,7 +129,7 @@ struct BlogAdminController {
 
     func editPostHandler(request: Request, post: BlogPost) throws -> ResponseRepresentable {
         let tags = try post.tags()
-        let tagsArray: [Node] = tags.map { $0.name.makeNode() }
+        let tagsArray: [Node] = tags.map { $0.name.makeNode(in: nil) }
         return try viewFactory.createBlogPostView(uri: request.uri, errors: nil, title: post.title, contents: post.contents, slugUrl: post.slugUrl, tags: tagsArray, isEditing: true, postToEdit: post, draft: !post.published)
     }
 
@@ -151,7 +151,7 @@ struct BlogAdminController {
             tagsArray = tagsNodeArray
         }
         else if let tagsStringArray = rawTags as? [String] {
-            tagsArray = tagsStringArray.map { $0.makeNode() }
+            tagsArray = tagsStringArray.map { $0.makeNode(in: nil) }
         }
 
         if let errors = validatePostCreation(title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl) {
@@ -181,7 +181,7 @@ struct BlogAdminController {
         let tagsToAdd = newTagSet.subtracting(existingSet)
 
         for deleteTag in tagsToDelete {
-            let tag = try BlogTag.query().filter("name", deleteTag).first()
+            let tag = try BlogTag.makeQuery().filter("name", deleteTag).first()
             guard let tagToCleanUp = tag else {
                 throw Abort.badRequest
             }
@@ -293,7 +293,7 @@ struct BlogAdminController {
         }
 
         // We now have valid data
-        guard let userId = user.id, var userToUpdate = try BlogUser.query().filter("id", userId).first() else {
+        guard let userId = user.id, var userToUpdate = try BlogUser.makeQuery().filter("id", userId).first() else {
             throw Abort.badRequest
         }
         userToUpdate.name = name

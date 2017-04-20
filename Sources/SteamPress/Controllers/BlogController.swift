@@ -54,7 +54,7 @@ struct BlogController {
     func indexHandler(request: Request) throws -> ResponseRepresentable {
         let tags = try BlogTag.all()
         let authors = try BlogUser.all()
-        let paginatedBlogPosts = try BlogPost.query().filter("published", true).sort("created", .descending).paginator(postsPerPage, request: request)
+        let paginatedBlogPosts = try BlogPost.makeQuery().filter("published", true).sort("created", .descending).paginator(postsPerPage, request: request)
 
         return try viewFactory.blogIndexView(uri: request.uri, paginatedPosts: paginatedBlogPosts, tags: tags, authors: authors, loggedInUser: getLoggedInUser(in: request), disqusName: getDisqusName(), siteTwitterHandle: getSiteTwitterHandle())
     }
@@ -64,7 +64,7 @@ struct BlogController {
     }
 
     func blogPostHandler(request: Request, blogSlugUrl: String) throws -> ResponseRepresentable {
-        guard let blogPost = try BlogPost.query().filter("slug_url", blogSlugUrl).first() else {
+        guard let blogPost = try BlogPost.makeQuery().filter("slug_url", blogSlugUrl).first() else {
             throw Abort.notFound
         }
 
@@ -80,7 +80,7 @@ struct BlogController {
             throw Abort.badRequest
         }
 
-        guard let tag = try BlogTag.query().filter("name", decodedTagName).first() else {
+        guard let tag = try BlogTag.makeQuery().filter("name", decodedTagName).first() else {
             throw Abort.notFound
         }
 
@@ -90,7 +90,7 @@ struct BlogController {
     }
 
     func authorViewHandler(request: Request, authorUsername: String) throws -> ResponseRepresentable {
-        guard let author = try BlogUser.query().filter("username", authorUsername).first() else {
+        guard let author = try BlogUser.makeQuery().filter("username", authorUsername).first() else {
             throw Abort.notFound
         }
 
@@ -108,7 +108,7 @@ struct BlogController {
     }
 
     func tagApiHandler(request: Request) throws -> ResponseRepresentable {
-        return try BlogTag.all().makeJSON()
+        return try JSON(node: BlogTag.all().makeNode(in: nil))
     }
 
     private func getLoggedInUser(in request: Request) -> BlogUser? {

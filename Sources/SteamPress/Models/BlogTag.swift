@@ -77,13 +77,13 @@ extension BlogTag {
         guard let tagId = id, let postId = post.id else {
             throw Abort.badRequest
         }
-        let pivot = try Pivot<BlogPost, BlogTag>.query().filter("blogtag_id", tagId).filter("blogpost_id", postId).first()
+        let pivot = try Pivot<BlogPost, BlogTag>.makeQuery().filter("blogtag_id", tagId).filter("blogpost_id", postId).first()
         try pivot?.delete()
     }
     
     static func addTag(_ name: String, to post: BlogPost) throws {
         var pivotTag: BlogTag
-        let tag = try BlogTag.query().filter("name", name).first()
+        let tag = try BlogTag.makeQuery().filter("name", name).first()
         
         if let existingTag = tag {
             pivotTag = existingTag
