@@ -80,7 +80,7 @@ struct BlogAdminController {
             return try viewFactory.createBlogPostView(uri: request.uri, errors: createPostErrors, title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl, tags: tagsArray, isEditing: false, postToEdit: nil, draft: true)
         }
 
-        guard let user = try request.auth.user() as? BlogUser, let title = rawTitle, let contents = rawContents, var slugUrl = rawSlugUrl else {
+        guard let title = rawTitle, let contents = rawContents, var slugUrl = rawSlugUrl else {
             throw Abort.badRequest
         }
 
@@ -95,7 +95,7 @@ struct BlogAdminController {
             published = true
         }
 
-        var newPost = BlogPost(title: title, contents: contents, author: user, creationDate: creationDate, slugUrl: slugUrl, published: published)
+        var newPost = BlogPost(title: title, contents: contents, author: try request.user(), creationDate: creationDate, slugUrl: slugUrl, published: published)
         try newPost.save()
 
         // Save the tags
@@ -318,17 +318,14 @@ struct BlogAdminController {
     }
 
     func deleteUserPostHandler(request: Request, user: BlogUser) throws -> ResponseRepresentable {
-        guard let currentUser = try request.auth.user() as? BlogUser else {
-            throw Abort.badRequest
-        }
-
+        
         // Check we have at least one user left
         let users = try BlogUser.all()
         if users.count <= 1 {
             return try viewFactory.createBlogAdminView(errors: ["You cannot delete the last user"])
         }
             // Make sure we aren't deleting ourselves!
-        else if currentUser.id == user.id {
+        else if try request.user().id == user.id {
             return try viewFactory.createBlogAdminView(errors: ["You cannot delete yourself whilst logged in"])
         }
         else {
@@ -424,10 +421,7 @@ struct BlogAdminController {
     // MARK: - Profile Handler
     func profileHandler(_ request: Request) throws -> ResponseRepresentable {
 
-        guard let user = try request.auth.user() as? BlogUser else {
-            throw Abort.badRequest
-        }
-        
+        let user = try request.user()
         let posts = try user.posts().paginator(postsPerPage, request: request)
 
         return try viewFactory.createProfileView(uri: request.uri, author: user, isMyProfile: true, paginatedPosts: posts, loggedInUser: user, disqusName: nil, siteTwitterHandle: nil)
@@ -481,9 +475,7 @@ struct BlogAdminController {
             return try viewFactory.createResetPasswordView(errors: resetPasswordErrors, passwordError: passwordError, confirmPasswordError: confirmPasswordError)
         }
 
-        guard var user = try request.auth.user() as? BlogUser else {
-            throw Abort.badRequest
-        }
+        let user = try request.user()
 
         // Use the credentials class to hash the password
         let newCreds = BlogUserCredentials(username: user.username, password: password, name: user.name, profilePicture: user.profilePicture, twitterHandle: user.twitterHandle, biography: user.biography, tagline: user.tagline)

@@ -1,6 +1,6 @@
 import Vapor
 import FluentProvider
-//import Auth
+import AuthProvider
 import BCrypt
 import Foundation
 
@@ -111,6 +111,14 @@ extension BlogUser: Preparation {
 
 public enum BlogUserContext: Context {
     case withPostCount
+}
+
+extension BlogUser: SessionPersistable {}
+
+extension Request {
+    func user() throws -> BlogUser {
+        return try auth.assertAuthenticated()
+    }
 }
 
 extension BlogUser: Auth.User {

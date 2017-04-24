@@ -27,6 +27,9 @@ public struct Provider: Vapor.Provider {
         config.preparations.append(Pivot<BlogPost, BlogTag>.self)
         config.preparations.append(BlogPostDraft.self)
         config.preparations.append(BlogUserExtraInformation.self)
+        
+        // Sessions
+        let persistMiddleware = PersistMiddleware(BlogUser.self)
     }
 
     public func boot(_ drop: Droplet) {
