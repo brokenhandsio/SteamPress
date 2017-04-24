@@ -36,7 +36,7 @@ extension BlogTag: NodeRepresentable {
         
         switch providedContext {
         case BlogTagContext.withPostCount:
-            node["post_count"] = try blogPosts().count.makeNode(in: context)
+            node["post_count"] = try sortedPosts().count.makeNode(in: context)
             fallthrough
         default:
             guard let urlEncodedName = name.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) else {
@@ -69,16 +69,17 @@ extension BlogTag: Preparation {
 }
 
 extension BlogTag {
-    func blogPosts() throws -> [BlogPost] {
-        return try siblings().filter("published", true).sort("created", .descending).all()
+    
+    var posts: Siblings<BlogTag, BlogPost, Pivot<BlogTag, BlogPost>> {
+        return siblings()
+    }
+    
+    func sortedPosts() throws -> [BlogPost] {
+        return try posts.filter("published", true).sort("created", .descending).all()
     }
     
     func deletePivot(for post: BlogPost) throws {
-        guard let tagId = id, let postId = post.id else {
-            throw Abort.badRequest
-        }
-        let pivot = try Pivot<BlogPost, BlogTag>.makeQuery().filter("blogtag_id", tagId).filter("blogpost_id", postId).first()
-        try pivot?.delete()
+        try posts.remove(self)
     }
     
     static func addTag(_ name: String, to post: BlogPost) throws {
@@ -89,13 +90,13 @@ extension BlogTag {
             pivotTag = existingTag
         }
         else {
-            var newTag = BlogTag(name: name)
+            let newTag = BlogTag(name: name)
             try newTag.save()
             pivotTag = newTag
         }
         
         // Check if a new tag
-        var pivot = Pivot<BlogPost, BlogTag>(post, pivotTag)
+        let pivot = try pivotTag.posts.add(post)
         try pivot.save()
     }
 }

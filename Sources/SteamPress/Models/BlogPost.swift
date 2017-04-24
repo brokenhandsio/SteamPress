@@ -8,7 +8,7 @@ public class BlogPost: Model {
 
     public var title: String
     public var contents: String
-    public var author: Node?
+    public var author: Identifier?
     public var created: Date
     public var lastEdited: Date?
     public var slugUrl: String
@@ -82,8 +82,8 @@ extension BlogPost: NodeRepresentable {
         dateFormatter.timeStyle = .none
         let createdDate = dateFormatter.string(from: created)
         
-        node["author_name"] = try getAuthor()?.name.makeNode(in: context)
-        node["author_username"] = try getAuthor()?.username.makeNode(in: context)
+        node["author_name"] = try postAuthor.get()?.name.makeNode(in: context)
+        node["author_username"] = try postAuthor.get()?.username.makeNode(in: context)
         node["created_date"] = createdDate.makeNode(in: context)
 
         guard let providedContext = context else {
@@ -97,13 +97,13 @@ extension BlogPost: NodeRepresentable {
         case BlogPostContext.longSnippet:
             node["long_snippet"] = longSnippet().makeNode(in: context)
 
-            let allTags = try tags()
+            let allTags = try tags.all()
             if allTags.count > 0 {
                 node["tags"] = try allTags.makeNode(in: context)
             }
             break
         case BlogPostContext.all:
-            let allTags = try tags()
+            let allTags = try tags.all()
 
             if allTags.count > 0 {
                 node["tags"] = try allTags.makeNode(in: context)
@@ -134,10 +134,10 @@ extension BlogPost: Preparation {
 
     public static func prepare(_ database: Database) throws {
         try database.create(self) { posts in
-            posts.id(for: self)
+            posts.id()
             posts.string("title")
             posts.custom("contents", type: "TEXT")
-            posts.parent(BlogUser.self, optional: false)
+            posts.parent(BlogUser.self)
             posts.double("created")
             posts.double("last_edited", optional: true)
             posts.string("slug_url", unique: true)
@@ -156,15 +156,23 @@ public enum BlogPostContext: Context {
 }
 
 extension BlogPost {
-    func getAuthor() throws -> BlogUser? {
-        return try parent(author, nil, BlogUser.self).get()
+    var postAuthor: Parent<BlogPost, BlogUser> {
+        return parent(id: author)
     }
+    
+//    func getAuthor() throws -> BlogUser? {
+//        return try parent(author, nil, BlogUser.self).get()
+//    }
 }
 
 extension BlogPost {
-    func tags() throws -> [BlogTag] {
-        return try siblings().all()
+    var tags: Siblings<BlogPost, BlogTag, Pivot<BlogPost, BlogTag>> {
+        return siblings()
     }
+    
+//    func tags() throws -> [BlogTag] {
+//        return try siblings().all()
+//    }
 }
 
 extension BlogPost {

@@ -282,7 +282,7 @@ struct LeafViewFactory: ViewFactory {
         var parameters: [String: NodeRepresentable] = [:]
 
         if allTags.count > 0 {
-            let sortedTags = allTags.sorted { return (try? $0.blogPosts().count > $1.blogPosts().count) ?? false }
+            let sortedTags = allTags.sorted { return (try? $0.sortedPosts().count > $1.sortedPosts().count) ?? false }
             parameters["tags"] = try sortedTags.makeNode(in: BlogTagContext.withPostCount)
         }
 
@@ -293,7 +293,7 @@ struct LeafViewFactory: ViewFactory {
         var parameters: [String: NodeRepresentable] = [:]
 
         if allAuthors.count > 0 {
-            let sortedAuthors = allAuthors.sorted { return (try? $0.posts().count > $1.posts().count) ?? false }
+            let sortedAuthors = allAuthors.sorted { return (try? $0.sortedPosts().count > $1.sortedPosts().count) ?? false }
             parameters["authors"] = try sortedAuthors.makeNode(in: BlogUserContext.withPostCount)
         }
 

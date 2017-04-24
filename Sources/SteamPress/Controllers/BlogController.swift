@@ -68,7 +68,7 @@ struct BlogController {
             throw Abort.notFound
         }
 
-        guard let author = try blogPost.getAuthor() else {
+        guard let author = try blogPost.postAuthor.get() else {
             throw Abort.badRequest
         }
 
@@ -84,7 +84,7 @@ struct BlogController {
             throw Abort.notFound
         }
 
-        let paginatedBlogPosts = try tag.blogPosts().paginator(postsPerPage, request: request)
+        let paginatedBlogPosts = try tag.sortedPosts().paginator(postsPerPage, request: request)
 
         return try viewFactory.tagView(uri: request.uri, tag: tag, paginatedPosts: paginatedBlogPosts, user: getLoggedInUser(in: request), disqusName: getDisqusName(), siteTwitterHandle: getSiteTwitterHandle())
     }
@@ -94,7 +94,7 @@ struct BlogController {
             throw Abort.notFound
         }
 
-        let posts = try author.posts().paginator(postsPerPage, request: request)
+        let posts = try author.sortedPosts().paginator(postsPerPage, request: request)
 
         return try viewFactory.createProfileView(uri: request.uri, author: author, isMyProfile: author.username == getLoggedInUser(in: request)?.username, paginatedPosts: posts, loggedInUser: getLoggedInUser(in: request), disqusName: getDisqusName(), siteTwitterHandle: getSiteTwitterHandle())
     }

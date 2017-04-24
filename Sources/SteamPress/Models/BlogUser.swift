@@ -165,29 +165,12 @@ extension BlogUser: PasswordAuthenticatable {
 //}
 
 extension BlogUser {
-    func posts() throws -> [BlogPost] {
-        return try children("bloguser_id", BlogPost.self).filter("published", true).sort("created", .descending).all()
+    var posts: Children<BlogUser, BlogPost> {
+        return children()
+    }
+    
+    func sortedPosts() throws -> [BlogPost] {
+        return try posts.filter("published", true).sort("created", .descending).all()
     }
 }
-
-//struct BlogUserCredentials: Credentials {
-//    
-//    let username: String
-//    let password: String
-//    let name: String?
-//    let profilePicture: String?
-//    let twitterHandle: String?
-//    let biography: String?
-//    let tagline: String?
-//    
-//    public init(username: String, password: String, name: String?, profilePicture: String?, twitterHandle: String?, biography: String?, tagline: String?) {
-//        self.username = username.lowercased()
-//        self.password = password
-//        self.name = name
-//        self.profilePicture = profilePicture
-//        self.twitterHandle = twitterHandle
-//        self.biography = biography
-//        self.tagline = tagline
-//    }
-//}
 

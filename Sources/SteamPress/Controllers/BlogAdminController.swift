@@ -111,14 +111,14 @@ struct BlogAdminController {
 
     func deletePostHandler(request: Request, post: BlogPost) throws -> ResponseRepresentable {
 
-        let tags = try post.tags()
+        let tags = try post.tags.all()
 
         // Clean up pivots
         for tag in tags {
             try tag.deletePivot(for: post)
 
             // See if any of the tags need to be deleted
-            if try tag.blogPosts().count == 0 {
+            if try tag.posts.all().count == 0 {
                 try tag.delete()
             }
         }
@@ -128,7 +128,7 @@ struct BlogAdminController {
     }
 
     func editPostHandler(request: Request, post: BlogPost) throws -> ResponseRepresentable {
-        let tags = try post.tags()
+        let tags = try post.tags.all()
         let tagsArray: [Node] = tags.map { $0.name.makeNode(in: nil) }
         return try viewFactory.createBlogPostView(uri: request.uri, errors: nil, title: post.title, contents: post.contents, slugUrl: post.slugUrl, tags: tagsArray, isEditing: true, postToEdit: post, draft: !post.published)
     }
@@ -168,7 +168,7 @@ struct BlogAdminController {
             post.slugUrl = BlogPost.generateUniqueSlugUrl(from: slugUrl)
         }
 
-        let existing = try post.tags()
+        let existing = try post.tags.all()
         let existingStringArray = existing.map { $0.name }
         let newTagsStringArray = tagsArray.map { $0.string ?? "" }.filter { $0 != "" }
 
@@ -185,7 +185,7 @@ struct BlogAdminController {
                 throw Abort.badRequest
             }
             try tagToCleanUp.deletePivot(for: post)
-            if try tagToCleanUp.blogPosts().count == 0 {
+            if try tagToCleanUp.posts.all().count == 0 {
                 try tagToCleanUp.delete()
             }
         }
@@ -424,7 +424,7 @@ struct BlogAdminController {
     func profileHandler(_ request: Request) throws -> ResponseRepresentable {
 
         let user = try request.user()
-        let posts = try user.posts().paginator(postsPerPage, request: request)
+        let posts = try user.sortedPosts().paginator(postsPerPage, request: request)
 
         return try viewFactory.createProfileView(uri: request.uri, author: user, isMyProfile: true, paginatedPosts: posts, loggedInUser: user, disqusName: nil, siteTwitterHandle: nil)
     }
