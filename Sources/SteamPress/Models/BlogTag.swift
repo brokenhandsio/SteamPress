@@ -70,7 +70,7 @@ extension BlogTag: Preparation {
 
 extension BlogTag {
     
-    var posts: Siblings<BlogTag, BlogPost, Pivot<BlogTag, BlogPost>> {
+    var posts: Siblings<BlogPost, BlogTag, Pivot<BlogPost, BlogTag>> {
         return siblings()
     }
     
