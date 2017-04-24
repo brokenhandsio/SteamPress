@@ -1,7 +1,7 @@
 import Vapor
 import HTTP
 import Routing
-//import Auth
+import AuthProvider
 import Foundation
 import Fluent
 
@@ -95,7 +95,7 @@ struct BlogAdminController {
             published = true
         }
 
-        var newPost = BlogPost(title: title, contents: contents, author: try request.user(), creationDate: creationDate, slugUrl: slugUrl, published: published)
+        let newPost = BlogPost(title: title, contents: contents, author: try request.user(), creationDate: creationDate, slugUrl: slugUrl, published: published)
         try newPost.save()
 
         // Save the tags
@@ -162,7 +162,6 @@ struct BlogAdminController {
             throw Abort.badRequest
         }
 
-        var post = post
         post.title = title
         post.contents = contents
         if (post.slugUrl != slugUrl) {
@@ -246,17 +245,23 @@ struct BlogAdminController {
         }
 
         // We now have valid data
-        let creds = BlogUserCredentials(username: username.lowercased(), password: password, name: name, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline)
-        if var user = try BlogUser.register(credentials: creds) as? BlogUser {
-            if resetPasswordRequired {
-                user.resetPasswordRequired = true
-            }
-            try user.save()
-            return Response(redirect: pathCreator.createPath(for: "admin"))
+        // TODO - BCrypt
+        let hashedPassword = password
+        let newUser = BlogUser(name: name, username: username.lowercased(), password: hashedPassword, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline)
+        
+        if resetPasswordRequired {
+            newUser.resetPasswordRequired = true
         }
-        else {
+        
+        do {
+            try newUser.save()
+        }
+        catch {
             return try viewFactory.createUserView(editing: false, errors: ["There was an error creating the user. Please try again"], name: name, username: username, passwordError: passwordError, confirmPasswordError: confirmPasswordError, resetPasswordRequired: resetPasswordRequired, userId: nil, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline)
         }
+        
+        return Response(redirect: pathCreator.createPath(for: "admin"))
+        
     }
 
     func editUserHandler(request: Request, user: BlogUser) throws -> ResponseRepresentable {
@@ -293,7 +298,7 @@ struct BlogAdminController {
         }
 
         // We now have valid data
-        guard let userId = user.id, var userToUpdate = try BlogUser.makeQuery().filter("id", userId).first() else {
+        guard let userId = user.id, let userToUpdate = try BlogUser.makeQuery().filter("id", userId).first() else {
             throw Abort.badRequest
         }
         userToUpdate.name = name
@@ -308,9 +313,9 @@ struct BlogAdminController {
         }
 
         if let password = rawPassword {
-            let newCreds = BlogUserCredentials(username: username, password: password, name: name, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline)
-            let newUserPassword = try BlogUser(credentials: newCreds)
-            userToUpdate.password = newUserPassword.password
+            // TODO
+            let hashedPassword = password
+            userToUpdate.password = hashedPassword
         }
 
         try userToUpdate.save()
@@ -341,13 +346,13 @@ struct BlogAdminController {
             let users = try BlogUser.all()
             if users.count == 0 {
                 let password = String.random()
-                let creds = BlogUserCredentials(username: "admin", password: password, name: "Admin", profilePicture: nil, twitterHandle: nil, biography: nil, tagline: "Admin for the blog")
-                if var user = try BlogUser.register(credentials: creds) as? BlogUser {
-                    user.resetPasswordRequired = true
-                    try user.save()
-                    print("An Admin user been created for you - the username is admin and the password is \(password)")
-                    print("You will be asked to change your password once you have logged in, please do this immediately!")
-                }
+                // TODO - put through BCrypt
+                let hashedPassword = password
+                let user = BlogUser(name: "Admin", username: "admin", password: hashedPassword, profilePicture: nil, twitterHandle: nil, biography: nil, tagline: "Admin for the blog")
+                try user.save()
+                
+                print("An Admin user been created for you - the username is admin and the password is \(password)")
+                print("You will be asked to change your password once you have logged in, please do this immediately!")
             }
         }
         catch {
@@ -382,7 +387,7 @@ struct BlogAdminController {
             throw Abort.badRequest
         }
         
-        let credentials = BlogUserCredentials(username: username.lowercased(), password: password, name: nil, profilePicture: nil, twitterHandle: nil, biography: nil, tagline: nil)
+        let passwordCredentials = Password(username: username.lowercased(), password: password)
         
         if rememberMe {
             request.storage["remember_me"] = true
@@ -392,12 +397,9 @@ struct BlogAdminController {
         }
         
         do {
-            try request.auth.login(credentials)
-            
-            guard let _ = try request.auth.user() as? BlogUser else {
-                request.storage.removeValue(forKey: "remember_me")
-                throw Abort.badRequest
-            }
+            _ = try BlogUser.authenticate(passwordCredentials)
+            request.storage.removeValue(forKey: "remember_me")
+
             return Response(redirect: pathCreator.createPath(for: "admin"))
         }
         catch {
@@ -409,7 +411,7 @@ struct BlogAdminController {
     }
 
     func logoutHandler(_ request: Request) throws -> ResponseRepresentable {
-        try request.auth.logout()
+        try request.user().unpersist(for: request)
         return Response(redirect: pathCreator.createPath(for: pathCreator.blogPath))
     }
 
@@ -478,9 +480,8 @@ struct BlogAdminController {
         let user = try request.user()
 
         // Use the credentials class to hash the password
-        let newCreds = BlogUserCredentials(username: user.username, password: password, name: user.name, profilePicture: user.profilePicture, twitterHandle: user.twitterHandle, biography: user.biography, tagline: user.tagline)
-        let updatedUser = try BlogUser(credentials: newCreds)
-        user.password = updatedUser.password
+        // TODO put through BCrypt
+        user.password = password
         user.resetPasswordRequired = false
         try user.save()
 

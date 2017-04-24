@@ -29,6 +29,7 @@ public struct Provider: Vapor.Provider {
         config.preparations.append(BlogUserExtraInformation.self)
         
         // Sessions
+        // TODO add
         let persistMiddleware = PersistMiddleware(BlogUser.self)
     }
 
@@ -49,8 +50,8 @@ public struct Provider: Vapor.Provider {
     
     func setup(_ drop: Droplet) {
         // Middleware
-        let authMiddleware = BlogAuthMiddleware()
-        drop.middleware.append(authMiddleware)
+        //let authMiddleware = BlogAuthMiddleware()
+        //drop.middleware.append(authMiddleware)
         
         // Providers
 //        let paginator = PaginatorProvider(useBootstrap4: useBootstrap4, paginationLabel: "Blog Post Pages")

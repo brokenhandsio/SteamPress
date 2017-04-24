@@ -7,9 +7,7 @@ struct BlogLoginRedirectAuthMiddleware: Middleware {
     
     public func respond(to request: Request, chainingTo next: Responder) throws -> Response {
         do {
-            guard let user = try request.auth.user() as? BlogUser else {
-                throw Abort.badRequest
-            }
+            let user = try request.user()
             if user.resetPasswordRequired && request.uri.path != pathCreator.createPath(for: "admin/resetPassword") {
                 return Response(redirect: pathCreator.createPath(for: "admin/resetPassword"))
             }

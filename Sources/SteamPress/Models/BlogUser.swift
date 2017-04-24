@@ -121,43 +121,48 @@ extension Request {
     }
 }
 
-extension BlogUser: Auth.User {
-    
-    convenience init(credentials: BlogUserCredentials) throws {
-        self.init(name: credentials.name ?? "", username: credentials.username, password: try BCrypt.digest(password: credentials.password), profilePicture: credentials.profilePicture, twitterHandle: credentials.twitterHandle, biography: credentials.biography, tagline: credentials.tagline)
-    }
-    
-    static func register(credentials: Credentials) throws -> Auth.User {
-        guard let usernamePassword = credentials as? BlogUserCredentials else {
-            throw Abort.custom(status: .forbidden, message: "Unsupported credentials type \(type(of: credentials))")
-        }
-        
-        let user = try BlogUser(credentials: usernamePassword)
-        return user
-    }
-    
-    static func authenticate(credentials: Credentials) throws -> Auth.User {
-        switch credentials {
-        case let usernamePassword as BlogUserCredentials:
-            guard let user = try BlogUser.query().filter("username", usernamePassword.username).first() else {
-                throw Abort.unauthorized
-            }
-            if try BCrypt.verify(password: usernamePassword.password, matchesHash: user.password) {
-                return user
-            }
-            else {
-                throw Abort.unauthorized
-            }
-        case let id as Identifier:
-            guard let user = try BlogUser.find(id.id) else {
-                throw Abort.unauthorized
-            }
-            return user
-        default:
-            throw Abort.custom(status: .forbidden, message: "Unsupported credentials type \(type(of: credentials))")
-        }
-    }
+extension BlogUser: PasswordAuthenticatable {
+    public static let usernameKey = "username"
+    public static let passwordVerifier: PasswordVerifier? = nil
 }
+
+//extension BlogUser: Auth.User {
+//    
+//    convenience init(credentials: BlogUserCredentials) throws {
+//        self.init(name: credentials.name ?? "", username: credentials.username, password: try BCrypt.digest(password: credentials.password), profilePicture: credentials.profilePicture, twitterHandle: credentials.twitterHandle, biography: credentials.biography, tagline: credentials.tagline)
+//    }
+//    
+//    static func register(credentials: Credentials) throws -> Auth.User {
+//        guard let usernamePassword = credentials as? BlogUserCredentials else {
+//            throw Abort.custom(status: .forbidden, message: "Unsupported credentials type \(type(of: credentials))")
+//        }
+//        
+//        let user = try BlogUser(credentials: usernamePassword)
+//        return user
+//    }
+//    
+//    static func authenticate(credentials: Credentials) throws -> Auth.User {
+//        switch credentials {
+//        case let usernamePassword as BlogUserCredentials:
+//            guard let user = try BlogUser.query().filter("username", usernamePassword.username).first() else {
+//                throw Abort.unauthorized
+//            }
+//            if try BCrypt.verify(password: usernamePassword.password, matchesHash: user.password) {
+//                return user
+//            }
+//            else {
+//                throw Abort.unauthorized
+//            }
+//        case let id as Identifier:
+//            guard let user = try BlogUser.find(id.id) else {
+//                throw Abort.unauthorized
+//            }
+//            return user
+//        default:
+//            throw Abort.custom(status: .forbidden, message: "Unsupported credentials type \(type(of: credentials))")
+//        }
+//    }
+//}
 
 extension BlogUser {
     func posts() throws -> [BlogPost] {
@@ -165,24 +170,24 @@ extension BlogUser {
     }
 }
 
-struct BlogUserCredentials: Credentials {
-    
-    let username: String
-    let password: String
-    let name: String?
-    let profilePicture: String?
-    let twitterHandle: String?
-    let biography: String?
-    let tagline: String?
-    
-    public init(username: String, password: String, name: String?, profilePicture: String?, twitterHandle: String?, biography: String?, tagline: String?) {
-        self.username = username.lowercased()
-        self.password = password
-        self.name = name
-        self.profilePicture = profilePicture
-        self.twitterHandle = twitterHandle
-        self.biography = biography
-        self.tagline = tagline
-    }
-}
+//struct BlogUserCredentials: Credentials {
+//    
+//    let username: String
+//    let password: String
+//    let name: String?
+//    let profilePicture: String?
+//    let twitterHandle: String?
+//    let biography: String?
+//    let tagline: String?
+//    
+//    public init(username: String, password: String, name: String?, profilePicture: String?, twitterHandle: String?, biography: String?, tagline: String?) {
+//        self.username = username.lowercased()
+//        self.password = password
+//        self.name = name
+//        self.profilePicture = profilePicture
+//        self.twitterHandle = twitterHandle
+//        self.biography = biography
+//        self.tagline = tagline
+//    }
+//}
 

@@ -115,9 +115,7 @@ struct BlogController {
         var loggedInUser: BlogUser? = nil
 
         do {
-            if let user = try request.auth.user() as? BlogUser {
-                loggedInUser = user
-            }
+            loggedInUser = try request.user()
         }
         catch {}
 
