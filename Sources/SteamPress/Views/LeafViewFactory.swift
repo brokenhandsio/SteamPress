@@ -5,6 +5,7 @@ import HTTP
 import SwiftMarkdown
 import SwiftSoup
 import Foundation
+import Fluent
 
 struct LeafViewFactory: ViewFactory {
 
@@ -71,7 +72,7 @@ struct LeafViewFactory: ViewFactory {
         return try viewRenderer.make("blog/admin/createPost", parameters)
     }
 
-    func createUserView(editing: Bool = false, errors: [String]? = nil, name: String? = nil, username: String? = nil, passwordError: Bool? = nil, confirmPasswordError: Bool? = nil, resetPasswordRequired: Bool? = nil, userId: Vapor.Node? = nil, profilePicture: String? = nil, twitterHandle: String? = nil, biography: String? = nil, tagline: String? = nil) throws -> View {
+    func createUserView(editing: Bool = false, errors: [String]? = nil, name: String? = nil, username: String? = nil, passwordError: Bool? = nil, confirmPasswordError: Bool? = nil, resetPasswordRequired: Bool? = nil, userId: Identifier? = nil, profilePicture: String? = nil, twitterHandle: String? = nil, biography: String? = nil, tagline: String? = nil) throws -> View {
         let nameError = name == nil && errors != nil
         let usernameError = username == nil && errors != nil
 

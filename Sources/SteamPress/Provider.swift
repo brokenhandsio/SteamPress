@@ -3,10 +3,12 @@ import Fluent
 //import Paginator
 import LeafMarkdown
 import LeafProvider
+import AuthProvider
 
 public struct Provider: Vapor.Provider {
 
     private static let configFilename: String = "steampress"
+    public static let repositoryName: String = "steampress"
     
     private let blogPath: String?
     private let postsPerPage: Int
@@ -14,6 +16,18 @@ public struct Provider: Vapor.Provider {
     private let useBootstrap4: Bool
     private let enableAuthorsPages: Bool
     private let enableTagsPages: Bool
+    
+    public func boot(_ config: Config) throws {
+        try config.addProvider(AuthProvider.Provider.self)
+        
+        // Database preperations
+        config.preparations.append(BlogPost.self)
+        config.preparations.append(BlogUser.self)
+        config.preparations.append(BlogTag.self)
+        config.preparations.append(Pivot<BlogPost, BlogTag>.self)
+        config.preparations.append(BlogPostDraft.self)
+        config.preparations.append(BlogUserExtraInformation.self)
+    }
 
     public func boot(_ drop: Droplet) {
 
@@ -31,14 +45,6 @@ public struct Provider: Vapor.Provider {
     }
     
     func setup(_ drop: Droplet) {
-        // Database preperations
-        drop.preparations.append(BlogPost.self)
-        drop.preparations.append(BlogUser.self)
-        drop.preparations.append(BlogTag.self)
-        drop.preparations.append(Pivot<BlogPost, BlogTag>.self)
-        drop.preparations.append(BlogPostDraft.self)
-        drop.preparations.append(BlogUserExtraInformation.self)
-        
         // Middleware
         let authMiddleware = BlogAuthMiddleware()
         drop.middleware.append(authMiddleware)
@@ -94,6 +100,6 @@ public struct Provider: Vapor.Provider {
         case InvalidConfiguration(message: String)
     }
 
-    public func afterInit(_: Vapor.Droplet) {}
     public func beforeRun(_: Vapor.Droplet) {}
+    
 }

@@ -132,17 +132,17 @@ extension BlogUser: Auth.User {
         switch credentials {
         case let usernamePassword as BlogUserCredentials:
             guard let user = try BlogUser.query().filter("username", usernamePassword.username).first() else {
-                throw Abort.custom(status: .networkAuthenticationRequired, message: "Invalid username or password")
+                throw Abort.unauthorized
             }
             if try BCrypt.verify(password: usernamePassword.password, matchesHash: user.password) {
                 return user
             }
             else {
-                throw Abort.custom(status: .networkAuthenticationRequired, message: "Invalid username or password")
+                throw Abort.unauthorized
             }
         case let id as Identifier:
             guard let user = try BlogUser.find(id.id) else {
-                throw Abort.custom(status: .forbidden, message: "Invalid user identifier")
+                throw Abort.unauthorized
             }
             return user
         default:
