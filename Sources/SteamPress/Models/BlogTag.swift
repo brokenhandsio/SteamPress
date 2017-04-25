@@ -70,7 +70,7 @@ extension BlogTag: Preparation {
 
 extension BlogTag {
     
-    var posts: Siblings<BlogPost, BlogTag, Pivot<BlogPost, BlogTag>> {
+    var posts: Siblings<BlogTag, BlogPost, Pivot<BlogTag, BlogPost>> {
         return siblings()
     }
     
@@ -79,7 +79,7 @@ extension BlogTag {
     }
     
     func deletePivot(for post: BlogPost) throws {
-        try posts.remove(self)
+        try posts.remove(post)
     }
     
     static func addTag(_ name: String, to post: BlogPost) throws {

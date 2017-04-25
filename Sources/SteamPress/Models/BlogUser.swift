@@ -82,7 +82,7 @@ extension BlogUser: NodeRepresentable {
         
         switch providedContext {
         case BlogUserContext.withPostCount:
-            userNode["post_count"] = try posts().count.makeNode(in: context)
+            userNode["post_count"] = try sortedPosts().count.makeNode(in: context)
         default:
             break
         }
@@ -125,6 +125,8 @@ extension BlogUser: PasswordAuthenticatable {
     public static let usernameKey = "username"
     public static let passwordVerifier: PasswordVerifier? = nil
 }
+
+extension BCryptHasher: PasswordVerifier {}
 
 //extension BlogUser: Auth.User {
 //    
