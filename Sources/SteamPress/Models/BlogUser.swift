@@ -47,6 +47,7 @@ final class BlogUser: Model {
         try row.set("twitter_handle", twitterHandle)
         try row.set("biography", biography)
         try row.set("tagline", tagline)
+        return row
     }
     
 }
@@ -123,10 +124,14 @@ extension Request {
 
 extension BlogUser: PasswordAuthenticatable {
     public static let usernameKey = "username"
-    public static let passwordVerifier: PasswordVerifier? = nil
+    public static let passwordVerifier: BCryptHasher? = BCryptHasher(cost: 10)
 }
 
-extension BCryptHasher: PasswordVerifier {}
+extension BCryptHasher: PasswordVerifier {
+    public func verify(password: String, matchesHash: String) throws -> Bool {
+        return try check(password.bytes, matchesHash: matchesHash.bytes)
+    }
+}
 
 //extension BlogUser: Auth.User {
 //    

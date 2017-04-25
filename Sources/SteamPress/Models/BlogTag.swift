@@ -9,7 +9,6 @@ class BlogTag: Model {
     var name: String
     
     init(name: String) {
-        self.id = nil
         self.name = name    }
     
     required init(row: Row) throws {

@@ -245,9 +245,12 @@ struct BlogAdminController {
         }
 
         // We now have valid data
-        // TODO - BCrypt
-        let hashedPassword = password
-        let newUser = BlogUser(name: name, username: username.lowercased(), password: hashedPassword, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline)
+        let hashedPassword = try BlogUser.passwordVerifier?.make(password.bytes)
+        guard let hashedPasswordString = try hashedPassword?.string() else {
+            throw Abort.serverError
+        }
+        
+        let newUser = BlogUser(name: name, username: username.lowercased(), password: hashedPasswordString, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline)
         
         if resetPasswordRequired {
             newUser.resetPasswordRequired = true
@@ -313,9 +316,11 @@ struct BlogAdminController {
         }
 
         if let password = rawPassword {
-            // TODO
-            let hashedPassword = password
-            userToUpdate.password = hashedPassword
+            let hashedPassword = try BlogUser.passwordVerifier?.make(password.bytes)
+            guard let hashedPasswordString = try hashedPassword?.string() else {
+                throw Abort.serverError
+            }
+            userToUpdate.password = hashedPasswordString
         }
 
         try userToUpdate.save()
@@ -346,9 +351,13 @@ struct BlogAdminController {
             let users = try BlogUser.all()
             if users.count == 0 {
                 let password = String.random()
-                // TODO - put through BCrypt
-                let hashedPassword = password
-                let user = BlogUser(name: "Admin", username: "admin", password: hashedPassword, profilePicture: nil, twitterHandle: nil, biography: nil, tagline: "Admin for the blog")
+                
+                let hashedPassword = try BlogUser.passwordVerifier?.make(password.bytes)
+                guard let hashedPasswordString = try hashedPassword?.string() else {
+                    throw Abort.serverError
+                }
+                
+                let user = BlogUser(name: "Admin", username: "admin", password: hashedPasswordString, profilePicture: nil, twitterHandle: nil, biography: nil, tagline: "Admin for the blog")
                 try user.save()
                 
                 print("An Admin user been created for you - the username is admin and the password is \(password)")
@@ -480,8 +489,12 @@ struct BlogAdminController {
         let user = try request.user()
 
         // Use the credentials class to hash the password
-        // TODO put through BCrypt
-        user.password = password
+        let hashedPassword = try BlogUser.passwordVerifier?.make(password.bytes)
+        guard let hashedPasswordString = try hashedPassword?.string() else {
+            throw Abort.serverError
+        }
+        
+        user.password = hashedPasswordString
         user.resetPasswordRequired = false
         try user.save()
 
