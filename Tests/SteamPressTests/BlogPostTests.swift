@@ -69,8 +69,8 @@ class BlogPostTests: XCTestCase {
         XCTAssertEqual(expectedSlugUrl, post.slugUrl)
     }
     
-    func testSlugUrlGivenUniqueNameIfDuplicate() {
-        setupDatabase(preparations: [BlogPost.self])
+    func testSlugUrlGivenUniqueNameIfDuplicate() throws {
+        try setupDatabase(preparations: [BlogPost.self])
         
         let title = "A duplicated title"
         let expectedSlugUrl = "a-duplicated-title-2"
@@ -98,7 +98,7 @@ class BlogPostTests: XCTestCase {
     }
     
     func testCreatedAndEditedDateInISOFormForAllContext() throws {
-        setupDatabase(preparations: [BlogPost.self, BlogTag.self, BlogUser.self, Pivot<BlogPost, BlogTag>.self])
+        try setupDatabase(preparations: [BlogPost.self, BlogTag.self, BlogUser.self, Pivot<BlogPost, BlogTag>.self])
         let created = Date(timeIntervalSince1970: 1.0)
         let lastEdited = Date(timeIntervalSince1970: 10.0)
         let author = TestDataBuilder.anyUser()
@@ -115,8 +115,12 @@ class BlogPostTests: XCTestCase {
     // TODO test tag pivot logic
     // TODO test context make node stuff
     
-    func setupDatabase(preparations: [Preparation.Type]) {
-//        let database = Database(MemoryDriver())
+    func setupDatabase(preparations: [Preparation.Type]) throws {
+        let database = Database(try MemoryDriver())
+        for preparation in preparations {
+            try preparation.prepare(database)
+        }
+        
 //        BlogPost.database = database
 //        let printConsole = PrintConsole()
 //        let prepare = Prepare(console: printConsole, preparations: preparations, database: database)

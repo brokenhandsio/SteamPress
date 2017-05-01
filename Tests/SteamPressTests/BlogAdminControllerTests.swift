@@ -2,7 +2,7 @@ import XCTest
 @testable import Vapor
 @testable import SteamPress
 import HTTP
-import Fluent
+import FluentProvider
 
 class BlogAdminControllerTests: XCTestCase {
     static var allTests = [
@@ -13,10 +13,12 @@ class BlogAdminControllerTests: XCTestCase {
         let tag1 = BlogTag(name: "The first tag")
         let tag2 = BlogTag(name: "The second tag")
         
-        let drop = try Droplet()
-//        drop.database = Database(MemoryDriver())
+        var config = try Config()
+        try config.set("fluent.driver", "memory")
+        try config.addProvider(FluentProvider.Provider.self)
         let steampress = SteamPress.Provider(postsPerPage: 5)
-        steampress.setup(drop)
+        try config.addProvider(steampress)
+        let drop = try Droplet(config)
         let pathCreator = BlogPathCreator(blogPath: nil)
         // TODO change to Stub
         let viewFactory = CapturingViewFactory()
@@ -26,7 +28,7 @@ class BlogAdminControllerTests: XCTestCase {
 
         let blogController = BlogController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, postsPerPage: 5, enableAuthorsPages: enableAuthorsPages, enableTagsPages: enableTagsPages, config: drop.config)
         blogController.addRoutes()
-        try drop.runCommands()
+//        try drop.runCommands()
         
         try tag1.save()
         try tag2.save()
