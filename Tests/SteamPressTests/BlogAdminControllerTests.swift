@@ -10,11 +10,11 @@ class BlogAdminControllerTests: XCTestCase {
     ]
     
     func testTagAPIEndpointReportsArrayOfTagsAsJson() throws {
-        var tag1 = BlogTag(name: "The first tag")
-        var tag2 = BlogTag(name: "The second tag")
+        let tag1 = BlogTag(name: "The first tag")
+        let tag2 = BlogTag(name: "The second tag")
         
-        let drop = Droplet(arguments: ["dummy/path/", "prepare"], config: nil)
-        drop.database = Database(MemoryDriver())
+        let drop = try Droplet()
+//        drop.database = Database(MemoryDriver())
         let steampress = SteamPress.Provider(postsPerPage: 5)
         steampress.setup(drop)
         let pathCreator = BlogPathCreator(blogPath: nil)
@@ -39,7 +39,7 @@ class BlogAdminControllerTests: XCTestCase {
         XCTAssertNotNil(tagsJson.array)
         XCTAssertEqual(tagsJson.array?.count, 2)
         
-        guard let nodeArray = tagsJson.array as? [JSON] else {
+        guard let nodeArray = tagsJson.array else {
             XCTFail()
             return
         }

@@ -6,20 +6,13 @@ import Vapor
 class BlogTagTests: XCTestCase {
 
     static var allTests = [
-        ("testNonDatabaseContextNodeContainsUrlEncodedName", testNonDatabaseContextNodeContainsUrlEncodedName),
-        ("testDatabaseNodeDoesNotContainUrlEncodedName", testDatabaseNodeDoesNotContainUrlEncodedName),
+        ("testMakeNodeContainsUrlEncodedName", testMakeNodeContainsUrlEncodedName),
     ]
 
-    func testNonDatabaseContextNodeContainsUrlEncodedName() throws {
+    func testMakeNodeContainsUrlEncodedName() throws {
         let tag = BlogTag(name: "Luke's Tatooine")
-        let node = try tag.makeNode()
+        let node = try tag.makeNode(in: nil)
         XCTAssertEqual(node["url_encoded_name"], "Luke's%20Tatooine")
     }
     
-    func testDatabaseNodeDoesNotContainUrlEncodedName() throws {
-        let tag = BlogTag(name: "Tatooine")
-        let node = try tag.makeNode(context: DatabaseContext(Database(MemoryDriver())))
-        XCTAssertNil(node["url_encoded_name"])
-    }
-
 }

@@ -64,8 +64,8 @@ class BlogControllerTests: XCTestCase {
     }
 
     func setupDrop(config: Config? = nil, loginUser: Bool = false) throws {
-        drop = Droplet(arguments: ["dummy/path/", "prepare"], config: config)
-        drop.database = Database(MemoryDriver())
+        drop = try Droplet()
+//        drop.database = Database(MemoryDriver())
 
         let steampress = SteamPress.Provider(postsPerPage: 5)
         steampress.setup(drop)
@@ -101,14 +101,14 @@ class BlogControllerTests: XCTestCase {
     func testBlogIndexGetsPostsInReverseOrder() throws {
         try setupDrop()
 
-        var post2 = BlogPost(title: "A New Path", contents: "In a galaxy far, far, away", author: user, creationDate: Date(), slugUrl: "a-new-path", published: true)
+        let post2 = BlogPost(title: "A New Path", contents: "In a galaxy far, far, away", author: user, creationDate: Date(), slugUrl: "a-new-path", published: true)
         try post2.save()
 
         _ = try drop.respond(to: blogIndexRequest)
 
         XCTAssertEqual(viewFactory.paginatedPosts?.total, 2)
-        XCTAssertEqual(viewFactory.paginatedPosts?.data?[0].title, "A New Path")
-        XCTAssertEqual(viewFactory.paginatedPosts?.data?[1].title, "Test Path")
+        XCTAssertEqual(viewFactory.paginatedPosts?.data[0].title, "A New Path")
+        XCTAssertEqual(viewFactory.paginatedPosts?.data[1].title, "Test Path")
 
     }
 
@@ -132,7 +132,7 @@ class BlogControllerTests: XCTestCase {
         let expectedName = "steampress"
         let config = Config(try Node(node: [
             "disqus": try Node(node: [
-                "disqusName": expectedName.makeNode()
+                "disqusName": expectedName.makeNode(in: nil)
                 ])
             ]))
         try setupDrop(config: config)
@@ -156,7 +156,7 @@ class BlogControllerTests: XCTestCase {
         let expectedName = "steampress"
         let config = Config(try Node(node: [
             "disqus": try Node(node: [
-                "disqusName": expectedName.makeNode()
+                "disqusName": expectedName.makeNode(in: nil)
                 ])
         ]))
         try setupDrop(config: config)
@@ -187,8 +187,8 @@ class BlogControllerTests: XCTestCase {
 
         XCTAssertEqual(viewFactory.author?.username, user.username)
         XCTAssertEqual(viewFactory.authorPosts?.total, 1)
-        XCTAssertEqual(viewFactory.authorPosts?.data?[0].title, post.title)
-        XCTAssertEqual(viewFactory.authorPosts?.data?[0].contents, post.contents)
+        XCTAssertEqual(viewFactory.authorPosts?.data[0].title, post.title)
+        XCTAssertEqual(viewFactory.authorPosts?.data[0].contents, post.contents)
         XCTAssertEqual(viewFactory.isMyProfile, false)
     }
 
@@ -196,7 +196,7 @@ class BlogControllerTests: XCTestCase {
         let expectedName = "steampress"
         let config = Config(try Node(node: [
             "disqus": try Node(node: [
-                "disqusName": expectedName.makeNode()
+                "disqusName": expectedName.makeNode(in: nil)
                 ])
             ]))
         try setupDrop(config: config)
@@ -211,7 +211,7 @@ class BlogControllerTests: XCTestCase {
         _ = try drop.respond(to: tagRequest)
 
         XCTAssertEqual(viewFactory.tagPosts?.total, 1)
-        XCTAssertEqual(viewFactory.tagPosts?.data?[0].title, post.title)
+        XCTAssertEqual(viewFactory.tagPosts?.data[0].title, post.title)
         XCTAssertEqual(viewFactory.tag?.name, "tatooine")
     }
 
@@ -219,7 +219,7 @@ class BlogControllerTests: XCTestCase {
         let expectedName = "steampress"
         let config = Config(try Node(node: [
             "disqus": try Node(node: [
-                "disqusName": expectedName.makeNode()
+                "disqusName": expectedName.makeNode(in: nil)
                 ])
             ]))
         try setupDrop(config: config)
@@ -233,7 +233,7 @@ class BlogControllerTests: XCTestCase {
         let expectedTwitterHandle = "brokenhandsio"
         let config = Config(try Node(node: [
             "twitter": try Node(node: [
-                "siteHandle": expectedTwitterHandle.makeNode()
+                "siteHandle": expectedTwitterHandle.makeNode(in: nil)
                 ])
             ]))
         try setupDrop(config: config)
@@ -247,7 +247,7 @@ class BlogControllerTests: XCTestCase {
         let expectedTwitterHandle = "brokenhandsio"
         let config = Config(try Node(node: [
             "twitter": try Node(node: [
-                "siteHandle": expectedTwitterHandle.makeNode()
+                "siteHandle": expectedTwitterHandle.makeNode(in: nil)
                 ])
             ]))
         try setupDrop(config: config)
@@ -261,7 +261,7 @@ class BlogControllerTests: XCTestCase {
         let expectedTwitterHandle = "brokenhandsio"
         let config = Config(try Node(node: [
             "twitter": try Node(node: [
-                "siteHandle": expectedTwitterHandle.makeNode()
+                "siteHandle": expectedTwitterHandle.makeNode(in: nil)
                 ])
             ]))
         try setupDrop(config: config)
@@ -275,7 +275,7 @@ class BlogControllerTests: XCTestCase {
         let expectedTwitterHandle = "brokenhandsio"
         let config = Config(try Node(node: [
             "twitter": try Node(node: [
-                "siteHandle": expectedTwitterHandle.makeNode()
+                "siteHandle": expectedTwitterHandle.makeNode(in: nil)
                 ])
             ]))
         try setupDrop(config: config)
@@ -337,7 +337,7 @@ class BlogControllerTests: XCTestCase {
         let expectedTwitterHandle = "brokenhandsio"
         let config = Config(try Node(node: [
             "twitter": try Node(node: [
-                "siteHandle": expectedTwitterHandle.makeNode()
+                "siteHandle": expectedTwitterHandle.makeNode(in: nil)
                 ])
             ]))
         try setupDrop(config: config)
@@ -351,7 +351,7 @@ class BlogControllerTests: XCTestCase {
         let expectedTwitterHandle = "brokenhandsio"
         let config = Config(try Node(node: [
             "twitter": try Node(node: [
-                "siteHandle": expectedTwitterHandle.makeNode()
+                "siteHandle": expectedTwitterHandle.makeNode(in: nil)
                 ])
             ]))
         try setupDrop(config: config)
@@ -379,28 +379,28 @@ class BlogControllerTests: XCTestCase {
     
     func testTagPageGetsOnlyPublishedPostsInDescendingOrder() throws {
         try setupDrop()
-        var post2 = TestDataBuilder.anyPost(title: "A later post", author: self.user)
+        let post2 = TestDataBuilder.anyPost(title: "A later post", author: self.user)
         try post2.save()
-        var draftPost = TestDataBuilder.anyPost(author: self.user, published: false)
+        let draftPost = TestDataBuilder.anyPost(author: self.user, published: false)
         try draftPost.save()
         try BlogTag.addTag("tatooine", to: post2)
         try BlogTag.addTag("tatooine", to: draftPost)
         _ = try drop.respond(to: tagRequest)
         
         XCTAssertEqual(2, viewFactory.tagPosts?.total)
-        XCTAssertEqual(post2.title, viewFactory.tagPosts?.data?.first?.title)
+        XCTAssertEqual(post2.title, viewFactory.tagPosts?.data.first?.title)
     }
     
     func testAuthorPageGetsOnlyPublishedPostsInDescendingOrder() throws {
         try setupDrop()
-        var post2 = TestDataBuilder.anyPost(title: "A later post", author: self.user)
+        let post2 = TestDataBuilder.anyPost(title: "A later post", author: self.user)
         try post2.save()
-        var draftPost = TestDataBuilder.anyPost(author: self.user, published: false)
+        let draftPost = TestDataBuilder.anyPost(author: self.user, published: false)
         try draftPost.save()
         _ = try drop.respond(to: authorRequest)
         
         XCTAssertEqual(2, viewFactory.authorPosts?.total)
-        XCTAssertEqual(post2.title, viewFactory.authorPosts?.data?[0].title)
+        XCTAssertEqual(post2.title, viewFactory.authorPosts?.data[0].title)
     }
 
     func testDisabledBlogAuthorsPath() throws {
@@ -433,45 +433,48 @@ class BlogControllerTests: XCTestCase {
 }
 
 import URI
-import Paginator
 import Foundation
 
 class CapturingViewFactory: ViewFactory {
-
-    func createBlogPostView(uri: URI, errors: [String]?, title: String?, contents: String?, slugUrl: String?, tags: [Node]?, isEditing: Bool, postToEdit: BlogPost?, draft: Bool) throws -> View {
-        return View(data: try "Test".makeBytes())
+    
+    private func createDummyView() -> View {
+        return View(data: "Test".makeBytes())
     }
 
-    func createUserView(editing: Bool, errors: [String]?, name: String?, username: String?, passwordError: Bool?, confirmPasswordError: Bool?, resetPasswordRequired: Bool?, userId: Node?, profilePicture: String?, twitterHandle: String?, biography: String?, tagline: String?) throws -> View {
-        return View(data: try "Test".makeBytes())
+    func createBlogPostView(uri: URI, errors: [String]?, title: String?, contents: String?, slugUrl: String?, tags: [Node]?, isEditing: Bool, postToEdit: BlogPost?, draft: Bool) throws -> View {
+        return createDummyView()
+    }
+
+    func createUserView(editing: Bool, errors: [String]?, name: String?, username: String?, passwordError: Bool?, confirmPasswordError: Bool?, resetPasswordRequired: Bool?, userId: Identifier?, profilePicture: String?, twitterHandle: String?, biography: String?, tagline: String?) throws -> View {
+        return createDummyView()
     }
 
     func createLoginView(loginWarning: Bool, errors: [String]?, username: String?, password: String?) throws -> View {
-        return View(data: try "Test".makeBytes())
+        return createDummyView()
     }
 
     func createBlogAdminView(errors: [String]?) throws -> View {
-        return View(data: try "Test".makeBytes())
+        return createDummyView()
     }
 
     func createResetPasswordView(errors: [String]?, passwordError: Bool?, confirmPasswordError: Bool?) throws -> View {
-        return View(data: try "Test".makeBytes())
+        return createDummyView()
     }
 
     private(set) var author: BlogUser? = nil
     private(set) var isMyProfile: Bool? = nil
-    private(set) var authorPosts: Paginator<BlogPost>? = nil
+    private(set) var authorPosts: Page<BlogPost>? = nil
     private(set) var authorDisqusName: String? = nil
     private(set) var authorTwitterHandle: String? = nil
     private(set) var authorURI: URI? = nil
-    func createProfileView(uri: URI, author: BlogUser, isMyProfile: Bool, paginatedPosts: Paginator<BlogPost>, loggedInUser: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
+    func createProfileView(uri: URI, author: BlogUser, isMyProfile: Bool, paginatedPosts: Page<BlogPost>, loggedInUser: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
         self.author = author
         self.isMyProfile = isMyProfile
         self.authorPosts = paginatedPosts
         self.authorDisqusName = disqusName
         self.authorTwitterHandle = siteTwitterHandle
         self.authorURI = uri
-        return View(data: try "Test".makeBytes())
+        return createDummyView()
     }
 
     private(set) var blogPost: BlogPost? = nil
@@ -485,39 +488,39 @@ class CapturingViewFactory: ViewFactory {
         self.disqusName = disqusName
         self.blogPostTwitterHandle = siteTwitterHandle
         self.blogPostURI = uri
-        return View(data: try "Test".makeBytes())
+        return createDummyView()
     }
 
     private(set) var tag: BlogTag? = nil
-    private(set) var tagPosts: Paginator<BlogPost>? = nil
+    private(set) var tagPosts: Page<BlogPost>? = nil
     private(set) var tagUser: BlogUser? = nil
     private(set) var tagDisqusName: String? = nil
     private(set) var tagTwitterHandle: String? = nil
     private(set) var tagURI: URI? = nil
-    func tagView(uri: URI, tag: BlogTag, paginatedPosts: Paginator<BlogPost>, user: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
+    func tagView(uri: URI, tag: BlogTag, paginatedPosts: Page<BlogPost>, user: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
         self.tag = tag
         self.tagPosts = paginatedPosts
         self.tagUser = user
         self.tagDisqusName = disqusName
         self.tagTwitterHandle = siteTwitterHandle
         self.tagURI = uri
-        return View(data: try "Test".makeBytes())
+        return createDummyView()
     }
 
     private(set) var blogIndexTags: [BlogTag]? = nil
     private(set) var blogIndexAuthors: [BlogUser]? = nil
     private(set) var indexDisqusName: String? = nil
-    private(set) var paginatedPosts: Paginator<BlogPost>? = nil
+    private(set) var paginatedPosts: Page<BlogPost>? = nil
     private(set) var blogIndexTwitterHandle: String? = nil
     private(set) var blogIndexURI: URI? = nil
-    func blogIndexView(uri: URI, paginatedPosts: Paginator<BlogPost>, tags: [BlogTag], authors: [BlogUser], loggedInUser: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
+    func blogIndexView(uri: URI, paginatedPosts: Page<BlogPost>, tags: [BlogTag], authors: [BlogUser], loggedInUser: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
         self.blogIndexTags = tags
         self.paginatedPosts = paginatedPosts
         self.indexDisqusName = disqusName
         self.blogIndexTwitterHandle = siteTwitterHandle
         self.blogIndexURI = uri
         self.blogIndexAuthors = authors
-        return View(data: try "Test".makeBytes())
+        return createDummyView()
     }
     
     private(set) var allAuthorsTwitterHandle: String? = nil
@@ -527,7 +530,7 @@ class CapturingViewFactory: ViewFactory {
         self.allAuthorsURI = uri
         self.allAuthorsTwitterHandle = siteTwitterHandle
         self.allAuthorsPageAuthors = allAuthors
-        return View(data: try "Test".makeBytes())
+        return createDummyView()
     }
     
     private(set) var allTagsTwitterHandle: String? = nil
@@ -537,6 +540,6 @@ class CapturingViewFactory: ViewFactory {
         self.allTagsURI = uri
         self.allTagsTwitterHandle = siteTwitterHandle
         self.allTagsPageTags = allTags
-        return View(data: try "Test".makeBytes())
+        return createDummyView()
     }
 }

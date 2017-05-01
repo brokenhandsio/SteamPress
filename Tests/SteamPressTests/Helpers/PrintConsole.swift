@@ -2,6 +2,10 @@ import Console
 
 struct PrintConsole: ConsoleProtocol {
     
+    func secureInput() -> String {
+        return ""
+    }
+
     func output(_ string: String, style: ConsoleStyle, newLine: Bool) {
         Swift.print(string)
     }
