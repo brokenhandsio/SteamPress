@@ -15,7 +15,6 @@ public class BlogPost: Model {
     public var published: Bool
 
     init(title: String, contents: String, author: BlogUser, creationDate: Date, slugUrl: String, published: Bool) {
-        self.id = nil
         self.title = title
         self.contents = contents
         self.author = author.id

@@ -2,7 +2,7 @@ import Fluent
 
 struct BlogPostDraft: Preparation {
     static func prepare(_ database: Database) throws {
-        try database.modify(BlogPost.entity) { blogPost in
+        try database.modify(BlogPost.self) { blogPost in
             blogPost.bool("published", optional: false, default: true)
         }
     }

@@ -29,8 +29,10 @@ public struct Provider: Vapor.Provider {
         config.preparations.append(BlogUserExtraInformation.self)
         
         // Sessions
-        // TODO add
         let persistMiddleware = PersistMiddleware(BlogUser.self)
+        config.addConfigurable(middleware: { (config) -> (PersistMiddleware<BlogUser>) in
+            return persistMiddleware
+        }, name: "persist")
     }
 
     public func boot(_ drop: Droplet) {
