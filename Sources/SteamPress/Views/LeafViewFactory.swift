@@ -199,7 +199,7 @@ struct LeafViewFactory: ViewFactory {
         return try viewRenderer.make("blog/admin/resetPassword", parameters)
     }
 
-    func createProfileView(uri: URI, author: BlogUser, isMyProfile: Bool, paginatedPosts: Paginator<BlogPost>, loggedInUser: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
+    func createProfileView(uri: URI, author: BlogUser, isMyProfile: Bool, paginatedPosts: Page<BlogPost>, loggedInUser: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
         var parameters: [String: Vapor.Node] = [:]
         parameters["author"] = try author.makeNode(in: BlogUserContext.withPostCount)
 
@@ -210,8 +210,8 @@ struct LeafViewFactory: ViewFactory {
             parameters["profile_page"] = true.makeNode(in: nil)
         }
 
-        if paginatedPosts.totalPages ?? 0 > 0 {
-            parameters["posts"] = try paginatedPosts.makeNode(context: BlogPostContext.longSnippet)
+        if paginatedPosts.total > 0 {
+            parameters["posts"] = try paginatedPosts.data.makeNode(in: BlogPostContext.longSnippet)
         }
 
         return try createPublicView(template: "blog/profile", uri: uri, parameters: parameters, user: loggedInUser, disqusName: disqusName, siteTwitterHandle: siteTwitterHandle)
@@ -219,13 +219,13 @@ struct LeafViewFactory: ViewFactory {
 
     // MARK: - Blog Controller Views
 
-    func blogIndexView(uri: URI, paginatedPosts: Paginator<BlogPost>, tags: [BlogTag], authors: [BlogUser], loggedInUser: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
+    func blogIndexView(uri: URI, paginatedPosts: Page<BlogPost>, tags: [BlogTag], authors: [BlogUser], loggedInUser: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
 
         var parameters: [String: Vapor.Node] = [:]
         parameters["blog_index_page"] = true.makeNode(in: nil)
 
-        if paginatedPosts.totalPages ?? 0 > 0 {
-            parameters["posts"] = try paginatedPosts.makeNode(context: BlogPostContext.longSnippet)
+        if paginatedPosts.total > 0 {
+            parameters["posts"] = try paginatedPosts.data.makeNode(in: BlogPostContext.longSnippet)
         }
 
         if tags.count > 0 {
@@ -265,14 +265,14 @@ struct LeafViewFactory: ViewFactory {
         return try createPublicView(template: "blog/blogpost", uri: uri, parameters: parameters, user: user, disqusName: disqusName, siteTwitterHandle: siteTwitterHandle)
     }
 
-    func tagView(uri: URI, tag: BlogTag, paginatedPosts: Paginator<BlogPost>, user: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
+    func tagView(uri: URI, tag: BlogTag, paginatedPosts: Page<BlogPost>, user: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
 
         var parameters: [String: NodeRepresentable] = [:]
         parameters["tag"] = try tag.makeNode(in: BlogTagContext.withPostCount)
         parameters["tag_page"] = true
-
-        if paginatedPosts.totalPages ?? 0 > 0 {
-            parameters["posts"] = try paginatedPosts.makeNode(in: BlogPostContext.longSnippet)
+        
+        if paginatedPosts.total > 0 {
+            parameters["posts"] = try paginatedPosts.data.makeNode(in: BlogPostContext.longSnippet)
         }
 
         return try createPublicView(template: "blog/tag", uri: uri, parameters: parameters, user: user, disqusName: disqusName, siteTwitterHandle: siteTwitterHandle)
@@ -282,7 +282,7 @@ struct LeafViewFactory: ViewFactory {
         var parameters: [String: NodeRepresentable] = [:]
 
         if allTags.count > 0 {
-            let sortedTags = allTags.sorted { return (try? $0.sortedPosts().count > $1.sortedPosts().count) ?? false }
+            let sortedTags = allTags.sorted { return (try? $0.sortedPosts().count() > $1.sortedPosts().count()) ?? false }
             parameters["tags"] = try sortedTags.makeNode(in: BlogTagContext.withPostCount)
         }
 
@@ -293,7 +293,7 @@ struct LeafViewFactory: ViewFactory {
         var parameters: [String: NodeRepresentable] = [:]
 
         if allAuthors.count > 0 {
-            let sortedAuthors = allAuthors.sorted { return (try? $0.sortedPosts().count > $1.sortedPosts().count) ?? false }
+            let sortedAuthors = allAuthors.sorted { return (try? $0.sortedPosts().count() > $1.sortedPosts().count()) ?? false }
             parameters["authors"] = try sortedAuthors.makeNode(in: BlogUserContext.withPostCount)
         }
 

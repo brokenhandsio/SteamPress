@@ -83,7 +83,7 @@ extension BlogUser: NodeRepresentable {
         
         switch providedContext {
         case BlogUserContext.withPostCount:
-            userNode["post_count"] = try sortedPosts().count.makeNode(in: context)
+            userNode["post_count"] = try sortedPosts().count().makeNode(in: context)
         default:
             break
         }
@@ -138,8 +138,8 @@ extension BlogUser {
         return children()
     }
     
-    func sortedPosts() throws -> [BlogPost] {
-        return try posts.filter("published", true).sort("created", .descending).all()
+    func sortedPosts() throws -> Query<BlogPost> {
+        return try posts.filter("published", true).sort("created", .descending)
     }
 }
 

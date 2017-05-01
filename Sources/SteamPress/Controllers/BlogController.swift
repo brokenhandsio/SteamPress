@@ -54,7 +54,7 @@ struct BlogController {
     func indexHandler(request: Request) throws -> ResponseRepresentable {
         let tags = try BlogTag.all()
         let authors = try BlogUser.all()
-        let paginatedBlogPosts = try BlogPost.makeQuery().filter("published", true).sort("created", .descending).paginator(postsPerPage, request: request)
+        let paginatedBlogPosts = try BlogPost.makeQuery().filter("published", true).sort("created", .descending).paginate(for: request) //
 
         return try viewFactory.blogIndexView(uri: request.uri, paginatedPosts: paginatedBlogPosts, tags: tags, authors: authors, loggedInUser: getLoggedInUser(in: request), disqusName: getDisqusName(), siteTwitterHandle: getSiteTwitterHandle())
     }
@@ -84,7 +84,7 @@ struct BlogController {
             throw Abort.notFound
         }
 
-        let paginatedBlogPosts = try tag.sortedPosts().paginator(postsPerPage, request: request)
+        let paginatedBlogPosts = try tag.sortedPosts().paginate(for: request)
 
         return try viewFactory.tagView(uri: request.uri, tag: tag, paginatedPosts: paginatedBlogPosts, user: getLoggedInUser(in: request), disqusName: getDisqusName(), siteTwitterHandle: getSiteTwitterHandle())
     }
@@ -94,7 +94,7 @@ struct BlogController {
             throw Abort.notFound
         }
 
-        let posts = try author.sortedPosts().paginator(postsPerPage, request: request)
+        let posts = try author.sortedPosts().paginate(for: request)
 
         return try viewFactory.createProfileView(uri: request.uri, author: author, isMyProfile: author.username == getLoggedInUser(in: request)?.username, paginatedPosts: posts, loggedInUser: getLoggedInUser(in: request), disqusName: getDisqusName(), siteTwitterHandle: getSiteTwitterHandle())
     }

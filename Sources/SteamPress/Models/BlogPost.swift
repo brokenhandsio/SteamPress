@@ -225,3 +225,9 @@ extension BlogPost {
         return newSlugUrl
     }
 }
+
+extension BlogPost: Paginatable {
+    public static var defaultPageSorts: [Sort] {
+        return []
+    }
+}

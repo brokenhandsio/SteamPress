@@ -35,7 +35,7 @@ extension BlogTag: NodeRepresentable {
         
         switch providedContext {
         case BlogTagContext.withPostCount:
-            node["post_count"] = try sortedPosts().count.makeNode(in: context)
+            node["post_count"] = try sortedPosts().count().makeNode(in: context)
             fallthrough
         default:
             guard let urlEncodedName = name.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) else {
@@ -73,8 +73,8 @@ extension BlogTag {
         return siblings()
     }
     
-    func sortedPosts() throws -> [BlogPost] {
-        return try posts.filter("published", true).sort("created", .descending).all()
+    func sortedPosts() throws -> Query<BlogPost> {
+        return try posts.filter("published", true).sort("created", .descending)
     }
     
     func deletePivot(for post: BlogPost) throws {
