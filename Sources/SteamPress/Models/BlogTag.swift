@@ -29,6 +29,12 @@ extension BlogTag: NodeRepresentable {
         node["id"] = try id.makeNode(in: context)
         node["name"] = name.makeNode(in: context)
         
+        guard let urlEncodedName = name.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) else {
+            return try node.makeNode(in: context)
+        }
+        
+        node["url_encoded_name"] = urlEncodedName.makeNode(in: context)
+        
         guard let providedContext = context else {
             return try node.makeNode(in: context)
         }
@@ -36,13 +42,7 @@ extension BlogTag: NodeRepresentable {
         switch providedContext {
         case BlogTagContext.withPostCount:
             node["post_count"] = try sortedPosts().count().makeNode(in: context)
-            fallthrough
-        default:
-            guard let urlEncodedName = name.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) else {
-                return try node.makeNode(in: context)
-            }
-            
-            node["url_encoded_name"] = urlEncodedName.makeNode(in: context)
+        default: break
         }
         
         return try node.makeNode(in: context)
