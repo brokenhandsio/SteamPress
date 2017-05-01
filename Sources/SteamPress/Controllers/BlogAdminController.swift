@@ -4,6 +4,7 @@ import Routing
 import AuthProvider
 import Foundation
 import Fluent
+import Validation
 
 struct BlogAdminController {
 
@@ -69,15 +70,19 @@ struct BlogAdminController {
         // I must be able to inline all of this
         var tagsArray: [Node] = []
         
-        if let tagsNodeArray = rawTags as? [Node] {
-            tagsArray = tagsNodeArray
+        if let rawTagsArray = rawTags {
+            tagsArray = rawTagsArray
         }
-        else if let tagsStringArray = rawTags as? [String] {
-            tagsArray = tagsStringArray.map { $0.makeNode(in: nil) }
-        }
+//
+//        if let tagsNodeArray = rawTags as? [Node] {
+//            tagsArray = tagsNodeArray
+//        }
+//        else if let tagsStringArray = rawTags as? [String] {
+//            tagsArray = tagsStringArray.map { $0.makeNode(in: nil) }
+//        }
 
         if let createPostErrors = validatePostCreation(title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl) {
-            return try viewFactory.createBlogPostView(uri: request.uri, errors: createPostErrors, title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl, tags: tagsArray, isEditing: false, postToEdit: nil, draft: true)
+            return try viewFactory.createBlogPostView(uri: request.uri, errors: createPostErrors, title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl, tags: rawTags, isEditing: false, postToEdit: nil, draft: true)
         }
 
         guard let title = rawTitle, let contents = rawContents, var slugUrl = rawSlugUrl else {
@@ -146,13 +151,16 @@ struct BlogAdminController {
         }
         
         var tagsArray: [Node] = []
+        if let rawTagsArray = rawTags {
+            tagsArray = rawTagsArray
+        }
         
-        if let tagsNodeArray = rawTags as? [Node] {
-            tagsArray = tagsNodeArray
-        }
-        else if let tagsStringArray = rawTags as? [String] {
-            tagsArray = tagsStringArray.map { $0.makeNode(in: nil) }
-        }
+//        if let tagsNodeArray = rawTags as? [Node] {
+//            tagsArray = tagsNodeArray
+//        }
+//        else if let tagsStringArray = rawTags as? [String] {
+//            tagsArray = tagsStringArray.map { $0.makeNode(in: nil) }
+//        }
 
         if let errors = validatePostCreation(title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl) {
             return try viewFactory.createBlogPostView(uri: request.uri, errors: errors, title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl, tags: tagsArray, isEditing: true, postToEdit: post, draft: false)
@@ -476,7 +484,7 @@ struct BlogAdminController {
         }
 
         // Check password is valid
-        let validPassword = password.passes(PasswordValidator.self)
+        let validPassword = password.passes(PasswordValidator())
         if !validPassword {
             resetPasswordErrors.append("Your password must contain a lowercase letter, an upperacase letter, a number and a symbol")
             passwordError = true
@@ -566,13 +574,13 @@ struct BlogAdminController {
         }
 
         // Check name is valid
-        let validName = name.passes(NameValidator.self)
+        let validName = name.passes(NameValidator())
         if !validName {
             userSaveErrors.append("The name provided is not valid")
         }
 
         // Check username is valid
-        let validUsername = username.passes(UsernameValidator.self)
+        let validUsername = username.passes(UsernameValidator())
         if !validUsername {
             userSaveErrors.append("The username provided is not valid")
         }
@@ -582,7 +590,7 @@ struct BlogAdminController {
             guard let actualPassword = password else {
                 fatalError()
             }
-            let validPassword = actualPassword.passes(PasswordValidator.self)
+            let validPassword = actualPassword.passes(PasswordValidator())
             if !validPassword {
                 userSaveErrors.append("Your password must contain a lowercase letter, an upperacase letter, a number and a symbol")
                 passwordError = true

@@ -9,5 +9,6 @@ let package = Package(
     	.Package(url: "https://github.com/vapor/leaf-provider.git", Version(1,0,0, prereleaseIdentifiers: ["beta"])),
     	.Package(url: "https://github.com/vapor/fluent-provider.git", Version(1,0,0, prereleaseIdentifiers: ["beta"])),
     	.Package(url: "https://github.com/vapor/auth-provider.git", Version(1,0,0, prereleaseIdentifiers: ["beta"])),
+    	.Package(url: "https://github.com/vapor/validation.git", majorVersion: 0),
     ]
 )
