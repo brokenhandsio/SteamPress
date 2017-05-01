@@ -75,6 +75,7 @@ class BlogPostTests: XCTestCase {
         let title = "A duplicated title"
         let expectedSlugUrl = "a-duplicated-title-2"
         do {
+            BlogPost.database = Database(try MemoryDriver())
             let post1 = TestDataBuilder.anyPost(slugUrl: title)
             try post1.save()
             let post2 = TestDataBuilder.anyPost(slugUrl: title)

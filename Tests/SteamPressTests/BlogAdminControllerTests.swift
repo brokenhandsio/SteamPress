@@ -13,11 +13,7 @@ class BlogAdminControllerTests: XCTestCase {
         let tag1 = BlogTag(name: "The first tag")
         let tag2 = BlogTag(name: "The second tag")
         
-        var config = try Config()
-        try config.set("fluent.driver", "memory")
-        try config.addProvider(FluentProvider.Provider.self)
-        let steampress = SteamPress.Provider(postsPerPage: 5)
-        try config.addProvider(steampress)
+        let config = try Config()
         let drop = try Droplet(config)
         let pathCreator = BlogPathCreator(blogPath: nil)
         // TODO change to Stub
@@ -28,8 +24,11 @@ class BlogAdminControllerTests: XCTestCase {
 
         let blogController = BlogController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, postsPerPage: 5, enableAuthorsPages: enableAuthorsPages, enableTagsPages: enableTagsPages, config: drop.config)
         blogController.addRoutes()
-//        try drop.runCommands()
-        
+
+        let database = Database(try MemoryDriver(()))
+        BlogTag.database = database
+        try BlogTag.prepare(database)
+            
         try tag1.save()
         try tag2.save()
         
