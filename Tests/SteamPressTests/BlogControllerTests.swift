@@ -1,6 +1,6 @@
 import XCTest
 @testable import SteamPress
-@testable import Vapor
+import Vapor
 import Fluent
 import HTTP
 import Foundation
@@ -84,7 +84,6 @@ class BlogControllerTests: XCTestCase {
 
         let blogAdminController = BlogAdminController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, postsPerPage: 5)
         blogAdminController.addRoutes()
-        try drop.runCommands()
 
         if loginUser {
 //            let userCredentials = BlogUserCredentials(username: "luke", password: "1234", name: "Luke")

@@ -1,5 +1,5 @@
 import XCTest
-@testable import Vapor
+import Vapor
 @testable import SteamPress
 import HTTP
 import FluentProvider
