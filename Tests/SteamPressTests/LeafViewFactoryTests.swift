@@ -105,7 +105,7 @@ class LeafViewFactoryTests: XCTestCase {
             try BlogTag.prepare(database)
             try BlogPostDraft.prepare(database)
             try BlogUserExtraInformation.prepare(database)
-            Pivot<BlogPost, BlogTag>.database = database
+            try Pivot<BlogPost, BlogTag>.prepare(database)
         }
         catch {
             XCTFail()
