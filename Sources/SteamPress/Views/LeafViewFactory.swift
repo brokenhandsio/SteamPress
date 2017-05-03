@@ -323,6 +323,6 @@ struct LeafViewFactory: ViewFactory {
 
 extension URI {
     func getRootUri() -> URI {
-        return URI(scheme: self.scheme, userInfo: nil, hostname: self.hostname, port: self.port, path: "", query: nil, rawQuery: nil, fragment: nil).removingPath()
+        return URI(scheme: self.scheme, userInfo: nil, hostname: self.hostname, port: self.port, path: "", query: nil, fragment: nil).removingPath()
     }
 }

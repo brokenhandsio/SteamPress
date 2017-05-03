@@ -254,7 +254,7 @@ struct BlogAdminController {
 
         // We now have valid data
         let hashedPassword = try BlogUser.passwordVerifier?.make(password.bytes)
-        guard let hashedPasswordString = try hashedPassword?.string() else {
+        guard let hashedPasswordString = hashedPassword?.makeString() else {
             throw Abort.serverError
         }
         
@@ -325,7 +325,7 @@ struct BlogAdminController {
 
         if let password = rawPassword {
             let hashedPassword = try BlogUser.passwordVerifier?.make(password.bytes)
-            guard let hashedPasswordString = try hashedPassword?.string() else {
+            guard let hashedPasswordString = hashedPassword?.makeString() else {
                 throw Abort.serverError
             }
             userToUpdate.password = hashedPasswordString
@@ -361,7 +361,7 @@ struct BlogAdminController {
                 let password = String.random()
                 
                 let hashedPassword = try BlogUser.passwordVerifier?.make(password.bytes)
-                guard let hashedPasswordString = try hashedPassword?.string() else {
+                guard let hashedPasswordString = hashedPassword?.makeString() else {
                     throw Abort.serverError
                 }
                 
@@ -376,7 +376,7 @@ struct BlogAdminController {
             print("There was an error creating a new admin user: \(error)")
         }
         
-        let loginRequired = request.uri.rawQuery == "loginRequired"
+        let loginRequired = request.uri.query == "loginRequired"
         return try viewFactory.createLoginView(loginWarning: loginRequired, errors: nil, username: nil, password: nil)
     }
     
@@ -498,7 +498,7 @@ struct BlogAdminController {
 
         // Use the credentials class to hash the password
         let hashedPassword = try BlogUser.passwordVerifier?.make(password.bytes)
-        guard let hashedPasswordString = try hashedPassword?.string() else {
+        guard let hashedPasswordString = hashedPassword?.makeString() else {
             throw Abort.serverError
         }
         
