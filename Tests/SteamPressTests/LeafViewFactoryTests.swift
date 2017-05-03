@@ -656,7 +656,7 @@ class LeafViewFactoryTests: XCTestCase {
     private func setupBlogIndex() throws -> ([BlogPost], [BlogTag], [BlogUser]) {
         let user1 = TestDataBuilder.anyUser()
         try user1.save()
-        let user2 = TestDataBuilder.anyUser(name: "Han")
+        let user2 = TestDataBuilder.anyUser(name: "Han", username: "han")
         try user2.save()
         let post1 = TestDataBuilder.anyPost(author: user1)
         try post1.save()
