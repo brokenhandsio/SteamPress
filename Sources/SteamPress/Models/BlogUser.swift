@@ -102,10 +102,6 @@ extension BlogUser: Preparation {
             users.string("username", unique: true)
             users.string("password")
             users.bool("reset_password_required")
-            users.string("profile_picture", optional: true, default: nil)
-            users.string("twitter_handle", optional: true, default: nil)
-            users.custom("biography", type: "TEXT", optional: true, default: nil)
-            users.string("tagline", optional: true, default: nil)
         }
     }
     
