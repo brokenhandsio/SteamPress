@@ -31,7 +31,7 @@ class BlogAdminControllerTests: XCTestCase {
         try tag1.save()
         try tag2.save()
         
-        let tagApiRequest = try! Request(method: .get, uri: "/api/tags/")
+        let tagApiRequest = Request(method: .get, uri: "/api/tags/")
         let response = try drop.respond(to: tagApiRequest)
         
         let tagsJson = try JSON(bytes: response.body.bytes!)

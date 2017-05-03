@@ -56,12 +56,12 @@ class BlogControllerTests: XCTestCase {
     private var allAuthorsRequest: Request!
 
     override func setUp() {
-        blogPostRequest = try! Request(method: .get, uri: blogPostPath)
-        authorRequest = try! Request(method: .get, uri: authorPath)
-        tagRequest = try! Request(method: .get, uri: tagPath)
-        blogIndexRequest = try! Request(method: .get, uri: blogIndexPath)
-        allTagsRequest = try! Request(method: .get, uri: allTagsPath)
-        allAuthorsRequest = try! Request(method: .get, uri: allAuthorsPath)
+        blogPostRequest = Request(method: .get, uri: blogPostPath)
+        authorRequest = Request(method: .get, uri: authorPath)
+        tagRequest = Request(method: .get, uri: tagPath)
+        blogIndexRequest = Request(method: .get, uri: blogIndexPath)
+        allTagsRequest = Request(method: .get, uri: allTagsPath)
+        allAuthorsRequest = Request(method: .get, uri: allAuthorsPath)
         database = try! Database(MemoryDriver())
         try! Droplet.prepare(database: database)
     }
@@ -169,7 +169,7 @@ class BlogControllerTests: XCTestCase {
 
     func testThatAccessingPathsRouteRedirectsToBlogIndex() throws {
         try setupDrop()
-        let request = try! Request(method: .get, uri: "/posts/")
+        let request = Request(method: .get, uri: "/posts/")
         let response = try drop.respond(to: request)
         XCTAssertEqual(response.status, .movedPermanently)
         XCTAssertEqual(response.headers[HeaderKey.location], "/")
