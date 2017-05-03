@@ -59,25 +59,25 @@ extension BlogPost: NodeRepresentable {
     public func makeNode(in context: Context?) throws -> Node {
         let createdTime = created.timeIntervalSince1970
         
-        var node: [String: Node]  = [:]
-        node["id"] = try id.makeNode(in: context)
-        node["title"] = title.makeNode(in: context)
-        node["contents"] = contents.makeNode(in: context)
-        node["blog_user_id"] = author?.makeNode(in: context)
-        node["created"] = createdTime.makeNode(in: context)
-        node["slug_url"] = slugUrl.makeNode(in: context)
-        node["published"] = published.makeNode(in: context)
+        var node = Node([:], in: context)
+        try node.set("id", id.makeNode(in: context))
+        try node.set("title", title.makeNode(in: context))
+        try node.set("contents", contents.makeNode(in: context))
+        try node.set("blog_user_id", author?.makeNode(in: context))
+        try node.set("created", createdTime.makeNode(in: context))
+        try node.set("slug_url", slugUrl.makeNode(in: context))
+        try node.set("published", published.makeNode(in: context))
 
         if let lastEdited = lastEdited {
-            node["last_edited"] = lastEdited.timeIntervalSince1970.makeNode(in: context)
+            try node.set("last_edited", lastEdited.timeIntervalSince1970.makeNode(in: context))
         }
         
         guard let providedContext = context else {
-            return try node.makeNode(in: context)
+            return node
         }
         
         if type(of: providedContext) != BlogPostContext.self {
-            return try node.makeNode(in: context)
+            return node
         }
 
         let dateFormatter = DateFormatter()
@@ -86,27 +86,27 @@ extension BlogPost: NodeRepresentable {
         dateFormatter.timeStyle = .none
         let createdDate = dateFormatter.string(from: created)
         
-        node["author_name"] = try postAuthor.get()?.name.makeNode(in: context)
-        node["author_username"] = try postAuthor.get()?.username.makeNode(in: context)
-        node["created_date"] = createdDate.makeNode(in: context)
+        try node.set("author_name", try postAuthor.get()?.name.makeNode(in: context))
+        try node.set("author_username", try postAuthor.get()?.username.makeNode(in: context))
+        try node.set("created_date", createdDate.makeNode(in: context))
         
         switch providedContext {
         case BlogPostContext.shortSnippet:
-            node["short_snippet"] = shortSnippet().makeNode(in: context)
+            try node.set("short_snippet", shortSnippet().makeNode(in: context))
             break
         case BlogPostContext.longSnippet:
-            node["long_snippet"] = longSnippet().makeNode(in: context)
+            try node.set("long_snippet", longSnippet().makeNode(in: context))
 
             let allTags = try tags.all()
             if allTags.count > 0 {
-                node["tags"] = try allTags.makeNode(in: context)
+                try node.set("tags", try allTags.makeNode(in: context))
             }
             break
         case BlogPostContext.all:
             let allTags = try tags.all()
 
             if allTags.count > 0 {
-                node["tags"] = try allTags.makeNode(in: context)
+                try node.set("tags", try allTags.makeNode(in: context))
             }
             
             let iso8601Formatter = DateFormatter()
@@ -114,19 +114,19 @@ extension BlogPost: NodeRepresentable {
             iso8601Formatter.locale = Locale(identifier: "en_US_POSIX")
             iso8601Formatter.timeZone = TimeZone(secondsFromGMT: 0)
             
-            node["created_date_iso8601"] = iso8601Formatter.string(from: created).makeNode(in: context)
+            try node.set("created_date_iso8601", iso8601Formatter.string(from: created).makeNode(in: context))
 
             if let lastEdited = lastEdited {
                 let lastEditedDate = dateFormatter.string(from: lastEdited)
-                node["last_edited_date"] = lastEditedDate.makeNode(in: context)
-                node["last_edited_date_iso8601"] = iso8601Formatter.string(from: lastEdited).makeNode(in: context)
+                try node.set("last_edited_date", lastEditedDate.makeNode(in: context))
+                try node.set("last_edited_date_iso8601", iso8601Formatter.string(from: lastEdited).makeNode(in: context))
             }
-            node["short_snippet"] = shortSnippet().makeNode(in: context)
-            node["long_snippet"] = longSnippet().makeNode(in: context)
+            try node.set("short_snippet", shortSnippet().makeNode(in: context))
+            try node.set("long_snippet", longSnippet().makeNode(in: context))
         default: break
         }
 
-        return try node.makeNode(in: context)
+        return node
     }
 }
 
@@ -230,5 +230,28 @@ extension BlogPost {
 extension BlogPost: Paginatable {
     public static var defaultPageSorts: [Sort] {
         return []
+    }
+}
+
+extension Page: NodeRepresentable {
+    public func makeNode(in context: Context?) throws -> Node {
+        var node = Node([:], in: context)
+        try node.set("data", data.makeNode(in: context))
+        
+        var paginationNode = Node([:], in: context)
+        try paginationNode.set("total", total)
+        try paginationNode.set("current_page", number)
+        try paginationNode.set("per_page", size)
+        let count = total / size
+        try paginationNode.set("total_pages", count)
+        if number < count {
+            try paginationNode.set("next_page", number + 1)
+        }
+        if number > 1 {
+            try paginationNode.set("previous_page", number - 1)
+        }
+        
+        try node.set("pagination", paginationNode)
+        return node
     }
 }

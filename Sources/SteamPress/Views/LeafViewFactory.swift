@@ -211,7 +211,7 @@ struct LeafViewFactory: ViewFactory {
         }
 
         if paginatedPosts.total > 0 {
-            parameters["posts"] = try paginatedPosts.data.makeNode(in: BlogPostContext.longSnippet)
+            parameters["posts"] = try paginatedPosts.makeNode(in: BlogPostContext.longSnippet)
         }
 
         return try createPublicView(template: "blog/profile", uri: uri, parameters: parameters, user: loggedInUser, disqusName: disqusName, siteTwitterHandle: siteTwitterHandle)
@@ -225,7 +225,7 @@ struct LeafViewFactory: ViewFactory {
         parameters["blog_index_page"] = true.makeNode(in: nil)
 
         if paginatedPosts.total > 0 {
-            parameters["posts"] = try paginatedPosts.data.makeNode(in: BlogPostContext.longSnippet)
+            parameters["posts"] = try paginatedPosts.makeNode(in: BlogPostContext.longSnippet)
         }
 
         if tags.count > 0 {
@@ -272,7 +272,7 @@ struct LeafViewFactory: ViewFactory {
         parameters["tag_page"] = true
         
         if paginatedPosts.total > 0 {
-            parameters["posts"] = try paginatedPosts.data.makeNode(in: BlogPostContext.longSnippet)
+            parameters["posts"] = try paginatedPosts.makeNode(in: BlogPostContext.longSnippet)
         }
 
         return try createPublicView(template: "blog/tag", uri: uri, parameters: parameters, user: user, disqusName: disqusName, siteTwitterHandle: siteTwitterHandle)
