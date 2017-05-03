@@ -379,7 +379,7 @@ class BlogControllerTests: XCTestCase {
     
     func testTagPageGetsOnlyPublishedPostsInDescendingOrder() throws {
         try setupDrop()
-        let post2 = TestDataBuilder.anyPost(title: "A later post", author: self.user)
+        let post2 = TestDataBuilder.anyPost(author: self.user, title: "A later post")
         try post2.save()
         let draftPost = TestDataBuilder.anyPost(author: self.user, published: false)
         try draftPost.save()
@@ -393,7 +393,7 @@ class BlogControllerTests: XCTestCase {
     
     func testAuthorPageGetsOnlyPublishedPostsInDescendingOrder() throws {
         try setupDrop()
-        let post2 = TestDataBuilder.anyPost(title: "A later post", author: self.user)
+        let post2 = TestDataBuilder.anyPost(author: self.user, title: "A later post")
         try post2.save()
         let draftPost = TestDataBuilder.anyPost(author: self.user, published: false)
         try draftPost.save()

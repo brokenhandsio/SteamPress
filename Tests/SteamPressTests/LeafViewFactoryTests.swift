@@ -253,7 +253,7 @@ class LeafViewFactoryTests: XCTestCase {
         XCTAssertEqual((viewRenderer.capturedContext?["tag"])?["post_count"], 1)
         XCTAssertEqual((viewRenderer.capturedContext?["tag"])?["name"], "tatooine")
         XCTAssertEqual(viewRenderer.capturedContext?["posts"]?["data"]?.array?.count, 1)
-        XCTAssertEqual((viewRenderer.capturedContext?["posts"]?["data"]?.array?.first)?["title"]?.string, TestDataBuilder.anyPost().title)
+        XCTAssertEqual((viewRenderer.capturedContext?["posts"]?["data"]?.array?.first)?["title"]?.string, TestDataBuilder.anyPost(author: TestDataBuilder.anyUser()).title)
         XCTAssertEqual(viewRenderer.capturedContext?["uri"]?.string, "https://test.com:443/tags/tatooine/")
         XCTAssertEqual(viewRenderer.capturedContext?["tag_page"]?.bool, true)
         XCTAssertEqual(viewRenderer.capturedContext?["user"]?["name"]?.string, "Luke")
@@ -391,7 +391,7 @@ class LeafViewFactoryTests: XCTestCase {
         
         XCTAssertEqual(viewRenderer.capturedContext?["author"]?["name"]?.string, author.name)
         XCTAssertEqual(viewRenderer.capturedContext?["posts"]?["data"]?.array?.count, posts.total)
-        XCTAssertEqual((viewRenderer.capturedContext?["posts"]?["data"]?.array?.first)?["title"]?.string, TestDataBuilder.anyPostWithImage().title)
+        XCTAssertEqual((viewRenderer.capturedContext?["posts"]?["data"]?.array?.first)?["title"]?.string, TestDataBuilder.anyPostWithImage(author: TestDataBuilder.anyUser()).title)
         XCTAssertEqual(viewRenderer.capturedContext?["uri"]?.string, authorURI.description)
         XCTAssertTrue((viewRenderer.capturedContext?["profile_page"]?.bool) ?? false)
         XCTAssertNil(viewRenderer.capturedContext?["my_profile"])
@@ -485,7 +485,7 @@ class LeafViewFactoryTests: XCTestCase {
     func testBlogAdminViewGetsCorrectParameters() throws {
         // Add some stuff to the database
         let (posts, _, users) = try setupBlogIndex()
-        let draftPost = TestDataBuilder.anyPost(title: "[DRAFT] This will be awesome", author: users.first!, published: false)
+        let draftPost = TestDataBuilder.anyPost(author: users.first!, title: "[DRAFT] This will be awesome", published: false)
         try draftPost.save()
         let _ = try viewFactory.createBlogAdminView()
         XCTAssertNil(viewRenderer.capturedContext?["errors"])
@@ -594,7 +594,7 @@ class LeafViewFactoryTests: XCTestCase {
     }
     
     func testCreateBlogPostViewWhenEditing() throws {
-        let postToEdit = TestDataBuilder.anyPost()
+        let postToEdit = TestDataBuilder.anyPost(author: TestDataBuilder.anyUser())
         let _ = try viewFactory.createBlogPostView(uri: editPostURI, title: postToEdit.title, contents: postToEdit.contents, slugUrl: postToEdit.slugUrl, tags: [Node(node: "test")], isEditing: true, postToEdit: postToEdit)
         XCTAssertEqual(viewRenderer.capturedContext?["post_path_prefix"]?.string, "https://test.com:443/posts/")
         XCTAssertFalse((viewRenderer.capturedContext?["title_error"]?.bool) ?? true)
@@ -632,7 +632,7 @@ class LeafViewFactoryTests: XCTestCase {
     }
     
     func testDraftPassedThroughWhenEditingABlogPostThatHasNotBeenPublished() throws {
-        let postToEdit = TestDataBuilder.anyPost(published: false)
+        let postToEdit = TestDataBuilder.anyPost(author: TestDataBuilder.anyUser(), published: false)
         let _ = try viewFactory.createBlogPostView(uri: editPostURI, title: postToEdit.title, contents: postToEdit.contents, slugUrl: postToEdit.slugUrl, tags: [Node(node: "test")], isEditing: true, postToEdit: postToEdit)
         XCTAssertEqual(viewRenderer.capturedContext?["post"]?["published"]?.bool, false)
     }
