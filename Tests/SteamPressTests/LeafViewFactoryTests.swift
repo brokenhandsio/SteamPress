@@ -33,13 +33,13 @@ class LeafViewFactoryTests: XCTestCase {
         ("testUserPassedToBlogPostPageIfUserPassedIn", testUserPassedToBlogPostPageIfUserPassedIn),
         ("testDisqusNamePassedToBlogPostPageIfPassedIn", testDisqusNamePassedToBlogPostPageIfPassedIn),
         ("testTwitterHandlePassedToBlogPostPageIfPassedIn", testTwitterHandlePassedToBlogPostPageIfPassedIn),
-//        ("testBlogIndexPageGivenCorrectParameters", testBlogIndexPageGivenCorrectParameters),
-//        ("testNoPostsPassedIntoBlogIndexIfNoneAvailable", testNoPostsPassedIntoBlogIndexIfNoneAvailable),
-//        ("testNoAuthorsPassedIntoBlogIndexIfNoneCreated", testNoAuthorsPassedIntoBlogIndexIfNoneCreated),
-//        ("testNoTagsPassedIntoBlogIndexIfNoneCreted", testNoTagsPassedIntoBlogIndexIfNoneCreted),
-//        ("testUserPassedToBlogIndexIfUserPassedIn", testUserPassedToBlogIndexIfUserPassedIn),
-//        ("testDisqusNamePassedToBlogIndexIfPassedIn", testDisqusNamePassedToBlogIndexIfPassedIn),
-//        ("testTwitterHandlePassedToBlogIndexIfPassedIn", testTwitterHandlePassedToBlogIndexIfPassedIn),
+        ("testBlogIndexPageGivenCorrectParameters", testBlogIndexPageGivenCorrectParameters),
+        ("testNoPostsPassedIntoBlogIndexIfNoneAvailable", testNoPostsPassedIntoBlogIndexIfNoneAvailable),
+        ("testNoAuthorsPassedIntoBlogIndexIfNoneCreated", testNoAuthorsPassedIntoBlogIndexIfNoneCreated),
+        ("testNoTagsPassedIntoBlogIndexIfNoneCreted", testNoTagsPassedIntoBlogIndexIfNoneCreted),
+        ("testUserPassedToBlogIndexIfUserPassedIn", testUserPassedToBlogIndexIfUserPassedIn),
+        ("testDisqusNamePassedToBlogIndexIfPassedIn", testDisqusNamePassedToBlogIndexIfPassedIn),
+        ("testTwitterHandlePassedToBlogIndexIfPassedIn", testTwitterHandlePassedToBlogIndexIfPassedIn),
         ("testAuthorViewHasCorrectParametersSet", testAuthorViewHasCorrectParametersSet),
         ("testAuthorViewMyProfileSetIfViewingMyProfile", testAuthorViewMyProfileSetIfViewingMyProfile),
         ("testAuthorViewHasNoPostsSetIfNoneCreated", testAuthorViewHasNoPostsSetIfNoneCreated),
@@ -312,58 +312,58 @@ class LeafViewFactoryTests: XCTestCase {
         XCTAssertEqual(viewRenderer.capturedContext?["site_twitter_handle"]?.string, "brokenhandsio")
     }
     
-//    func testBlogIndexPageGivenCorrectParameters() throws {
-//        let (posts, tags, authors) = try setupBlogIndex()
-//        _ = try viewFactory.blogIndexView(uri: indexURI, paginatedPosts: posts.paginate(for: indexRequest), tags: tags, authors: authors, loggedInUser: nil, disqusName: nil, siteTwitterHandle: nil)
-//
-//        XCTAssertEqual(viewRenderer.capturedContext?["uri"]?.string, indexURI.description)
-//        XCTAssertTrue((viewRenderer.capturedContext?["blog_index_page"]?.bool) ?? false)
-//        
-//        XCTAssertEqual(viewRenderer.capturedContext?["posts"]?["data"]?.array?.count, posts.count)
-//        XCTAssertEqual((viewRenderer.capturedContext?["posts"]?["data"]?.array?.first)?["title"]?.string, posts.first?.title)
-//        XCTAssertEqual(viewRenderer.capturedContext?["tags"]?.array?.count, tags.count)
-//        XCTAssertEqual((viewRenderer.capturedContext?["tags"]?.array?.first)?["name"]?.string, tags.first?.name)
-//        XCTAssertEqual(viewRenderer.capturedContext?["authors"]?.array?.count, authors.count)
-//        XCTAssertEqual((viewRenderer.capturedContext?["authors"]?.array?.first)?["name"]?.string, authors.first?.name)
-//        XCTAssertEqual(viewRenderer.leafPath, "blog/blog")
-//    }
-//    
-//    func testNoPostsPassedIntoBlogIndexIfNoneAvailable() throws {
-//        let (_, tags, authors) = try setupBlogIndex()
-//        let emptyBlogPosts: [BlogPost] = []
-//        _ = try viewFactory.blogIndexView(uri: indexURI, paginatedPosts: emptyBlogPosts.paginator(5, request: indexRequest), tags: tags, authors: authors, loggedInUser: nil, disqusName: nil, siteTwitterHandle: nil)
-//        XCTAssertNil(viewRenderer.capturedContext?["posts"])
-//    }
-//    
-//    func testNoAuthorsPassedIntoBlogIndexIfNoneCreated() throws {
-//        let (posts, _, authors) = try setupBlogIndex()
-//        _ = try viewFactory.blogIndexView(uri: indexURI, paginatedPosts: posts.paginator(5, request: indexRequest), tags: [], authors: authors, loggedInUser: nil, disqusName: nil, siteTwitterHandle: nil)
-//        XCTAssertNil(viewRenderer.capturedContext?["tags"])
-//    }
-//    
-//    func testNoTagsPassedIntoBlogIndexIfNoneCreted() throws {
-//        let (posts, tags, _) = try setupBlogIndex()
-//        _ = try viewFactory.blogIndexView(uri: indexURI, paginatedPosts: posts.paginator(5, request: indexRequest), tags: tags, authors: [], loggedInUser: nil, disqusName: nil, siteTwitterHandle: nil)
-//        XCTAssertNil(viewRenderer.capturedContext?["authors"])
-//    }
-//    
-//    func testUserPassedToBlogIndexIfUserPassedIn() throws {
-//        let (posts, tags, authors) = try setupBlogIndex()
-//        _ = try viewFactory.blogIndexView(uri: indexURI, paginatedPosts: posts.paginator(5, request: indexRequest), tags: tags, authors: authors, loggedInUser: authors[0], disqusName: nil, siteTwitterHandle: nil)
-//        XCTAssertEqual(viewRenderer.capturedContext?["user"]?["name"]?.string, authors.first?.name)
-//    }
-//    
-//    func testDisqusNamePassedToBlogIndexIfPassedIn() throws {
-//        let (posts, tags, authors) = try setupBlogIndex()
-//        _ = try viewFactory.blogIndexView(uri: indexURI, paginatedPosts: posts.paginator(5, request: indexRequest), tags: tags, authors: authors, loggedInUser: nil, disqusName: "brokenhands", siteTwitterHandle: nil)
-//        XCTAssertEqual(viewRenderer.capturedContext?["disqus_name"]?.string, "brokenhands")
-//    }
-//    
-//    func testTwitterHandlePassedToBlogIndexIfPassedIn() throws {
-//        let (posts, tags, authors) = try setupBlogIndex()
-//        _ = try viewFactory.blogIndexView(uri: indexURI, paginatedPosts: posts.paginator(5, request: indexRequest), tags: tags, authors: authors, loggedInUser: nil, disqusName: nil, siteTwitterHandle: "brokenhandsio")
-//        XCTAssertEqual(viewRenderer.capturedContext?["site_twitter_handle"]?.string, "brokenhandsio")
-//    }
+    func testBlogIndexPageGivenCorrectParameters() throws {
+        let (posts, tags, authors) = try setupBlogIndex()
+        _ = try viewFactory.blogIndexView(uri: indexURI, paginatedPosts: posts, tags: tags, authors: authors, loggedInUser: nil, disqusName: nil, siteTwitterHandle: nil)
+
+        XCTAssertEqual(viewRenderer.capturedContext?["uri"]?.string, indexURI.description)
+        XCTAssertTrue((viewRenderer.capturedContext?["blog_index_page"]?.bool) ?? false)
+        
+        XCTAssertEqual(viewRenderer.capturedContext?["posts"]?["data"]?.array?.count, posts.total)
+        XCTAssertEqual((viewRenderer.capturedContext?["posts"]?["data"]?.array?.first)?["title"]?.string, posts.data.first?.title)
+        XCTAssertEqual(viewRenderer.capturedContext?["tags"]?.array?.count, tags.count)
+        XCTAssertEqual((viewRenderer.capturedContext?["tags"]?.array?.first)?["name"]?.string, tags.first?.name)
+        XCTAssertEqual(viewRenderer.capturedContext?["authors"]?.array?.count, authors.count)
+        XCTAssertEqual((viewRenderer.capturedContext?["authors"]?.array?.first)?["name"]?.string, authors.first?.name)
+        XCTAssertEqual(viewRenderer.leafPath, "blog/blog")
+    }
+    
+    func testNoPostsPassedIntoBlogIndexIfNoneAvailable() throws {
+        let (_, tags, authors) = try setupBlogIndex()
+        let emptyBlogPosts = try BlogPost.makeQuery().filter("title", "A non existent title").paginate(for: indexRequest)
+        _ = try viewFactory.blogIndexView(uri: indexURI, paginatedPosts: emptyBlogPosts, tags: tags, authors: authors, loggedInUser: nil, disqusName: nil, siteTwitterHandle: nil)
+        XCTAssertNil(viewRenderer.capturedContext?["posts"])
+    }
+    
+    func testNoAuthorsPassedIntoBlogIndexIfNoneCreated() throws {
+        let (posts, _, authors) = try setupBlogIndex()
+        _ = try viewFactory.blogIndexView(uri: indexURI, paginatedPosts: posts, tags: [], authors: authors, loggedInUser: nil, disqusName: nil, siteTwitterHandle: nil)
+        XCTAssertNil(viewRenderer.capturedContext?["tags"])
+    }
+    
+    func testNoTagsPassedIntoBlogIndexIfNoneCreted() throws {
+        let (posts, tags, _) = try setupBlogIndex()
+        _ = try viewFactory.blogIndexView(uri: indexURI, paginatedPosts: posts, tags: tags, authors: [], loggedInUser: nil, disqusName: nil, siteTwitterHandle: nil)
+        XCTAssertNil(viewRenderer.capturedContext?["authors"])
+    }
+    
+    func testUserPassedToBlogIndexIfUserPassedIn() throws {
+        let (posts, tags, authors) = try setupBlogIndex()
+        _ = try viewFactory.blogIndexView(uri: indexURI, paginatedPosts: posts, tags: tags, authors: authors, loggedInUser: authors[0], disqusName: nil, siteTwitterHandle: nil)
+        XCTAssertEqual(viewRenderer.capturedContext?["user"]?["name"]?.string, authors.first?.name)
+    }
+    
+    func testDisqusNamePassedToBlogIndexIfPassedIn() throws {
+        let (posts, tags, authors) = try setupBlogIndex()
+        _ = try viewFactory.blogIndexView(uri: indexURI, paginatedPosts: posts, tags: tags, authors: authors, loggedInUser: nil, disqusName: "brokenhands", siteTwitterHandle: nil)
+        XCTAssertEqual(viewRenderer.capturedContext?["disqus_name"]?.string, "brokenhands")
+    }
+    
+    func testTwitterHandlePassedToBlogIndexIfPassedIn() throws {
+        let (posts, tags, authors) = try setupBlogIndex()
+        _ = try viewFactory.blogIndexView(uri: indexURI, paginatedPosts: posts, tags: tags, authors: authors, loggedInUser: nil, disqusName: nil, siteTwitterHandle: "brokenhandsio")
+        XCTAssertEqual(viewRenderer.capturedContext?["site_twitter_handle"]?.string, "brokenhandsio")
+    }
     
     func testAuthorViewHasCorrectParametersSet() throws {
         let (author, posts) = try setupAuthorPage()
@@ -393,11 +393,10 @@ class LeafViewFactoryTests: XCTestCase {
     }
     
     func testAuthorViewHasNoPostsSetIfNoneCreated() throws {
-//        let (author, _) = try setupAuthorPage()
-//        let emptyPosts: [BlogPost] = []
-//        let paginatedEmptyPosts = try emptyPosts.paginator(5, request: authorRequest)
-//        let _ = try viewFactory.createProfileView(uri: authorURI, author: author, isMyProfile: true, paginatedPosts: paginatedEmptyPosts, loggedInUser: nil, disqusName: nil, siteTwitterHandle: nil)
-//        XCTAssertNil(viewRenderer.capturedContext?["posts"])
+        let (author, _) = try setupAuthorPage()
+        let emptyPosts = try BlogPost.makeQuery().filter("title", "Some non-existing query").paginate(for: authorRequest)
+        let _ = try viewFactory.createProfileView(uri: authorURI, author: author, isMyProfile: true, paginatedPosts: emptyPosts, loggedInUser: nil, disqusName: nil, siteTwitterHandle: nil)
+        XCTAssertNil(viewRenderer.capturedContext?["posts"])
     }
     
     func testAuthorViewGetsLoggedInUserIfProvider() throws {
@@ -473,7 +472,7 @@ class LeafViewFactoryTests: XCTestCase {
         XCTAssertEqual(viewRenderer.capturedContext?["users"]?.array?.count, 2)
         XCTAssertEqual(viewRenderer.capturedContext?["users"]?.array?.first?["name"]?.string, users.first?.name)
         XCTAssertEqual(viewRenderer.capturedContext?["published_posts"]?.array?.count, 2)
-        XCTAssertEqual(viewRenderer.capturedContext?["published_posts"]?.array?.first?["title"]?.string, posts[1].title)
+        XCTAssertEqual(viewRenderer.capturedContext?["published_posts"]?.array?.first?["title"]?.string, posts.data[1].title)
         XCTAssertEqual(viewRenderer.capturedContext?["draft_posts"]?.array?.count, 1)
         XCTAssertEqual(viewRenderer.capturedContext?["draft_posts"]?.array?.first?["title"]?.string, draftPost.title)
         XCTAssertEqual(viewRenderer.leafPath, "blog/admin/index")
@@ -535,15 +534,15 @@ class LeafViewFactoryTests: XCTestCase {
     
     func testCreateUserViewForEditing() throws {
 //        let _ = try viewFactory.createUserView(editing: true, errors: nil, name: "Luke", username: "luke", userId: Node(node: 1), profilePicture: "https://static.brokenhands.io/steampress/images/authors/luke.png", twitterHandle: "luke", biography: "The last Jedi in the Galaxy", tagline: "A son without a father")
-//        XCTAssertEqual(viewRenderer.capturedContext?["name_supplied"]?.string, "Luke")
-//        XCTAssertEqual(viewRenderer.capturedContext?["username_supplied"]?.string, "luke")
-//        XCTAssertTrue((viewRenderer.capturedContext?["editing"]?.bool) ?? false)
-//        XCTAssertEqual(viewRenderer.capturedContext?["user_id"], Node(node: 1))
-//        XCTAssertEqual(viewRenderer.capturedContext?["profile_picture_supplied"]?.string, "https://static.brokenhands.io/steampress/images/authors/luke.png")
-//        XCTAssertEqual(viewRenderer.capturedContext?["twitter_handle_supplied"]?.string, "luke")
-//        XCTAssertEqual(viewRenderer.capturedContext?["tagline_supplied"]?.string, "A son without a father")
-//        XCTAssertEqual(viewRenderer.capturedContext?["biography_supplied"]?.string, "The last Jedi in the Galaxy")
-//        XCTAssertEqual(viewRenderer.leafPath, "blog/admin/createUser")
+        XCTAssertEqual(viewRenderer.capturedContext?["name_supplied"]?.string, "Luke")
+        XCTAssertEqual(viewRenderer.capturedContext?["username_supplied"]?.string, "luke")
+        XCTAssertTrue((viewRenderer.capturedContext?["editing"]?.bool) ?? false)
+        XCTAssertEqual(viewRenderer.capturedContext?["user_id"], try Node(node: 1))
+        XCTAssertEqual(viewRenderer.capturedContext?["profile_picture_supplied"]?.string, "https://static.brokenhands.io/steampress/images/authors/luke.png")
+        XCTAssertEqual(viewRenderer.capturedContext?["twitter_handle_supplied"]?.string, "luke")
+        XCTAssertEqual(viewRenderer.capturedContext?["tagline_supplied"]?.string, "A son without a father")
+        XCTAssertEqual(viewRenderer.capturedContext?["biography_supplied"]?.string, "The last Jedi in the Galaxy")
+        XCTAssertEqual(viewRenderer.leafPath, "blog/admin/createUser")
     }
     
     func testCreateUserViewThrowsWhenTryingToEditWithoutUserId() throws {
@@ -633,7 +632,7 @@ class LeafViewFactoryTests: XCTestCase {
     
     // MARK: - Helpers
     
-    private func setupBlogIndex() throws -> ([BlogPost], [BlogTag], [BlogUser]) {
+    private func setupBlogIndex() throws -> (Page<BlogPost>, [BlogTag], [BlogUser]) {
         let user1 = TestDataBuilder.anyUser()
         try user1.save()
         let user2 = TestDataBuilder.anyUser(name: "Han", username: "han")
@@ -645,7 +644,7 @@ class LeafViewFactoryTests: XCTestCase {
         let tag = BlogTag(name: "tatooine")
         try tag.save()
         try BlogTag.addTag(tag.name, to: post1)
-        return ([post1, post2], [tag], [user1, user2])
+        return try (BlogPost.makeQuery().paginate(for: indexRequest), [tag], [user1, user2])
     }
     
     private func setupBlogPost() throws -> (BlogPost, BlogUser) {
