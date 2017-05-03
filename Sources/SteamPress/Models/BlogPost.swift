@@ -72,7 +72,11 @@ extension BlogPost: NodeRepresentable {
             node["last_edited"] = lastEdited.timeIntervalSince1970.makeNode(in: context)
         }
         
-        if type(of: context) != BlogPostContext.self {
+        guard let providedContext = context else {
+            return try node.makeNode(in: context)
+        }
+        
+        if type(of: providedContext) != BlogPostContext.self {
             return try node.makeNode(in: context)
         }
 
@@ -85,10 +89,6 @@ extension BlogPost: NodeRepresentable {
         node["author_name"] = try postAuthor.get()?.name.makeNode(in: context)
         node["author_username"] = try postAuthor.get()?.username.makeNode(in: context)
         node["created_date"] = createdDate.makeNode(in: context)
-
-        guard let providedContext = context else {
-            return try node.makeNode(in: context)
-        }
         
         switch providedContext {
         case BlogPostContext.shortSnippet:
