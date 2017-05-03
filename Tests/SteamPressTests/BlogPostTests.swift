@@ -70,20 +70,25 @@ class BlogPostTests: XCTestCase {
     }
     
     func testSlugUrlGivenUniqueNameIfDuplicate() throws {
-        try setupDatabase(preparations: [BlogPost.self])
+        let database = Database(try MemoryDriver(()))
+        BlogPost.database = database
+        try BlogPost.prepare(database)
+        try BlogPostDraft.prepare(database)
+        BlogUser.database = database
+        try BlogUser.prepare(database)
+        try BlogUserExtraInformation.prepare(database)
         
         let title = "A duplicated title"
         let expectedSlugUrl = "a-duplicated-title-2"
-        do {
-            BlogPost.database = Database(try MemoryDriver())
+//        do {
             let post1 = TestDataBuilder.anyPost(slugUrl: title)
             try post1.save()
             let post2 = TestDataBuilder.anyPost(slugUrl: title)
             XCTAssertEqual(expectedSlugUrl, post2.slugUrl)
-        }
-        catch {
-            XCTFail("Test threw unexpected exception")
-        }
+//        }
+//        catch {
+//            XCTFail("Test threw unexpected exception")
+//        }
     }
     
     func testShortSnippet() {
@@ -97,9 +102,24 @@ class BlogPostTests: XCTestCase {
         let shortSnippet = post.longSnippet()
         XCTAssertLessThan(shortSnippet.count, 1500)
     }
+
     
     func testCreatedAndEditedDateInISOFormForAllContext() throws {
-        try setupDatabase(preparations: [BlogPost.self, BlogTag.self, BlogUser.self, Pivot<BlogPost, BlogTag>.self])
+        
+//        let config = try Config()
+//        let drop = try Droplet(config)
+        let database = Database(try MemoryDriver(()))
+        BlogPost.database = database
+        try BlogPost.prepare(database)
+        try BlogPostDraft.prepare(database)
+        BlogTag.database = database
+        try BlogTag.prepare(database)
+        BlogUser.database = database
+        try BlogUser.prepare(database)
+        try BlogUserExtraInformation.prepare(database)
+        Pivot<BlogPost, BlogTag>.database = database
+        try Pivot<BlogPost, BlogTag>.prepare(database)
+        
         let created = Date(timeIntervalSince1970: 1.0)
         let lastEdited = Date(timeIntervalSince1970: 10.0)
         let author = TestDataBuilder.anyUser()
@@ -115,22 +135,5 @@ class BlogPostTests: XCTestCase {
 
     // TODO test tag pivot logic
     // TODO test context make node stuff
-    
-    func setupDatabase(preparations: [Preparation.Type]) throws {
-        let database = Database(try MemoryDriver())
-        for preparation in preparations {
-            try preparation.prepare(database)
-        }
-        
-//        BlogPost.database = database
-//        let printConsole = PrintConsole()
-//        let prepare = Prepare(console: printConsole, preparations: preparations, database: database)
-//        do {
-//            try prepare.run(arguments: [])
-//        }
-//        catch {
-//            XCTFail("failed to prepapre DB")
-//        }
-    }
 
 }

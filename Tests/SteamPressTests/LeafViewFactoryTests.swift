@@ -93,14 +93,23 @@ class LeafViewFactoryTests: XCTestCase {
         tagRequest = Request(method: .get, uri: tagURI)
         authorRequest = Request(method: .get, uri: authorURI)
         indexRequest = Request(method: .get, uri: indexURI)
-        let printConsole = PrintConsole()
-//        let prepare = Prepare(console: printConsole, preparations: [BlogUser.self, BlogPost.self, BlogTag.self, Pivot<BlogPost, BlogTag>.self], database: database)
-//        do {
-//            try prepare.run(arguments: [])
-//        }
-//        catch {
-//            XCTFail("failed to prepapre DB")
-//        }
+        
+        do {
+            let database = try Database(MemoryDriver())
+            BlogUser.database = database
+            BlogPost.database = database
+            BlogTag.database = database
+            Pivot<BlogPost, BlogTag>.database = database
+            try BlogUser.prepare(database)
+            try BlogPost.prepare(database)
+            try BlogTag.prepare(database)
+            try BlogPostDraft.prepare(database)
+            try BlogUserExtraInformation.prepare(database)
+            Pivot<BlogPost, BlogTag>.database = database
+        }
+        catch {
+            XCTFail()
+        }
     }
     
     // MARK: - Tests

@@ -42,6 +42,7 @@ final class BlogUser: Model {
         var row = Row()
         try row.set("name", name)
         try row.set("username", username)
+        try row.set("password", password)
         try row.set("reset_password_required", resetPasswordRequired)
         try row.set("profile_picture", profilePicture)
         try row.set("twitter_handle", twitterHandle)
@@ -101,6 +102,10 @@ extension BlogUser: Preparation {
             users.string("username", unique: true)
             users.string("password")
             users.bool("reset_password_required")
+            users.string("profile_picture", optional: true, default: nil)
+            users.string("twitter_handle", optional: true, default: nil)
+            users.custom("biography", type: "TEXT", optional: true, default: nil)
+            users.string("tagline", optional: true, default: nil)
         }
     }
     
