@@ -38,6 +38,7 @@ class BlogControllerTests: XCTestCase {
     ]
 
     private var drop: Droplet!
+    private var database: Database!
     private var viewFactory: CapturingViewFactory!
     private var post: BlogPost!
     private var user: BlogUser!
@@ -61,11 +62,12 @@ class BlogControllerTests: XCTestCase {
         blogIndexRequest = try! Request(method: .get, uri: blogIndexPath)
         allTagsRequest = try! Request(method: .get, uri: allTagsPath)
         allAuthorsRequest = try! Request(method: .get, uri: allAuthorsPath)
+        database = try! Database(MemoryDriver())
+        try! Droplet.prepare(database: database)
     }
 
     func setupDrop(config: Config? = nil, loginUser: Bool = false) throws {
         drop = try Droplet()
-//        drop.database = Database(MemoryDriver())
 
         let steampress = SteamPress.Provider(postsPerPage: 5)
         steampress.setup(drop)

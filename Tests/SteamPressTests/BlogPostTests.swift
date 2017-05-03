@@ -20,6 +20,13 @@ class BlogPostTests: XCTestCase {
         ("testLongSnippet", testLongSnippet),
         ("testCreatedAndEditedDateInISOFormForAllContext", testCreatedAndEditedDateInISOFormForAllContext)
     ]
+    
+    private var database: Database!
+    
+    override func setUp() {
+        database = try! Database(MemoryDriver())
+        try! Droplet.prepare(database: database)
+    }
 
     func testThatSlugUrlCalculatedCorrectlyForTitleWithSpaces() {
         let title = "This is a title"
@@ -70,18 +77,6 @@ class BlogPostTests: XCTestCase {
     }
     
     func testSlugUrlGivenUniqueNameIfDuplicate() throws {
-        let database = try Database(MemoryDriver())
-        BlogUser.database = database
-        BlogPost.database = database
-        BlogTag.database = database
-        Pivot<BlogPost, BlogTag>.database = database
-        try BlogUser.prepare(database)
-        try BlogPost.prepare(database)
-        try BlogTag.prepare(database)
-        try BlogPostDraft.prepare(database)
-        try BlogUserExtraInformation.prepare(database)
-        try Pivot<BlogPost, BlogTag>.prepare(database)
-        
         let title = "A duplicated title"
         let expectedSlugUrl = "a-duplicated-title-2"
         let author = TestDataBuilder.anyUser()
@@ -107,21 +102,6 @@ class BlogPostTests: XCTestCase {
 
     
     func testCreatedAndEditedDateInISOFormForAllContext() throws {
-        
-//        let config = try Config()
-//        let drop = try Droplet(config)
-        let database = Database(try MemoryDriver(()))
-        BlogPost.database = database
-        try BlogPost.prepare(database)
-        try BlogPostDraft.prepare(database)
-        BlogTag.database = database
-        try BlogTag.prepare(database)
-        BlogUser.database = database
-        try BlogUser.prepare(database)
-        try BlogUserExtraInformation.prepare(database)
-        Pivot<BlogPost, BlogTag>.database = database
-        try Pivot<BlogPost, BlogTag>.prepare(database)
-        
         let created = Date(timeIntervalSince1970: 1.0)
         let lastEdited = Date(timeIntervalSince1970: 10.0)
         let author = TestDataBuilder.anyUser()

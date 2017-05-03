@@ -93,32 +93,12 @@ class LeafViewFactoryTests: XCTestCase {
         tagRequest = Request(method: .get, uri: tagURI)
         authorRequest = Request(method: .get, uri: authorURI)
         indexRequest = Request(method: .get, uri: indexURI)
-        
-        do {
-            database = try Database(MemoryDriver())
-            BlogUser.database = database
-            BlogPost.database = database
-            BlogTag.database = database
-            Pivot<BlogPost, BlogTag>.database = database
-            try BlogUser.prepare(database)
-            try BlogPost.prepare(database)
-            try BlogTag.prepare(database)
-            try BlogPostDraft.prepare(database)
-            try BlogUserExtraInformation.prepare(database)
-            try Pivot<BlogPost, BlogTag>.prepare(database)
-        }
-        catch {
-            XCTFail()
-        }
+        database = try! Database(MemoryDriver())
+        try! Droplet.prepare(database: database)
     }
     
     override func tearDown() {
-//        try! BlogUser.revert(database)
-//        try! BlogPost.revert(database)
-//        try! BlogTag.revert(database)
-//        try! BlogPostDraft.revert(database)
-//        try! BlogUserExtraInformation.revert(database)
-//        try! Pivot<BlogPost, BlogTag>.revert(database)
+        //try! Droplet.teardown(database: database)
     }
     
     // MARK: - Tests

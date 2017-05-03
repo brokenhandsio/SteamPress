@@ -26,8 +26,7 @@ class BlogAdminControllerTests: XCTestCase {
         blogController.addRoutes()
 
         let database = Database(try MemoryDriver(()))
-        BlogTag.database = database
-        try BlogTag.prepare(database)
+        try Droplet.prepare(database: database)
             
         try tag1.save()
         try tag2.save()
