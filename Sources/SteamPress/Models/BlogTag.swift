@@ -1,3 +1,4 @@
+
 import Foundation
 import Vapor
 import FluentProvider
@@ -25,27 +26,27 @@ class BlogTag: Model {
 extension BlogTag: NodeRepresentable {
     func makeNode(in context: Context?) throws -> Node {
         
-        var node: [String: Node] = [:]
-        node["id"] = try id.makeNode(in: context)
-        node["name"] = name.makeNode(in: context)
+        var node = Node([:], in: context)
+        try node.set("id", id)
+        try node.set("name", name)
         
         guard let urlEncodedName = name.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) else {
-            return try node.makeNode(in: context)
+            return node
         }
         
-        node["url_encoded_name"] = urlEncodedName.makeNode(in: context)
+        try node.set("url_encoded_name", urlEncodedName)
         
         guard let providedContext = context else {
-            return try node.makeNode(in: context)
+            return node
         }
         
         switch providedContext {
         case BlogTagContext.withPostCount:
-            node["post_count"] = try sortedPosts().count().makeNode(in: context)
+            try node.set("post_count", sortedPosts().count())
         default: break
         }
         
-        return try node.makeNode(in: context)
+        return node
     }
 }
 

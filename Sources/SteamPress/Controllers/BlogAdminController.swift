@@ -13,6 +13,7 @@ struct BlogAdminController {
     fileprivate let pathCreator: BlogPathCreator
     fileprivate let viewFactory: ViewFactory
     fileprivate let postsPerPage: Int
+    fileprivate let log: LogProtocol
 
     // MARK: - Initialiser
     init(drop: Droplet, pathCreator: BlogPathCreator, viewFactory: ViewFactory, postsPerPage: Int) {
@@ -20,6 +21,7 @@ struct BlogAdminController {
         self.pathCreator = pathCreator
         self.viewFactory = viewFactory
         self.postsPerPage = postsPerPage
+        self.log = drop.log
     }
 
     // MARK: - Route setup
@@ -92,7 +94,7 @@ struct BlogAdminController {
         let creationDate = Date()
 
         // Make sure slugUrl is unique
-        slugUrl = BlogPost.generateUniqueSlugUrl(from: slugUrl)
+        slugUrl = BlogPost.generateUniqueSlugUrl(from: slugUrl, logger: log)
         
         var published = false
         
@@ -100,7 +102,7 @@ struct BlogAdminController {
             published = true
         }
 
-        let newPost = BlogPost(title: title, contents: contents, author: try request.user(), creationDate: creationDate, slugUrl: slugUrl, published: published)
+        let newPost = BlogPost(title: title, contents: contents, author: try request.user(), creationDate: creationDate, slugUrl: slugUrl, published: published, logger: log)
         try newPost.save()
 
         // Save the tags
@@ -173,7 +175,7 @@ struct BlogAdminController {
         post.title = title
         post.contents = contents
         if (post.slugUrl != slugUrl) {
-            post.slugUrl = BlogPost.generateUniqueSlugUrl(from: slugUrl)
+            post.slugUrl = BlogPost.generateUniqueSlugUrl(from: slugUrl, logger: log)
         }
 
         let existing = try post.tags.all()
@@ -368,12 +370,12 @@ struct BlogAdminController {
                 let user = BlogUser(name: "Admin", username: "admin", password: hashedPasswordString, profilePicture: nil, twitterHandle: nil, biography: nil, tagline: "Admin for the blog")
                 try user.save()
                 
-                print("An Admin user been created for you - the username is admin and the password is \(password)")
-                print("You will be asked to change your password once you have logged in, please do this immediately!")
+                log.error("An Admin user been created for you - the username is admin and the password is \(password)")
+                log.error("You will be asked to change your password once you have logged in, please do this immediately!")
             }
         }
         catch {
-            print("There was an error creating a new admin user: \(error)")
+            log.error("There was an error creating a new admin user: \(error)")
         }
         
         let loginRequired = request.uri.query == "loginRequired"
@@ -420,7 +422,7 @@ struct BlogAdminController {
             return Response(redirect: pathCreator.createPath(for: "admin"))
         }
         catch {
-            print("Got error logging in \(error)")
+            log.debug("Got error logging in \(error)")
             let loginError = ["Your username or password was incorrect"]
             request.storage.removeValue(forKey: "remember_me")
             return try viewFactory.createLoginView(loginWarning: false, errors: loginError, username: username, password: "")

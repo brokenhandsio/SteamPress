@@ -56,40 +56,40 @@ final class BlogUser: Model {
 extension BlogUser: NodeRepresentable {
 
     func makeNode(in context: Context?) throws -> Node {
-        var userNode: [String: NodeRepresentable] = [:]
-        userNode["id"] = try id.makeNode(in: context)
-        userNode["name"] = name.makeNode(in: context)
-        userNode["username"] = username.makeNode(in: context)
-        userNode["reset_password_required"] = resetPasswordRequired.makeNode(in: context)
+        var node = Node([:], in: context)
+        try node.set("id", id)
+        try node.set("name", name)
+        try node.set("username", username)
+        try node.set("reset_password_required", resetPasswordRequired)
         
         if let profilePicture = profilePicture {
-            userNode["profile_picture"] = profilePicture.makeNode(in: context)
+            try node.set("profile_picture", profilePicture)
         }
         
         if let twitterHandle = twitterHandle {
-            userNode["twitter_handle"] = twitterHandle.makeNode(in: context)
+            try node.set("twitter_handle", twitterHandle)
         }
         
         if let biography = biography {
-            userNode["biography"] = biography.makeNode(in: context)
+            try node.set("biography", biography)
         }
         
         if let tagline = tagline {
-            userNode["tagline"] = tagline.makeNode(in: context)
+            try node.set("tagline", tagline)
         }
         
         guard let providedContext = context else {
-            return try userNode.makeNode(in: context)
+            return node
         }
         
         switch providedContext {
         case BlogUserContext.withPostCount:
-            userNode["post_count"] = try sortedPosts().count().makeNode(in: context)
+            try node.set("post_count", try sortedPosts().count())
         default:
             break
         }
         
-        return try userNode.makeNode(in: context)
+        return node
     }
     
 }
