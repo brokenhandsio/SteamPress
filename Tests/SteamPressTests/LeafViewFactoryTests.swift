@@ -71,7 +71,7 @@ class LeafViewFactoryTests: XCTestCase {
     // MARK: - Properties
     private var viewFactory: LeafViewFactory!
     private var viewRenderer: CapturingViewRenderer!
-//    private let database = Database(MemoryDriver())
+    private var database: Database!
     
     private let tagsURI = URI(scheme: "https", hostname: "test.com", path: "tags/")
     private let authorsURI = URI(scheme: "https", hostname: "test.com", path: "authors/")
@@ -95,7 +95,7 @@ class LeafViewFactoryTests: XCTestCase {
         indexRequest = Request(method: .get, uri: indexURI)
         
         do {
-            let database = try Database(MemoryDriver())
+            database = try Database(MemoryDriver())
             BlogUser.database = database
             BlogPost.database = database
             BlogTag.database = database
@@ -110,6 +110,15 @@ class LeafViewFactoryTests: XCTestCase {
         catch {
             XCTFail()
         }
+    }
+    
+    override func tearDown() {
+//        try! BlogUser.revert(database)
+//        try! BlogPost.revert(database)
+//        try! BlogTag.revert(database)
+//        try! BlogPostDraft.revert(database)
+//        try! BlogUserExtraInformation.revert(database)
+//        try! Pivot<BlogPost, BlogTag>.revert(database)
     }
     
     // MARK: - Tests
@@ -131,9 +140,11 @@ class LeafViewFactoryTests: XCTestCase {
     }
     
     func testTagsPageGetsPassedAllTagsWithBlogCount() throws {
+        let user = TestDataBuilder.anyUser()
+        try user.save()
         let tag = BlogTag(name: "test tag")
         try tag.save()
-        let post1 = TestDataBuilder.anyPost()
+        let post1 = TestDataBuilder.anyPost(author: user)
         try post1.save()
         try BlogTag.addTag(tag.name, to: post1)
         
@@ -142,17 +153,19 @@ class LeafViewFactoryTests: XCTestCase {
     }
     
     func testTagsPageGetsPassedTagsSortedByPageCount() throws {
+        let user = TestDataBuilder.anyUser()
+        try user.save()
         let tag = BlogTag(name: "test tag")
         let tag2 = BlogTag(name: "tatooine")
         try tag.save()
         try tag2.save()
-        let post1 = TestDataBuilder.anyPost()
+        let post1 = TestDataBuilder.anyPost(author: user)
         try post1.save()
         try BlogTag.addTag(tag.name, to: post1)
-        let post2 = TestDataBuilder.anyPost()
+        let post2 = TestDataBuilder.anyPost(author: user)
         try post2.save()
         try BlogTag.addTag(tag2.name, to: post2)
-        let post3 = TestDataBuilder.anyLongPost()
+        let post3 = TestDataBuilder.anyLongPost(author: user)
         try post3.save()
         try BlogTag.addTag(tag2.name, to: post3)
         

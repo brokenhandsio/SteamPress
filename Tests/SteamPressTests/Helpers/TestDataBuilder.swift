@@ -19,7 +19,7 @@ struct TestDataBuilder {
         return BlogPost(title: "An Exciting Post With Image", contents: contents, author: author, creationDate: Date(), slugUrl: "an-exciting-post-with-image", published: true)
     }
     
-    static func anyLongPost() -> BlogPost {
+    static func anyLongPost(author: BlogUser = TestDataBuilder.anyUser()) -> BlogPost {
         let title = "Introduction To Steampress"
         return BlogPost(title: title, contents: longContents, author: anyUser(), creationDate: Date(), slugUrl: title, published: true)
     }

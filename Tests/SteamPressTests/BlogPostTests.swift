@@ -70,25 +70,25 @@ class BlogPostTests: XCTestCase {
     }
     
     func testSlugUrlGivenUniqueNameIfDuplicate() throws {
-        let database = Database(try MemoryDriver(()))
-        BlogPost.database = database
-        try BlogPost.prepare(database)
-        try BlogPostDraft.prepare(database)
+        let database = try Database(MemoryDriver())
         BlogUser.database = database
+        BlogPost.database = database
+        BlogTag.database = database
+        Pivot<BlogPost, BlogTag>.database = database
         try BlogUser.prepare(database)
+        try BlogPost.prepare(database)
+        try BlogTag.prepare(database)
+        try BlogPostDraft.prepare(database)
         try BlogUserExtraInformation.prepare(database)
+        try Pivot<BlogPost, BlogTag>.prepare(database)
         
         let title = "A duplicated title"
         let expectedSlugUrl = "a-duplicated-title-2"
-//        do {
-            let post1 = TestDataBuilder.anyPost(slugUrl: title)
-            try post1.save()
-            let post2 = TestDataBuilder.anyPost(slugUrl: title)
-            XCTAssertEqual(expectedSlugUrl, post2.slugUrl)
-//        }
-//        catch {
-//            XCTFail("Test threw unexpected exception")
-//        }
+        let post1 = TestDataBuilder.anyPost(slugUrl: title)
+        try post1.save()
+        let post2 = TestDataBuilder.anyPost(slugUrl: title)
+        XCTAssertEqual(expectedSlugUrl, post2.slugUrl)
+
     }
     
     func testShortSnippet() {

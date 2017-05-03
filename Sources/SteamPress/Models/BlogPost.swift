@@ -46,10 +46,11 @@ public class BlogPost: Model {
         var row = Row()
         try row.set("title", title)
         try row.set("contents", contents)
-        try row.set("blog_user_id", author)
+        try row.set(BlogUser.foreignIdKey, author)
         try row.set("created", createdTime)
         try row.set("slug_url", slugUrl)
         try row.set("published", published)
+        try row.set("last_edited", lastEdited)
         return row
     }
 }
