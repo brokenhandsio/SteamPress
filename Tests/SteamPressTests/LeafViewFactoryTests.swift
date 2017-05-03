@@ -533,11 +533,11 @@ class LeafViewFactoryTests: XCTestCase {
     }
     
     func testCreateUserViewForEditing() throws {
-//        let _ = try viewFactory.createUserView(editing: true, errors: nil, name: "Luke", username: "luke", userId: Node(node: 1), profilePicture: "https://static.brokenhands.io/steampress/images/authors/luke.png", twitterHandle: "luke", biography: "The last Jedi in the Galaxy", tagline: "A son without a father")
+        let _ = try viewFactory.createUserView(editing: true, errors: nil, name: "Luke", username: "luke", userId: Identifier(StructuredData.number(1), in: nil), profilePicture: "https://static.brokenhands.io/steampress/images/authors/luke.png", twitterHandle: "luke", biography: "The last Jedi in the Galaxy", tagline: "A son without a father")
         XCTAssertEqual(viewRenderer.capturedContext?["name_supplied"]?.string, "Luke")
         XCTAssertEqual(viewRenderer.capturedContext?["username_supplied"]?.string, "luke")
         XCTAssertTrue((viewRenderer.capturedContext?["editing"]?.bool) ?? false)
-        XCTAssertEqual(viewRenderer.capturedContext?["user_id"], try Node(node: 1))
+        XCTAssertEqual(viewRenderer.capturedContext?["user_id"]?.int, 1)
         XCTAssertEqual(viewRenderer.capturedContext?["profile_picture_supplied"]?.string, "https://static.brokenhands.io/steampress/images/authors/luke.png")
         XCTAssertEqual(viewRenderer.capturedContext?["twitter_handle_supplied"]?.string, "luke")
         XCTAssertEqual(viewRenderer.capturedContext?["tagline_supplied"]?.string, "A son without a father")
@@ -573,7 +573,10 @@ class LeafViewFactoryTests: XCTestCase {
     }
     
     func testCreateBlogPostViewWhenEditing() throws {
-        let postToEdit = TestDataBuilder.anyPost(author: TestDataBuilder.anyUser())
+        let author = TestDataBuilder.anyUser()
+        try author.save()
+        let postToEdit = TestDataBuilder.anyPost(author: author)
+        try postToEdit.save()
         let _ = try viewFactory.createBlogPostView(uri: editPostURI, title: postToEdit.title, contents: postToEdit.contents, slugUrl: postToEdit.slugUrl, tags: [Node(node: "test")], isEditing: true, postToEdit: postToEdit)
         XCTAssertEqual(viewRenderer.capturedContext?["post_path_prefix"]?.string, "https://test.com:443/posts/")
         XCTAssertFalse((viewRenderer.capturedContext?["title_error"]?.bool) ?? true)
@@ -611,7 +614,10 @@ class LeafViewFactoryTests: XCTestCase {
     }
     
     func testDraftPassedThroughWhenEditingABlogPostThatHasNotBeenPublished() throws {
-        let postToEdit = TestDataBuilder.anyPost(author: TestDataBuilder.anyUser(), published: false)
+        let author = TestDataBuilder.anyUser()
+        try author.save()
+        let postToEdit = TestDataBuilder.anyPost(author: author, published: false)
+        try postToEdit.save()
         let _ = try viewFactory.createBlogPostView(uri: editPostURI, title: postToEdit.title, contents: postToEdit.contents, slugUrl: postToEdit.slugUrl, tags: [Node(node: "test")], isEditing: true, postToEdit: postToEdit)
         XCTAssertEqual(viewRenderer.capturedContext?["post"]?["published"]?.bool, false)
     }
