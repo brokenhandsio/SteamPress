@@ -10,14 +10,14 @@ final class BlogUser: Model {
     
     var name: String
     var username: String
-    var password: String
+    var password: Bytes
     var resetPasswordRequired: Bool = false
     var profilePicture: String?
     var twitterHandle: String?
     var biography: String?
     var tagline: String?
     
-    init(name: String, username: String, password: String, profilePicture: String?, twitterHandle: String?, biography: String?, tagline: String?) {
+    init(name: String, username: String, password: Bytes, profilePicture: String?, twitterHandle: String?, biography: String?, tagline: String?) {
         self.name = name
         self.username = username.lowercased()
         self.password = password
@@ -30,7 +30,8 @@ final class BlogUser: Model {
     init(row: Row) throws {
         name = try row.get("name")
         username = try row.get("username")
-        password = try row.get("password")
+        let passwordAsString: String = try row.get("password")
+        password = passwordAsString.makeBytes()
         resetPasswordRequired = try row.get("reset_password_required")
         profilePicture = try? row.get("profile_picture")
         twitterHandle = try? row.get("twitter_handle")
@@ -42,7 +43,7 @@ final class BlogUser: Model {
         var row = Row()
         try row.set("name", name)
         try row.set("username", username)
-        try row.set("password", password)
+        try row.set("password", password.makeString())
         try row.set("reset_password_required", resetPasswordRequired)
         try row.set("profile_picture", profilePicture)
         try row.set("twitter_handle", twitterHandle)
@@ -127,7 +128,7 @@ extension BlogUser: PasswordAuthenticatable {
     public static let usernameKey = "username"
     public static let passwordVerifier: PasswordVerifier? = BCryptHasher(cost: 10)
     public var hashedPassword: String? {
-        return password
+        return password.makeString()
     }
 }
 
