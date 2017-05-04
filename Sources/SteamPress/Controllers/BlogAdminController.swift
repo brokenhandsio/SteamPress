@@ -100,8 +100,7 @@ struct BlogAdminController {
             }
         }
 
-        // Should probably redirect to the page once created
-        return Response(redirect: pathCreator.createPath(for: "admin"))
+        return Response(redirect: pathCreator.createPath(for: "posts/\(newPost.slugUrl)"))
     }
 
     func deletePostHandler(request: Request, post: BlogPost) throws -> ResponseRepresentable {
@@ -314,7 +313,7 @@ struct BlogAdminController {
         if users.count <= 1 {
             return try viewFactory.createBlogAdminView(errors: ["You cannot delete the last user"])
         }
-            // Make sure we aren't deleting ourselves!
+        // Make sure we aren't deleting ourselves!
         else if try request.user().id == user.id {
             return try viewFactory.createBlogAdminView(errors: ["You cannot delete yourself whilst logged in"])
         }
