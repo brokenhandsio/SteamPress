@@ -289,7 +289,8 @@ class LeafViewFactoryTests: XCTestCase {
         XCTAssertNotNil((viewRenderer.capturedContext?["post_image"])?.string)
         XCTAssertNotNil((viewRenderer.capturedContext?["post_image_alt"])?.string)
         XCTAssertEqual(viewRenderer.capturedContext?["post_uri"]?.string, postURI.description)
-        XCTAssertEqual(viewRenderer.capturedContext?["site_uri"]?.string, "https://test.com:443")
+        // TODO - important to note!
+        XCTAssertEqual(viewRenderer.capturedContext?["site_uri"]?.string, "https://test.com:443/")
         XCTAssertEqual(viewRenderer.capturedContext?["post_uri_encoded"]?.string, postURI.description)
         XCTAssertEqual(viewRenderer.leafPath, "blog/blogpost")
     }
