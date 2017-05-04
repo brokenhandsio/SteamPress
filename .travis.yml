@@ -24,3 +24,8 @@ script:
 
 after_success:
     - eval "$(curl -sL https://swift.vapor.sh/codecov)"
+
+notifications:
+  email:
+    on_success: change
+    on_failure: change
