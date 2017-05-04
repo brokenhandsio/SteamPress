@@ -356,6 +356,7 @@ struct BlogAdminController {
                 
                 let hashedPassword = try BCryptHasher(cost: 10).make(password)
                 let user = BlogUser(name: "Admin", username: "admin", password: hashedPassword, profilePicture: nil, twitterHandle: nil, biography: nil, tagline: "Admin for the blog")
+                user.resetPasswordRequired = true
                 try user.save()
                 
                 log.error("An Admin user been created for you - the username is admin and the password is \(password)")
