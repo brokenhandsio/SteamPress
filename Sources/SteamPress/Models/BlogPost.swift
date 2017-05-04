@@ -50,7 +50,7 @@ public class BlogPost: Model {
         try row.set("created", createdTime)
         try row.set("slug_url", slugUrl)
         try row.set("published", published)
-        try row.set("last_edited", lastEdited)
+        try row.set("last_edited", lastEdited?.timeIntervalSince1970)
         return row
     }
 }
