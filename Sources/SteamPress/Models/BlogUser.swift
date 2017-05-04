@@ -125,7 +125,10 @@ extension Request {
 
 extension BlogUser: PasswordAuthenticatable {
     public static let usernameKey = "username"
-    public static let passwordVerifier: BCryptHasher? = BCryptHasher(cost: 10)
+    public static let passwordVerifier: PasswordVerifier? = BCryptHasher(cost: 10)
+    public var hashedPassword: String? {
+        return password
+    }
 }
 
 extension BCryptHasher: PasswordVerifier {
