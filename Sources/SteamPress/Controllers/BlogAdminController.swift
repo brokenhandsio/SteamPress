@@ -420,7 +420,6 @@ struct BlogAdminController {
     }
 
     func logoutHandler(_ request: Request) throws -> ResponseRepresentable {
-        try request.user().unpersist(for: request)
         try request.auth.unauthenticate()
         return Response(redirect: pathCreator.createPath(for: pathCreator.blogPath))
     }
