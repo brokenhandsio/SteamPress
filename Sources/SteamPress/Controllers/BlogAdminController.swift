@@ -60,7 +60,7 @@ struct BlogAdminController {
     func createPostPostHandler(_ request: Request) throws -> ResponseRepresentable {
         let rawTitle = request.data["inputTitle"]?.string
         let rawContents = request.data["inputPostContents"]?.string
-        let rawTags = request.data["inputTags"]?.array
+        let rawTags = request.data["inputTags"]
         let rawSlugUrl = request.data["inputSlugUrl"]?.string
         let draft = request.data["save-draft"]?.string
         let publish = request.data["publish"]?.string
@@ -69,22 +69,10 @@ struct BlogAdminController {
             throw Abort.badRequest
         }
         
-        // I must be able to inline all of this
-        var tagsArray: [Node] = []
-        
-        if let rawTagsArray = rawTags {
-            tagsArray = rawTagsArray
-        }
-//
-//        if let tagsNodeArray = rawTags as? [Node] {
-//            tagsArray = tagsNodeArray
-//        }
-//        else if let tagsStringArray = rawTags as? [String] {
-//            tagsArray = tagsStringArray.map { $0.makeNode(in: nil) }
-//        }
+        let tagsArray = rawTags?.array ?? [rawTags?.string?.makeNode(in: nil) ?? nil]
 
         if let createPostErrors = validatePostCreation(title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl) {
-            return try viewFactory.createBlogPostView(uri: request.uri, errors: createPostErrors, title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl, tags: rawTags, isEditing: false, postToEdit: nil, draft: true)
+            return try viewFactory.createBlogPostView(uri: request.uri, errors: createPostErrors, title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl, tags: rawTags?.array, isEditing: false, postToEdit: nil, draft: true)
         }
 
         guard let title = rawTitle, let contents = rawContents, var slugUrl = rawSlugUrl else {
@@ -143,7 +131,7 @@ struct BlogAdminController {
     func editPostPostHandler(request: Request, post: BlogPost) throws -> ResponseRepresentable {
         let rawTitle = request.data["inputTitle"]?.string
         let rawContents = request.data["inputPostContents"]?.string
-        let rawTags = request.data["inputTags"]?.array
+        let rawTags = request.data["inputTags"]
         let rawSlugUrl = request.data["inputSlugUrl"]?.string
         let draft = request.data["save-draft"]?.string
         let publish = request.data["publish"]?.string
@@ -152,17 +140,7 @@ struct BlogAdminController {
             throw Abort.badRequest
         }
         
-        var tagsArray: [Node] = []
-        if let rawTagsArray = rawTags {
-            tagsArray = rawTagsArray
-        }
-        
-//        if let tagsNodeArray = rawTags as? [Node] {
-//            tagsArray = tagsNodeArray
-//        }
-//        else if let tagsStringArray = rawTags as? [String] {
-//            tagsArray = tagsStringArray.map { $0.makeNode(in: nil) }
-//        }
+        let tagsArray = rawTags?.array ?? [rawTags?.string?.makeNode(in: nil) ?? nil]
 
         if let errors = validatePostCreation(title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl) {
             return try viewFactory.createBlogPostView(uri: request.uri, errors: errors, title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl, tags: tagsArray, isEditing: true, postToEdit: post, draft: false)
