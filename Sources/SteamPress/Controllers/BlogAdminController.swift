@@ -404,7 +404,8 @@ struct BlogAdminController {
         }
         
         do {
-            _ = try BlogUser.authenticate(passwordCredentials)
+            let user = try BlogUser.authenticate(passwordCredentials)
+            request.auth.authenticate(user)
             request.storage.removeValue(forKey: "remember_me")
 
             return Response(redirect: pathCreator.createPath(for: "admin"))
