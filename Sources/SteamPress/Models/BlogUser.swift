@@ -132,12 +132,6 @@ extension BlogUser: PasswordAuthenticatable {
     }
 }
 
-extension BCryptHasher: PasswordVerifier {
-    public func verify(password: String, matchesHash: String) throws -> Bool {
-        return try check(password.bytes, matchesHash: matchesHash.bytes)
-    }
-}
-
 extension BlogUser {
     var posts: Children<BlogUser, BlogPost> {
         return children()
