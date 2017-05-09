@@ -45,41 +45,41 @@ final class PaginatorTag: Tag {
 }
 
 extension PaginatorTag {
-//
-//    func buildBackButton(url: String?) -> Bytes {
-//        guard let url = url else {
-//            return buildLink(title: "«", active: false, link: nil, disabled: true).bytes
-//        }
-//        
-//        return buildLink(title: "«", active: false, link: url, disabled: false).bytes
-//    }
-//    
-//    func buildForwardButton(url: String?) -> Bytes {
-//        guard let url = url else {
-//            return buildLink(title: "»", active: false, link: nil, disabled: true).bytes
-//        }
-//        
-//        return buildLink(title: "»", active: false, link: url, disabled: false).bytes
-//    }
-//    
-//    func buildLinks(currentPage: Int, count: Int) -> Bytes {
-//        var bytes: Bytes = []
-//        
-//        if count == 0 {
-//            return bytes
-//        }
-//        
-//        for i in 1...count {
-//            if i == currentPage {
-//                bytes += buildLink(title: "\(i)", active: true, link: nil, disabled: false).bytes
-//            } else {
-//                bytes += buildLink(title: "\(i)", active: false, link: "?page=\(i)", disabled: false).bytes
-//            }
-//        }
-//        
-//        return bytes
-//    }
-//    
+
+    func buildBackButton(url: String?) -> Bytes {
+        guard let url = url else {
+            return buildLink(title: "«", active: false, link: nil, disabled: true).bytes
+        }
+        
+        return buildLink(title: "«", active: false, link: url, disabled: false).bytes
+    }
+    
+    func buildForwardButton(url: String?) -> Bytes {
+        guard let url = url else {
+            return buildLink(title: "»", active: false, link: nil, disabled: true).bytes
+        }
+        
+        return buildLink(title: "»", active: false, link: url, disabled: false).bytes
+    }
+    
+    func buildLinks(currentPage: Int, count: Int) -> Bytes {
+        var bytes: Bytes = []
+        
+        if count == 0 {
+            return bytes
+        }
+        
+        for i in 1...count {
+            if i == currentPage {
+                bytes += buildLink(title: "\(i)", active: true, link: nil, disabled: false).bytes
+            } else {
+                bytes += buildLink(title: "\(i)", active: false, link: "?page=\(i)", disabled: false).bytes
+            }
+        }
+        
+        return bytes
+    }
+    
     func buildNavigation(currentPage: Int, totalPages: Int, previousPage: String?, nextPage: String?) -> Node {
         var bytes: Bytes = []
         
@@ -96,11 +96,11 @@ extension PaginatorTag {
         
         bytes += header
         
-//        bytes += buildBackButton(postSlug: links["previous"]?.string)
-//        
-//        bytes += buildLinks(currentPage: currentPage, count: totalPages)
-//        
-//        bytes += buildForwardButton(url: links["next"]?.string)
+        bytes += buildBackButton(url: previousPage)
+
+        bytes += buildLinks(currentPage: currentPage, count: totalPages)
+
+        bytes += buildForwardButton(url: nextPage)
         
         bytes += footer
         
