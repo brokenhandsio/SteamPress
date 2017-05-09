@@ -62,6 +62,7 @@ public struct Provider: Vapor.Provider {
         // Set up Leaf tag
         if let leaf = drop.view as? LeafRenderer {
             leaf.stem.register(Markdown())
+            leaf.stem.register(PaginatorTag(blogPathCreator: pathCreator))
         }
     }
 

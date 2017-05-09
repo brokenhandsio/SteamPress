@@ -225,8 +225,8 @@ extension BlogPost: Paginatable {
     }
 }
 
-extension Page: NodeRepresentable {
-    public func makeNode(in context: Context?) throws -> Node {
+extension Page {
+    public func makeNode(for request: Request, in context: Context?) throws -> Node {
         var node = Node([:], in: context)
         try node.set("data", data.makeNode(in: context))
         
@@ -242,6 +242,8 @@ extension Page: NodeRepresentable {
         if number > 1 {
             try paginationNode.set("previous_page", number - 1)
         }
+        
+        
         
         try node.set("pagination", paginationNode)
         return node
