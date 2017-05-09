@@ -32,13 +32,11 @@ final class PaginatorTag: Tag {
         }
         
         guard let currentPage = paginator["current_page"]?.int,
-            let totalPages = paginator["total_pages"]?.int,
-            let previousPage = paginator["previous_page"]?.int,
-            let nextPage = paginator["next_page"]?.int else {
+            let totalPages = paginator["total_pages"]?.int else {
                 return nil
         }
         
-        return buildNavigation(currentPage: currentPage, totalPages: totalPages, previousPage: previousPage, nextPage: nextPage)
+        return buildNavigation(currentPage: currentPage, totalPages: totalPages, previousPage: paginator["previous_page"]?.string, nextPage: paginator["next_page"]?.string)
     }
     
     func shouldRender(stem: Stem, context: Context, tagTemplate: TagTemplate, arguments: [Argument], value: Node?) -> Bool {
@@ -82,7 +80,7 @@ extension PaginatorTag {
 //        return bytes
 //    }
 //    
-    func buildNavigation(currentPage: Int, totalPages: Int, previousPage: Int, nextPage: Int) -> Node {
+    func buildNavigation(currentPage: Int, totalPages: Int, previousPage: String?, nextPage: String?) -> Node {
         var bytes: Bytes = []
         
         let navClass = "paginator"
@@ -117,7 +115,7 @@ extension PaginatorTag {
         
         var linkString = "<li"
         
-        if active || disabled || liClass != nil {
+        if active || disabled {
             linkString += " class=\""
             
             if active {

@@ -226,7 +226,7 @@ extension BlogPost: Paginatable {
 }
 
 extension Page {
-    public func makeNode(for request: Request, in context: Context?) throws -> Node {
+    public func makeNode(for uri: URI, in context: Context?) throws -> Node {
         var node = Node([:], in: context)
         try node.set("data", data.makeNode(in: context))
         
