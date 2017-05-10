@@ -242,10 +242,10 @@ extension Page {
         
         try paginationNode.set("total_pages", pages)
         if number < pages {
-            try paginationNode.set("next_page", number + 1)
+            try paginationNode.set("next_page", "?page=\(number + 1)")
         }
         if number > 1 {
-            try paginationNode.set("previous_page", number - 1)
+            try paginationNode.set("previous_page", "?page=\(number - 1)")
         }
         
         
