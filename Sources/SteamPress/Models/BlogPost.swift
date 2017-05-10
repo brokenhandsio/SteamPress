@@ -234,9 +234,14 @@ extension Page {
         try paginationNode.set("total", total)
         try paginationNode.set("current_page", number)
         try paginationNode.set("per_page", size)
-        let count = total / size
-        try paginationNode.set("total_pages", count)
-        if number < count {
+
+        var pages = total / size
+        if total % size != 0 {
+            pages += 1
+        }
+        
+        try paginationNode.set("total_pages", pages)
+        if number < pages {
             try paginationNode.set("next_page", number + 1)
         }
         if number > 1 {

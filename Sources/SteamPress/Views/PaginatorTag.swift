@@ -150,7 +150,7 @@ extension PaginatorTag {
             
             linkString += "</a>"
         } else {
-            linkString += "<a><span"
+            linkString += "<span"
             
             linkString += " class=\"\(linkClass)\""
             
@@ -167,7 +167,7 @@ extension PaginatorTag {
             }
         }
         
-        linkString += "</a></li>\n"
+        linkString += "</li>\n"
         
         return linkString
     }
