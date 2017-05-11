@@ -95,6 +95,14 @@ extension BlogUser: NodeRepresentable {
     
 }
 
+extension BlogUser: Parameterizable {
+    static var uniqueSlug: String = "bloguser"
+    
+    static func make(for parameter: String) throws -> Self {
+        return .init(id: parameter)
+    }
+}
+
 extension BlogUser: Preparation {
     static func prepare(_ database: Database) throws {
         try database.create(self) { users in

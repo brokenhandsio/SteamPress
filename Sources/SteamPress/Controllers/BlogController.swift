@@ -33,7 +33,7 @@ struct BlogController {
     func addRoutes() {
         drop.group(pathCreator.blogPath ?? "") { index in
             index.get(handler: indexHandler)
-            index.get(blogPostsPath, String.init, handler: blogPostHandler)
+            index.get(blogPostsPath, String.parameter, handler: blogPostHandler)
             index.get(apiPath, tagsPath, handler: tagApiHandler)
             index.get(blogPostsPath, handler: blogPostIndexRedirectHandler)
 
