@@ -103,7 +103,7 @@ class LeafViewFactoryTests: XCTestCase {
     }
     
     override func tearDown() {
-        //try! Droplet.teardown(database: database)
+        try! Droplet.teardown(database: database)
     }
     
     // MARK: - Tests

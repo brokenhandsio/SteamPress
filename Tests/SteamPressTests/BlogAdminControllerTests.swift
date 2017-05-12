@@ -9,6 +9,17 @@ class BlogAdminControllerTests: XCTestCase {
         ("testTagAPIEndpointReportsArrayOfTagsAsJson", testTagAPIEndpointReportsArrayOfTagsAsJson),
     ]
     
+    var database: Database!
+    
+    override func setUp() {
+        database = Database(try! MemoryDriver(()))
+        try! Droplet.prepare(database: database)
+    }
+    
+    override func tearDown() {
+        try! Droplet.teardown(database: database)
+    }
+    
     func testTagAPIEndpointReportsArrayOfTagsAsJson() throws {
         let tag1 = BlogTag(name: "The first tag")
         let tag2 = BlogTag(name: "The second tag")
@@ -24,9 +35,6 @@ class BlogAdminControllerTests: XCTestCase {
 
         let blogController = BlogController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, postsPerPage: 5, enableAuthorsPages: enableAuthorsPages, enableTagsPages: enableTagsPages)
         blogController.addRoutes()
-
-        let database = Database(try MemoryDriver(()))
-        try Droplet.prepare(database: database)
             
         try tag1.save()
         try tag2.save()

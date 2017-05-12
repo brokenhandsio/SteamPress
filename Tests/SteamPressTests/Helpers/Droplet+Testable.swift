@@ -17,8 +17,9 @@ extension Droplet {
     }
     
     static func teardown(database: Database) throws {
-        try BlogUser.revert(database)
-        try BlogPost.revert(database)
+        try Pivot<BlogPost, BlogTag>.revert(database)
         try BlogTag.revert(database)
+        try BlogPost.revert(database)
+        try BlogUser.revert(database)
     }
 }

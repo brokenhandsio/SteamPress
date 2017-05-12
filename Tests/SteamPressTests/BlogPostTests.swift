@@ -27,6 +27,10 @@ class BlogPostTests: XCTestCase {
         database = try! Database(MemoryDriver())
         try! Droplet.prepare(database: database)
     }
+    
+    override func tearDown() {
+        try! Droplet.teardown(database: database)
+    }
 
     func testThatSlugUrlCalculatedCorrectlyForTitleWithSpaces() {
         let title = "This is a title"

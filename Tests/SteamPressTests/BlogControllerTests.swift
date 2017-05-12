@@ -55,6 +55,10 @@ class BlogControllerTests: XCTestCase {
         database = try! Database(MemoryDriver())
         try! Droplet.prepare(database: database)
     }
+    
+    override func tearDown() {
+        try! Droplet.teardown(database: database)
+    }
 
     func setupDrop(config: Config? = nil, loginUser: Bool = false) throws {
         drop = try Droplet()
