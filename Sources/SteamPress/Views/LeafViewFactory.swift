@@ -1,7 +1,6 @@
 import Vapor
 import URI
 import HTTP
-//import Paginator
 import SwiftMarkdown
 import SwiftSoup
 import Foundation

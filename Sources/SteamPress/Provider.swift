@@ -1,6 +1,5 @@
 import Vapor
 import Fluent
-//import Paginator
 import LeafMarkdown
 import LeafProvider
 import AuthProvider
@@ -55,16 +54,12 @@ public struct Provider: Vapor.Provider {
         //let authMiddleware = BlogAuthMiddleware()
         //drop.middleware.append(authMiddleware)
         
-        // Providers
-//        let paginator = PaginatorProvider(useBootstrap4: useBootstrap4, paginationLabel: "Blog Post Pages")
-//        drop.addProvider(paginator)
-        
         BlogPost.postsPerPage = postsPerPage
         
         // Set up Leaf tag
         if let leaf = drop.view as? LeafRenderer {
             leaf.stem.register(Markdown())
-            leaf.stem.register(PaginatorTag(blogPathCreator: pathCreator))
+            leaf.stem.register(PaginatorTag(blogPathCreator: pathCreator, paginationLabel: "Blog Post Pages"))
         }
     }
 
