@@ -105,7 +105,7 @@ struct BlogAdminController {
 
     func deletePostHandler(request: Request) throws -> ResponseRepresentable {
 
-        let post = try request.parameters.get(BlogPost.parameter) as BlogPost
+        let post: BlogPost = try request.parameters.get(BlogPost.parameter)
         let tags = try post.tags.all()
 
         // Clean up pivots
@@ -123,14 +123,14 @@ struct BlogAdminController {
     }
 
     func editPostHandler(request: Request) throws -> ResponseRepresentable {
-        let post = try request.parameters.get(BlogPost.parameter) as BlogPost
+        let post: BlogPost = try request.parameters.get(BlogPost.parameter)
         let tags = try post.tags.all()
         let tagsArray: [Node] = tags.map { $0.name.makeNode(in: nil) }
         return try viewFactory.createBlogPostView(uri: request.uri, errors: nil, title: post.title, contents: post.contents, slugUrl: post.slugUrl, tags: tagsArray, isEditing: true, postToEdit: post, draft: !post.published)
     }
 
     func editPostPostHandler(request: Request) throws -> ResponseRepresentable {
-        let post = try request.parameters.get(BlogPost.parameter) as BlogPost
+        let post: BlogPost = try request.parameters.get(BlogPost.parameter)
         let rawTitle = request.data["inputTitle"]?.string
         let rawContents = request.data["inputPostContents"]?.string
         let rawTags = request.data["inputTags"]
@@ -254,12 +254,12 @@ struct BlogAdminController {
     }
 
     func editUserHandler(request: Request) throws -> ResponseRepresentable {
-        let user = try request.parameters.get(BlogUser.parameter) as BlogUser
+        let user: BlogUser = try request.parameters.get(BlogUser.parameter)
         return try viewFactory.createUserView(editing: true, errors: nil, name: user.name, username: user.username, passwordError: nil, confirmPasswordError: nil, resetPasswordRequired: nil, userId: user.id, profilePicture: user.profilePicture, twitterHandle: user.twitterHandle, biography: user.biography, tagline: user.tagline)
     }
 
     func editUserPostHandler(request: Request) throws -> ResponseRepresentable {
-        let user = try request.parameters.get(BlogUser.parameter) as BlogUser
+        let user: BlogUser = try request.parameters.get(BlogUser.parameter)
         let rawName = request.data["inputName"]?.string
         let rawUsername = request.data["inputUsername"]?.string
         let rawPassword = request.data["inputPassword"]?.string
@@ -312,7 +312,7 @@ struct BlogAdminController {
     }
 
     func deleteUserPostHandler(request: Request) throws -> ResponseRepresentable {
-        let user = try request.parameters.get(BlogUser.parameter) as BlogUser
+        let user: BlogUser = try request.parameters.get(BlogUser.parameter)
         // Check we have at least one user left
         let users = try BlogUser.all()
         if users.count <= 1 {
