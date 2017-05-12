@@ -22,7 +22,7 @@ class BlogAdminControllerTests: XCTestCase {
         let enableAuthorsPages = drop.config["enableAuthorsPages"]?.bool ?? true
         let enableTagsPages = drop.config["enableTagsPages"]?.bool ?? true
 
-        let blogController = BlogController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, postsPerPage: 5, enableAuthorsPages: enableAuthorsPages, enableTagsPages: enableTagsPages, config: drop.config)
+        let blogController = BlogController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, postsPerPage: 5, enableAuthorsPages: enableAuthorsPages, enableTagsPages: enableTagsPages)
         blogController.addRoutes()
 
         let database = Database(try MemoryDriver(()))

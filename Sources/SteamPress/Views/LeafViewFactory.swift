@@ -9,6 +9,8 @@ import Fluent
 struct LeafViewFactory: ViewFactory {
 
     let viewRenderer: ViewRenderer
+    let disqusName: String?
+    let siteTwitterHandle: String?
 
     // MARK: - Admin Controller Views
 
@@ -198,7 +200,7 @@ struct LeafViewFactory: ViewFactory {
         return try viewRenderer.make("blog/admin/resetPassword", parameters)
     }
 
-    func createProfileView(uri: URI, author: BlogUser, isMyProfile: Bool, paginatedPosts: Page<BlogPost>, loggedInUser: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
+    func createProfileView(uri: URI, author: BlogUser, isMyProfile: Bool, paginatedPosts: Page<BlogPost>, loggedInUser: BlogUser?) throws -> View {
         var parameters: [String: Vapor.Node] = [:]
         parameters["author"] = try author.makeNode(in: BlogUserContext.withPostCount)
 
@@ -213,12 +215,12 @@ struct LeafViewFactory: ViewFactory {
             parameters["posts"] = try paginatedPosts.makeNode(for: uri, in: BlogPostContext.longSnippet)
         }
 
-        return try createPublicView(template: "blog/profile", uri: uri, parameters: parameters, user: loggedInUser, disqusName: disqusName, siteTwitterHandle: siteTwitterHandle)
+        return try createPublicView(template: "blog/profile", uri: uri, parameters: parameters, user: loggedInUser)
     }
 
     // MARK: - Blog Controller Views
 
-    func blogIndexView(uri: URI, paginatedPosts: Page<BlogPost>, tags: [BlogTag], authors: [BlogUser], loggedInUser: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
+    func blogIndexView(uri: URI, paginatedPosts: Page<BlogPost>, tags: [BlogTag], authors: [BlogUser], loggedInUser: BlogUser?) throws -> View {
 
         var parameters: [String: Vapor.Node] = [:]
         parameters["blog_index_page"] = true.makeNode(in: nil)
@@ -235,10 +237,10 @@ struct LeafViewFactory: ViewFactory {
             parameters["authors"] = try authors.makeNode(in: nil)
         }
 
-        return try createPublicView(template: "blog/blog", uri: uri, parameters: parameters, user: loggedInUser, disqusName: disqusName, siteTwitterHandle: siteTwitterHandle)
+        return try createPublicView(template: "blog/blog", uri: uri, parameters: parameters, user: loggedInUser)
     }
 
-    func blogPostView(uri: URI, post: BlogPost, author: BlogUser, user: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
+    func blogPostView(uri: URI, post: BlogPost, author: BlogUser, user: BlogUser?) throws -> View {
 
         var parameters: [String: Vapor.Node] = [:]
         parameters["post"] = try post.makeNode(in: BlogPostContext.all)
@@ -261,10 +263,10 @@ struct LeafViewFactory: ViewFactory {
             } catch {}
         }
 
-        return try createPublicView(template: "blog/blogpost", uri: uri, parameters: parameters, user: user, disqusName: disqusName, siteTwitterHandle: siteTwitterHandle)
+        return try createPublicView(template: "blog/blogpost", uri: uri, parameters: parameters, user: user)
     }
 
-    func tagView(uri: URI, tag: BlogTag, paginatedPosts: Page<BlogPost>, user: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
+    func tagView(uri: URI, tag: BlogTag, paginatedPosts: Page<BlogPost>, user: BlogUser?) throws -> View {
 
         var parameters: [String: NodeRepresentable] = [:]
         parameters["tag"] = try tag.makeNode(in: BlogTagContext.withPostCount)
@@ -274,10 +276,10 @@ struct LeafViewFactory: ViewFactory {
             parameters["posts"] = try paginatedPosts.makeNode(for: uri, in: BlogPostContext.longSnippet)
         }
 
-        return try createPublicView(template: "blog/tag", uri: uri, parameters: parameters, user: user, disqusName: disqusName, siteTwitterHandle: siteTwitterHandle)
+        return try createPublicView(template: "blog/tag", uri: uri, parameters: parameters, user: user)
     }
 
-    func allTagsView(uri: URI, allTags: [BlogTag], user: BlogUser?, siteTwitterHandle: String?) throws -> View {
+    func allTagsView(uri: URI, allTags: [BlogTag], user: BlogUser?) throws -> View {
         var parameters: [String: NodeRepresentable] = [:]
 
         if allTags.count > 0 {
@@ -285,10 +287,10 @@ struct LeafViewFactory: ViewFactory {
             parameters["tags"] = try sortedTags.makeNode(in: BlogTagContext.withPostCount)
         }
 
-        return try createPublicView(template: "blog/tags", uri: uri, parameters: parameters, user: user, siteTwitterHandle: siteTwitterHandle)
+        return try createPublicView(template: "blog/tags", uri: uri, parameters: parameters, user: user)
     }
 
-    func allAuthorsView(uri: URI, allAuthors: [BlogUser], user: BlogUser?, siteTwitterHandle: String?) throws -> View {
+    func allAuthorsView(uri: URI, allAuthors: [BlogUser], user: BlogUser?) throws -> View {
         var parameters: [String: NodeRepresentable] = [:]
 
         if allAuthors.count > 0 {
@@ -296,10 +298,10 @@ struct LeafViewFactory: ViewFactory {
             parameters["authors"] = try sortedAuthors.makeNode(in: BlogUserContext.withPostCount)
         }
 
-        return try createPublicView(template: "blog/authors", uri: uri, parameters: parameters, user: user, siteTwitterHandle: siteTwitterHandle)
+        return try createPublicView(template: "blog/authors", uri: uri, parameters: parameters, user: user)
     }
 
-    private func createPublicView(template: String, uri: URI, parameters: [String: NodeRepresentable], user: BlogUser? = nil, disqusName: String? = nil, siteTwitterHandle: String? = nil) throws -> View {
+    private func createPublicView(template: String, uri: URI, parameters: [String: NodeRepresentable], user: BlogUser? = nil) throws -> View {
         var viewParameters = parameters
 
         viewParameters["uri"] = uri.description.makeNode(in: nil)

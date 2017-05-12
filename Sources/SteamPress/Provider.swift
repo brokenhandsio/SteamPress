@@ -38,10 +38,10 @@ public struct Provider: Vapor.Provider {
 
         setup(drop)
         
-        let viewFactory = LeafViewFactory(viewRenderer: drop.view)
+        let viewFactory = LeafViewFactory(viewRenderer: drop.view, disqusName: drop.config["disqus", "disqusName"]?.string, siteTwitterHandle: drop.config["twitter", "siteHandle"]?.string)
 
         // Set up the controllers
-        let blogController = BlogController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, postsPerPage: postsPerPage, enableAuthorsPages: enableAuthorsPages, enableTagsPages: enableTagsPages, config: drop.config)
+        let blogController = BlogController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, postsPerPage: postsPerPage, enableAuthorsPages: enableAuthorsPages, enableTagsPages: enableTagsPages)
         let blogAdminController = BlogAdminController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, postsPerPage: postsPerPage)
 
         // Add the routes

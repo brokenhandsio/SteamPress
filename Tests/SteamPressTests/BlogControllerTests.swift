@@ -9,26 +9,16 @@ class BlogControllerTests: XCTestCase {
     static var allTests = [
         ("testBlogIndexGetsPostsInReverseOrder", testBlogIndexGetsPostsInReverseOrder),
         ("testBlogIndexGetsAllTags", testBlogIndexGetsAllTags),
-        ("testBlogIndexGetsDisqusNameIfSetInConfig", testBlogIndexGetsDisqusNameIfSetInConfig),
         ("testBlogPostRetrievedCorrectlyFromSlugUrl", testBlogPostRetrievedCorrectlyFromSlugUrl),
-        ("testDisqusNamePassedToBlogPostIfSpecified", testDisqusNamePassedToBlogPostIfSpecified),
         ("testThatAccessingPathsRouteRedirectsToBlogIndex", testThatAccessingPathsRouteRedirectsToBlogIndex),
         ("testAuthorView", testAuthorView),
-        ("testAuthorViewGetsDisqusNameIfSet", testAuthorViewGetsDisqusNameIfSet),
         ("testTagView", testTagView),
-        ("testTagViewGetsDisquqNameIfSet", testTagViewGetsDisquqNameIfSet),
-        ("testIndexPageGetsTwitterHandleIfSet", testIndexPageGetsTwitterHandleIfSet),
-        ("testBlogPageGetsTwitterHandleIfSet", testBlogPageGetsTwitterHandleIfSet),
-        ("testProfilePageGetsTwitterHandleIfSet", testProfilePageGetsTwitterHandleIfSet),
-        ("testTagPageGetsTwitterHandleIfSet", testTagPageGetsTwitterHandleIfSet),
         ("testIndexPageGetsUri", testIndexPageGetsUri),
         ("testBlogPageGetsUri", testBlogPageGetsUri),
         ("testProfilePageGetsUri", testProfilePageGetsUri),
         ("testTagPageGetsUri", testTagPageGetsUri),
         ("testAllAuthorsPageGetsUri", testAllAuthorsPageGetsUri),
         ("testAllTagsPageGetsUri", testAllTagsPageGetsUri),
-        ("testAllAuthorsPageGetsTwitterHandleIfSet", testAllAuthorsPageGetsTwitterHandleIfSet),
-        ("testAllTagsPageGetsTwitterHandleIfSet", testAllTagsPageGetsTwitterHandleIfSet),
         ("testAllTagsPageGetsAllTags", testAllTagsPageGetsAllTags),
         ("testAllAuthorsPageGetAllAuthors", testAllAuthorsPageGetAllAuthors),
         ("testTagPageGetsOnlyPublishedPostsInDescendingOrder", testTagPageGetsOnlyPublishedPostsInDescendingOrder),
@@ -79,7 +69,7 @@ class BlogControllerTests: XCTestCase {
         let enableAuthorsPages = configToUse["enableAuthorsPages"]?.bool ?? true
         let enableTagsPages = configToUse["enableTagsPages"]?.bool ?? true
 
-        let blogController = BlogController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, postsPerPage: 5, enableAuthorsPages: enableAuthorsPages, enableTagsPages: enableTagsPages, config: configToUse)
+        let blogController = BlogController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, postsPerPage: 5, enableAuthorsPages: enableAuthorsPages, enableTagsPages: enableTagsPages)
         blogController.addRoutes()
 
         let blogAdminController = BlogAdminController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, postsPerPage: 5)
@@ -129,20 +119,6 @@ class BlogControllerTests: XCTestCase {
         XCTAssertEqual(viewFactory.blogIndexAuthors?.first?.name, "Luke")
     }
 
-    func testBlogIndexGetsDisqusNameIfSetInConfig() throws {
-        let expectedName = "steampress"
-        let config = Config(try Node(node: [
-            "disqus": try Node(node: [
-                "disqusName": expectedName.makeNode(in: nil)
-                ])
-            ]))
-        try setupDrop(config: config)
-
-        _ = try drop.respond(to: blogIndexRequest)
-
-        XCTAssertEqual(expectedName, viewFactory.indexDisqusName)
-    }
-
     func testBlogPostRetrievedCorrectlyFromSlugUrl() throws {
         try setupDrop()
         _ = try drop.respond(to: blogPostRequest)
@@ -151,20 +127,6 @@ class BlogControllerTests: XCTestCase {
         XCTAssertEqual(viewFactory.blogPost?.contents, post.contents)
         XCTAssertEqual(viewFactory.blogPostAuthor?.name, user.name)
         XCTAssertEqual(viewFactory.blogPostAuthor?.username, user.username)
-    }
-
-    func testDisqusNamePassedToBlogPostIfSpecified() throws {
-        let expectedName = "steampress"
-        let config = Config(try Node(node: [
-            "disqus": try Node(node: [
-                "disqusName": expectedName.makeNode(in: nil)
-                ])
-        ]))
-        try setupDrop(config: config)
-
-        _ = try drop.respond(to: blogPostRequest)
-
-        XCTAssertEqual(expectedName, viewFactory.disqusName)
     }
 
     func testThatAccessingPathsRouteRedirectsToBlogIndex() throws {
@@ -193,20 +155,6 @@ class BlogControllerTests: XCTestCase {
         XCTAssertEqual(viewFactory.isMyProfile, false)
     }
 
-    func testAuthorViewGetsDisqusNameIfSet() throws {
-        let expectedName = "steampress"
-        let config = Config(try Node(node: [
-            "disqus": try Node(node: [
-                "disqusName": expectedName.makeNode(in: nil)
-                ])
-            ]))
-        try setupDrop(config: config)
-
-        _ = try drop.respond(to: authorRequest)
-
-        XCTAssertEqual(expectedName, viewFactory.authorDisqusName)
-    }
-
     func testTagView() throws {
         try setupDrop()
         _ = try drop.respond(to: tagRequest)
@@ -216,76 +164,6 @@ class BlogControllerTests: XCTestCase {
         XCTAssertEqual(viewFactory.tag?.name, "tatooine")
     }
 
-    func testTagViewGetsDisquqNameIfSet() throws {
-        let expectedName = "steampress"
-        let config = Config(try Node(node: [
-            "disqus": try Node(node: [
-                "disqusName": expectedName.makeNode(in: nil)
-                ])
-            ]))
-        try setupDrop(config: config)
-
-        _ = try drop.respond(to: tagRequest)
-
-        XCTAssertEqual(expectedName, viewFactory.tagDisqusName)
-    }
-    
-    func testIndexPageGetsTwitterHandleIfSet() throws {
-        let expectedTwitterHandle = "brokenhandsio"
-        let config = Config(try Node(node: [
-            "twitter": try Node(node: [
-                "siteHandle": expectedTwitterHandle.makeNode(in: nil)
-                ])
-            ]))
-        try setupDrop(config: config)
-        
-        _ = try drop.respond(to: blogIndexRequest)
-        
-        XCTAssertEqual(expectedTwitterHandle, viewFactory.blogIndexTwitterHandle)
-    }
-    
-    func testBlogPageGetsTwitterHandleIfSet() throws {
-        let expectedTwitterHandle = "brokenhandsio"
-        let config = Config(try Node(node: [
-            "twitter": try Node(node: [
-                "siteHandle": expectedTwitterHandle.makeNode(in: nil)
-                ])
-            ]))
-        try setupDrop(config: config)
-        
-        _ = try drop.respond(to: blogPostRequest)
-        
-        XCTAssertEqual(expectedTwitterHandle, viewFactory.blogPostTwitterHandle)
-    }
-    
-    func testProfilePageGetsTwitterHandleIfSet() throws {
-        let expectedTwitterHandle = "brokenhandsio"
-        let config = Config(try Node(node: [
-            "twitter": try Node(node: [
-                "siteHandle": expectedTwitterHandle.makeNode(in: nil)
-                ])
-            ]))
-        try setupDrop(config: config)
-        
-        _ = try drop.respond(to: authorRequest)
-        
-        XCTAssertEqual(expectedTwitterHandle, viewFactory.authorTwitterHandle)
-    }
-    
-    func testTagPageGetsTwitterHandleIfSet() throws {
-        let expectedTwitterHandle = "brokenhandsio"
-        let config = Config(try Node(node: [
-            "twitter": try Node(node: [
-                "siteHandle": expectedTwitterHandle.makeNode(in: nil)
-                ])
-            ]))
-        try setupDrop(config: config)
-        
-        _ = try drop.respond(to: tagRequest)
-        
-        XCTAssertEqual(expectedTwitterHandle, viewFactory.tagTwitterHandle)
-    }
-    
     func testIndexPageGetsUri() throws {
         try setupDrop()
         
@@ -332,34 +210,6 @@ class BlogControllerTests: XCTestCase {
         _ = try drop.respond(to: allTagsRequest)
         
         XCTAssertEqual(allTagsPath, viewFactory.allTagsURI?.description)
-    }
-    
-    func testAllAuthorsPageGetsTwitterHandleIfSet() throws {
-        let expectedTwitterHandle = "brokenhandsio"
-        let config = Config(try Node(node: [
-            "twitter": try Node(node: [
-                "siteHandle": expectedTwitterHandle.makeNode(in: nil)
-                ])
-            ]))
-        try setupDrop(config: config)
-        
-        _ = try drop.respond(to: allAuthorsRequest)
-        
-        XCTAssertEqual(expectedTwitterHandle, viewFactory.allAuthorsTwitterHandle)
-    }
-    
-    func testAllTagsPageGetsTwitterHandleIfSet() throws {
-        let expectedTwitterHandle = "brokenhandsio"
-        let config = Config(try Node(node: [
-            "twitter": try Node(node: [
-                "siteHandle": expectedTwitterHandle.makeNode(in: nil)
-                ])
-            ]))
-        try setupDrop(config: config)
-        
-        _ = try drop.respond(to: allTagsRequest)
-        
-        XCTAssertEqual(expectedTwitterHandle, viewFactory.allTagsTwitterHandle)
     }
     
     func testAllTagsPageGetsAllTags() throws {
@@ -465,29 +315,21 @@ class CapturingViewFactory: ViewFactory {
     private(set) var author: BlogUser? = nil
     private(set) var isMyProfile: Bool? = nil
     private(set) var authorPosts: Page<BlogPost>? = nil
-    private(set) var authorDisqusName: String? = nil
-    private(set) var authorTwitterHandle: String? = nil
     private(set) var authorURI: URI? = nil
-    func createProfileView(uri: URI, author: BlogUser, isMyProfile: Bool, paginatedPosts: Page<BlogPost>, loggedInUser: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
+    func createProfileView(uri: URI, author: BlogUser, isMyProfile: Bool, paginatedPosts: Page<BlogPost>, loggedInUser: BlogUser?) throws -> View {
         self.author = author
         self.isMyProfile = isMyProfile
         self.authorPosts = paginatedPosts
-        self.authorDisqusName = disqusName
-        self.authorTwitterHandle = siteTwitterHandle
         self.authorURI = uri
         return createDummyView()
     }
 
     private(set) var blogPost: BlogPost? = nil
     private(set) var blogPostAuthor: BlogUser? = nil
-    private(set) var disqusName: String? = nil
-    private(set) var blogPostTwitterHandle: String? = nil
     private(set) var blogPostURI: URI? = nil
-    func blogPostView(uri: URI, post: BlogPost, author: BlogUser, user: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
+    func blogPostView(uri: URI, post: BlogPost, author: BlogUser, user: BlogUser?) throws -> View {
         self.blogPost = post
         self.blogPostAuthor = author
-        self.disqusName = disqusName
-        self.blogPostTwitterHandle = siteTwitterHandle
         self.blogPostURI = uri
         return createDummyView()
     }
@@ -495,51 +337,39 @@ class CapturingViewFactory: ViewFactory {
     private(set) var tag: BlogTag? = nil
     private(set) var tagPosts: Page<BlogPost>? = nil
     private(set) var tagUser: BlogUser? = nil
-    private(set) var tagDisqusName: String? = nil
-    private(set) var tagTwitterHandle: String? = nil
     private(set) var tagURI: URI? = nil
-    func tagView(uri: URI, tag: BlogTag, paginatedPosts: Page<BlogPost>, user: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
+    func tagView(uri: URI, tag: BlogTag, paginatedPosts: Page<BlogPost>, user: BlogUser?) throws -> View {
         self.tag = tag
         self.tagPosts = paginatedPosts
         self.tagUser = user
-        self.tagDisqusName = disqusName
-        self.tagTwitterHandle = siteTwitterHandle
         self.tagURI = uri
         return createDummyView()
     }
 
     private(set) var blogIndexTags: [BlogTag]? = nil
     private(set) var blogIndexAuthors: [BlogUser]? = nil
-    private(set) var indexDisqusName: String? = nil
     private(set) var paginatedPosts: Page<BlogPost>? = nil
-    private(set) var blogIndexTwitterHandle: String? = nil
     private(set) var blogIndexURI: URI? = nil
-    func blogIndexView(uri: URI, paginatedPosts: Page<BlogPost>, tags: [BlogTag], authors: [BlogUser], loggedInUser: BlogUser?, disqusName: String?, siteTwitterHandle: String?) throws -> View {
+    func blogIndexView(uri: URI, paginatedPosts: Page<BlogPost>, tags: [BlogTag], authors: [BlogUser], loggedInUser: BlogUser?) throws -> View {
         self.blogIndexTags = tags
         self.paginatedPosts = paginatedPosts
-        self.indexDisqusName = disqusName
-        self.blogIndexTwitterHandle = siteTwitterHandle
         self.blogIndexURI = uri
         self.blogIndexAuthors = authors
         return createDummyView()
     }
     
-    private(set) var allAuthorsTwitterHandle: String? = nil
     private(set) var allAuthorsURI: URI? = nil
     private(set) var allAuthorsPageAuthors: [BlogUser]? = nil
-    func allAuthorsView(uri: URI, allAuthors: [BlogUser], user: BlogUser?, siteTwitterHandle: String?) throws -> View {
+    func allAuthorsView(uri: URI, allAuthors: [BlogUser], user: BlogUser?) throws -> View {
         self.allAuthorsURI = uri
-        self.allAuthorsTwitterHandle = siteTwitterHandle
         self.allAuthorsPageAuthors = allAuthors
         return createDummyView()
     }
     
-    private(set) var allTagsTwitterHandle: String? = nil
     private(set) var allTagsURI: URI? = nil
     private(set) var allTagsPageTags: [BlogTag]? = nil
-    func allTagsView(uri: URI, allTags: [BlogTag], user: BlogUser?, siteTwitterHandle: String?) throws -> View {
+    func allTagsView(uri: URI, allTags: [BlogTag], user: BlogUser?) throws -> View {
         self.allTagsURI = uri
-        self.allTagsTwitterHandle = siteTwitterHandle
         self.allTagsPageTags = allTags
         return createDummyView()
     }

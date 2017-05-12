@@ -417,7 +417,7 @@ struct BlogAdminController {
         let user = try request.user()
         let posts = try user.sortedPosts().paginate(for: request)
 
-        return try viewFactory.createProfileView(uri: request.uri, author: user, isMyProfile: true, paginatedPosts: posts, loggedInUser: user, disqusName: nil, siteTwitterHandle: nil)
+        return try viewFactory.createProfileView(uri: request.uri, author: user, isMyProfile: true, paginatedPosts: posts, loggedInUser: user)
     }
 
     // MARK: - Password handlers
