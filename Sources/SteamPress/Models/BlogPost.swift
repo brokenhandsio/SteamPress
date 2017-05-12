@@ -2,7 +2,7 @@ import Foundation
 import Vapor
 import FluentProvider
 
-public class BlogPost: Model {
+public final class BlogPost: Model {
 
     public let storage = Storage()
 
@@ -191,6 +191,18 @@ extension BlogPost {
     }
 
 }
+
+extension BlogPost: Parameterizable {
+    public static var uniqueSlug: String = "blogpost"
+    
+    public static func make(for parameter: String) throws -> BlogPost {
+        guard let post = try BlogPost.makeQuery().filter("id", parameter).first() else {
+            throw Abort.notFound
+        }
+        return post
+    }
+}
+
 
 extension BlogPost {
     public static func generateUniqueSlugUrl(from title: String, logger: LogProtocol?) -> String {

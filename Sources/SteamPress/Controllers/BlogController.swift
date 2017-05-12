@@ -38,12 +38,12 @@ struct BlogController {
             index.get(blogPostsPath, handler: blogPostIndexRedirectHandler)
 
             if (enableAuthorsPages) {
-                index.get(authorsPath, String.init, handler: authorViewHandler)
+                index.get(authorsPath, String.parameter, handler: authorViewHandler)
                 index.get(authorsPath, handler: allAuthorsViewHandler)
             }
 
             if (enableTagsPages) {
-                index.get(tagsPath, String.init, handler: tagViewHandler)
+                index.get(tagsPath, String.parameter, handler: tagViewHandler)
                 index.get(tagsPath, handler: allTagsViewHandler)
             }
         }
@@ -63,7 +63,8 @@ struct BlogController {
         return Response(redirect: pathCreator.createPath(for: pathCreator.blogPath), permanently: true)
     }
 
-    func blogPostHandler(request: Request, blogSlugUrl: String) throws -> ResponseRepresentable {
+    func blogPostHandler(request: Request) throws -> ResponseRepresentable {
+        let blogSlugUrl = try request.parameters.next() as String
         guard let blogPost = try BlogPost.makeQuery().filter("slug_url", blogSlugUrl).first() else {
             throw Abort.notFound
         }
@@ -75,7 +76,9 @@ struct BlogController {
         return try viewFactory.blogPostView(uri: request.uri, post: blogPost, author: author, user: getLoggedInUser(in: request), disqusName: getDisqusName(), siteTwitterHandle: getSiteTwitterHandle())
     }
 
-    func tagViewHandler(request: Request, tagName: String) throws -> ResponseRepresentable {
+    func tagViewHandler(request: Request) throws -> ResponseRepresentable {
+        let tagName = try request.parameters.next() as String
+        
         guard let decodedTagName = tagName.removingPercentEncoding else {
             throw Abort.badRequest
         }
@@ -89,7 +92,9 @@ struct BlogController {
         return try viewFactory.tagView(uri: request.uri, tag: tag, paginatedPosts: paginatedBlogPosts, user: getLoggedInUser(in: request), disqusName: getDisqusName(), siteTwitterHandle: getSiteTwitterHandle())
     }
 
-    func authorViewHandler(request: Request, authorUsername: String) throws -> ResponseRepresentable {
+    func authorViewHandler(request: Request) throws -> ResponseRepresentable {
+        let authorUsername = try request.parameters.next() as String
+        
         guard let author = try BlogUser.makeQuery().filter("username", authorUsername).first() else {
             throw Abort.notFound
         }

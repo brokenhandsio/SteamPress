@@ -3,7 +3,7 @@ import Foundation
 import Vapor
 import FluentProvider
 
-class BlogTag: Model {
+final class BlogTag: Model {
     
     let storage = Storage()
     
@@ -65,6 +65,17 @@ extension BlogTag: Preparation {
     
     static func revert(_ database: Database) throws {
         try database.delete(self)
+    }
+}
+
+extension BlogTag: Parameterizable {
+    static var uniqueSlug: String = "blogtag"
+    
+    static func make(for parameter: String) throws -> BlogTag {
+        guard let blogTag = try BlogTag.makeQuery().filter("id", parameter).first() else {
+            throw Abort.notFound
+        }
+        return blogTag
     }
 }
 

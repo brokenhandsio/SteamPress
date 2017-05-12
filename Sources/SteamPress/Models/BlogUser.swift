@@ -98,8 +98,11 @@ extension BlogUser: NodeRepresentable {
 extension BlogUser: Parameterizable {
     static var uniqueSlug: String = "bloguser"
     
-    static func make(for parameter: String) throws -> Self {
-        return .init(id: parameter)
+    static func make(for parameter: String) throws -> BlogUser {
+        guard let blogUser = try BlogUser.makeQuery().filter("id", parameter).first() else {
+            throw Abort.notFound
+        }
+        return blogUser
     }
 }
 
