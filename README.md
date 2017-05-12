@@ -28,9 +28,24 @@ There is an example of how it can work in a site (and what it requires in terms 
 
 # How to Use
 
+## Integration
+
+In order for SteamPress to work properly, it requires various Middleware to do things like authentication. You must add these to your `droplet.json` so they are loaded up and SteamPress can work properly. In your `droplet.json` add `blog-persist` like so:
+
+```json
+{
+    ...
+    "middleware": [
+        ...,
+        "blog-persist"
+    ],
+    ...
+}
+```
+
 ## Setup
 
-It's just a single line! Well almost... First add it to your `Package.swift` dependencies:
+SteamPress is easy to integrate with your application. First add SteamPress to your `Package.swift` dependencies:
 
 ```swift
 dependencies: [
