@@ -37,11 +37,14 @@ In order for SteamPress to work properly, it requires various Middleware to do t
     ...
     "middleware": [
         ...,
+        "sessions"
         "blog-persist"
     ],
     ...
 }
 ```
+
+`sessions` is also required (as shown above) and you can configure the session memory in your application (for example to use Redis instead of in memory). By default, if `sessions` is specified then Vapor will add the default `SessionsMiddleware` to your `Droplet`.
 
 ## Setup
 
