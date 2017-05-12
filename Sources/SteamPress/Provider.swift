@@ -59,6 +59,8 @@ public struct Provider: Vapor.Provider {
 //        let paginator = PaginatorProvider(useBootstrap4: useBootstrap4, paginationLabel: "Blog Post Pages")
 //        drop.addProvider(paginator)
         
+        BlogPost.postsPerPage = postsPerPage
+        
         // Set up Leaf tag
         if let leaf = drop.view as? LeafRenderer {
             leaf.stem.register(Markdown())

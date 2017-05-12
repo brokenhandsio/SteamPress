@@ -3,6 +3,8 @@ import Vapor
 import FluentProvider
 
 public final class BlogPost: Model {
+    
+    static var postsPerPage = 10
 
     public let storage = Storage()
 
@@ -234,6 +236,10 @@ extension BlogPost {
 extension BlogPost: Paginatable {
     public static var defaultPageSorts: [Sort] {
         return []
+    }
+    
+    public static var defaultPageSize: Int {
+        return postsPerPage
     }
 }
 
