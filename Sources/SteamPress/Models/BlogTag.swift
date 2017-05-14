@@ -7,6 +7,13 @@ import FluentProvider
 
 final class BlogTag: Model {
     
+    enum Properties: String {
+        case id = "id"
+        case name = "name"
+        case urlEncodedName = "url_encoded_name"
+        case postCount = "post_count"
+    }
+    
     let storage = Storage()
     
     var name: String
@@ -15,12 +22,12 @@ final class BlogTag: Model {
         self.name = name    }
     
     required init(row: Row) throws {
-        name = try row.get("name")
+        name = try row.get(Properties.name.rawValue)
     }
     
     func makeRow() throws -> Row {
         var row = Row()
-        try row.set("name", name)
+        try row.set(Properties.name.rawValue, name)
         return row
     }
 }
@@ -29,7 +36,7 @@ extension BlogTag: Parameterizable {
     static var uniqueSlug: String = "blogtag"
     
     static func make(for parameter: String) throws -> BlogTag {
-        guard let blogTag = try BlogTag.makeQuery().filter("id", parameter).first() else {
+        guard let blogTag = try BlogTag.makeQuery().filter(BlogTag.idKey, parameter).first() else {
             throw Abort.notFound
         }
         return blogTag
@@ -46,14 +53,14 @@ extension BlogTag: NodeRepresentable {
     func makeNode(in context: Context?) throws -> Node {
         
         var node = Node([:], in: context)
-        try node.set("id", id)
-        try node.set("name", name)
+        try node.set(Properties.id.rawValue, id)
+        try node.set(Properties.name.rawValue, name)
         
         guard let urlEncodedName = name.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) else {
             return node
         }
         
-        try node.set("url_encoded_name", urlEncodedName)
+        try node.set(Properties.urlEncodedName.rawValue, urlEncodedName)
         
         guard let providedContext = context else {
             return node
@@ -61,7 +68,7 @@ extension BlogTag: NodeRepresentable {
         
         switch providedContext {
         case BlogTagContext.withPostCount:
-            try node.set("post_count", sortedPosts().count())
+            try node.set(Properties.postCount.rawValue, sortedPosts().count())
         default: break
         }
         
@@ -78,7 +85,7 @@ extension BlogTag {
     }
     
     func sortedPosts() throws -> Query<BlogPost> {
-        return try posts.filter("published", true).sort("created", .descending)
+        return try posts.filter(BlogPost.Properties.published.rawValue, true).sort(BlogPost.Properties.created.rawValue, .descending)
     }
     
     func deletePivot(for post: BlogPost) throws {
@@ -87,7 +94,7 @@ extension BlogTag {
     
     static func addTag(_ name: String, to post: BlogPost) throws {
         var pivotTag: BlogTag
-        let tag = try BlogTag.makeQuery().filter("name", name).first()
+        let tag = try BlogTag.makeQuery().filter(Properties.name.rawValue, name).first()
         
         if let existingTag = tag {
             pivotTag = existingTag

@@ -7,12 +7,12 @@ extension BlogPost: Preparation {
     public static func prepare(_ database: Database) throws {
         try database.create(self) { posts in
             posts.id()
-            posts.string("title")
-            posts.custom("contents", type: "TEXT")
+            posts.string(Properties.title.rawValue)
+            posts.custom(Properties.contents.rawValue, type: "TEXT")
             posts.parent(BlogUser.self)
-            posts.double("created")
-            posts.double("last_edited", optional: true)
-            posts.string("slug_url", unique: true)
+            posts.double(Properties.created.rawValue)
+            posts.double(Properties.lastEdited.rawValue, optional: true)
+            posts.string(Properties.slugUrl.rawValue, unique: true)
         }
     }
     
@@ -24,7 +24,7 @@ extension BlogPost: Preparation {
 struct BlogPostDraft: Preparation {
     static func prepare(_ database: Database) throws {
         try database.modify(BlogPost.self) { blogPost in
-            blogPost.bool("published", optional: false, default: true)
+            blogPost.bool(BlogPost.Properties.published.rawValue, optional: false, default: true)
         }
     }
     
@@ -37,10 +37,10 @@ extension BlogUser: Preparation {
     static func prepare(_ database: Database) throws {
         try database.create(self) { users in
             users.id()
-            users.string("name")
-            users.string("username", unique: true)
-            users.string("password")
-            users.bool("reset_password_required")
+            users.string(Properties.name.rawValue)
+            users.string(Properties.username.rawValue, unique: true)
+            users.string(Properties.password.rawValue)
+            users.bool(Properties.resetPasswordRequired.rawValue)
         }
     }
     
@@ -53,16 +53,16 @@ extension BlogUser: Preparation {
 struct BlogUserExtraInformation: Preparation {
     static func prepare(_ database: Database) throws {
         try database.modify(BlogUser.self) { users in
-            users.string("profile_picture", optional: true, default: nil)
+            users.string(BlogUser.Properties.profilePicture.rawValue, optional: true, default: nil)
         }
         try database.modify(BlogUser.self) { users in
-            users.string("twitter_handle", optional: true, default: nil)
+            users.string(BlogUser.Properties.twitterHandle.rawValue, optional: true, default: nil)
         }
         try database.modify(BlogUser.self) { users in
-            users.custom("biography", type: "TEXT", optional: true, default: nil)
+            users.custom(BlogUser.Properties.biography.rawValue, type: "TEXT", optional: true, default: nil)
         }
         try database.modify(BlogUser.self) { users in
-            users.string("tagline", optional: true, default: nil)
+            users.string(BlogUser.Properties.tagline.rawValue, optional: true, default: nil)
         }
     }
     
@@ -76,7 +76,7 @@ extension BlogTag: Preparation {
     static func prepare(_ database: Database) throws {
         try database.create(self) { tag in
             tag.id()
-            tag.string("name", unique: true)
+            tag.string(Properties.name.rawValue, unique: true)
         }
     }
     

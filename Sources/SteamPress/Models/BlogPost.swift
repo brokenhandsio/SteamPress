@@ -6,6 +6,25 @@ import FluentProvider
 
 public final class BlogPost: Model {
     
+    enum Properties: String {
+        case id = "id"
+        case title = "title"
+        case contents = "contents"
+        case slugUrl = "slug_url"
+        case published = "published"
+        case created = "created"
+        case lastEdited = "last_edited"
+        case authorName = "author_name"
+        case authorUsername = "author_username"
+        case createdDate = "created_date"
+        case createdDateIso8601 = "created_date_iso8601"
+        case lastEditedDate = "last_edited_date"
+        case lastEditedDateIso8601 = "last_edited_date_iso8601"
+        case shortSnippet = "short_snippet"
+        case longSnippet = "long_snippet"
+        case tags = "tags"
+    }
+    
     static var postsPerPage = 10
 
     public let storage = Storage()
@@ -29,13 +48,13 @@ public final class BlogPost: Model {
     }
     
     public required init(row: Row) throws {
-        title = try row.get("title")
-        contents = try row.get("contents")
-        author = try row.get("blog_user_id")
-        slugUrl = try row.get("slug_url")
-        published = try row.get("published")
-        let createdTime: Double = try row.get("created")
-        let lastEditedTime: Double? = try? row.get("last_edited")
+        title = try row.get(Properties.title.rawValue)
+        contents = try row.get(Properties.contents.rawValue)
+        author = try row.get(BlogUser.foreignIdKey)
+        slugUrl = try row.get(Properties.slugUrl.rawValue)
+        published = try row.get(Properties.published.rawValue)
+        let createdTime: Double = try row.get(Properties.created.rawValue)
+        let lastEditedTime: Double? = try? row.get(Properties.lastEdited.rawValue)
         
         created = Date(timeIntervalSince1970: createdTime)
         
@@ -48,13 +67,13 @@ public final class BlogPost: Model {
         let createdTime = created.timeIntervalSince1970
         
         var row = Row()
-        try row.set("title", title)
-        try row.set("contents", contents)
+        try row.set(Properties.title.rawValue, title)
+        try row.set(Properties.contents.rawValue, contents)
         try row.set(BlogUser.foreignIdKey, author)
-        try row.set("created", createdTime)
-        try row.set("slug_url", slugUrl)
-        try row.set("published", published)
-        try row.set("last_edited", lastEdited?.timeIntervalSince1970)
+        try row.set(Properties.created.rawValue, createdTime)
+        try row.set(Properties.slugUrl.rawValue, slugUrl)
+        try row.set(Properties.published.rawValue, published)
+        try row.set(Properties.lastEdited.rawValue, lastEdited?.timeIntervalSince1970)
         return row
     }
 }
@@ -63,7 +82,7 @@ extension BlogPost: Parameterizable {
     public static var uniqueSlug: String = "blogpost"
     
     public static func make(for parameter: String) throws -> BlogPost {
-        guard let post = try BlogPost.makeQuery().filter("id", parameter).first() else {
+        guard let post = try BlogPost.makeQuery().filter(BlogPost.idKey, parameter).first() else {
             throw Abort.notFound
         }
         return post
@@ -83,16 +102,16 @@ extension BlogPost: NodeRepresentable {
         let createdTime = created.timeIntervalSince1970
         
         var node = Node([:], in: context)
-        try node.set("id", id)
-        try node.set("title", title)
-        try node.set("contents", contents)
-        try node.set("blog_user_id", author)
-        try node.set("created", createdTime)
-        try node.set("slug_url", slugUrl)
-        try node.set("published", published)
+        try node.set(Properties.id.rawValue, id)
+        try node.set(Properties.title.rawValue, title)
+        try node.set(Properties.contents.rawValue, contents)
+        try node.set(BlogUser.foreignIdKey, author)
+        try node.set(Properties.created.rawValue, createdTime)
+        try node.set(Properties.slugUrl.rawValue, slugUrl)
+        try node.set(Properties.published.rawValue, published)
 
         if let lastEdited = lastEdited {
-            try node.set("last_edited", lastEdited.timeIntervalSince1970)
+            try node.set(Properties.lastEdited.rawValue, lastEdited.timeIntervalSince1970)
         }
         
         guard let providedContext = context else {
@@ -109,27 +128,27 @@ extension BlogPost: NodeRepresentable {
         dateFormatter.timeStyle = .none
         let createdDate = dateFormatter.string(from: created)
         
-        try node.set("author_name", postAuthor.get()?.name)
-        try node.set("author_username", postAuthor.get()?.username)
-        try node.set("created_date", createdDate)
+        try node.set(Properties.authorName.rawValue, postAuthor.get()?.name)
+        try node.set(Properties.authorUsername.rawValue, postAuthor.get()?.username)
+        try node.set(Properties.createdDate.rawValue, createdDate)
         
         switch providedContext {
         case BlogPostContext.shortSnippet:
-            try node.set("short_snippet", shortSnippet())
+            try node.set(Properties.shortSnippet.rawValue, shortSnippet())
             break
         case BlogPostContext.longSnippet:
-            try node.set("long_snippet", longSnippet())
+            try node.set(Properties.longSnippet.rawValue, longSnippet())
 
             let allTags = try tags.all()
             if allTags.count > 0 {
-                try node.set("tags", allTags)
+                try node.set(Properties.tags.rawValue, allTags)
             }
             break
         case BlogPostContext.all:
             let allTags = try tags.all()
 
             if allTags.count > 0 {
-                try node.set("tags", allTags)
+                try node.set(Properties.tags.rawValue, allTags)
             }
             
             let iso8601Formatter = DateFormatter()
@@ -137,15 +156,15 @@ extension BlogPost: NodeRepresentable {
             iso8601Formatter.locale = Locale(identifier: "en_US_POSIX")
             iso8601Formatter.timeZone = TimeZone(secondsFromGMT: 0)
             
-            try node.set("created_date_iso8601", iso8601Formatter.string(from: created))
+            try node.set(Properties.createdDateIso8601.rawValue, iso8601Formatter.string(from: created))
 
             if let lastEdited = lastEdited {
                 let lastEditedDate = dateFormatter.string(from: lastEdited)
-                try node.set("last_edited_date", lastEditedDate)
-                try node.set("last_edited_date_iso8601", iso8601Formatter.string(from: lastEdited))
+                try node.set(Properties.lastEditedDate.rawValue, lastEditedDate)
+                try node.set(Properties.lastEditedDateIso8601.rawValue, iso8601Formatter.string(from: lastEdited))
             }
-            try node.set("short_snippet", shortSnippet())
-            try node.set("long_snippet", longSnippet())
+            try node.set(Properties.shortSnippet.rawValue, shortSnippet())
+            try node.set(Properties.longSnippet.rawValue, longSnippet())
         default: break
         }
 
@@ -191,7 +210,7 @@ extension BlogPost {
         var count = 2
 
         do {
-            while try BlogPost.makeQuery().filter("slug_url", newSlugUrl).first() != nil {
+            while try BlogPost.makeQuery().filter(Properties.slugUrl.rawValue, newSlugUrl).first() != nil {
               newSlugUrl = "\(slugUrl)-\(count)"
               count += 1
             }
