@@ -10,10 +10,12 @@ final class PaginatorTag: Tag {
     
     fileprivate let blogPathCreator: BlogPathCreator
     fileprivate let paginationLabel: String?
+    fileprivate let useBootstrap4: Bool
     
-    init(blogPathCreator: BlogPathCreator, paginationLabel: String? = nil) {
+    init(blogPathCreator: BlogPathCreator, paginationLabel: String? = nil, useBootstrap4: Bool = true) {
         self.blogPathCreator = blogPathCreator
         self.paginationLabel = paginationLabel
+        self.useBootstrap4 = useBootstrap4
     }
     
     let name = "paginator"
@@ -83,8 +85,16 @@ extension PaginatorTag {
     func buildNavigation(currentPage: Int, totalPages: Int, previousPage: String?, nextPage: String?) -> Node {
         var bytes: Bytes = []
         
-        let navClass = "paginator"
-        let ulClass = "pagination justify-content-center"
+        let navClass: String
+        let ulClass: String
+        
+        if useBootstrap4 {
+            navClass = "paginator"
+            ulClass = "pagination justify-content-center"
+        } else {
+            navClass = "paginator text-center"
+            ulClass = "pagination"
+        }
         
         var headerString = "<nav class=\"\(navClass)\""
         if let ariaLabel = paginationLabel {
@@ -110,12 +120,20 @@ extension PaginatorTag {
     func buildLink(title: String, active: Bool, link: String?, disabled: Bool) -> String {
         let activeSpan = "<span class=\"sr-only\">(current)</span>"
         
-        let linkClass = "page-link"
-        let liClass = "page-item"
+        let linkClass: String?
+        let liClass: String?
+        
+        if useBootstrap4 {
+            linkClass = "page-link"
+            liClass = "page-item"
+        } else {
+            linkClass = nil
+            liClass = nil
+        }
         
         var linkString = "<li"
         
-        if active || disabled {
+        if active || disabled || liClass != nil {
             linkString += " class=\""
             
             if active {
@@ -125,10 +143,12 @@ extension PaginatorTag {
                 linkString += "disabled"
             }
             
-            if active || disabled {
-                linkString += " "
+            if let liClass = liClass {
+                if active || disabled {
+                    linkString += " "
+                }
+                linkString += "\(liClass)"
             }
-            linkString += "\(liClass)"
             
             linkString += "\""
         }
@@ -138,7 +158,9 @@ extension PaginatorTag {
         if let link = link {
             linkString += "<a href=\"\(link)\""
             
-            linkString += " class=\"\(linkClass)\""
+            if let linkClass = linkClass {
+                linkString += " class=\"\(linkClass)\""
+            }
             
             if title == "«" {
                 linkString += " rel=\"prev\" aria-label=\"Previous\"><span aria-hidden=\"true\">«</span><span class=\"sr-only\">Previous</span>"
@@ -152,7 +174,9 @@ extension PaginatorTag {
         } else {
             linkString += "<span"
             
-            linkString += " class=\"\(linkClass)\""
+            if let linkClass = linkClass {
+                linkString += " class=\"\(linkClass)\""
+            }
             
             if title == "«" {
                 linkString += " aria-label=\"Previous\" aria-hidden=\"true\">«</span><span class=\"sr-only\">Previous</span>"
