@@ -132,25 +132,6 @@ extension BlogPost: NodeRepresentable {
     }
 }
 
-extension BlogPost: Preparation {
-
-    public static func prepare(_ database: Database) throws {
-        try database.create(self) { posts in
-            posts.id()
-            posts.string("title")
-            posts.custom("contents", type: "TEXT")
-            posts.parent(BlogUser.self)
-            posts.double("created")
-            posts.double("last_edited", optional: true)
-            posts.string("slug_url", unique: true)
-        }
-    }
-
-    public static func revert(_ database: Database) throws {
-        try database.delete(self)
-    }
-}
-
 public enum BlogPostContext: Context {
     case all
     case shortSnippet

@@ -106,22 +106,7 @@ extension BlogUser: Parameterizable {
     }
 }
 
-extension BlogUser: Preparation {
-    static func prepare(_ database: Database) throws {
-        try database.create(self) { users in
-            users.id()
-            users.string("name")
-            users.string("username", unique: true)
-            users.string("password")
-            users.bool("reset_password_required")
-        }
-    }
-    
-    static func revert(_ database: Database) throws {
-        try database.delete(self)
-    }
 
-}
 
 public enum BlogUserContext: Context {
     case withPostCount

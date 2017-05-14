@@ -54,20 +54,6 @@ public enum BlogTagContext: Context {
     case withPostCount
 }
 
-extension BlogTag: Preparation {
-    
-    static func prepare(_ database: Database) throws {
-        try database.create(self) { tag in
-            tag.id()
-            tag.string("name", unique: true)
-        }
-    }
-    
-    static func revert(_ database: Database) throws {
-        try database.delete(self)
-    }
-}
-
 extension BlogTag: Parameterizable {
     static var uniqueSlug: String = "blogtag"
     
