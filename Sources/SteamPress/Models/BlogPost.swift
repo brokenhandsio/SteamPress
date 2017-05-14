@@ -2,6 +2,8 @@ import Foundation
 import Vapor
 import FluentProvider
 
+// MARK: - Model
+
 public final class BlogPost: Model {
     
     static var postsPerPage = 10
@@ -55,6 +57,25 @@ public final class BlogPost: Model {
         try row.set("last_edited", lastEdited?.timeIntervalSince1970)
         return row
     }
+}
+
+extension BlogPost: Parameterizable {
+    public static var uniqueSlug: String = "blogpost"
+    
+    public static func make(for parameter: String) throws -> BlogPost {
+        guard let post = try BlogPost.makeQuery().filter("id", parameter).first() else {
+            throw Abort.notFound
+        }
+        return post
+    }
+}
+
+// MARK: - Node
+
+public enum BlogPostContext: Context {
+    case all
+    case shortSnippet
+    case longSnippet
 }
 
 extension BlogPost: NodeRepresentable {
@@ -132,23 +153,7 @@ extension BlogPost: NodeRepresentable {
     }
 }
 
-public enum BlogPostContext: Context {
-    case all
-    case shortSnippet
-    case longSnippet
-}
-
-extension BlogPost {
-    var postAuthor: Parent<BlogPost, BlogUser> {
-        return parent(id: author)
-    }
-}
-
-extension BlogPost {
-    var tags: Siblings<BlogPost, BlogTag, Pivot<BlogPost, BlogTag>> {
-        return siblings()
-    }
-}
+// MARK: - BlogPost Utilities
 
 extension BlogPost {
 
@@ -173,22 +178,7 @@ extension BlogPost {
         return snippet
     }
 
-}
-
-extension BlogPost: Parameterizable {
-    public static var uniqueSlug: String = "blogpost"
-    
-    public static func make(for parameter: String) throws -> BlogPost {
-        guard let post = try BlogPost.makeQuery().filter("id", parameter).first() else {
-            throw Abort.notFound
-        }
-        return post
-    }
-}
-
-
-extension BlogPost {
-    public static func generateUniqueSlugUrl(from title: String, logger: LogProtocol?) -> String {
+    static func generateUniqueSlugUrl(from title: String, logger: LogProtocol?) -> String {
         let alphanumericsWithHyphenAndSpace = CharacterSet(charactersIn: " -0123456789abcdefghijklmnopqrstuvwxyz")
 
         let slugUrl = title.lowercased()
@@ -213,6 +203,20 @@ extension BlogPost {
         return newSlugUrl
     }
 }
+
+// MARK: - Relations
+
+extension BlogPost {
+    var postAuthor: Parent<BlogPost, BlogUser> {
+        return parent(id: author)
+    }
+    
+    var tags: Siblings<BlogPost, BlogTag, Pivot<BlogPost, BlogTag>> {
+        return siblings()
+    }
+}
+
+// MARK: - Pagination
 
 extension BlogPost: Paginatable {
     public static var defaultPageSorts: [Sort] {

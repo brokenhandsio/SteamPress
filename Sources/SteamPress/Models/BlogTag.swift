@@ -3,6 +3,8 @@ import Foundation
 import Vapor
 import FluentProvider
 
+// MARK: - Model
+
 final class BlogTag: Model {
     
     let storage = Storage()
@@ -21,6 +23,23 @@ final class BlogTag: Model {
         try row.set("name", name)
         return row
     }
+}
+
+extension BlogTag: Parameterizable {
+    static var uniqueSlug: String = "blogtag"
+    
+    static func make(for parameter: String) throws -> BlogTag {
+        guard let blogTag = try BlogTag.makeQuery().filter("id", parameter).first() else {
+            throw Abort.notFound
+        }
+        return blogTag
+    }
+}
+
+// MARK: - Node
+
+enum BlogTagContext: Context {
+    case withPostCount
 }
 
 extension BlogTag: NodeRepresentable {
@@ -50,20 +69,7 @@ extension BlogTag: NodeRepresentable {
     }
 }
 
-public enum BlogTagContext: Context {
-    case withPostCount
-}
-
-extension BlogTag: Parameterizable {
-    static var uniqueSlug: String = "blogtag"
-    
-    static func make(for parameter: String) throws -> BlogTag {
-        guard let blogTag = try BlogTag.makeQuery().filter("id", parameter).first() else {
-            throw Abort.notFound
-        }
-        return blogTag
-    }
-}
+// MARK: - Relations
 
 extension BlogTag {
     

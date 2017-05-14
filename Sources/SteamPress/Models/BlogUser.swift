@@ -4,6 +4,8 @@ import AuthProvider
 import BCrypt
 import Foundation
 
+// MARK: - Model
+
 final class BlogUser: Model {
     
     let storage = Storage()
@@ -54,6 +56,23 @@ final class BlogUser: Model {
     
 }
 
+extension BlogUser: Parameterizable {
+    static var uniqueSlug: String = "bloguser"
+    
+    static func make(for parameter: String) throws -> BlogUser {
+        guard let blogUser = try BlogUser.makeQuery().filter("id", parameter).first() else {
+            throw Abort.notFound
+        }
+        return blogUser
+    }
+}
+
+// MARK: - Node
+
+enum BlogUserContext: Context {
+    case withPostCount
+}
+
 extension BlogUser: NodeRepresentable {
 
     func makeNode(in context: Context?) throws -> Node {
@@ -95,22 +114,7 @@ extension BlogUser: NodeRepresentable {
     
 }
 
-extension BlogUser: Parameterizable {
-    static var uniqueSlug: String = "bloguser"
-    
-    static func make(for parameter: String) throws -> BlogUser {
-        guard let blogUser = try BlogUser.makeQuery().filter("id", parameter).first() else {
-            throw Abort.notFound
-        }
-        return blogUser
-    }
-}
-
-
-
-public enum BlogUserContext: Context {
-    case withPostCount
-}
+// MARK: - Authentication
 
 extension BlogUser: SessionPersistable {}
 
@@ -127,6 +131,8 @@ extension BlogUser: PasswordAuthenticatable {
         return password.makeString()
     }
 }
+
+// MARK: - Relations
 
 extension BlogUser {
     var posts: Children<BlogUser, BlogPost> {
