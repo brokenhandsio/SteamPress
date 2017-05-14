@@ -236,7 +236,7 @@ struct BlogAdminController {
         }
 
         // We now have valid data
-        let hashedPassword = try BCryptHasher(cost: 10).make(password)
+        let hashedPassword = try BlogUser.passwordHasher.make(password)
         let newUser = BlogUser(name: name, username: username.lowercased(), password: hashedPassword, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline)
         
         if resetPasswordRequired {
@@ -305,7 +305,7 @@ struct BlogAdminController {
         }
 
         if let password = rawPassword {
-            userToUpdate.password = try BCryptHasher(cost: 10).make(password)
+            userToUpdate.password = try BlogUser.passwordHasher.make(password)
         }
 
         try userToUpdate.save()
@@ -337,7 +337,7 @@ struct BlogAdminController {
             if users.count == 0 {
                 let password = String.random()
                 
-                let hashedPassword = try BCryptHasher(cost: 10).make(password)
+                let hashedPassword = try BlogUser.passwordHasher.make(password)
                 let user = BlogUser(name: "Admin", username: "admin", password: hashedPassword, profilePicture: nil, twitterHandle: nil, biography: nil, tagline: "Admin for the blog")
                 user.resetPasswordRequired = true
                 try user.save()
@@ -479,7 +479,7 @@ struct BlogAdminController {
 
         let user = try request.user()
         
-        user.password = try BCryptHasher(cost: 10).make(password)
+        user.password = try BlogUser.passwordHasher.make(password)
         user.resetPasswordRequired = false
         try user.save()
 

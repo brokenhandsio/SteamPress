@@ -139,10 +139,11 @@ extension Request {
 
 extension BlogUser: PasswordAuthenticatable {
     public static let usernameKey = Properties.username.rawValue
-    public static let passwordVerifier: PasswordVerifier? = BCryptHasher(cost: 10)
+    public static let passwordVerifier: PasswordVerifier? = BlogUser.passwordHasher
     public var hashedPassword: String? {
         return password.makeString()
     }
+    public static let passwordHasher = BCryptHasher(cost: 10)
 }
 
 // MARK: - Relations
