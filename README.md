@@ -30,21 +30,21 @@ There is an example of how it can work in a site (and what it requires in terms 
 
 ## Integration
 
-In order for SteamPress to work properly, it requires various Middleware to do things like authentication. You must add these to your `droplet.json` so they are loaded up and SteamPress can work properly. In your `droplet.json` add `blog-persist` like so:
+In order for SteamPress to work properly, it requires various Middleware to do things like authentication. You must add these to your `droplet.json` so they are loaded up and SteamPress can work properly. In your `droplet.json` add `steampress-sessions` and `blog-persist` like so (and in this order):
 
 ```json
 {
     ...
     "middleware": [
         ...,
-        "sessions"
+        "steampress-sessions"
         "blog-persist"
     ],
     ...
 }
 ```
 
-`sessions` is also required (as shown above) and you can configure the session memory in your application (for example to use Redis instead of in memory). By default, if `sessions` is specified then Vapor will add the default `SessionsMiddleware` to your `Droplet`.
+`steampress-sessions` will used the `Droplet`'s configured `SessionsProtocol` implementation and you can configure it in your `Configuration` (for example to use Redis instead of in-memory).
 
 ## Setup
 
@@ -384,10 +384,6 @@ This will convert the `Node` object `myObject`'s `markdownContent` to HTML (you 
 SteamPress also contains an API for accessing certain things that may be useful. The current endpoints are:
 
 * `/<blog-path>/api/tags/` - returns all the tags that have been saved in JSON
-
-# Known issues
-
-* When the admin user is created when first accessing the login screen, sometimes two are created so you need to use the first password displayed. You can then delete the second Admin user in the Admin pane.
 
 # Roadmap
 
