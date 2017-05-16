@@ -83,7 +83,7 @@ extension BlogPost: Parameterizable {
     
     public static func make(for parameter: String) throws -> BlogPost {
         guard let post = try BlogPost.makeQuery().filter(BlogPost.idKey, parameter).first() else {
-            throw Abort.notFound
+            throw RouterError.invalidParameter
         }
         return post
     }

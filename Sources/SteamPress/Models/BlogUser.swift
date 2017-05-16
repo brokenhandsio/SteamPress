@@ -74,7 +74,7 @@ extension BlogUser: Parameterizable {
     
     static func make(for parameter: String) throws -> BlogUser {
         guard let blogUser = try BlogUser.makeQuery().filter(BlogUser.idKey, parameter).first() else {
-            throw Abort.notFound
+            throw RouterError.invalidParameter
         }
         return blogUser
     }

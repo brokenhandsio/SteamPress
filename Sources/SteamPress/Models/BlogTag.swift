@@ -37,7 +37,7 @@ extension BlogTag: Parameterizable {
     
     static func make(for parameter: String) throws -> BlogTag {
         guard let blogTag = try BlogTag.makeQuery().filter(BlogTag.idKey, parameter).first() else {
-            throw Abort.notFound
+            throw RouterError.invalidParameter
         }
         return blogTag
     }
