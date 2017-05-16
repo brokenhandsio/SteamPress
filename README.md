@@ -211,7 +211,7 @@ This is the page for viewing a single entire blog post. The parameters set are:
 * `disqus_name` - the name of your Disqus site if configured
 * `post_uri` - The URI of the post
 * `post_uri_encoded` - A URL-query encoded for of the URI for passing to Share buttons
-* `site_uri`: The URI of the root site - this is useful for creating links to author pages for `article:author` Open Graph support
+* `site_uri`: The URI of the root site - this is useful for creating links to author pages for `article:author` Open Graph support (has a trailing slash)
 * `post_description` - The HTML of the short snippet of the post on a single line with all HTML tags stripped out for the `description` tags
 * `post_image` - The first image in the blog post if one is there. Useful for OpenGraph and Twitter Cards
 * `post_image_alt` - The alt text of the first image if it exists. Useful for Twitter Cards
