@@ -13,16 +13,14 @@ struct BlogController {
     fileprivate let drop: Droplet
     fileprivate let pathCreator: BlogPathCreator
     fileprivate let viewFactory: ViewFactory
-    fileprivate let postsPerPage: Int
     fileprivate let enableAuthorsPages: Bool
     fileprivate let enableTagsPages: Bool
 
     // MARK: - Initialiser
-    init(drop: Droplet, pathCreator: BlogPathCreator, viewFactory: ViewFactory, postsPerPage: Int, enableAuthorsPages: Bool, enableTagsPages: Bool) {
+    init(drop: Droplet, pathCreator: BlogPathCreator, viewFactory: ViewFactory, enableAuthorsPages: Bool, enableTagsPages: Bool) {
         self.drop = drop
         self.pathCreator = pathCreator
         self.viewFactory = viewFactory
-        self.postsPerPage = postsPerPage
         self.enableAuthorsPages = enableAuthorsPages
         self.enableTagsPages = enableTagsPages
     }

@@ -33,7 +33,7 @@ class BlogAdminControllerTests: XCTestCase {
         let enableAuthorsPages = drop.config["enableAuthorsPages"]?.bool ?? true
         let enableTagsPages = drop.config["enableTagsPages"]?.bool ?? true
 
-        let blogController = BlogController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, postsPerPage: 5, enableAuthorsPages: enableAuthorsPages, enableTagsPages: enableTagsPages)
+        let blogController = BlogController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, enableAuthorsPages: enableAuthorsPages, enableTagsPages: enableTagsPages)
         blogController.addRoutes()
             
         try tag1.save()

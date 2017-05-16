@@ -13,15 +13,13 @@ struct BlogAdminController {
     fileprivate let drop: Droplet
     fileprivate let pathCreator: BlogPathCreator
     fileprivate let viewFactory: ViewFactory
-    fileprivate let postsPerPage: Int
     fileprivate let log: LogProtocol
 
     // MARK: - Initialiser
-    init(drop: Droplet, pathCreator: BlogPathCreator, viewFactory: ViewFactory, postsPerPage: Int) {
+    init(drop: Droplet, pathCreator: BlogPathCreator, viewFactory: ViewFactory) {
         self.drop = drop
         self.pathCreator = pathCreator
         self.viewFactory = viewFactory
-        self.postsPerPage = postsPerPage
         self.log = drop.log
     }
 
@@ -379,21 +377,17 @@ struct BlogAdminController {
         }
         
         let passwordCredentials = Password(username: username.lowercased(), password: password)
-//        let rememberMeCookie = Cookie(name: "steampress-remember-me", value: "")
         
-//        if rememberMe {
-//            
-//            request.cookies.insert(rememberMeCookie)
-//            request.storage["remember_me"] = true
-//        }
-//        else {
-//            request.storage.removeValue(forKey: "remember_me")
-//        }
+        if rememberMe {
+            request.storage["remember_me"] = true
+        }
+        else {
+            request.storage.removeValue(forKey: "remember_me")
+        }
         
         do {
             let user = try BlogUser.authenticate(passwordCredentials)
             request.auth.authenticate(user)
-//            request.storage.removeValue(forKey: "remember_me")
 
             let response = Response(redirect: pathCreator.createPath(for: "admin"))
             if rememberMe {
@@ -404,8 +398,6 @@ struct BlogAdminController {
         catch {
             log.debug("Got error logging in \(error)")
             let loginError = ["Your username or password was incorrect"]
-//            request.storage.removeValue(forKey: "remember_me")
-//            request.cookies.remove(rememberMeCookie)
             return try viewFactory.createLoginView(loginWarning: false, errors: loginError, username: username, password: "")
         }
     }
