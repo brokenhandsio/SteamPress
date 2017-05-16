@@ -63,9 +63,6 @@ class BlogControllerTests: XCTestCase {
     func setupDrop(config: Config? = nil, loginUser: Bool = false) throws {
         drop = try Droplet()
 
-        let steampress = SteamPress.Provider(postsPerPage: 5)
-        steampress.setup(drop)
-
         viewFactory = CapturingViewFactory()
         let pathCreator = BlogPathCreator(blogPath: nil)
         let configToUse = config ?? drop.config

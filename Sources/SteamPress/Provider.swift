@@ -3,6 +3,8 @@ import Fluent
 import LeafMarkdown
 import LeafProvider
 import AuthProvider
+import Sessions
+import Cookies
 
 public struct Provider: Vapor.Provider {
 
@@ -32,11 +34,27 @@ public struct Provider: Vapor.Provider {
         config.addConfigurable(middleware: { (config) -> (PersistMiddleware<BlogUser>) in
             return persistMiddleware
         }, name: "blog-persist")
+        
+        let cookieFactory: () -> Cookie = {
+            let cookie = Cookie(name: "steampress-session", value: "", secure: config.environment == .production, httpOnly: true, sameSite: .lax)
+            return cookie
+        }
+        
+        let sessionsMiddleware = SessionsMiddleware(try config.resolveSessions(), cookieFactory: cookieFactory)
+        config.addConfigurable(middleware: { (config) -> (SessionsMiddleware) in
+            return sessionsMiddleware
+        }, name: "steampress-sessions")
     }
 
     public func boot(_ drop: Droplet) {
-
-        setup(drop)
+        
+        BlogPost.postsPerPage = postsPerPage
+        
+        // Set up Leaf tag
+        if let leaf = drop.view as? LeafRenderer {
+            leaf.stem.register(Markdown())
+            leaf.stem.register(PaginatorTag(blogPathCreator: pathCreator, paginationLabel: "Blog Post Pages", useBootstrap4: useBootstrap4))
+        }
         
         let viewFactory = LeafViewFactory(viewRenderer: drop.view, disqusName: drop.config["disqus", "disqusName"]?.string, siteTwitterHandle: drop.config["twitter", "siteHandle"]?.string)
 
@@ -47,20 +65,6 @@ public struct Provider: Vapor.Provider {
         // Add the routes
         blogController.addRoutes()
         blogAdminController.addRoutes()
-    }
-    
-    func setup(_ drop: Droplet) {
-        // Middleware
-        //let authMiddleware = BlogAuthMiddleware()
-        //drop.middleware.append(authMiddleware)
-        
-        BlogPost.postsPerPage = postsPerPage
-        
-        // Set up Leaf tag
-        if let leaf = drop.view as? LeafRenderer {
-            leaf.stem.register(Markdown())
-            leaf.stem.register(PaginatorTag(blogPathCreator: pathCreator, paginationLabel: "Blog Post Pages", useBootstrap4: useBootstrap4))
-        }
     }
 
     public init(config: Config) throws {
