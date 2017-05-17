@@ -8,17 +8,17 @@ import Foundation
 
 final class BlogUser: Model {
     
-    enum Properties: String {
-        case id = "id"
-        case name = "name"
-        case username = "username"
-        case password = "password"
-        case resetPasswordRequired = "reset_password_required"
-        case profilePicture = "profile_picture"
-        case twitterHandle = "twitter_handle"
-        case biography = "biography"
-        case tagline = "tagline"
-        case postCount = "post_count"
+    struct Properties {
+        static let id = "id"
+        static let name = "name"
+        static let username = "username"
+        static let password = "password"
+        static let resetPasswordRequired = "reset_password_required"
+        static let profilePicture = "profile_picture"
+        static let twitterHandle = "twitter_handle"
+        static let biography = "biography"
+        static let tagline = "tagline"
+        static let postCount = "post_count"
     }
     
     let storage = Storage()
@@ -43,27 +43,27 @@ final class BlogUser: Model {
     }
     
     init(row: Row) throws {
-        name = try row.get(Properties.name.rawValue)
-        username = try row.get(Properties.username.rawValue)
-        let passwordAsString: String = try row.get(Properties.password.rawValue)
+        name = try row.get(Properties.name)
+        username = try row.get(Properties.username)
+        let passwordAsString: String = try row.get(Properties.password)
         password = passwordAsString.makeBytes()
-        resetPasswordRequired = try row.get(Properties.resetPasswordRequired.rawValue)
-        profilePicture = try? row.get(Properties.profilePicture.rawValue)
-        twitterHandle = try? row.get(Properties.twitterHandle.rawValue)
-        biography = try? row.get(Properties.biography.rawValue)
-        tagline = try? row.get(Properties.tagline.rawValue)
+        resetPasswordRequired = try row.get(Properties.resetPasswordRequired)
+        profilePicture = try? row.get(Properties.profilePicture)
+        twitterHandle = try? row.get(Properties.twitterHandle)
+        biography = try? row.get(Properties.biography)
+        tagline = try? row.get(Properties.tagline)
     }
     
     func makeRow() throws -> Row {
         var row = Row()
-        try row.set(Properties.name.rawValue, name)
-        try row.set(Properties.username.rawValue, username)
-        try row.set(Properties.password.rawValue, password.makeString())
-        try row.set(Properties.resetPasswordRequired.rawValue, resetPasswordRequired)
-        try row.set(Properties.profilePicture.rawValue, profilePicture)
-        try row.set(Properties.twitterHandle.rawValue, twitterHandle)
-        try row.set(Properties.biography.rawValue, biography)
-        try row.set(Properties.tagline.rawValue, tagline)
+        try row.set(Properties.name, name)
+        try row.set(Properties.username, username)
+        try row.set(Properties.password, password.makeString())
+        try row.set(Properties.resetPasswordRequired, resetPasswordRequired)
+        try row.set(Properties.profilePicture, profilePicture)
+        try row.set(Properties.twitterHandle, twitterHandle)
+        try row.set(Properties.biography, biography)
+        try row.set(Properties.tagline, tagline)
         return row
     }
     
@@ -81,25 +81,25 @@ extension BlogUser: NodeRepresentable {
 
     func makeNode(in context: Context?) throws -> Node {
         var node = Node([:], in: context)
-        try node.set(Properties.id.rawValue, id)
-        try node.set(Properties.name.rawValue, name)
-        try node.set(Properties.username.rawValue, username)
-        try node.set(Properties.resetPasswordRequired.rawValue, resetPasswordRequired)
+        try node.set(Properties.id, id)
+        try node.set(Properties.name, name)
+        try node.set(Properties.username, username)
+        try node.set(Properties.resetPasswordRequired, resetPasswordRequired)
         
         if let profilePicture = profilePicture {
-            try node.set(Properties.profilePicture.rawValue, profilePicture)
+            try node.set(Properties.profilePicture, profilePicture)
         }
         
         if let twitterHandle = twitterHandle {
-            try node.set(Properties.twitterHandle.rawValue, twitterHandle)
+            try node.set(Properties.twitterHandle, twitterHandle)
         }
         
         if let biography = biography {
-            try node.set(Properties.biography.rawValue, biography)
+            try node.set(Properties.biography, biography)
         }
         
         if let tagline = tagline {
-            try node.set(Properties.tagline.rawValue, tagline)
+            try node.set(Properties.tagline, tagline)
         }
         
         guard let providedContext = context else {
@@ -108,7 +108,7 @@ extension BlogUser: NodeRepresentable {
         
         switch providedContext {
         case BlogUserContext.withPostCount:
-            try node.set(Properties.postCount.rawValue, try sortedPosts().count())
+            try node.set(Properties.postCount, try sortedPosts().count())
         default:
             break
         }
@@ -129,7 +129,7 @@ extension Request {
 }
 
 extension BlogUser: PasswordAuthenticatable {
-    public static let usernameKey = Properties.username.rawValue
+    public static let usernameKey = Properties.username
     public static let passwordVerifier: PasswordVerifier? = BlogUser.passwordHasher
     public var hashedPassword: String? {
         return password.makeString()
@@ -145,7 +145,7 @@ extension BlogUser {
     }
     
     func sortedPosts() throws -> Query<BlogPost> {
-        return try posts.filter(BlogPost.Properties.published.rawValue, true).sort(BlogPost.Properties.created.rawValue, .descending)
+        return try posts.filter(BlogPost.Properties.published, true).sort(BlogPost.Properties.created, .descending)
     }
 }
 
