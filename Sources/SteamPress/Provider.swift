@@ -22,8 +22,8 @@ public struct Provider: Vapor.Provider {
         try config.addProvider(AuthProvider.Provider.self)
         
         // Database preperations
-        config.preparations.append(BlogPost.self)
         config.preparations.append(BlogUser.self)
+        config.preparations.append(BlogPost.self)
         config.preparations.append(BlogTag.self)
         config.preparations.append(Pivot<BlogPost, BlogTag>.self)
         config.preparations.append(BlogPostDraft.self)
