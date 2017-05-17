@@ -7,6 +7,20 @@ import FluentProvider
 class BlogAdminControllerTests: XCTestCase {
     static var allTests = [
         ("testLogin", testLogin),
+        ("testCannotAccessAdminPageWithoutBeingLoggedIn", testCannotAccessAdminPageWithoutBeingLoggedIn),
+        ("testCannotAccessCreateBlogPostPageWithoutBeingLoggedIn", testCannotAccessCreateBlogPostPageWithoutBeingLoggedIn),
+        ("testCannotSendCreateBlogPostPageWithoutBeingLoggedIn", testCannotSendCreateBlogPostPageWithoutBeingLoggedIn),
+        ("testCannotAccessEditPostPageWithoutLogin", testCannotAccessEditPostPageWithoutLogin),
+        ("testCannotSendEditPostPageWithoutLogin", testCannotSendEditPostPageWithoutLogin),
+        ("testCannotAccessCreateUserPageWithoutLogin", testCannotAccessCreateUserPageWithoutLogin),
+        ("testCannotSendCreateUserPageWithoutLogin", testCannotSendCreateUserPageWithoutLogin),
+        ("testCannotAccessProfilePageWithoutLogin", testCannotAccessProfilePageWithoutLogin),
+        ("testCannotAccessEditUserPageWithoutLogin", testCannotAccessEditUserPageWithoutLogin),
+        ("testCannotSendEditUserPageWithoutLogin", testCannotSendEditUserPageWithoutLogin),
+        ("testCannotDeletePostWithoutLogin", testCannotDeletePostWithoutLogin),
+        ("testCannotDeleteUserWithoutLogin", testCannotDeleteUserWithoutLogin),
+        ("testCannotAccessResetPasswordPageWithoutLogin", testCannotAccessResetPasswordPageWithoutLogin),
+        ("testCannotSendResetPasswordPageWithoutLogin", testCannotSendResetPasswordPageWithoutLogin),
     ]
     
     var database: Database!
@@ -41,5 +55,69 @@ class BlogAdminControllerTests: XCTestCase {
         
         XCTAssertEqual(response.status, .found)
         XCTAssertEqual(response.headers[HeaderKey.location], "/blog/admin/")
+    }
+    
+    func testCannotAccessAdminPageWithoutBeingLoggedIn() throws {
+        try assertLoginRequired(method: .get, path: "/blog/admin/")
+    }
+    
+    func testCannotAccessCreateBlogPostPageWithoutBeingLoggedIn() throws {
+        try assertLoginRequired(method: .get, path: "/blog/admin/createPost/")
+    }
+    
+    func testCannotSendCreateBlogPostPageWithoutBeingLoggedIn() throws {
+        try assertLoginRequired(method: .post, path: "/blog/admin/createPost/")
+    }
+    
+    func testCannotAccessEditPostPageWithoutLogin() throws {
+        try assertLoginRequired(method: .get, path: "/blog/admin/posts/2/edit/")
+    }
+    
+    func testCannotSendEditPostPageWithoutLogin() throws {
+        try assertLoginRequired(method: .post, path: "/blog/admin/posts/2/edit/")
+    }
+    
+    func testCannotAccessCreateUserPageWithoutLogin() throws {
+        try assertLoginRequired(method: .get, path: "/blog/admin/createUser/")
+    }
+    
+    func testCannotSendCreateUserPageWithoutLogin() throws {
+        try assertLoginRequired(method: .post, path: "/blog/admin/createUser/")
+    }
+    
+    func testCannotAccessProfilePageWithoutLogin() throws {
+        try assertLoginRequired(method: .get, path: "/blog/admin/profile/")
+    }
+    
+    func testCannotAccessEditUserPageWithoutLogin() throws {
+        try assertLoginRequired(method: .get, path: "/blog/admin/users/1/edit/")
+    }
+    
+    func testCannotSendEditUserPageWithoutLogin() throws {
+        try assertLoginRequired(method: .post, path: "/blog/admin/users/1/edit/")
+    }
+    
+    func testCannotDeletePostWithoutLogin() throws {
+        try assertLoginRequired(method: .get, path: "/blog/admin/posts/1/delete/")
+    }
+    
+    func testCannotDeleteUserWithoutLogin() throws {
+        try assertLoginRequired(method: .get, path: "/blog/admin/users/1/delete/")
+    }
+    
+    func testCannotAccessResetPasswordPageWithoutLogin() throws {
+        try assertLoginRequired(method: .get, path: "/blog/admin/resetPassword")
+    }
+
+    func testCannotSendResetPasswordPageWithoutLogin() throws {
+        try assertLoginRequired(method: .post, path: "/blog/admin/resetPassword")
+    }
+    
+    private func assertLoginRequired(method: HTTP.Method, path: String) throws {
+        let request = Request(method: method, uri: path)
+        let response = try drop.respond(to: request)
+        
+        XCTAssertEqual(response.status, .found)
+        XCTAssertEqual(response.headers[HeaderKey.location], "/blog/admin/login/?loginRequired")
     }
 }
