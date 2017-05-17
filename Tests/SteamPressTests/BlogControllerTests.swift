@@ -25,6 +25,7 @@ class BlogControllerTests: XCTestCase {
         ("testAuthorPageGetsOnlyPublishedPostsInDescendingOrder", testAuthorPageGetsOnlyPublishedPostsInDescendingOrder),
         ("testDisabledBlogAuthorsPath", testDisabledBlogAuthorsPath),
         ("testDisabledBlogTagsPath", testDisabledBlogTagsPath),
+        ("testTagAPIEndpointReportsArrayOfTagsAsJson", testTagAPIEndpointReportsArrayOfTagsAsJson),
     ]
 
     private var drop: Droplet!
@@ -60,7 +61,7 @@ class BlogControllerTests: XCTestCase {
         try! Droplet.teardown(database: database)
     }
 
-    func setupDrop(config: Config? = nil, loginUser: Bool = false) throws {
+    func setupDrop(config: Config? = nil, setupData: Bool = true) throws {
         drop = try Droplet()
 
         viewFactory = CapturingViewFactory()
@@ -76,18 +77,14 @@ class BlogControllerTests: XCTestCase {
         let blogAdminController = BlogAdminController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory)
         blogAdminController.addRoutes()
 
-        if loginUser {
-//            let userCredentials = BlogUserCredentials(username: "luke", password: "1234", name: "Luke")
-//            user = try BlogUser(credentials: userCredentials)
-        }
-        else {
+        if setupData {
             user = TestDataBuilder.anyUser()
-        }
-        try user.save()
-        post = BlogPost(title: "Test Path", contents: "A long time ago", author: user, creationDate: Date(), slugUrl: "test-path", published: true)
-        try post.save()
+            try user.save()
+            post = BlogPost(title: "Test Path", contents: "A long time ago", author: user, creationDate: Date(), slugUrl: "test-path", published: true)
+            try post.save()
 
-        try BlogTag.addTag("tatooine", to: post)
+            try BlogTag.addTag("tatooine", to: post)
+        }
     }
 
     func testBlogIndexGetsPostsInReverseOrder() throws {
@@ -137,13 +134,6 @@ class BlogControllerTests: XCTestCase {
         XCTAssertEqual(response.status, .movedPermanently)
         XCTAssertEqual(response.headers[HeaderKey.location], "/")
     }
-
-//    func testUserPassedToBlogPostIfLoggedIn() throws {
-//        try setupDrop(loginUser: true)
-//        let requestData = "{\"username\": \"\(user.name)\", \"password\": \"1234\"}"
-//        let loginRequest = try Request(method: .post, uri: "/admin/login/", body: requestData.makeBody())
-//         _ = try drop.respond(to: loginRequest)
-//    }
 
     func testAuthorView() throws {
         try setupDrop()
@@ -281,6 +271,38 @@ class BlogControllerTests: XCTestCase {
 
         XCTAssertEqual(404, tagResponse.status.statusCode)
         XCTAssertEqual(404, allTagsResponse.status.statusCode)
+    }
+    
+    func testTagAPIEndpointReportsArrayOfTagsAsJson() throws {
+        let tag1 = BlogTag(name: "The first tag")
+        let tag2 = BlogTag(name: "The second tag")
+        
+        let pathCreator = BlogPathCreator(blogPath: nil)
+        // TODO change to Stub
+        let viewFactory = CapturingViewFactory()
+        
+        try setupDrop(setupData: false)
+        let blogController = BlogController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, enableAuthorsPages: true, enableTagsPages: true)
+        blogController.addRoutes()
+        
+        try tag1.save()
+        try tag2.save()
+        
+        let tagApiRequest = Request(method: .get, uri: "/api/tags/")
+        let response = try drop.respond(to: tagApiRequest)
+        
+        let tagsJson = try JSON(bytes: response.body.bytes!)
+        
+        XCTAssertNotNil(tagsJson.array)
+        XCTAssertEqual(tagsJson.array?.count, 2)
+        
+        guard let nodeArray = tagsJson.array else {
+            XCTFail()
+            return
+        }
+        
+        XCTAssertEqual(nodeArray[0]["name"]?.string, "The first tag")
+        XCTAssertEqual(nodeArray[1]["name"]?.string, "The second tag")
     }
 }
 

@@ -6,53 +6,40 @@ import FluentProvider
 
 class BlogAdminControllerTests: XCTestCase {
     static var allTests = [
-        ("testTagAPIEndpointReportsArrayOfTagsAsJson", testTagAPIEndpointReportsArrayOfTagsAsJson),
+        ("testLogin", testLogin),
     ]
     
     var database: Database!
+    var drop: Droplet!
     
     override func setUp() {
         database = Database(try! MemoryDriver(()))
         try! Droplet.prepare(database: database)
+        let config = try! Config()
+        drop = try! Droplet(config)
+        let adminController = BlogAdminController(drop: drop, pathCreator: BlogPathCreator(blogPath: "blog"), viewFactory: CapturingViewFactory())
+        adminController.addRoutes()
     }
     
     override func tearDown() {
         try! Droplet.teardown(database: database)
     }
     
-    func testTagAPIEndpointReportsArrayOfTagsAsJson() throws {
-        let tag1 = BlogTag(name: "The first tag")
-        let tag2 = BlogTag(name: "The second tag")
+    func testLogin() throws {
+        let hashedPassword = try BlogUser.passwordHasher.make("password")
+        let newUser = TestDataBuilder.anyUser()
+        newUser.password = hashedPassword
+        try newUser.save()
         
-        let config = try Config()
-        let drop = try Droplet(config)
-        let pathCreator = BlogPathCreator(blogPath: nil)
-        // TODO change to Stub
-        let viewFactory = CapturingViewFactory()
-
-        let enableAuthorsPages = drop.config["enableAuthorsPages"]?.bool ?? true
-        let enableTagsPages = drop.config["enableTagsPages"]?.bool ?? true
-
-        let blogController = BlogController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, enableAuthorsPages: enableAuthorsPages, enableTagsPages: enableTagsPages)
-        blogController.addRoutes()
-            
-        try tag1.save()
-        try tag2.save()
+        let loginJson = JSON(try Node(node: [
+                "inputUsername": newUser.username,
+                "inputPassword": "password"
+            ]))
+        let loginRequest = Request(method: .post, uri: "/blog/admin/login/")
+        loginRequest.json = loginJson
+        let response = try drop.respond(to: loginRequest)
         
-        let tagApiRequest = Request(method: .get, uri: "/api/tags/")
-        let response = try drop.respond(to: tagApiRequest)
-        
-        let tagsJson = try JSON(bytes: response.body.bytes!)
-        
-        XCTAssertNotNil(tagsJson.array)
-        XCTAssertEqual(tagsJson.array?.count, 2)
-        
-        guard let nodeArray = tagsJson.array else {
-            XCTFail()
-            return
-        }
-        
-        XCTAssertEqual(nodeArray[0]["name"]?.string, "The first tag")
-        XCTAssertEqual(nodeArray[1]["name"]?.string, "The second tag")
+        XCTAssertEqual(response.status, .found)
+        XCTAssertEqual(response.headers[HeaderKey.location], "/blog/admin/")
     }
 }

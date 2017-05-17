@@ -352,8 +352,7 @@ struct BlogAdminController {
         return try viewFactory.createLoginView(loginWarning: loginRequired, errors: nil, username: nil, password: nil)
     }
     
-    func loginPostHandler(_ request: Request) throws -> ResponseRepresentable {
-        
+    func loginPostHandler(_ request: Request) throws -> ResponseRepresentable {        
         let rawUsername = request.data["inputUsername"]?.string
         let rawPassword = request.data["inputPassword"]?.string
         let rememberMe = request.data["remember-me"]?.string != nil
