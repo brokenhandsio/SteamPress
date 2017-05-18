@@ -5,6 +5,7 @@ import LeafProvider
 import AuthProvider
 import Sessions
 import Cookies
+import Foundation
 
 public struct Provider: Vapor.Provider {
 
@@ -35,8 +36,15 @@ public struct Provider: Vapor.Provider {
             return persistMiddleware
         }, name: "blog-persist")
         
-        let cookieFactory: () -> Cookie = {
-            let cookie = Cookie(name: "steampress-session", value: "", secure: config.environment == .production, httpOnly: true, sameSite: .lax)
+        let cookieFactory: (_ request: Request) -> Cookie = { req in
+            var cookie = Cookie(name: "steampress-session", value: "", secure: config.environment == .production, httpOnly: true, sameSite: .lax)
+            
+            if req.storage["remember_me"] as? Bool ?? false {
+                let oneMonthTime: TimeInterval = 30 * 24 * 60 * 60
+                let expiryDate = Date().addingTimeInterval(oneMonthTime)
+                cookie.expires = expiryDate
+            }
+            
             return cookie
         }
         
