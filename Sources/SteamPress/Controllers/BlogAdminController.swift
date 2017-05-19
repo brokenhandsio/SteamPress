@@ -99,7 +99,7 @@ struct BlogAdminController {
             }
         }
 
-        return Response(redirect: pathCreator.createPath(for: "posts/\(newPost.slugUrl)"))
+        return Response(getRedirect: pathCreator.createPath(for: "posts/\(newPost.slugUrl)"))
     }
 
     func deletePostHandler(request: Request) throws -> ResponseRepresentable {
@@ -118,7 +118,7 @@ struct BlogAdminController {
         }
 
         try post.delete()
-        return Response(redirect: pathCreator.createPath(for: "admin"))
+        return Response(getRedirect: pathCreator.createPath(for: "admin"))
     }
 
     func editPostHandler(request: Request) throws -> ResponseRepresentable {
@@ -195,7 +195,7 @@ struct BlogAdminController {
 
         try post.save()
 
-        return Response(redirect: pathCreator.createPath(for: "admin"))
+        return Response(getRedirect: pathCreator.createPath(for: "admin"))
     }
 
     // MARK: - User handlers
@@ -248,7 +248,7 @@ struct BlogAdminController {
             return try viewFactory.createUserView(editing: false, errors: ["There was an error creating the user. Please try again"], name: name, username: username, passwordError: passwordError, confirmPasswordError: confirmPasswordError, resetPasswordRequired: resetPasswordRequired, userId: nil, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline)
         }
         
-        return Response(redirect: pathCreator.createPath(for: "admin"))
+        return Response(getRedirect: pathCreator.createPath(for: "admin"))
         
     }
 
@@ -307,7 +307,7 @@ struct BlogAdminController {
         }
 
         try userToUpdate.save()
-        return Response(redirect: pathCreator.createPath(for: "admin"))
+        return Response(getRedirect: pathCreator.createPath(for: "admin"))
     }
 
     func deleteUserPostHandler(request: Request) throws -> ResponseRepresentable {
@@ -323,7 +323,7 @@ struct BlogAdminController {
         }
         else {
             try user.delete()
-            return Response(redirect: pathCreator.createPath(for: "admin"))
+            return Response(getRedirect: pathCreator.createPath(for: "admin"))
         }
     }
 
@@ -387,12 +387,7 @@ struct BlogAdminController {
         do {
             let user = try BlogUser.authenticate(passwordCredentials)
             request.auth.authenticate(user)
-
-            let response = Response(redirect: pathCreator.createPath(for: "admin"))
-            if rememberMe {
-                response.storage["remember_me"] = true
-            }
-            return response
+            return Response(getRedirect: pathCreator.createPath(for: "admin"))
         }
         catch {
             log.debug("Got error logging in \(error)")
@@ -403,7 +398,7 @@ struct BlogAdminController {
 
     func logoutHandler(_ request: Request) throws -> ResponseRepresentable {
         try request.auth.unauthenticate()
-        return Response(redirect: pathCreator.createPath(for: pathCreator.blogPath))
+        return Response(getRedirect: pathCreator.createPath(for: pathCreator.blogPath))
     }
 
     // MARK: Admin Handler
@@ -474,7 +469,7 @@ struct BlogAdminController {
         user.resetPasswordRequired = false
         try user.save()
 
-        return Response(redirect: pathCreator.createPath(for: "admin"))
+        return Response(getRedirect: pathCreator.createPath(for: "admin"))
     }
 
     // MARK: - Validators

@@ -36,8 +36,9 @@ public struct Provider: Vapor.Provider {
             return persistMiddleware
         }, name: "blog-persist")
         
+        let cookieName = "steampress-session"
         let cookieFactory: (_ request: Request) -> Cookie = { req in
-            var cookie = Cookie(name: "steampress-session", value: "", secure: config.environment == .production, httpOnly: true, sameSite: .lax)
+            var cookie = Cookie(name: cookieName, value: "", secure: config.environment == .production, httpOnly: true, sameSite: .lax)
             
             if req.storage["remember_me"] as? Bool ?? false {
                 let oneMonthTime: TimeInterval = 30 * 24 * 60 * 60
@@ -48,7 +49,7 @@ public struct Provider: Vapor.Provider {
             return cookie
         }
         
-        let sessionsMiddleware = SessionsMiddleware(try config.resolveSessions(), cookieFactory: cookieFactory)
+        let sessionsMiddleware = SessionsMiddleware(try config.resolveSessions(), cookieName: cookieName, cookieFactory: cookieFactory)
         config.addConfigurable(middleware: { (config) -> (SessionsMiddleware) in
             return sessionsMiddleware
         }, name: "steampress-sessions")
