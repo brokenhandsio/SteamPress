@@ -1,6 +1,6 @@
 import Vapor
 import Fluent
-import LeafMarkdown
+import MarkdownProvider
 import LeafProvider
 import AuthProvider
 import Sessions

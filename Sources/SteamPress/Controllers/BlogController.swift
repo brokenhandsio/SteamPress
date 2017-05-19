@@ -1,7 +1,7 @@
 import Vapor
 import HTTP
 import Routing
-import LeafMarkdown
+import MarkdownProvider
 
 struct BlogController {
 
