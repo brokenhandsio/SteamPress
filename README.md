@@ -66,7 +66,7 @@ import SteamPress
 Finally, add the provider!
 
 ```swift
-try drop.addProvider(SteamPress.Provider.self)
+try config.addProvider(SteamPress.Provider.self)
 ```
 
 This will look for a config file called `steampress.json` that looks like:
@@ -86,14 +86,14 @@ You can also initialise the Provider manually, by creating it as so:
 
 ```swift
 let steampress = SteamPress.Provider(postsPerPage: 5)
-drop.addProvider(steampress)
+config.addProvider(steampress)
 ```
 
 This will initialise it as the root path of your site. If you wish to have it in a subdirectory, initialise it with:
 
 ```swift
 let steampress = SteamPress.Provider(postsPerPage: 5, blogPath: "blog")
-drop.addProvider(steampress)
+config.addProvider(steampress)
 ```
 
 ### Bootstrap Versions
