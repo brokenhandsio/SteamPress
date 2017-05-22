@@ -53,7 +53,7 @@ class BlogAdminControllerTests: XCTestCase {
         loginRequest.json = loginJson
         let response = try drop.respond(to: loginRequest)
         
-        XCTAssertEqual(response.status, .temporaryRedirect)
+        XCTAssertEqual(response.status, .seeOther)
         XCTAssertEqual(response.headers[HeaderKey.location], "/blog/admin/")
     }
     
@@ -117,7 +117,7 @@ class BlogAdminControllerTests: XCTestCase {
         let request = Request(method: method, uri: path)
         let response = try drop.respond(to: request)
         
-        XCTAssertEqual(response.status, .temporaryRedirect)
+        XCTAssertEqual(response.status, .seeOther)
         XCTAssertEqual(response.headers[HeaderKey.location], "/blog/admin/login/?loginRequired")
     }
 }
