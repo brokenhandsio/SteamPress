@@ -22,7 +22,7 @@ public struct Provider: Vapor.Provider {
     public func boot(_ config: Config) throws {
         try config.addProvider(AuthProvider.Provider.self)
         
-        // Database preperations
+        // Database preparations
         config.preparations.append(BlogUser.self)
         config.preparations.append(BlogPost.self)
         config.preparations.append(BlogTag.self)
