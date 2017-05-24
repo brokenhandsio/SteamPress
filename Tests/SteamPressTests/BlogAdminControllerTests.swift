@@ -1,50 +1,123 @@
 import XCTest
-@testable import Vapor
+import Vapor
 @testable import SteamPress
 import HTTP
-import Fluent
+import FluentProvider
 
 class BlogAdminControllerTests: XCTestCase {
     static var allTests = [
-        ("testTagAPIEndpointReportsArrayOfTagsAsJson", testTagAPIEndpointReportsArrayOfTagsAsJson),
+        ("testLogin", testLogin),
+        ("testCannotAccessAdminPageWithoutBeingLoggedIn", testCannotAccessAdminPageWithoutBeingLoggedIn),
+        ("testCannotAccessCreateBlogPostPageWithoutBeingLoggedIn", testCannotAccessCreateBlogPostPageWithoutBeingLoggedIn),
+        ("testCannotSendCreateBlogPostPageWithoutBeingLoggedIn", testCannotSendCreateBlogPostPageWithoutBeingLoggedIn),
+        ("testCannotAccessEditPostPageWithoutLogin", testCannotAccessEditPostPageWithoutLogin),
+        ("testCannotSendEditPostPageWithoutLogin", testCannotSendEditPostPageWithoutLogin),
+        ("testCannotAccessCreateUserPageWithoutLogin", testCannotAccessCreateUserPageWithoutLogin),
+        ("testCannotSendCreateUserPageWithoutLogin", testCannotSendCreateUserPageWithoutLogin),
+        ("testCannotAccessProfilePageWithoutLogin", testCannotAccessProfilePageWithoutLogin),
+        ("testCannotAccessEditUserPageWithoutLogin", testCannotAccessEditUserPageWithoutLogin),
+        ("testCannotSendEditUserPageWithoutLogin", testCannotSendEditUserPageWithoutLogin),
+        ("testCannotDeletePostWithoutLogin", testCannotDeletePostWithoutLogin),
+        ("testCannotDeleteUserWithoutLogin", testCannotDeleteUserWithoutLogin),
+        ("testCannotAccessResetPasswordPageWithoutLogin", testCannotAccessResetPasswordPageWithoutLogin),
+        ("testCannotSendResetPasswordPageWithoutLogin", testCannotSendResetPasswordPageWithoutLogin),
     ]
     
-    func testTagAPIEndpointReportsArrayOfTagsAsJson() throws {
-        var tag1 = BlogTag(name: "The first tag")
-        var tag2 = BlogTag(name: "The second tag")
+    var database: Database!
+    var drop: Droplet!
+    
+    override func setUp() {
+        database = Database(try! MemoryDriver(()))
+        try! Droplet.prepare(database: database)
+        let config = try! Config()
+        drop = try! Droplet(config)
+        let adminController = BlogAdminController(drop: drop, pathCreator: BlogPathCreator(blogPath: "blog"), viewFactory: CapturingViewFactory())
+        adminController.addRoutes()
+    }
+    
+    override func tearDown() {
+        try! Droplet.teardown(database: database)
+    }
+    
+    func testLogin() throws {
+        let hashedPassword = try BlogUser.passwordHasher.make("password")
+        let newUser = TestDataBuilder.anyUser()
+        newUser.password = hashedPassword
+        try newUser.save()
         
-        let drop = Droplet(arguments: ["dummy/path/", "prepare"], config: nil)
-        drop.database = Database(MemoryDriver())
-        let steampress = SteamPress.Provider(postsPerPage: 5)
-        steampress.setup(drop)
-        let pathCreator = BlogPathCreator(blogPath: nil)
-        // TODO change to Stub
-        let viewFactory = CapturingViewFactory()
+        let loginJson = JSON(try Node(node: [
+                "inputUsername": newUser.username,
+                "inputPassword": "password"
+            ]))
+        let loginRequest = Request(method: .post, uri: "/blog/admin/login/")
+        loginRequest.json = loginJson
+        let response = try drop.respond(to: loginRequest)
+        
+        XCTAssertEqual(response.status, .seeOther)
+        XCTAssertEqual(response.headers[HeaderKey.location], "/blog/admin/")
+    }
+    
+    func testCannotAccessAdminPageWithoutBeingLoggedIn() throws {
+        try assertLoginRequired(method: .get, path: "/blog/admin/")
+    }
+    
+    func testCannotAccessCreateBlogPostPageWithoutBeingLoggedIn() throws {
+        try assertLoginRequired(method: .get, path: "/blog/admin/createPost/")
+    }
+    
+    func testCannotSendCreateBlogPostPageWithoutBeingLoggedIn() throws {
+        try assertLoginRequired(method: .post, path: "/blog/admin/createPost/")
+    }
+    
+    func testCannotAccessEditPostPageWithoutLogin() throws {
+        try assertLoginRequired(method: .get, path: "/blog/admin/posts/2/edit/")
+    }
+    
+    func testCannotSendEditPostPageWithoutLogin() throws {
+        try assertLoginRequired(method: .post, path: "/blog/admin/posts/2/edit/")
+    }
+    
+    func testCannotAccessCreateUserPageWithoutLogin() throws {
+        try assertLoginRequired(method: .get, path: "/blog/admin/createUser/")
+    }
+    
+    func testCannotSendCreateUserPageWithoutLogin() throws {
+        try assertLoginRequired(method: .post, path: "/blog/admin/createUser/")
+    }
+    
+    func testCannotAccessProfilePageWithoutLogin() throws {
+        try assertLoginRequired(method: .get, path: "/blog/admin/profile/")
+    }
+    
+    func testCannotAccessEditUserPageWithoutLogin() throws {
+        try assertLoginRequired(method: .get, path: "/blog/admin/users/1/edit/")
+    }
+    
+    func testCannotSendEditUserPageWithoutLogin() throws {
+        try assertLoginRequired(method: .post, path: "/blog/admin/users/1/edit/")
+    }
+    
+    func testCannotDeletePostWithoutLogin() throws {
+        try assertLoginRequired(method: .get, path: "/blog/admin/posts/1/delete/")
+    }
+    
+    func testCannotDeleteUserWithoutLogin() throws {
+        try assertLoginRequired(method: .get, path: "/blog/admin/users/1/delete/")
+    }
+    
+    func testCannotAccessResetPasswordPageWithoutLogin() throws {
+        try assertLoginRequired(method: .get, path: "/blog/admin/resetPassword")
+    }
 
-        let enableAuthorsPages = drop.config["enableAuthorsPages"]?.bool ?? true
-        let enableTagsPages = drop.config["enableTagsPages"]?.bool ?? true
-
-        let blogController = BlogController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, postsPerPage: 5, enableAuthorsPages: enableAuthorsPages, enableTagsPages: enableTagsPages, config: drop.config)
-        blogController.addRoutes()
-        try drop.runCommands()
+    func testCannotSendResetPasswordPageWithoutLogin() throws {
+        try assertLoginRequired(method: .post, path: "/blog/admin/resetPassword")
+    }
+    
+    private func assertLoginRequired(method: HTTP.Method, path: String) throws {
+        let request = Request(method: method, uri: path)
+        let response = try drop.respond(to: request)
         
-        try tag1.save()
-        try tag2.save()
-        
-        let tagApiRequest = try! Request(method: .get, uri: "/api/tags/")
-        let response = try drop.respond(to: tagApiRequest)
-        
-        let tagsJson = try JSON(bytes: response.body.bytes!)
-        
-        XCTAssertNotNil(tagsJson.array)
-        XCTAssertEqual(tagsJson.array?.count, 2)
-        
-        guard let nodeArray = tagsJson.array as? [JSON] else {
-            XCTFail()
-            return
-        }
-        
-        XCTAssertEqual(nodeArray[0]["name"]?.string, "The first tag")
-        XCTAssertEqual(nodeArray[1]["name"]?.string, "The second tag")
+        XCTAssertEqual(response.status, .seeOther)
+        XCTAssertEqual(response.headers[HeaderKey.location], "/blog/admin/login/?loginRequired")
     }
 }

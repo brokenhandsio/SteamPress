@@ -1,13 +1,16 @@
 import Vapor
 import Fluent
-import Paginator
-import LeafMarkdown
+import MarkdownProvider
+import LeafProvider
+import AuthProvider
+import Sessions
+import Cookies
+import Foundation
 
 public struct Provider: Vapor.Provider {
 
-    public var provided: Providable = Providable()
-
     private static let configFilename: String = "steampress"
+    public static let repositoryName: String = "steampress"
     
     private let blogPath: String?
     private let postsPerPage: Int
@@ -15,43 +18,62 @@ public struct Provider: Vapor.Provider {
     private let useBootstrap4: Bool
     private let enableAuthorsPages: Bool
     private let enableTagsPages: Bool
+    
+    public func boot(_ config: Config) throws {
+        try config.addProvider(AuthProvider.Provider.self)
+        
+        // Database preparations
+        config.preparations.append(BlogUser.self)
+        config.preparations.append(BlogPost.self)
+        config.preparations.append(BlogTag.self)
+        config.preparations.append(Pivot<BlogPost, BlogTag>.self)
+        config.preparations.append(BlogPostDraft.self)
+        config.preparations.append(BlogUserExtraInformation.self)
+        
+        // Sessions
+        let persistMiddleware = PersistMiddleware(BlogUser.self)
+        config.addConfigurable(middleware: { (config) -> (PersistMiddleware<BlogUser>) in
+            return persistMiddleware
+        }, name: "blog-persist")
+        
+        let cookieName = "steampress-session"
+        let cookieFactory: (_ request: Request) -> Cookie = { req in
+            var cookie = Cookie(name: cookieName, value: "", secure: config.environment == .production, httpOnly: true, sameSite: .lax)
+            
+            if req.storage["remember_me"] as? Bool ?? false {
+                let oneMonthTime: TimeInterval = 30 * 24 * 60 * 60
+                let expiryDate = Date().addingTimeInterval(oneMonthTime)
+                cookie.expires = expiryDate
+            }
+            
+            return cookie
+        }
+        
+        let sessionsMiddleware = SessionsMiddleware(try config.resolveSessions(), cookieName: cookieName, cookieFactory: cookieFactory)
+        config.addConfigurable(middleware: { (config) -> (SessionsMiddleware) in
+            return sessionsMiddleware
+        }, name: "steampress-sessions")
+    }
 
     public func boot(_ drop: Droplet) {
-
-        setup(drop)
         
-        let viewFactory = LeafViewFactory(viewRenderer: drop.view)
-
-        // Set up the controllers
-        let blogController = BlogController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, postsPerPage: postsPerPage, enableAuthorsPages: enableAuthorsPages, enableTagsPages: enableTagsPages, config: drop.config)
-        let blogAdminController = BlogAdminController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, postsPerPage: postsPerPage)
-
-        // Add the routes
-        blogController.addRoutes()
-        blogAdminController.addRoutes()
-    }
-    
-    func setup(_ drop: Droplet) {
-        // Database preperations
-        drop.preparations.append(BlogPost.self)
-        drop.preparations.append(BlogUser.self)
-        drop.preparations.append(BlogTag.self)
-        drop.preparations.append(Pivot<BlogPost, BlogTag>.self)
-        drop.preparations.append(BlogPostDraft.self)
-        drop.preparations.append(BlogUserExtraInformation.self)
-        
-        // Middleware
-        let authMiddleware = BlogAuthMiddleware()
-        drop.middleware.append(authMiddleware)
-        
-        // Providers
-        let paginator = PaginatorProvider(useBootstrap4: useBootstrap4, paginationLabel: "Blog Post Pages")
-        drop.addProvider(paginator)
+        BlogPost.postsPerPage = postsPerPage
         
         // Set up Leaf tag
         if let leaf = drop.view as? LeafRenderer {
             leaf.stem.register(Markdown())
+            leaf.stem.register(PaginatorTag(blogPathCreator: pathCreator, paginationLabel: "Blog Post Pages", useBootstrap4: useBootstrap4))
         }
+        
+        let viewFactory = LeafViewFactory(viewRenderer: drop.view, disqusName: drop.config["disqus", "disqusName"]?.string, siteTwitterHandle: drop.config["twitter", "siteHandle"]?.string)
+
+        // Set up the controllers
+        let blogController = BlogController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, enableAuthorsPages: enableAuthorsPages, enableTagsPages: enableTagsPages)
+        let blogAdminController = BlogAdminController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory)
+
+        // Add the routes
+        blogController.addRoutes()
+        blogAdminController.addRoutes()
     }
 
     public init(config: Config) throws {
@@ -95,6 +117,6 @@ public struct Provider: Vapor.Provider {
         case InvalidConfiguration(message: String)
     }
 
-    public func afterInit(_: Vapor.Droplet) {}
     public func beforeRun(_: Vapor.Droplet) {}
+    
 }

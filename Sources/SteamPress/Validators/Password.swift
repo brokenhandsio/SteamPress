@@ -1,11 +1,11 @@
-import Vapor
+import Validation
 
-struct PasswordValidator: ValidationSuite {
-    static func validate(input value: String) throws {
-        
+struct PasswordValidator: Validator {
+    
+    func validate(_ input: String) throws {
         // Check length
-        if value.count < 8 {
-            throw error(with: value, message: "Password not long enough")
+        if input.count < 8 {
+            throw error("Password not long enough")
         }
         
         // Check complexity
@@ -19,13 +19,13 @@ struct PasswordValidator: ValidationSuite {
         var complexityStrength = 0
         
         for pattern in patterns {
-            if value.range(of: pattern, options: .regularExpression) != nil {
+            if input.range(of: pattern, options: .regularExpression) != nil {
                 complexityStrength += 1
             }
         }
         
         if complexityStrength < 3 {
-            throw error(with: value)
+            throw error("Password is not complex enough")
         }
     }
 }

@@ -1,25 +1,38 @@
 import Vapor
-import Fluent
-import Auth
+import FluentProvider
+import AuthProvider
 import BCrypt
 import Foundation
 
+// MARK: - Model
+
 final class BlogUser: Model {
     
-    fileprivate static let databaseTableName = "blogusers"
+    struct Properties {
+        static let id = "id"
+        static let name = "name"
+        static let username = "username"
+        static let password = "password"
+        static let resetPasswordRequired = "reset_password_required"
+        static let profilePicture = "profile_picture"
+        static let twitterHandle = "twitter_handle"
+        static let biography = "biography"
+        static let tagline = "tagline"
+        static let postCount = "post_count"
+    }
     
-    var id: Node?
-    var exists: Bool = false
+    let storage = Storage()
+    
     var name: String
     var username: String
-    var password: String
+    var password: Bytes
     var resetPasswordRequired: Bool = false
     var profilePicture: String?
     var twitterHandle: String?
     var biography: String?
     var tagline: String?
     
-    init(name: String, username: String, password: String, profilePicture: String?, twitterHandle: String?, biography: String?, tagline: String?) {
+    init(name: String, username: String, password: Bytes, profilePicture: String?, twitterHandle: String?, biography: String?, tagline: String?) {
         self.name = name
         self.username = username.lowercased()
         self.password = password
@@ -29,134 +42,110 @@ final class BlogUser: Model {
         self.tagline = tagline
     }
     
-    init(node: Node, in context: Context) throws {
-        id = try node.extract("id")
-        name = try node.extract("name")
-        username = try node.extract("username")
-        password = try node.extract("password")
-        resetPasswordRequired = try node.extract("reset_password_required")
-        profilePicture = try? node.extract("profile_picture")
-        twitterHandle = try? node.extract("twitter_handle")
-        biography = try? node.extract("biography")
-        tagline = try? node.extract("tagline")
+    init(row: Row) throws {
+        name = try row.get(Properties.name)
+        username = try row.get(Properties.username)
+        let passwordAsString: String = try row.get(Properties.password)
+        password = passwordAsString.makeBytes()
+        resetPasswordRequired = try row.get(Properties.resetPasswordRequired)
+        profilePicture = try? row.get(Properties.profilePicture)
+        twitterHandle = try? row.get(Properties.twitterHandle)
+        biography = try? row.get(Properties.biography)
+        tagline = try? row.get(Properties.tagline)
     }
     
-    func makeNode(context: Context) throws -> Node {
-        var userNode: [String: NodeRepresentable] = [:]
-        userNode["id"] = id
-        userNode["name"] = name.makeNode()
-        userNode["username"] = username.makeNode()
-        userNode["reset_password_required"] = resetPasswordRequired.makeNode()
+    func makeRow() throws -> Row {
+        var row = Row()
+        try row.set(Properties.name, name)
+        try row.set(Properties.username, username)
+        try row.set(Properties.password, password.makeString())
+        try row.set(Properties.resetPasswordRequired, resetPasswordRequired)
+        try row.set(Properties.profilePicture, profilePicture)
+        try row.set(Properties.twitterHandle, twitterHandle)
+        try row.set(Properties.biography, biography)
+        try row.set(Properties.tagline, tagline)
+        return row
+    }
+    
+}
+
+extension BlogUser: Parameterizable {}
+
+// MARK: - Node
+
+enum BlogUserContext: Context {
+    case withPostCount
+}
+
+extension BlogUser: NodeRepresentable {
+
+    func makeNode(in context: Context?) throws -> Node {
+        var node = Node([:], in: context)
+        try node.set(Properties.id, id)
+        try node.set(Properties.name, name)
+        try node.set(Properties.username, username)
+        try node.set(Properties.resetPasswordRequired, resetPasswordRequired)
         
         if let profilePicture = profilePicture {
-            userNode["profile_picture"] = profilePicture.makeNode()
+            try node.set(Properties.profilePicture, profilePicture)
         }
         
         if let twitterHandle = twitterHandle {
-            userNode["twitter_handle"] = twitterHandle.makeNode()
+            try node.set(Properties.twitterHandle, twitterHandle)
         }
         
         if let biography = biography {
-            userNode["biography"] = biography.makeNode()
+            try node.set(Properties.biography, biography)
         }
         
         if let tagline = tagline {
-            userNode["tagline"] = tagline.makeNode()
+            try node.set(Properties.tagline, tagline)
         }
         
-        switch context {
-        case is DatabaseContext:
-            userNode["password"] = password.makeNode()
+        guard let providedContext = context else {
+            return node
+        }
+        
+        switch providedContext {
         case BlogUserContext.withPostCount:
-            userNode["post_count"] = try posts().count.makeNode()
+            try node.set(Properties.postCount, try sortedPosts().count())
         default:
             break
         }
         
-        return try userNode.makeNode()
+        return node
     }
     
-    static func prepare(_ database: Database) throws {
-        try database.create(databaseTableName) { users in
-            users.id()
-            users.string("name")
-            users.string("username", unique: true)
-            users.string("password")
-            users.bool("reset_password_required")
-        }
-    }
-    
-    static func revert(_ database: Database) throws {
-        try database.delete(databaseTableName)
+}
+
+// MARK: - Authentication
+
+extension BlogUser: SessionPersistable {}
+
+extension Request {
+    func user() throws -> BlogUser {
+        return try auth.assertAuthenticated()
     }
 }
 
-public enum BlogUserContext: Context {
-    case withPostCount
+extension BlogUser: PasswordAuthenticatable {
+    public static let usernameKey = Properties.username
+    public static let passwordVerifier: PasswordVerifier? = BlogUser.passwordHasher
+    public var hashedPassword: String? {
+        return password.makeString()
+    }
+    public static let passwordHasher = BCryptHasher(cost: 10)
 }
 
-extension BlogUser: Auth.User {
-    
-    convenience init(credentials: BlogUserCredentials) throws {
-        self.init(name: credentials.name ?? "", username: credentials.username, password: try BCrypt.digest(password: credentials.password), profilePicture: credentials.profilePicture, twitterHandle: credentials.twitterHandle, biography: credentials.biography, tagline: credentials.tagline)
-    }
-    
-    static func register(credentials: Credentials) throws -> Auth.User {
-        guard let usernamePassword = credentials as? BlogUserCredentials else {
-            throw Abort.custom(status: .forbidden, message: "Unsupported credentials type \(type(of: credentials))")
-        }
-        
-        let user = try BlogUser(credentials: usernamePassword)
-        return user
-    }
-    
-    static func authenticate(credentials: Credentials) throws -> Auth.User {
-        switch credentials {
-        case let usernamePassword as BlogUserCredentials:
-            guard let user = try BlogUser.query().filter("username", usernamePassword.username).first() else {
-                throw Abort.custom(status: .networkAuthenticationRequired, message: "Invalid username or password")
-            }
-            if try BCrypt.verify(password: usernamePassword.password, matchesHash: user.password) {
-                return user
-            }
-            else {
-                throw Abort.custom(status: .networkAuthenticationRequired, message: "Invalid username or password")
-            }
-        case let id as Identifier:
-            guard let user = try BlogUser.find(id.id) else {
-                throw Abort.custom(status: .forbidden, message: "Invalid user identifier")
-            }
-            return user
-        default:
-            throw Abort.custom(status: .forbidden, message: "Unsupported credentials type \(type(of: credentials))")
-        }
-    }
-}
+// MARK: - Relations
 
 extension BlogUser {
-    func posts() throws -> [BlogPost] {
-        return try children("bloguser_id", BlogPost.self).filter("published", true).sort("created", .descending).all()
+    var posts: Children<BlogUser, BlogPost> {
+        return children()
     }
-}
-
-struct BlogUserCredentials: Credentials {
     
-    let username: String
-    let password: String
-    let name: String?
-    let profilePicture: String?
-    let twitterHandle: String?
-    let biography: String?
-    let tagline: String?
-    
-    public init(username: String, password: String, name: String?, profilePicture: String?, twitterHandle: String?, biography: String?, tagline: String?) {
-        self.username = username.lowercased()
-        self.password = password
-        self.name = name
-        self.profilePicture = profilePicture
-        self.twitterHandle = twitterHandle
-        self.biography = biography
-        self.tagline = tagline
+    func sortedPosts() throws -> Query<BlogPost> {
+        return try posts.filter(BlogPost.Properties.published, true).sort(BlogPost.Properties.created, .descending)
     }
 }
 

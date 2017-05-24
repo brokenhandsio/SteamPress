@@ -1,6 +1,6 @@
 # SteamPress
 
-[![Language](https://img.shields.io/badge/Swift-3-brightgreen.svg)](http://swift.org)
+[![Language](https://img.shields.io/badge/Swift-3.1-brightgreen.svg)](http://swift.org)
 [![Build Status](https://travis-ci.org/brokenhandsio/SteamPress.svg?branch=master)](https://travis-ci.org/brokenhandsio/SteamPress)
 [![codecov](https://codecov.io/gh/brokenhandsio/SteamPress/branch/master/graph/badge.svg)](https://codecov.io/gh/brokenhandsio/SteamPress)
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/brokenhandsio/SteamPress/master/LICENSE)
@@ -28,9 +28,27 @@ There is an example of how it can work in a site (and what it requires in terms 
 
 # How to Use
 
+## Integration
+
+In order for SteamPress to work properly, it requires various Middleware to do things like authentication. You must add these to your `droplet.json` so they are loaded up and SteamPress can work properly. In your `droplet.json` add `steampress-sessions` and `blog-persist` like so (and in this order):
+
+```json
+{
+    ...
+    "middleware": [
+        ...,
+        "steampress-sessions"
+        "blog-persist"
+    ],
+    ...
+}
+```
+
+`steampress-sessions` will used the `Droplet`'s configured `SessionsProtocol` implementation and you can configure it in your `Configuration` (for example to use Redis instead of in-memory).
+
 ## Setup
 
-It's just a single line! Well almost... First add it to your `Package.swift` dependencies:
+SteamPress is easy to integrate with your application. First add SteamPress to your `Package.swift` dependencies:
 
 ```swift
 dependencies: [
@@ -48,7 +66,7 @@ import SteamPress
 Finally, add the provider!
 
 ```swift
-try drop.addProvider(SteamPress.Provider.self)
+try config.addProvider(SteamPress.Provider.self)
 ```
 
 This will look for a config file called `steampress.json` that looks like:
@@ -68,14 +86,14 @@ You can also initialise the Provider manually, by creating it as so:
 
 ```swift
 let steampress = SteamPress.Provider(postsPerPage: 5)
-drop.addProvider(steampress)
+config.addProvider(steampress)
 ```
 
 This will initialise it as the root path of your site. If you wish to have it in a subdirectory, initialise it with:
 
 ```swift
 let steampress = SteamPress.Provider(postsPerPage: 5, blogPath: "blog")
-drop.addProvider(steampress)
+config.addProvider(steampress)
 ```
 
 ### Bootstrap Versions
@@ -100,7 +118,7 @@ let steampress = SteamPress.Provider(postsPerPage: 5, blogPath: "blog", useBoots
 
 ### Disabling Routes
 
-You can disable the routes for authors pages and tags pages (both individual and all) by adding the option in your configuration file. To disable all of the authors pages, in your `steampress.json` add: 
+You can disable the routes for authors pages and tags pages (both individual and all) by adding the option in your configuration file. To disable all of the authors pages, in your `steampress.json` add:
 
 ```json
 {
@@ -193,7 +211,7 @@ This is the page for viewing a single entire blog post. The parameters set are:
 * `disqus_name` - the name of your Disqus site if configured
 * `post_uri` - The URI of the post
 * `post_uri_encoded` - A URL-query encoded for of the URI for passing to Share buttons
-* `site_uri`: The URI of the root site - this is useful for creating links to author pages for `article:author` Open Graph support
+* `site_uri`: The URI of the root site - this is useful for creating links to author pages for `article:author` Open Graph support (has a trailing slash)
 * `post_description` - The HTML of the short snippet of the post on a single line with all HTML tags stripped out for the `description` tags
 * `post_image` - The first image in the blog post if one is there. Useful for OpenGraph and Twitter Cards
 * `post_image_alt` - The alt text of the first image if it exists. Useful for Twitter Cards
@@ -366,10 +384,6 @@ This will convert the `Node` object `myObject`'s `markdownContent` to HTML (you 
 SteamPress also contains an API for accessing certain things that may be useful. The current endpoints are:
 
 * `/<blog-path>/api/tags/` - returns all the tags that have been saved in JSON
-
-# Known issues
-
-* When the admin user is created when first accessing the login screen, sometimes two are created so you need to use the first password displayed. You can then delete the second Admin user in the Admin pane.
 
 # Roadmap
 

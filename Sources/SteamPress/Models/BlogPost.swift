@@ -1,69 +1,125 @@
 import Foundation
 import Vapor
-import Fluent
+import FluentProvider
 
-public class BlogPost: Model {
+// MARK: - Model
 
-    static fileprivate let databaseTableName = "blogposts"
-    public var id: Node?
-    public var exists: Bool = false
+public final class BlogPost: Model {
+    
+    struct Properties {
+        static let id = "id"
+        static let title = "title"
+        static let contents = "contents"
+        static let slugUrl = "slug_url"
+        static let published = "published"
+        static let created = "created"
+        static let lastEdited = "last_edited"
+        static let authorName = "author_name"
+        static let authorUsername = "author_username"
+        static let createdDate = "created_date"
+        static let createdDateIso8601 = "created_date_iso8601"
+        static let lastEditedDate = "last_edited_date"
+        static let lastEditedDateIso8601 = "last_edited_date_iso8601"
+        static let shortSnippet = "short_snippet"
+        static let longSnippet = "long_snippet"
+        static let tags = "tags"
+    }
+    
+    static var postsPerPage = 10
+
+    public let storage = Storage()
 
     public var title: String
     public var contents: String
-    public var author: Node?
+    public var author: Identifier?
     public var created: Date
     public var lastEdited: Date?
     public var slugUrl: String
     public var published: Bool
 
-    init(title: String, contents: String, author: BlogUser, creationDate: Date, slugUrl: String, published: Bool) {
-        self.id = nil
+    init(title: String, contents: String, author: BlogUser, creationDate: Date, slugUrl: String, published: Bool, logger: LogProtocol? = nil) {
         self.title = title
         self.contents = contents
         self.author = author.id
         self.created = creationDate
-        self.slugUrl = BlogPost.generateUniqueSlugUrl(from: slugUrl)
+        self.slugUrl = BlogPost.generateUniqueSlugUrl(from: slugUrl, logger: logger)
         self.lastEdited = nil
         self.published = published
     }
-
-    required public init(node: Node, in context: Context) throws {
-        id = try node.extract("id")
-        title = try node.extract("title")
-        contents = try node.extract("contents")
-        author = try node.extract("bloguser_id")
-        slugUrl = try node.extract("slug_url")
-        published = try node.extract("published")
-        let createdTime: Double = try node.extract("created")
-        let lastEditedTime: Double? = try? node.extract("last_edited")
-
+    
+    public required init(row: Row) throws {
+        title = try row.get(Properties.title)
+        contents = try row.get(Properties.contents)
+        author = try row.get(BlogUser.foreignIdKey)
+        slugUrl = try row.get(Properties.slugUrl)
+        published = try row.get(Properties.published)
+        let createdTime: Double = try row.get(Properties.created)
+        let lastEditedTime: Double? = try? row.get(Properties.lastEdited)
+        
         created = Date(timeIntervalSince1970: createdTime)
-
+        
         if let lastEditedTime = lastEditedTime {
             lastEdited = Date(timeIntervalSince1970: lastEditedTime)
         }
     }
+    
+    public func makeRow() throws -> Row {
+        let createdTime = created.timeIntervalSince1970
+        
+        var row = Row()
+        try row.set(Properties.title, title)
+        try row.set(Properties.contents, contents)
+        try row.set(BlogUser.foreignIdKey, author)
+        try row.set(Properties.created, createdTime)
+        try row.set(Properties.slugUrl, slugUrl)
+        try row.set(Properties.published, published)
+        try row.set(Properties.lastEdited, lastEdited?.timeIntervalSince1970)
+        return row
+    }
+}
+
+extension BlogPost: Parameterizable {
+    public static var uniqueSlug: String = "blogpost"
+    
+    public static func make(for parameter: String) throws -> BlogPost {
+        guard let post = try BlogPost.makeQuery().filter(BlogPost.idKey, parameter).first() else {
+            throw RouterError.invalidParameter
+        }
+        return post
+    }
+}
+
+// MARK: - Node
+
+public enum BlogPostContext: Context {
+    case all
+    case shortSnippet
+    case longSnippet
 }
 
 extension BlogPost: NodeRepresentable {
-    public func makeNode(context: Context) throws -> Node {
+    public func makeNode(in context: Context?) throws -> Node {
         let createdTime = created.timeIntervalSince1970
         
-        var node: [String: Node]  = [:]
-        node["id"] = id
-        node["title"] = title.makeNode()
-        node["contents"] = contents.makeNode()
-        node["bloguser_id"] = author?.makeNode()
-        node["created"] = createdTime.makeNode()
-        node["slug_url"] = slugUrl.makeNode()
-        node["published"] = published.makeNode()
+        var node = Node([:], in: context)
+        try node.set(Properties.id, id)
+        try node.set(Properties.title, title)
+        try node.set(Properties.contents, contents)
+        try node.set(BlogUser.foreignIdKey, author)
+        try node.set(Properties.created, createdTime)
+        try node.set(Properties.slugUrl, slugUrl)
+        try node.set(Properties.published, published)
 
         if let lastEdited = lastEdited {
-            node["last_edited"] = lastEdited.timeIntervalSince1970.makeNode()
+            try node.set(Properties.lastEdited, lastEdited.timeIntervalSince1970)
         }
         
-        if type(of: context) != BlogPostContext.self {
-            return try node.makeNode()
+        guard let providedContext = context else {
+            return node
+        }
+        
+        if type(of: providedContext) != BlogPostContext.self {
+            return node
         }
 
         let dateFormatter = DateFormatter()
@@ -72,27 +128,27 @@ extension BlogPost: NodeRepresentable {
         dateFormatter.timeStyle = .none
         let createdDate = dateFormatter.string(from: created)
         
-        node["author_name"] = try getAuthor()?.name.makeNode()
-        node["author_username"] = try getAuthor()?.username.makeNode()
-        node["created_date"] = createdDate.makeNode()
-
-        switch context {
+        try node.set(Properties.authorName, postAuthor.get()?.name)
+        try node.set(Properties.authorUsername, postAuthor.get()?.username)
+        try node.set(Properties.createdDate, createdDate)
+        
+        switch providedContext {
         case BlogPostContext.shortSnippet:
-            node["short_snippet"] = shortSnippet().makeNode()
+            try node.set(Properties.shortSnippet, shortSnippet())
             break
         case BlogPostContext.longSnippet:
-            node["long_snippet"] = longSnippet().makeNode()
+            try node.set(Properties.longSnippet, longSnippet())
 
-            let allTags = try tags()
+            let allTags = try tags.all()
             if allTags.count > 0 {
-                node["tags"] = try allTags.makeNode()
+                try node.set(Properties.tags, allTags)
             }
             break
         case BlogPostContext.all:
-            let allTags = try tags()
+            let allTags = try tags.all()
 
             if allTags.count > 0 {
-                node["tags"] = try allTags.makeNode()
+                try node.set(Properties.tags, allTags)
             }
             
             let iso8601Formatter = DateFormatter()
@@ -100,58 +156,23 @@ extension BlogPost: NodeRepresentable {
             iso8601Formatter.locale = Locale(identifier: "en_US_POSIX")
             iso8601Formatter.timeZone = TimeZone(secondsFromGMT: 0)
             
-            node["created_date_iso8601"] = iso8601Formatter.string(from: created).makeNode()
+            try node.set(Properties.createdDateIso8601, iso8601Formatter.string(from: created))
 
             if let lastEdited = lastEdited {
                 let lastEditedDate = dateFormatter.string(from: lastEdited)
-                node["last_edited_date"] = lastEditedDate.makeNode()
-                node["last_edited_date_iso8601"] = iso8601Formatter.string(from: lastEdited).makeNode()
+                try node.set(Properties.lastEditedDate, lastEditedDate)
+                try node.set(Properties.lastEditedDateIso8601, iso8601Formatter.string(from: lastEdited))
             }
-            node["short_snippet"] = shortSnippet().makeNode()
-            node["long_snippet"] = longSnippet().makeNode()
+            try node.set(Properties.shortSnippet, shortSnippet())
+            try node.set(Properties.longSnippet, longSnippet())
         default: break
         }
 
-        return try node.makeNode()
+        return node
     }
 }
 
-extension BlogPost {
-
-    public static func prepare(_ database: Database) throws {
-        try database.create(databaseTableName) { posts in
-            posts.id()
-            posts.string("title")
-            posts.custom("contents", type: "TEXT")
-            posts.parent(BlogUser.self, optional: false)
-            posts.double("created")
-            posts.double("last_edited", optional: true)
-            posts.string("slug_url", unique: true)
-        }
-    }
-
-    public static func revert(_ database: Database) throws {
-        try database.delete(databaseTableName)
-    }
-}
-
-public enum BlogPostContext: Context {
-    case all
-    case shortSnippet
-    case longSnippet
-}
-
-extension BlogPost {
-    func getAuthor() throws -> BlogUser? {
-        return try parent(author, nil, BlogUser.self).get()
-    }
-}
-
-extension BlogPost {
-    func tags() throws -> [BlogTag] {
-        return try siblings().all()
-    }
-}
+// MARK: - BlogPost Utilities
 
 extension BlogPost {
 
@@ -176,10 +197,7 @@ extension BlogPost {
         return snippet
     }
 
-}
-
-extension BlogPost {
-    public static func generateUniqueSlugUrl(from title: String) -> String {
+    static func generateUniqueSlugUrl(from title: String, logger: LogProtocol?) -> String {
         let alphanumericsWithHyphenAndSpace = CharacterSet(charactersIn: " -0123456789abcdefghijklmnopqrstuvwxyz")
 
         let slugUrl = title.lowercased()
@@ -192,15 +210,69 @@ extension BlogPost {
         var count = 2
 
         do {
-            while try BlogPost.query().filter("slug_url", newSlugUrl).first() != nil {
+            while try BlogPost.makeQuery().filter(Properties.slugUrl, newSlugUrl).first() != nil {
               newSlugUrl = "\(slugUrl)-\(count)"
               count += 1
             }
         } catch {
-            print("Error uniqueing the slug URL: \(error)")
+            logger?.debug("Error uniqueing the slug URL: \(error)")
             // Swallow error - this will propragate the error up to the DB driver which should fail if it is not unique
         }
         
         return newSlugUrl
+    }
+}
+
+// MARK: - Relations
+
+extension BlogPost {
+    var postAuthor: Parent<BlogPost, BlogUser> {
+        return parent(id: author)
+    }
+    
+    var tags: Siblings<BlogPost, BlogTag, Pivot<BlogPost, BlogTag>> {
+        return siblings()
+    }
+}
+
+// MARK: - Pagination
+
+extension BlogPost: Paginatable {
+    public static var defaultPageSorts: [Sort] {
+        return []
+    }
+    
+    public static var defaultPageSize: Int {
+        return postsPerPage
+    }
+}
+
+extension Page {
+    public func makeNode(for uri: URI, in context: Context?) throws -> Node {
+        var node = Node([:], in: context)
+        try node.set("data", data.makeNode(in: context))
+        
+        var paginationNode = Node([:], in: context)
+        try paginationNode.set("total", total)
+        try paginationNode.set("current_page", number)
+        try paginationNode.set("per_page", size)
+
+        var pages = total / size
+        if total % size != 0 {
+            pages += 1
+        }
+        
+        try paginationNode.set("total_pages", pages)
+        if number < pages {
+            try paginationNode.set("next_page", "?page=\(number + 1)")
+        }
+        if number > 1 {
+            try paginationNode.set("previous_page", "?page=\(number - 1)")
+        }
+        
+        
+        
+        try node.set("pagination", paginationNode)
+        return node
     }
 }
