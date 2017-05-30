@@ -129,8 +129,13 @@ class BlogAdminControllerTests: XCTestCase {
     func testCanAccessAdminPageWhenLoggedIn() throws {
         
         let identifier = "dummy-identifier"
+        fakeSessions.sessionIdentifier = identifier
         let request = Request(method: .get, uri: "/blog/admin/")
         let cookie = Cookie(name: "steampress-session", value: identifier)
+        
+        let authAuthenticatedKey = "auth-authenticated"
+        let testUser = TestDataBuilder.anyUser()
+        request.storage[authAuthenticatedKey] = testUser
         
         request.cookies.insert(cookie)
         
