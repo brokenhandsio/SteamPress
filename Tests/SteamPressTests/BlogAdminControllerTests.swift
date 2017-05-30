@@ -1,8 +1,10 @@
 import XCTest
-import Vapor
+@testable import Vapor
 @testable import SteamPress
 import HTTP
 import FluentProvider
+import Sessions
+import Cookies
 
 class BlogAdminControllerTests: XCTestCase {
     static var allTests = [
@@ -25,11 +27,22 @@ class BlogAdminControllerTests: XCTestCase {
     
     var database: Database!
     var drop: Droplet!
+    var fakeSessions: FakeSessionsMemory!
     
     override func setUp() {
         database = Database(try! MemoryDriver(()))
         try! Droplet.prepare(database: database)
-        let config = try! Config()
+        var config = try! Config()
+        fakeSessions = FakeSessionsMemory()
+        config.addConfigurable(sessions: { (_) -> (FakeSessionsMemory) in
+            return self.fakeSessions
+        }, name: "sessions-memory")
+        config.addConfigurable(middleware: { (_) -> (SessionsMiddleware) in
+            let sessions = SessionsMiddleware(self.fakeSessions, cookieName: "steampress-session")
+            return sessions
+        }, name: "steampress-sessions")
+        try! config.set("droplet.middleware", ["error", "steampress-sessions"])
+        
         drop = try! Droplet(config)
         let adminController = BlogAdminController(drop: drop, pathCreator: BlogPathCreator(blogPath: "blog"), viewFactory: CapturingViewFactory())
         adminController.addRoutes()
@@ -113,11 +126,48 @@ class BlogAdminControllerTests: XCTestCase {
         try assertLoginRequired(method: .post, path: "/blog/admin/resetPassword")
     }
     
+    func testCanAccessAdminPageWhenLoggedIn() throws {
+        
+        let identifier = "dummy-identifier"
+        let request = Request(method: .get, uri: "/blog/admin/")
+        let cookie = Cookie(name: "steampress-session", value: identifier)
+        
+        request.cookies.insert(cookie)
+        
+        
+        
+        
+        let response = try drop.respond(to: request)
+        
+        XCTAssertEqual(response.status, .ok)
+    }
+    
     private func assertLoginRequired(method: HTTP.Method, path: String) throws {
         let request = Request(method: method, uri: path)
         let response = try drop.respond(to: request)
         
         XCTAssertEqual(response.status, .seeOther)
         XCTAssertEqual(response.headers[HeaderKey.location], "/blog/admin/login/?loginRequired")
+    }
+}
+
+struct FakeSessionsMemory: SessionsProtocol {
+    
+    var sessionIdentifier = "identifier"
+    
+    func makeIdentifier() throws -> String {
+        return sessionIdentifier
+    }
+    
+    func get(identifier: String) throws -> Session? {
+        return Session(identifier: sessionIdentifier)
+    }
+    
+    func set(_ session: Session) throws {
+        
+    }
+    
+    func destroy(identifier: String) throws {
+        
     }
 }
