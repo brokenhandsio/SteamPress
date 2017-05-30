@@ -134,9 +134,6 @@ class BlogAdminControllerTests: XCTestCase {
         
         request.cookies.insert(cookie)
         
-        
-        
-        
         let response = try drop.respond(to: request)
         
         XCTAssertEqual(response.status, .ok)
