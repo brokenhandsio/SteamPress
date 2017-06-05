@@ -33,12 +33,12 @@ class BlogAdminControllerTests: XCTestCase {
         database = Database(try! MemoryDriver(()))
         try! Droplet.prepare(database: database)
         var config = try! Config()
-        fakeSessions = FakeSessionsMemory()
-        config.addConfigurable(sessions: { (_) -> (FakeSessionsMemory) in
-            return self.fakeSessions
-        }, name: "sessions-memory")
+//        fakeSessions = FakeSessionsMemory()
+//        config.addConfigurable(sessions: { (_) -> (FakeSessionsMemory) in
+//            return self.fakeSessions
+//        }, name: "sessions-memory")
         config.addConfigurable(middleware: { (_) -> (SessionsMiddleware) in
-            let sessions = SessionsMiddleware(self.fakeSessions, cookieName: "steampress-session")
+            let sessions = SessionsMiddleware(try! config.resolveSessions(), cookieName: "steampress-session")
             return sessions
         }, name: "steampress-sessions")
         try! config.set("droplet.middleware", ["error", "steampress-sessions"])
@@ -127,18 +127,35 @@ class BlogAdminControllerTests: XCTestCase {
     }
     
     func testCanAccessAdminPageWhenLoggedIn() throws {
+        let request = try createLoggedInRequest(method: .get, path: "/blog/admin/")
+        let response = try drop.respond(to: request)
         
-        let identifier = "dummy-identifier"
-        fakeSessions.sessionIdentifier = identifier
-        let request = Request(method: .get, uri: "/blog/admin/")
-        let cookie = Cookie(name: "steampress-session", value: identifier)
+        XCTAssertEqual(response.status, .ok)
+    }
+    
+    func testCanAccessCreatePostPageWhenLoggedIn() throws {
+        let request = try createLoggedInRequest(method: .get, path: "/blog/admin/createPost/")
+        let response = try drop.respond(to: request)
         
-        let authAuthenticatedKey = "auth-authenticated"
-        let testUser = TestDataBuilder.anyUser()
-        request.storage[authAuthenticatedKey] = testUser
+        XCTAssertEqual(response.status, .ok)
+    }
+    
+    func testCanAccessCreateUserPageWhenLoggedIn() throws {
+        let request = try createLoggedInRequest(method: .get, path: "/blog/admin/createUser/")
+        let response = try drop.respond(to: request)
         
-        request.cookies.insert(cookie)
+        XCTAssertEqual(response.status, .ok)
+    }
+    
+    func testCanAccessProfilePageWhenLoggedIn() throws {
+        let request = try createLoggedInRequest(method: .get, path: "/blog/admin/profile/")
+        let response = try drop.respond(to: request)
         
+        XCTAssertEqual(response.status, .ok)
+    }
+    
+    func testCanAccessResetPasswordPage() throws {
+        let request = try createLoggedInRequest(method: .get, path: "/blog/admin/resetPassword/")
         let response = try drop.respond(to: request)
         
         XCTAssertEqual(response.status, .ok)
@@ -150,6 +167,20 @@ class BlogAdminControllerTests: XCTestCase {
         
         XCTAssertEqual(response.status, .seeOther)
         XCTAssertEqual(response.headers[HeaderKey.location], "/blog/admin/login/?loginRequired")
+    }
+    
+    private func createLoggedInRequest(method: HTTP.Method, path: String) throws -> Request {
+        let request = Request(method: method, uri: path)
+        let cookie = Cookie(name: "steampress-session", value: "dummy-identifier")
+        
+        let authAuthenticatedKey = "auth-authenticated"
+        let testUser = TestDataBuilder.anyUser()
+        try testUser.save()
+        request.storage[authAuthenticatedKey] = testUser
+        
+        request.cookies.insert(cookie)
+        
+        return request
     }
 }
 
