@@ -28,6 +28,7 @@ class BlogAdminControllerTests: XCTestCase {
     var database: Database!
     var drop: Droplet!
     var fakeSessions: FakeSessionsMemory!
+    var capturingViewFactory: CapturingViewFactory!
     
     override func setUp() {
         database = Database(try! MemoryDriver(()))
@@ -44,7 +45,8 @@ class BlogAdminControllerTests: XCTestCase {
         try! config.set("droplet.middleware", ["error", "steampress-sessions"])
         
         drop = try! Droplet(config)
-        let adminController = BlogAdminController(drop: drop, pathCreator: BlogPathCreator(blogPath: "blog"), viewFactory: CapturingViewFactory())
+        capturingViewFactory = CapturingViewFactory()
+        let adminController = BlogAdminController(drop: drop, pathCreator: BlogPathCreator(blogPath: "blog"), viewFactory: capturingViewFactory)
         adminController.addRoutes()
     }
     
@@ -148,7 +150,9 @@ class BlogAdminControllerTests: XCTestCase {
     }
     
     func testCanAccessProfilePageWhenLoggedIn() throws {
-        let request = try createLoggedInRequest(method: .get, path: "/blog/admin/profile/")
+        let user = TestDataBuilder.anyUser()
+        try user.save()
+        let request = try createLoggedInRequest(method: .get, path: "/blog/admin/profile/", for: user)
         let response = try drop.respond(to: request)
         
         XCTAssertEqual(response.status, .ok)
@@ -161,6 +165,54 @@ class BlogAdminControllerTests: XCTestCase {
         XCTAssertEqual(response.status, .ok)
     }
     
+    func testCanDeleteBlogPost() throws {
+        let user = TestDataBuilder.anyUser()
+        try user.save()
+        let post = TestDataBuilder.anyPost(author: user)
+        try post.save()
+        
+        let request = try createLoggedInRequest(method: .get, path: "/blog/admin/posts/\(post.id!.string!)/delete/", for: user)
+        
+        let response = try drop.respond(to: request)
+        
+        XCTAssertEqual(response.status, .seeOther)
+        XCTAssertEqual(try BlogPost.count(), 0)
+    }
+    
+    func testCanDeleteUser() throws {
+        let user2 = TestDataBuilder.anyUser(name: "Han", username: "han")
+        try user2.save()
+        
+        let request = try createLoggedInRequest(method: .get, path: "/blog/admin/users/\(user2.id!.string!)/delete/")
+        let response = try drop.respond(to: request)
+        
+        XCTAssertEqual(response.status, .seeOther)
+        XCTAssertEqual(try BlogUser.count(), 1)
+        XCTAssertNotEqual(try BlogUser.all().first?.name, "Han")
+    }
+    
+    func testCannotDeleteSelf() throws {
+        let adminUser = TestDataBuilder.anyUser(name: "admin", username: "admin")
+        try adminUser.save()
+        let user = TestDataBuilder.anyUser(name: "Han", username: "han")
+        try user.save()
+        
+        let request = try createLoggedInRequest(method: .get, path: "/blog/admin/users/\(user.id!.string!)/delete/", for: user)
+        _ = try drop.respond(to: request)
+        
+        XCTAssertTrue(capturingViewFactory.adminViewErrors?.contains("You cannot delete yourself whilst logged in") ?? false)
+    }
+    
+    func testCannotDeleteLastUser() throws {
+        let user = TestDataBuilder.anyUser(name: "Han", username: "han")
+        try user.save()
+        
+        let request = try createLoggedInRequest(method: .get, path: "/blog/admin/users/\(user.id!.string!)/delete/", for: user)
+        _ = try drop.respond(to: request)
+        
+        XCTAssertTrue(capturingViewFactory.adminViewErrors?.contains("You cannot delete the last user") ?? false)
+    }
+    
     private func assertLoginRequired(method: HTTP.Method, path: String) throws {
         let request = Request(method: method, uri: path)
         let response = try drop.respond(to: request)
@@ -169,14 +221,21 @@ class BlogAdminControllerTests: XCTestCase {
         XCTAssertEqual(response.headers[HeaderKey.location], "/blog/admin/login/?loginRequired")
     }
     
-    private func createLoggedInRequest(method: HTTP.Method, path: String) throws -> Request {
+    private func createLoggedInRequest(method: HTTP.Method, path: String, for user: BlogUser? = nil) throws -> Request {
         let request = Request(method: method, uri: path)
         let cookie = Cookie(name: "steampress-session", value: "dummy-identifier")
         
         let authAuthenticatedKey = "auth-authenticated"
-        let testUser = TestDataBuilder.anyUser()
-        try testUser.save()
-        request.storage[authAuthenticatedKey] = testUser
+        
+        if let user = user {
+            request.storage[authAuthenticatedKey] = user
+        }
+        else {
+            let testUser = TestDataBuilder.anyUser()
+            try testUser.save()
+            request.storage[authAuthenticatedKey] = testUser
+        }
+        
         
         request.cookies.insert(cookie)
         
