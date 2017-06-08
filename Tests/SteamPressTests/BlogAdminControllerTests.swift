@@ -284,8 +284,6 @@ class BlogAdminControllerTests: XCTestCase {
         XCTAssertEqual(user.password, newPassword.makeBytes())
         XCTAssertEqual(response.status, .seeOther)
         XCTAssertEqual(response.headers[HeaderKey.location], "/blog/admin/")
-        
-        BlogUser.passwordHasher = BlogUser.defaultPasswordHasher
     }
     
     func testUserCannotResetPasswordWithoutPassword() throws {

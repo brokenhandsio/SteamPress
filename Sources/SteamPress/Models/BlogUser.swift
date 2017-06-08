@@ -134,8 +134,7 @@ extension BlogUser: PasswordAuthenticatable {
     public var hashedPassword: String? {
         return password.makeString()
     }
-    internal(set) static var passwordHasher: PasswordHasherVerifier = defaultPasswordHasher
-    internal static let defaultPasswordHasher = BCryptHasher(cost: 10)
+    internal(set) static var passwordHasher: PasswordHasherVerifier = BCryptHasher(cost: 10)
 }
 
 protocol PasswordHasherVerifier: PasswordVerifier, HashProtocol {}
