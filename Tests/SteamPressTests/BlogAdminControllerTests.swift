@@ -24,21 +24,26 @@ class BlogAdminControllerTests: XCTestCase {
         ("testCannotDeleteUserWithoutLogin", testCannotDeleteUserWithoutLogin),
         ("testCannotAccessResetPasswordPageWithoutLogin", testCannotAccessResetPasswordPageWithoutLogin),
         ("testCannotSendResetPasswordPageWithoutLogin", testCannotSendResetPasswordPageWithoutLogin),
+        ("testCanAccessAdminPageWhenLoggedIn", testCanAccessAdminPageWhenLoggedIn),
+        ("testCanAccessCreatePostPageWhenLoggedIn", testCanAccessCreatePostPageWhenLoggedIn),
+        ("testCanAccessCreateUserPageWhenLoggedIn", testCanAccessCreateUserPageWhenLoggedIn),
+        ("testCanAccessProfilePageWhenLoggedIn", testCanAccessProfilePageWhenLoggedIn),
+        ("testCanAccessResetPasswordPage", testCanAccessResetPasswordPage),
+        ("testCanDeleteBlogPost", testCanDeleteBlogPost),
+        ("testCanDeleteUser", testCanDeleteUser),
+        ("testCannotDeleteSelf", testCannotDeleteSelf),
+        ("testCannotDeleteLastUser", testCannotDeleteLastUser),
+        ("testUserCanResetPassword", testUserCanResetPassword),
     ]
     
     var database: Database!
     var drop: Droplet!
-    var fakeSessions: FakeSessionsMemory!
     var capturingViewFactory: CapturingViewFactory!
     
     override func setUp() {
         database = Database(try! MemoryDriver(()))
         try! Droplet.prepare(database: database)
         var config = try! Config()
-//        fakeSessions = FakeSessionsMemory()
-//        config.addConfigurable(sessions: { (_) -> (FakeSessionsMemory) in
-//            return self.fakeSessions
-//        }, name: "sessions-memory")
         config.addConfigurable(middleware: { (_) -> (SessionsMiddleware) in
             let sessions = SessionsMiddleware(try! config.resolveSessions(), cookieName: "steampress-session")
             return sessions
@@ -261,26 +266,5 @@ class BlogAdminControllerTests: XCTestCase {
         request.cookies.insert(cookie)
         
         return request
-    }
-}
-
-struct FakeSessionsMemory: SessionsProtocol {
-    
-    var sessionIdentifier = "identifier"
-    
-    func makeIdentifier() throws -> String {
-        return sessionIdentifier
-    }
-    
-    func get(identifier: String) throws -> Session? {
-        return Session(identifier: sessionIdentifier)
-    }
-    
-    func set(_ session: Session) throws {
-        
-    }
-    
-    func destroy(identifier: String) throws {
-        
     }
 }

@@ -10,6 +10,7 @@ class BlogControllerTests: XCTestCase {
         ("testLinuxTestSuiteIncludesAllTests", testLinuxTestSuiteIncludesAllTests),
         ("testBlogIndexGetsPostsInReverseOrder", testBlogIndexGetsPostsInReverseOrder),
         ("testBlogIndexGetsAllTags", testBlogIndexGetsAllTags),
+        ("testBlogIndexGetsAllAuthors", testBlogIndexGetsAllAuthors),
         ("testBlogPostRetrievedCorrectlyFromSlugUrl", testBlogPostRetrievedCorrectlyFromSlugUrl),
         ("testThatAccessingPathsRouteRedirectsToBlogIndex", testThatAccessingPathsRouteRedirectsToBlogIndex),
         ("testAuthorView", testAuthorView),
