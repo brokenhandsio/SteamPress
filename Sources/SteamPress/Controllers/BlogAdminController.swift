@@ -427,23 +427,19 @@ struct BlogAdminController {
         var passwordError: Bool?
         var confirmPasswordError: Bool?
 
-        if rawPassword == nil {
-            resetPasswordErrors.append("You must specify a password")
-            passwordError = true
-        }
-
-        if rawConfirmPassword == nil {
-            resetPasswordErrors.append("You must confirm your password")
-            confirmPasswordError = true
-        }
-
-        // Return if we have any missing fields
-        if resetPasswordErrors.count > 0 {
-            return try viewFactory.createResetPasswordView(errors: resetPasswordErrors, passwordError: passwordError, confirmPasswordError: confirmPasswordError)
-        }
-
         guard let password = rawPassword, let confirmPassword = rawConfirmPassword else {
-            throw Abort.badRequest
+            if rawPassword == nil {
+                resetPasswordErrors.append("You must specify a password")
+                passwordError = true
+            }
+
+            if rawConfirmPassword == nil {
+                resetPasswordErrors.append("You must confirm your password")
+                confirmPasswordError = true
+            }
+            
+            // Return if we have any missing fields
+            return try viewFactory.createResetPasswordView(errors: resetPasswordErrors, passwordError: passwordError, confirmPasswordError: confirmPasswordError)
         }
 
         if password != confirmPassword {
