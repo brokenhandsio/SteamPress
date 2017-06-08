@@ -267,22 +267,25 @@ class BlogAdminControllerTests: XCTestCase {
     }
     
     func testUserCanResetPassword() throws {
+        BlogUser.passwordHasher = FakePasswordHasher()
         let user = TestDataBuilder.anyUser()
         try user.save()
-        let oldPassword = user.password
+        let newPassword = "Th3S@m3password"
         
         let request = try createLoggedInRequest(method: .post, path: "/blog/admin/resetPassword/", for: user)
         let resetPasswordData = try Node(node: [
-            "inputPassword": "Th3S@m3password",
-            "inputConfirmPassword": "Th3S@m3password"
+            "inputPassword": newPassword,
+            "inputConfirmPassword": newPassword
             ])
         request.formURLEncoded = resetPasswordData
         
         let response = try drop.respond(to: request)
         
-        XCTAssertNotEqual(oldPassword, user.password)
+        XCTAssertEqual(user.password, newPassword.makeBytes())
         XCTAssertEqual(response.status, .seeOther)
         XCTAssertEqual(response.headers[HeaderKey.location], "/blog/admin/")
+        
+        BlogUser.passwordHasher = BlogUser.defaultPasswordHasher
     }
     
     func testUserCannotResetPasswordWithoutPassword() throws {
@@ -358,5 +361,19 @@ class BlogAdminControllerTests: XCTestCase {
         request.cookies.insert(cookie)
         
         return request
+    }
+}
+
+struct FakePasswordHasher: PasswordHasherVerifier {
+    func verify(password: Bytes, matches hash: Bytes) throws -> Bool {
+        return password == hash
+    }
+    
+    func make(_ message: Bytes) throws -> Bytes {
+        return message
+    }
+    
+    func check(_ message: Bytes, matchesHash: Bytes) throws -> Bool {
+        return message == matchesHash
     }
 }
