@@ -33,6 +33,8 @@ class BlogAdminControllerTests: XCTestCase {
         ("testCanDeleteUser", testCanDeleteUser),
         ("testCannotDeleteSelf", testCannotDeleteSelf),
         ("testCannotDeleteLastUser", testCannotDeleteLastUser),
+        ("testUserCannotResetPasswordWithMismatchingPasswords", testUserCannotResetPasswordWithMismatchingPasswords),
+        ("testUserCannotResetPasswordWithBasicPassword", testUserCannotResetPasswordWithBasicPassword),
         ("testUserCanResetPassword", testUserCanResetPassword),
     ]
     
@@ -231,12 +233,54 @@ class BlogAdminControllerTests: XCTestCase {
         XCTAssertTrue(capturingViewFactory.adminViewErrors?.contains("You cannot delete the last user") ?? false)
     }
     
-    func testUserCanResetPassword() throws {
+    func testUserCannotResetPasswordWithMismatchingPasswords() throws {
         let user = TestDataBuilder.anyUser()
         try user.save()
         
         let request = try createLoggedInRequest(method: .post, path: "/blog/admin/resetPassword/", for: user)
-//        request.formData = ["inputPassword": "newPassword", "confirmPassword": "newPassword"]
+        let resetPasswordData = try Node(node: [
+            "inputPassword": "Th3S@m3password",
+            "inputConfirmPassword": "An0th3rPass!"
+            ])
+        request.formURLEncoded = resetPasswordData
+        
+        _ = try drop.respond(to: request)
+        
+        XCTAssertTrue(capturingViewFactory.resetPasswordErrors?.contains("Your passwords must match!") ?? false)
+    }
+    
+    func testUserCannotResetPasswordWithBasicPassword() throws {
+        let user = TestDataBuilder.anyUser()
+        try user.save()
+        
+        let request = try createLoggedInRequest(method: .post, path: "/blog/admin/resetPassword/", for: user)
+        let resetPasswordData = try Node(node: [
+            "inputPassword": "simplepassword",
+            "inputConfirmPassword": "simplepassword"
+            ])
+        request.formURLEncoded = resetPasswordData
+        
+        _ = try drop.respond(to: request)
+        
+        XCTAssertTrue(capturingViewFactory.resetPasswordErrors?.contains("Your password must contain a lowercase letter, an upperacase letter, a number and a symbol") ?? false)
+    }
+    
+    func testUserCanResetPassword() throws {
+        let user = TestDataBuilder.anyUser()
+        try user.save()
+        let oldPassword = user.password
+        
+        let request = try createLoggedInRequest(method: .post, path: "/blog/admin/resetPassword/", for: user)
+        let resetPasswordData = try Node(node: [
+            "inputPassword": "Th3S@m3password",
+            "inputConfirmPassword": "Th3S@m3password"
+            ])
+        request.formURLEncoded = resetPasswordData
+        
+        _ = try drop.respond(to: request)
+        
+        
+        XCTAssertNotEqual(oldPassword, user.password)
     }
     
     private func assertLoginRequired(method: HTTP.Method, path: String) throws {

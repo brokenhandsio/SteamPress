@@ -346,7 +346,13 @@ class CapturingViewFactory: ViewFactory {
         return createDummyView()
     }
 
+    private(set) var resetPasswordErrors: [String]? = nil
+    private(set) var resetPasswordErrorFlag: Bool? = nil
+    private(set) var resetPasswordConfirmErrorFlag: Bool? = nil
     func createResetPasswordView(errors: [String]?, passwordError: Bool?, confirmPasswordError: Bool?) throws -> View {
+        self.resetPasswordErrors = errors
+        self.resetPasswordErrorFlag = passwordError
+        self.resetPasswordConfirmErrorFlag = confirmPasswordError
         return createDummyView()
     }
 
