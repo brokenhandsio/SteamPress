@@ -8,6 +8,7 @@ import Cookies
 
 class BlogAdminControllerTests: XCTestCase {
     static var allTests = [
+        ("testLinuxTestSuiteIncludesAllTests", testLinuxTestSuiteIncludesAllTests),
         ("testLogin", testLogin),
         ("testCannotAccessAdminPageWithoutBeingLoggedIn", testCannotAccessAdminPageWithoutBeingLoggedIn),
         ("testCannotAccessCreateBlogPostPageWithoutBeingLoggedIn", testCannotAccessCreateBlogPostPageWithoutBeingLoggedIn),
@@ -52,6 +53,18 @@ class BlogAdminControllerTests: XCTestCase {
     
     override func tearDown() {
         try! Droplet.teardown(database: database)
+    }
+    
+    // Courtesy of https://oleb.net/blog/2017/03/keeping-xctest-in-sync/
+    func testLinuxTestSuiteIncludesAllTests() {
+        #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
+            let thisClass = type(of: self)
+            let linuxCount = thisClass.allTests.count
+            let darwinCount = Int(thisClass
+                .defaultTestSuite().testCaseCount)
+            XCTAssertEqual(linuxCount, darwinCount,
+                           "\(darwinCount - linuxCount) tests are missing from allTests")
+        #endif
     }
     
     func testLogin() throws {
@@ -211,6 +224,14 @@ class BlogAdminControllerTests: XCTestCase {
         _ = try drop.respond(to: request)
         
         XCTAssertTrue(capturingViewFactory.adminViewErrors?.contains("You cannot delete the last user") ?? false)
+    }
+    
+    func testUserCanResetPassword() throws {
+        let user = TestDataBuilder.anyUser()
+        try user.save()
+        
+        let request = try createLoggedInRequest(method: .post, path: "/blog/admin/resetPassword/", for: user)
+//        request.formData = ["inputPassword": "newPassword", "confirmPassword": "newPassword"]
     }
     
     private func assertLoginRequired(method: HTTP.Method, path: String) throws {

@@ -11,6 +11,7 @@ class LeafViewFactoryTests: XCTestCase {
     // MARK: - allTests
     
     static var allTests = [
+        ("testLinuxTestSuiteIncludesAllTests", testLinuxTestSuiteIncludesAllTests),
         ("testParametersAreSetCorrectlyOnAllTagsPage", testParametersAreSetCorrectlyOnAllTagsPage),
         ("testTagsPageGetsPassedAllTagsWithBlogCount", testTagsPageGetsPassedAllTagsWithBlogCount),
         ("testTagsPageGetsPassedTagsSortedByPageCount", testTagsPageGetsPassedTagsSortedByPageCount),
@@ -107,6 +108,17 @@ class LeafViewFactoryTests: XCTestCase {
     }
     
     // MARK: - Tests
+    
+    func testLinuxTestSuiteIncludesAllTests() {
+        #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
+            let thisClass = type(of: self)
+            let linuxCount = thisClass.allTests.count
+            let darwinCount = Int(thisClass
+                .defaultTestSuite().testCaseCount)
+            XCTAssertEqual(linuxCount, darwinCount,
+                           "\(darwinCount - linuxCount) tests are missing from allTests")
+        #endif
+    }
     
     // MARK: - All Tags Page
     

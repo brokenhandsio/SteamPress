@@ -7,6 +7,7 @@ import Foundation
 
 class BlogControllerTests: XCTestCase {
     static var allTests = [
+        ("testLinuxTestSuiteIncludesAllTests", testLinuxTestSuiteIncludesAllTests),
         ("testBlogIndexGetsPostsInReverseOrder", testBlogIndexGetsPostsInReverseOrder),
         ("testBlogIndexGetsAllTags", testBlogIndexGetsAllTags),
         ("testBlogPostRetrievedCorrectlyFromSlugUrl", testBlogPostRetrievedCorrectlyFromSlugUrl),
@@ -85,6 +86,17 @@ class BlogControllerTests: XCTestCase {
 
             try BlogTag.addTag("tatooine", to: post)
         }
+    }
+    
+    func testLinuxTestSuiteIncludesAllTests() {
+        #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
+            let thisClass = type(of: self)
+            let linuxCount = thisClass.allTests.count
+            let darwinCount = Int(thisClass
+                .defaultTestSuite().testCaseCount)
+            XCTAssertEqual(linuxCount, darwinCount,
+                           "\(darwinCount - linuxCount) tests are missing from allTests")
+        #endif
     }
 
     func testBlogIndexGetsPostsInReverseOrder() throws {
