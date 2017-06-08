@@ -32,16 +32,7 @@ final class BlogTag: Model {
     }
 }
 
-extension BlogTag: Parameterizable {
-    static var uniqueSlug: String = "blogtag"
-    
-    static func make(for parameter: String) throws -> BlogTag {
-        guard let blogTag = try BlogTag.makeQuery().filter(BlogTag.idKey, parameter).first() else {
-            throw RouterError.invalidParameter
-        }
-        return blogTag
-    }
-}
+extension BlogTag: Parameterizable {}
 
 // MARK: - Node
 
