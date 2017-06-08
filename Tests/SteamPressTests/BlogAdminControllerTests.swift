@@ -39,6 +39,7 @@ class BlogAdminControllerTests: XCTestCase {
         ("testUserCannotResetPasswordWithoutPassword", testUserCannotResetPasswordWithoutPassword),
         ("testUserCannotResetPasswordWithoutConfirmPassword", testUserCannotResetPasswordWithoutConfirmPassword),
         ("testUserCannotResetPasswordWithShortPassword", testUserCannotResetPasswordWithShortPassword),
+        ("testUserIsRedirectedWhenLoggingInAndPasswordResetRequired", testUserIsRedirectedWhenLoggingInAndPasswordResetRequired),
     ]
     
     var database: Database!
@@ -330,6 +331,19 @@ class BlogAdminControllerTests: XCTestCase {
         _ = try drop.respond(to: request)
         
         XCTAssertTrue(capturingViewFactory.resetPasswordErrors?.contains("Your password must contain a lowercase letter, an upperacase letter, a number and a symbol") ?? false)
+    }
+    
+    func testUserIsRedirectedWhenLoggingInAndPasswordResetRequired() throws {
+        let user = TestDataBuilder.anyUser()
+        user.resetPasswordRequired = true
+        try user.save()
+        
+        let request = try createLoggedInRequest(method: .get, path: "/blog/admin/", for: user)
+        
+        let response = try drop.respond(to: request)
+        
+        XCTAssertEqual(response.status, .seeOther)
+        XCTAssertEqual(response.headers[HeaderKey.location], "/blog/admin/resetPassword/")
     }
     
     private func assertLoginRequired(method: HTTP.Method, path: String) throws {
