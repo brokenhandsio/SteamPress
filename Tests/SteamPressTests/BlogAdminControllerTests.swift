@@ -41,6 +41,7 @@ class BlogAdminControllerTests: XCTestCase {
         ("testUserCannotResetPasswordWithShortPassword", testUserCannotResetPasswordWithShortPassword),
         ("testUserIsRedirectedWhenLoggingInAndPasswordResetRequired", testUserIsRedirectedWhenLoggingInAndPasswordResetRequired),
         ("testPostCanBeCreated", testPostCanBeCreated),
+        ("testPostCannotBeCreatedIfDraftAndPublishNotSet", testPostCannotBeCreatedIfDraftAndPublishNotSet),
     ]
     
     // MARK: - Properties
@@ -106,79 +107,79 @@ class BlogAdminControllerTests: XCTestCase {
     // MARK: - Access restriction tests
     
     func testCannotAccessAdminPageWithoutBeingLoggedIn() throws {
-        try assertLoginRequired(method: .get, path: "/blog/admin/")
+        try assertLoginRequired(method: .get, path: "")
     }
     
     func testCannotAccessCreateBlogPostPageWithoutBeingLoggedIn() throws {
-        try assertLoginRequired(method: .get, path: "/blog/admin/createPost/")
+        try assertLoginRequired(method: .get, path: "createPost")
     }
     
     func testCannotSendCreateBlogPostPageWithoutBeingLoggedIn() throws {
-        try assertLoginRequired(method: .post, path: "/blog/admin/createPost/")
+        try assertLoginRequired(method: .post, path: "createPost")
     }
     
     func testCannotAccessEditPostPageWithoutLogin() throws {
-        try assertLoginRequired(method: .get, path: "/blog/admin/posts/2/edit/")
+        try assertLoginRequired(method: .get, path: "posts/2/edit")
     }
     
     func testCannotSendEditPostPageWithoutLogin() throws {
-        try assertLoginRequired(method: .post, path: "/blog/admin/posts/2/edit/")
+        try assertLoginRequired(method: .post, path: "posts/2/edit")
     }
     
     func testCannotAccessCreateUserPageWithoutLogin() throws {
-        try assertLoginRequired(method: .get, path: "/blog/admin/createUser/")
+        try assertLoginRequired(method: .get, path: "createUser")
     }
     
     func testCannotSendCreateUserPageWithoutLogin() throws {
-        try assertLoginRequired(method: .post, path: "/blog/admin/createUser/")
+        try assertLoginRequired(method: .post, path: "createUser")
     }
     
     func testCannotAccessProfilePageWithoutLogin() throws {
-        try assertLoginRequired(method: .get, path: "/blog/admin/profile/")
+        try assertLoginRequired(method: .get, path: "profile")
     }
     
     func testCannotAccessEditUserPageWithoutLogin() throws {
-        try assertLoginRequired(method: .get, path: "/blog/admin/users/1/edit/")
+        try assertLoginRequired(method: .get, path: "users/1/edit")
     }
     
     func testCannotSendEditUserPageWithoutLogin() throws {
-        try assertLoginRequired(method: .post, path: "/blog/admin/users/1/edit/")
+        try assertLoginRequired(method: .post, path: "users/1/edit")
     }
     
     func testCannotDeletePostWithoutLogin() throws {
-        try assertLoginRequired(method: .get, path: "/blog/admin/posts/1/delete/")
+        try assertLoginRequired(method: .get, path: "posts/1/delete")
     }
     
     func testCannotDeleteUserWithoutLogin() throws {
-        try assertLoginRequired(method: .get, path: "/blog/admin/users/1/delete/")
+        try assertLoginRequired(method: .get, path: "users/1/delete")
     }
     
     func testCannotAccessResetPasswordPageWithoutLogin() throws {
-        try assertLoginRequired(method: .get, path: "/blog/admin/resetPassword")
+        try assertLoginRequired(method: .get, path: "resetPassword")
     }
 
     func testCannotSendResetPasswordPageWithoutLogin() throws {
-        try assertLoginRequired(method: .post, path: "/blog/admin/resetPassword")
+        try assertLoginRequired(method: .post, path: "resetPassword")
     }
     
     // MARK: - Access Success Tests
     
     func testCanAccessAdminPageWhenLoggedIn() throws {
-        let request = try createLoggedInRequest(method: .get, path: "/blog/admin/")
+        let request = try createLoggedInRequest(method: .get, path: "")
         let response = try drop.respond(to: request)
         
         XCTAssertEqual(response.status, .ok)
     }
     
     func testCanAccessCreatePostPageWhenLoggedIn() throws {
-        let request = try createLoggedInRequest(method: .get, path: "/blog/admin/createPost/")
+        let request = try createLoggedInRequest(method: .get, path: "createPost")
         let response = try drop.respond(to: request)
         
         XCTAssertEqual(response.status, .ok)
     }
     
     func testCanAccessCreateUserPageWhenLoggedIn() throws {
-        let request = try createLoggedInRequest(method: .get, path: "/blog/admin/createUser/")
+        let request = try createLoggedInRequest(method: .get, path: "createUser")
         let response = try drop.respond(to: request)
         
         XCTAssertEqual(response.status, .ok)
@@ -187,14 +188,14 @@ class BlogAdminControllerTests: XCTestCase {
     func testCanAccessProfilePageWhenLoggedIn() throws {
         let user = TestDataBuilder.anyUser()
         try user.save()
-        let request = try createLoggedInRequest(method: .get, path: "/blog/admin/profile/", for: user)
+        let request = try createLoggedInRequest(method: .get, path: "profile", for: user)
         let response = try drop.respond(to: request)
         
         XCTAssertEqual(response.status, .ok)
     }
     
     func testCanAccessResetPasswordPage() throws {
-        let request = try createLoggedInRequest(method: .get, path: "/blog/admin/resetPassword/")
+        let request = try createLoggedInRequest(method: .get, path: "resetPassword")
         let response = try drop.respond(to: request)
         
         XCTAssertEqual(response.status, .ok)
@@ -208,7 +209,7 @@ class BlogAdminControllerTests: XCTestCase {
         let post = TestDataBuilder.anyPost(author: user)
         try post.save()
         
-        let request = try createLoggedInRequest(method: .get, path: "/blog/admin/posts/\(post.id!.string!)/delete/", for: user)
+        let request = try createLoggedInRequest(method: .get, path: "posts/\(post.id!.string!)/delete", for: user)
         
         let response = try drop.respond(to: request)
         
@@ -220,7 +221,7 @@ class BlogAdminControllerTests: XCTestCase {
         let user2 = TestDataBuilder.anyUser(name: "Han", username: "han")
         try user2.save()
         
-        let request = try createLoggedInRequest(method: .get, path: "/blog/admin/users/\(user2.id!.string!)/delete/")
+        let request = try createLoggedInRequest(method: .get, path: "users/\(user2.id!.string!)/delete")
         let response = try drop.respond(to: request)
         
         XCTAssertEqual(response.status, .seeOther)
@@ -234,7 +235,7 @@ class BlogAdminControllerTests: XCTestCase {
         let user = TestDataBuilder.anyUser(name: "Han", username: "han")
         try user.save()
         
-        let request = try createLoggedInRequest(method: .get, path: "/blog/admin/users/\(user.id!.string!)/delete/", for: user)
+        let request = try createLoggedInRequest(method: .get, path: "users/\(user.id!.string!)/delete", for: user)
         _ = try drop.respond(to: request)
         
         XCTAssertTrue(capturingViewFactory.adminViewErrors?.contains("You cannot delete yourself whilst logged in") ?? false)
@@ -244,7 +245,7 @@ class BlogAdminControllerTests: XCTestCase {
         let user = TestDataBuilder.anyUser(name: "Han", username: "han")
         try user.save()
         
-        let request = try createLoggedInRequest(method: .get, path: "/blog/admin/users/\(user.id!.string!)/delete/", for: user)
+        let request = try createLoggedInRequest(method: .get, path: "users/\(user.id!.string!)/delete", for: user)
         _ = try drop.respond(to: request)
         
         XCTAssertTrue(capturingViewFactory.adminViewErrors?.contains("You cannot delete the last user") ?? false)
@@ -256,7 +257,7 @@ class BlogAdminControllerTests: XCTestCase {
         let user = TestDataBuilder.anyUser()
         try user.save()
         
-        let request = try createLoggedInRequest(method: .post, path: "/blog/admin/resetPassword/", for: user)
+        let request = try createLoggedInRequest(method: .post, path: "resetPassword", for: user)
         let resetPasswordData = try Node(node: [
             "inputPassword": "Th3S@m3password",
             "inputConfirmPassword": "An0th3rPass!"
@@ -272,7 +273,7 @@ class BlogAdminControllerTests: XCTestCase {
         let user = TestDataBuilder.anyUser()
         try user.save()
         
-        let request = try createLoggedInRequest(method: .post, path: "/blog/admin/resetPassword/", for: user)
+        let request = try createLoggedInRequest(method: .post, path: "resetPassword", for: user)
         let resetPasswordData = try Node(node: [
             "inputPassword": "simplepassword",
             "inputConfirmPassword": "simplepassword"
@@ -290,7 +291,7 @@ class BlogAdminControllerTests: XCTestCase {
         try user.save()
         let newPassword = "Th3S@m3password"
         
-        let request = try createLoggedInRequest(method: .post, path: "/blog/admin/resetPassword/", for: user)
+        let request = try createLoggedInRequest(method: .post, path: "resetPassword", for: user)
         let resetPasswordData = try Node(node: [
             "inputPassword": newPassword,
             "inputConfirmPassword": newPassword
@@ -308,7 +309,7 @@ class BlogAdminControllerTests: XCTestCase {
         let user = TestDataBuilder.anyUser()
         try user.save()
         
-        let request = try createLoggedInRequest(method: .post, path: "/blog/admin/resetPassword/", for: user)
+        let request = try createLoggedInRequest(method: .post, path: "resetPassword", for: user)
         let resetPasswordData = try Node(node: [
             "inputConfirmPassword": "Th3S@m3password",
             ])
@@ -323,7 +324,7 @@ class BlogAdminControllerTests: XCTestCase {
         let user = TestDataBuilder.anyUser()
         try user.save()
         
-        let request = try createLoggedInRequest(method: .post, path: "/blog/admin/resetPassword/", for: user)
+        let request = try createLoggedInRequest(method: .post, path: "resetPassword", for: user)
         let resetPasswordData = try Node(node: [
             "inputPassword": "Th3S@m3password",
             ])
@@ -338,7 +339,7 @@ class BlogAdminControllerTests: XCTestCase {
         let user = TestDataBuilder.anyUser()
         try user.save()
         
-        let request = try createLoggedInRequest(method: .post, path: "/blog/admin/resetPassword/", for: user)
+        let request = try createLoggedInRequest(method: .post, path: "resetPassword", for: user)
         let resetPasswordData = try Node(node: [
             "inputPassword": "S12$",
             "inputConfirmPassword": "S12$"
@@ -355,7 +356,7 @@ class BlogAdminControllerTests: XCTestCase {
         user.resetPasswordRequired = true
         try user.save()
         
-        let request = try createLoggedInRequest(method: .get, path: "/blog/admin/", for: user)
+        let request = try createLoggedInRequest(method: .get, path: "", for: user)
         
         let response = try drop.respond(to: request)
         
@@ -366,7 +367,7 @@ class BlogAdminControllerTests: XCTestCase {
     // MARK: - Create Post Tests
     
     func testPostCanBeCreated() throws {
-        let request = try createLoggedInRequest(method: .post, path: "/blog/admin/createPost/")
+        let request = try createLoggedInRequest(method: .post, path: "createPost")
         let postTitle = "Post Title"
         var postData = Node([:], in: nil)
         try postData.set("inputTitle", postTitle)
@@ -382,10 +383,25 @@ class BlogAdminControllerTests: XCTestCase {
         XCTAssertEqual(try BlogPost.all().first?.title, postTitle)
     }
     
+    func testPostCannotBeCreatedIfDraftAndPublishNotSet() throws {
+        let request = try createLoggedInRequest(method: .post, path: "createPost")
+        let postTitle = "Post Title"
+        var postData = Node([:], in: nil)
+        try postData.set("inputTitle", postTitle)
+        try postData.set("inputPostContents", "# Post Title\n\nWe have a post")
+        try postData.set("inputTags", ["First Tag", "Second Tag"])
+        try postData.set("inputSlugUrl", "post-title")
+        request.formURLEncoded = postData
+        
+        let response  = try drop.respond(to: request)
+        
+        XCTAssertEqual(response.status.statusCode, 400)
+    }
+    
     // MARK: - Helper functions
     
     private func assertLoginRequired(method: HTTP.Method, path: String) throws {
-        let request = Request(method: method, uri: path)
+        let request = Request(method: method, uri: "/blog/admin/\(path)/")
         let response = try drop.respond(to: request)
         
         XCTAssertEqual(response.status, .seeOther)
@@ -393,7 +409,8 @@ class BlogAdminControllerTests: XCTestCase {
     }
     
     private func createLoggedInRequest(method: HTTP.Method, path: String, for user: BlogUser? = nil) throws -> Request {
-        let request = Request(method: method, uri: path)
+        let uri = "/blog/admin/\(path)/"
+        let request = Request(method: method, uri: uri)
         let cookie = Cookie(name: "steampress-session", value: "dummy-identifier")
         
         let authAuthenticatedKey = "auth-authenticated"
