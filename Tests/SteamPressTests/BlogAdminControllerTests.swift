@@ -26,7 +26,9 @@ class BlogAdminControllerTests: XCTestCase {
         ("testCannotSendResetPasswordPageWithoutLogin", testCannotSendResetPasswordPageWithoutLogin),
         ("testCanAccessAdminPageWhenLoggedIn", testCanAccessAdminPageWhenLoggedIn),
         ("testCanAccessCreatePostPageWhenLoggedIn", testCanAccessCreatePostPageWhenLoggedIn),
+        ("testCanAccessEditPostPageWhenLoggedIn", testCanAccessEditPostPageWhenLoggedIn),
         ("testCanAccessCreateUserPageWhenLoggedIn", testCanAccessCreateUserPageWhenLoggedIn),
+        ("testCanAccessEditUserPageWhenLoggedIn", testCanAccessEditUserPageWhenLoggedIn),
         ("testCanAccessProfilePageWhenLoggedIn", testCanAccessProfilePageWhenLoggedIn),
         ("testCanAccessResetPasswordPage", testCanAccessResetPasswordPage),
         ("testCanDeleteBlogPost", testCanDeleteBlogPost),
@@ -193,8 +195,28 @@ class BlogAdminControllerTests: XCTestCase {
         XCTAssertEqual(response.status, .ok)
     }
     
+    func testCanAccessEditPostPageWhenLoggedIn() throws {
+        let user = TestDataBuilder.anyUser()
+        try user.save()
+        let post = TestDataBuilder.anyPost(author: user)
+        try post.save()
+        let request = try createLoggedInRequest(method: .get, path: "posts/\(post.id!.string!)/edit", for: user)
+        let response = try drop.respond(to: request)
+        
+        XCTAssertEqual(response.status, .ok)
+    }
+    
     func testCanAccessCreateUserPageWhenLoggedIn() throws {
         let request = try createLoggedInRequest(method: .get, path: "createUser")
+        let response = try drop.respond(to: request)
+        
+        XCTAssertEqual(response.status, .ok)
+    }
+    
+    func testCanAccessEditUserPageWhenLoggedIn() throws {
+        let userToEdit = TestDataBuilder.anyUser(name: "Leia", username: "leia")
+        try userToEdit.save()
+        let request = try createLoggedInRequest(method: .get, path: "users/\(userToEdit.id!.string!)/edit")
         let response = try drop.respond(to: request)
         
         XCTAssertEqual(response.status, .ok)
