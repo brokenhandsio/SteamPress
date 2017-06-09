@@ -10,7 +10,9 @@ class CapturingViewFactory: ViewFactory {
         return View(data: "Test".makeBytes())
     }
     
+    private(set) var createPostErrors: [String]? = nil
     func createBlogPostView(uri: URI, errors: [String]?, title: String?, contents: String?, slugUrl: String?, tags: [Node]?, isEditing: Bool, postToEdit: BlogPost?, draft: Bool) throws -> View {
+        self.createPostErrors = errors
         return createDummyView()
     }
     
