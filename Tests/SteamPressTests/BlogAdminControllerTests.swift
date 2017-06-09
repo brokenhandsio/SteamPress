@@ -45,6 +45,7 @@ class BlogAdminControllerTests: XCTestCase {
         ("testCreatePostMustIncludeTitle", testCreatePostMustIncludeTitle),
         ("testCreatePostMustIncludeContents", testCreatePostMustIncludeContents),
         ("testCreatePostWithDraftDoesNotPublishPost", testCreatePostWithDraftDoesNotPublishPost),
+        ("testUserCanBeCreatedSuccessfully", testUserCanBeCreatedSuccessfully),
     ]
     
     // MARK: - Properties
@@ -445,6 +446,29 @@ class BlogAdminControllerTests: XCTestCase {
         XCTAssertEqual(try BlogPost.count(), 1)
         XCTAssertEqual(try BlogPost.all().first?.title, postTitle)
         XCTAssertFalse(try BlogPost.all().first?.published ?? true)
+    }
+    
+    // MARK: - Create User Tests
+    
+    func testUserCanBeCreatedSuccessfully() throws {
+        let request = try createLoggedInRequest(method: .post, path: "createUser")
+        let newName = "Leia"
+        let newUsername = "leia"
+        let password = "AS3cretPassword"
+        var userData = Node([:], in: nil)
+        try userData.set("inputName", newName)
+        try userData.set("inputUsername", newUsername)
+        try userData.set("inputPassword", password)
+        try userData.set("inputConfirmPassword", password)
+        request.formURLEncoded = userData
+        
+        let _ = try drop.respond(to: request)
+        
+        // We create the first user when setting up the logged in request
+        XCTAssertEqual(try BlogUser.count(), 2)
+        let user = try BlogUser.makeQuery().filter("name", newName).all().first
+        XCTAssertNotNil(user)
+        XCTAssertEqual(user?.username, newUsername)
     }
     
     // MARK: - Helper functions
