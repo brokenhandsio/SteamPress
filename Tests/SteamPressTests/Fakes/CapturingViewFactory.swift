@@ -16,7 +16,9 @@ class CapturingViewFactory: ViewFactory {
         return createDummyView()
     }
     
+    private(set) var createUserErrors: [String]? = nil
     func createUserView(editing: Bool, errors: [String]?, name: String?, username: String?, passwordError: Bool?, confirmPasswordError: Bool?, resetPasswordRequired: Bool?, userId: Identifier?, profilePicture: String?, twitterHandle: String?, biography: String?, tagline: String?) throws -> View {
+        self.createUserErrors = errors
         return createDummyView()
     }
     

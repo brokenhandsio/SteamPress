@@ -46,6 +46,17 @@ class BlogAdminControllerTests: XCTestCase {
         ("testCreatePostMustIncludeContents", testCreatePostMustIncludeContents),
         ("testCreatePostWithDraftDoesNotPublishPost", testCreatePostWithDraftDoesNotPublishPost),
         ("testUserCanBeCreatedSuccessfully", testUserCanBeCreatedSuccessfully),
+        ("testUserMustResetPasswordIfSetToWhenCreatingUser", testUserMustResetPasswordIfSetToWhenCreatingUser),
+        ("testUserCannotBeCreatedWithoutName", testUserCannotBeCreatedWithoutName),
+        ("testUserCannotBeCreatedWithoutUsername", testUserCannotBeCreatedWithoutUsername),
+        ("testUserCannotBeCreatedWithoutPassword", testUserCannotBeCreatedWithoutPassword),
+        ("testUserCannotBeCreatedWithoutSpecifyingAConfirmPassword", testUserCannotBeCreatedWithoutSpecifyingAConfirmPassword),
+        ("testUserCannotBeCreatedWithPasswordsThatDontMatch", testUserCannotBeCreatedWithPasswordsThatDontMatch),
+        ("testUserCannotBeCreatedWithSimplePassword", testUserCannotBeCreatedWithSimplePassword),
+        ("testUserCannotBeCreatedWithEmptyName", testUserCannotBeCreatedWithEmptyName),
+        ("testUserCannotBeCreatedWithEmptyUsername", testUserCannotBeCreatedWithEmptyUsername),
+        ("testUserCannotBeCreatedWithInvalidName", testUserCannotBeCreatedWithInvalidName),
+        ("testUserCannotBeCreatedWithInvalidUsername", testUserCannotBeCreatedWithInvalidUsername),
     ]
     
     // MARK: - Properties
@@ -451,15 +462,24 @@ class BlogAdminControllerTests: XCTestCase {
     // MARK: - Create User Tests
     
     func testUserCanBeCreatedSuccessfully() throws {
+        BlogUser.passwordHasher = FakePasswordHasher()
         let request = try createLoggedInRequest(method: .post, path: "createUser")
         let newName = "Leia"
         let newUsername = "leia"
         let password = "AS3cretPassword"
+        let profilePicture = "https://static.brokenhands.io/images/cat.png"
+        let tagline = "The awesome tagline"
+        let biography = "The biograhy"
+        let twitterHandle = "brokenhandsio"
         var userData = Node([:], in: nil)
         try userData.set("inputName", newName)
         try userData.set("inputUsername", newUsername)
         try userData.set("inputPassword", password)
         try userData.set("inputConfirmPassword", password)
+        try userData.set("inputProfilePicture", profilePicture)
+        try userData.set("inputTagline", tagline)
+        try userData.set("inputBiography", biography)
+        try userData.set("inputTwitterHandle", twitterHandle)
         request.formURLEncoded = userData
         
         let _ = try drop.respond(to: request)
@@ -469,6 +489,184 @@ class BlogAdminControllerTests: XCTestCase {
         let user = try BlogUser.makeQuery().filter("name", newName).all().first
         XCTAssertNotNil(user)
         XCTAssertEqual(user?.username, newUsername)
+        XCTAssertEqual(user?.profilePicture, profilePicture)
+        XCTAssertEqual(user?.tagline, tagline)
+        XCTAssertEqual(user?.biography, biography)
+        XCTAssertEqual(user?.twitterHandle, twitterHandle)
+    }
+    
+    func testUserMustResetPasswordIfSetToWhenCreatingUser() throws {
+        BlogUser.passwordHasher = FakePasswordHasher()
+        let request = try createLoggedInRequest(method: .post, path: "createUser")
+        let newName = "Leia"
+        let password = "AS3cretPassword"
+        var userData = Node([:], in: nil)
+        try userData.set("inputName", newName)
+        try userData.set("inputUsername", "leia")
+        try userData.set("inputPassword", password)
+        try userData.set("inputConfirmPassword", password)
+        try userData.set("inputResetPasswordOnLogin", "true")
+        request.formURLEncoded = userData
+        
+        let _ = try drop.respond(to: request)
+        
+        XCTAssertTrue(try BlogUser.makeQuery().filter("name", newName).all().first?.resetPasswordRequired ?? false)
+    }
+    
+    func testUserCannotBeCreatedWithoutName() throws {
+        let request = try createLoggedInRequest(method: .post, path: "createUser")
+        let password = "AS3cretPassword"
+        var userData = Node([:], in: nil)
+        try userData.set("inputUsername", "leia")
+        try userData.set("inputPassword", password)
+        try userData.set("inputConfirmPassword", password)
+        try userData.set("inputResetPasswordOnLogin", "true")
+        request.formURLEncoded = userData
+        
+        let _ = try drop.respond(to: request)
+        
+        XCTAssertTrue(capturingViewFactory.createUserErrors?.contains("You must specify a name") ?? false)
+    }
+    
+    func testUserCannotBeCreatedWithoutUsername() throws {
+        let request = try createLoggedInRequest(method: .post, path: "createUser")
+        let password = "AS3cretPassword"
+        var userData = Node([:], in: nil)
+        try userData.set("inputName", "Leia")
+        try userData.set("inputPassword", password)
+        try userData.set("inputConfirmPassword", password)
+        try userData.set("inputResetPasswordOnLogin", "true")
+        request.formURLEncoded = userData
+        
+        let _ = try drop.respond(to: request)
+        
+        XCTAssertTrue(capturingViewFactory.createUserErrors?.contains("You must specify a username") ?? false)
+    }
+    
+    func testUserCannotBeCreatedWithoutPassword() throws {
+        let request = try createLoggedInRequest(method: .post, path: "createUser")
+        let password = "AS3cretPassword"
+        var userData = Node([:], in: nil)
+        try userData.set("inputName", "Leia")
+        try userData.set("inputUsername", "leia")
+        try userData.set("inputConfirmPassword", password)
+        try userData.set("inputResetPasswordOnLogin", "true")
+        request.formURLEncoded = userData
+        
+        let _ = try drop.respond(to: request)
+        
+        XCTAssertTrue(capturingViewFactory.createUserErrors?.contains("You must specify a password") ?? false)
+    }
+    
+    func testUserCannotBeCreatedWithoutSpecifyingAConfirmPassword() throws {
+        let request = try createLoggedInRequest(method: .post, path: "createUser")
+        let password = "AS3cretPassword"
+        var userData = Node([:], in: nil)
+        try userData.set("inputName", "Leia")
+        try userData.set("inputUsername", "leia")
+        try userData.set("inputPassword", password)
+        try userData.set("inputResetPasswordOnLogin", "true")
+        request.formURLEncoded = userData
+        
+        let _ = try drop.respond(to: request)
+        
+        XCTAssertTrue(capturingViewFactory.createUserErrors?.contains("You must confirm your password") ?? false)
+    }
+    
+    func testUserCannotBeCreatedWithPasswordsThatDontMatch() throws {
+        let request = try createLoggedInRequest(method: .post, path: "createUser")
+        let password = "AS3cretPassword"
+        var userData = Node([:], in: nil)
+        try userData.set("inputName", "Leia")
+        try userData.set("inputUsername", "leia")
+        try userData.set("inputPassword", password)
+        try userData.set("inputConfirmPassword", "Som£th!ngDifferent")
+        try userData.set("inputResetPasswordOnLogin", "true")
+        request.formURLEncoded = userData
+        
+        let _ = try drop.respond(to: request)
+        
+        XCTAssertTrue(capturingViewFactory.createUserErrors?.contains("Your passwords must match!") ?? false)
+    }
+    
+    func testUserCannotBeCreatedWithSimplePassword() throws {
+        let request = try createLoggedInRequest(method: .post, path: "createUser")
+        let password = "simple"
+        var userData = Node([:], in: nil)
+        try userData.set("inputName", "Leia")
+        try userData.set("inputUsername", "leia")
+        try userData.set("inputPassword", password)
+        try userData.set("inputConfirmPassword", password)
+        try userData.set("inputResetPasswordOnLogin", "true")
+        request.formURLEncoded = userData
+        
+        let _ = try drop.respond(to: request)
+        
+        XCTAssertTrue(capturingViewFactory.createUserErrors?.contains("Your password must contain a lowercase letter, an upperacase letter, a number and a symbol") ?? false)
+    }
+    
+    func testUserCannotBeCreatedWithEmptyName() throws {
+        let request = try createLoggedInRequest(method: .post, path: "createUser")
+        let password = "AComl3xPass!"
+        var userData = Node([:], in: nil)
+        try userData.set("inputName", "")
+        try userData.set("inputUsername", "leia")
+        try userData.set("inputPassword", password)
+        try userData.set("inputConfirmPassword", password)
+        try userData.set("inputResetPasswordOnLogin", "true")
+        request.formURLEncoded = userData
+        
+        let _ = try drop.respond(to: request)
+        
+        XCTAssertTrue(capturingViewFactory.createUserErrors?.contains("You must specify a name") ?? false)
+    }
+    
+    func testUserCannotBeCreatedWithEmptyUsername() throws {
+        let request = try createLoggedInRequest(method: .post, path: "createUser")
+        let password = "AComl3xPass!"
+        var userData = Node([:], in: nil)
+        try userData.set("inputName", "Leia")
+        try userData.set("inputUsername", "")
+        try userData.set("inputPassword", password)
+        try userData.set("inputConfirmPassword", password)
+        try userData.set("inputResetPasswordOnLogin", "true")
+        request.formURLEncoded = userData
+        
+        let _ = try drop.respond(to: request)
+        
+        XCTAssertTrue(capturingViewFactory.createUserErrors?.contains("You must specify a username") ?? false)
+    }
+    
+    func testUserCannotBeCreatedWithInvalidName() throws {
+        let request = try createLoggedInRequest(method: .post, path: "createUser")
+        let password = "AComl3xPass!"
+        var userData = Node([:], in: nil)
+        try userData.set("inputName", "An invalid Name!3")
+        try userData.set("inputUsername", "leia")
+        try userData.set("inputPassword", password)
+        try userData.set("inputConfirmPassword", password)
+        try userData.set("inputResetPasswordOnLogin", "true")
+        request.formURLEncoded = userData
+        
+        let _ = try drop.respond(to: request)
+        
+        XCTAssertTrue(capturingViewFactory.createUserErrors?.contains("The name provided is not valid") ?? false)
+    }
+    
+    func testUserCannotBeCreatedWithInvalidUsername() throws {
+        let request = try createLoggedInRequest(method: .post, path: "createUser")
+        let password = "AComl3xPass!"
+        var userData = Node([:], in: nil)
+        try userData.set("inputName", "Leia")
+        try userData.set("inputUsername", "LEIA!")
+        try userData.set("inputPassword", password)
+        try userData.set("inputConfirmPassword", password)
+        try userData.set("inputResetPasswordOnLogin", "true")
+        request.formURLEncoded = userData
+        
+        let _ = try drop.respond(to: request)
+        
+        XCTAssertTrue(capturingViewFactory.createUserErrors?.contains("The username provided is not valid") ?? false)
     }
     
     // MARK: - Helper functions
