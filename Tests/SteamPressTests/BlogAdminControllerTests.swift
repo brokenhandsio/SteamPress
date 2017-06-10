@@ -10,6 +10,8 @@ class BlogAdminControllerTests: XCTestCase {
     static var allTests = [
         ("testLinuxTestSuiteIncludesAllTests", testLinuxTestSuiteIncludesAllTests),
         ("testLogin", testLogin),
+        ("testUserIsCreatedWhenAccessingLoginPageForFirstTime", testUserIsCreatedWhenAccessingLoginPageForFirstTime),
+        ("testNoUserCreatedWhenAccessingLoginPageIfOneAlreadyExists", testNoUserCreatedWhenAccessingLoginPageIfOneAlreadyExists),
         ("testCannotAccessAdminPageWithoutBeingLoggedIn", testCannotAccessAdminPageWithoutBeingLoggedIn),
         ("testCannotAccessCreateBlogPostPageWithoutBeingLoggedIn", testCannotAccessCreateBlogPostPageWithoutBeingLoggedIn),
         ("testCannotSendCreateBlogPostPageWithoutBeingLoggedIn", testCannotSendCreateBlogPostPageWithoutBeingLoggedIn),
@@ -121,6 +123,32 @@ class BlogAdminControllerTests: XCTestCase {
         
         XCTAssertEqual(response.status, .seeOther)
         XCTAssertEqual(response.headers[HeaderKey.location], "/blog/admin/")
+    }
+    
+    // MARK: - Login Tests
+    func testUserIsCreatedWhenAccessingLoginPageForFirstTime() throws {
+        BlogUser.passwordHasher = FakePasswordHasher()
+        
+        XCTAssertEqual(try BlogUser.count(), 0)
+        
+        let loginRequest = Request(method: .get, uri: "/blog/admin/login/")
+        let response = try drop.respond(to: loginRequest)
+        
+        XCTAssertEqual(response.status, .ok)
+        XCTAssertEqual(try BlogUser.count(), 1)
+        XCTAssertEqual(try BlogUser.all().first?.username, "admin")
+    }
+    
+    func testNoUserCreatedWhenAccessingLoginPageIfOneAlreadyExists() throws {
+        let user = TestDataBuilder.anyUser()
+        try user.save()
+        XCTAssertEqual(try BlogUser.count(), 1)
+        
+        let loginRequest = Request(method: .get, uri: "/blog/admin/login/")
+        let response = try drop.respond(to: loginRequest)
+        
+        XCTAssertEqual(response.status, .ok)
+        XCTAssertEqual(try BlogUser.count(), 1)
     }
     
     // MARK: - Access restriction tests
