@@ -59,6 +59,7 @@ class BlogAdminControllerTests: XCTestCase {
         ("testUserCannotBeCreatedWithEmptyUsername", testUserCannotBeCreatedWithEmptyUsername),
         ("testUserCannotBeCreatedWithInvalidName", testUserCannotBeCreatedWithInvalidName),
         ("testUserCannotBeCreatedWithInvalidUsername", testUserCannotBeCreatedWithInvalidUsername),
+        ("testPostCanBeUpdated", testPostCanBeUpdated),
     ]
     
     // MARK: - Properties
@@ -689,6 +690,32 @@ class BlogAdminControllerTests: XCTestCase {
         let _ = try drop.respond(to: request)
         
         XCTAssertTrue(capturingViewFactory.createUserErrors?.contains("The username provided is not valid") ?? false)
+    }
+    
+    // MARK: - Edit Post Tests
+    
+    func testPostCanBeUpdated() throws {
+        let author = TestDataBuilder.anyUser()
+        try author.save()
+        
+        let post = TestDataBuilder.anyPost(author: author, title: "Initial title", contents: "Some initial contents", slugUrl: "initial-title")
+        try post.save()
+        
+        let request = try createLoggedInRequest(method: .post, path: "posts/\(post.id!.string!)/edit", for: author)
+        let newTitle = "New Title"
+        let newContents = "We have updated the contents"
+        let newSlug = "new-title"
+        var postData = Node([:], in: nil)
+        try postData.set("inputTitle", newTitle)
+        try postData.set("inputPostContents", newContents)
+        try postData.set("inputSlugUrl", newSlug)
+        request.formURLEncoded = postData
+        
+        let _  = try drop.respond(to: request)
+        
+        XCTAssertEqual(try BlogPost.count(), 1)
+        XCTAssertEqual(try BlogPost.all().first?.title, newTitle)
+        XCTAssertEqual(try BlogPost.all().first?.contents, newContents)
     }
     
     // MARK: - Helper functions

@@ -134,13 +134,8 @@ struct BlogAdminController {
         let rawContents = request.data["inputPostContents"]?.string
         let rawTags = request.data["inputTags"]
         let rawSlugUrl = request.data["inputSlugUrl"]?.string
-        let draft = request.data["save-draft"]?.string
         let publish = request.data["publish"]?.string
-        
-        if draft == nil && publish == nil {
-            throw Abort.badRequest
-        }
-        
+
         let tagsArray = rawTags?.array ?? [rawTags?.string?.makeNode(in: nil) ?? nil]
 
         if let errors = validatePostCreation(title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl) {
