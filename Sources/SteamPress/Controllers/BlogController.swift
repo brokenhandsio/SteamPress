@@ -56,7 +56,7 @@ struct BlogController {
     }
 
     func blogPostIndexRedirectHandler(request: Request) throws -> ResponseRepresentable {
-        return Response(redirect: pathCreator.createPath(for: pathCreator.blogPath), permanently: true)
+        return Response(redirect: pathCreator.createPath(for: pathCreator.blogPath), .permanent)
     }
 
     func blogPostHandler(request: Request) throws -> ResponseRepresentable {
