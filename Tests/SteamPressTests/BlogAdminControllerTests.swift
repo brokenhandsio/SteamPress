@@ -78,14 +78,14 @@ class BlogAdminControllerTests: XCTestCase {
         database = Database(try! MemoryDriver(()))
         try! Droplet.prepare(database: database)
         var config = try! Config()
-        let persistMiddleware = PersistMiddleware(BlogUser.self)
-        config.addConfigurable(middleware: { (config) -> (PersistMiddleware<BlogUser>) in
-            return persistMiddleware
-        }, name: "blog-persist")
         config.addConfigurable(middleware: { (_) -> (SessionsMiddleware) in
             let sessions = SessionsMiddleware(try! config.resolveSessions(), cookieName: "steampress-session")
             return sessions
         }, name: "steampress-sessions")
+        let persistMiddleware = PersistMiddleware(BlogUser.self)
+        config.addConfigurable(middleware: { (config) -> (PersistMiddleware<BlogUser>) in
+            return persistMiddleware
+        }, name: "blog-persist")
         try! config.set("droplet.middleware", ["error", "steampress-sessions", "blog-persist"])
         
         drop = try! Droplet(config)
@@ -146,10 +146,12 @@ class BlogAdminControllerTests: XCTestCase {
         XCTAssertEqual(logoutResponse.status, .seeOther)
         XCTAssertEqual(logoutResponse.headers[HeaderKey.location], "/blog/")
         
-        let loggedOutAdminResponse = try drop.respond(to: adminRequest)
+        let secondAdminRequest = Request(method: .get, uri: "/blog/admin/")
+        secondAdminRequest.cookies.insert(sessionCookie)
+        let loggedOutAdminResponse = try drop.respond(to: secondAdminRequest)
         
         XCTAssertEqual(loggedOutAdminResponse.status, .seeOther)
-        XCTAssertEqual(loggedOutAdminResponse.headers[HeaderKey.location], "/blog/admin/login/")
+        XCTAssertEqual(loggedOutAdminResponse.headers[HeaderKey.location], "/blog/admin/login/?loginRequired")
     }
     
     // MARK: - Login Tests
