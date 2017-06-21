@@ -5,6 +5,7 @@ import HTTP
 import FluentProvider
 import Sessions
 import Cookies
+import AuthProvider
 
 class BlogAdminControllerTests: XCTestCase {
     static var allTests = [
@@ -77,11 +78,15 @@ class BlogAdminControllerTests: XCTestCase {
         database = Database(try! MemoryDriver(()))
         try! Droplet.prepare(database: database)
         var config = try! Config()
+        let persistMiddleware = PersistMiddleware(BlogUser.self)
+        config.addConfigurable(middleware: { (config) -> (PersistMiddleware<BlogUser>) in
+            return persistMiddleware
+        }, name: "blog-persist")
         config.addConfigurable(middleware: { (_) -> (SessionsMiddleware) in
             let sessions = SessionsMiddleware(try! config.resolveSessions(), cookieName: "steampress-session")
             return sessions
         }, name: "steampress-sessions")
-        try! config.set("droplet.middleware", ["error", "steampress-sessions"])
+        try! config.set("droplet.middleware", ["error", "steampress-sessions", "blog-persist"])
         
         drop = try! Droplet(config)
         capturingViewFactory = CapturingViewFactory()
@@ -119,10 +124,32 @@ class BlogAdminControllerTests: XCTestCase {
             ]))
         let loginRequest = Request(method: .post, uri: "/blog/admin/login/")
         loginRequest.json = loginJson
-        let response = try drop.respond(to: loginRequest)
+        let loginResponse = try drop.respond(to: loginRequest)
         
-        XCTAssertEqual(response.status, .seeOther)
-        XCTAssertEqual(response.headers[HeaderKey.location], "/blog/admin/")
+        XCTAssertEqual(loginResponse.status, .seeOther)
+        XCTAssertEqual(loginResponse.headers[HeaderKey.location], "/blog/admin/")
+        XCTAssertNotNil(loginResponse.headers[HeaderKey.setCookie])
+        
+        let rawCookie = loginResponse.headers[HeaderKey.setCookie]
+        let sessionCookie = try Cookie(bytes: rawCookie?.bytes ?? [])
+        
+        let adminRequest = Request(method: .get, uri: "/blog/admin/")
+        adminRequest.cookies.insert(sessionCookie)
+        let adminResponse = try drop.respond(to: adminRequest)
+        
+        XCTAssertEqual(adminResponse.status, .ok)
+        
+        let logoutRequest = Request(method: .get, uri: "/blog/admin/logout/")
+        logoutRequest.cookies.insert(sessionCookie)
+        let logoutResponse = try drop.respond(to: logoutRequest)
+        
+        XCTAssertEqual(logoutResponse.status, .seeOther)
+        XCTAssertEqual(logoutResponse.headers[HeaderKey.location], "/blog/")
+        
+        let loggedOutAdminResponse = try drop.respond(to: adminRequest)
+        
+        XCTAssertEqual(loggedOutAdminResponse.status, .seeOther)
+        XCTAssertEqual(loggedOutAdminResponse.headers[HeaderKey.location], "/blog/admin/login/")
     }
     
     // MARK: - Login Tests
