@@ -78,10 +78,11 @@ class BlogAdminControllerTests: XCTestCase {
         database = Database(try! MemoryDriver(()))
         try! Droplet.prepare(database: database)
         var config = try! Config()
-        config.addConfigurable(middleware: { (_) -> (SessionsMiddleware) in
-            let sessions = SessionsMiddleware(try! config.resolveSessions(), cookieName: "steampress-session")
-            return sessions
+        let sessionsMiddleware = SessionsMiddleware(try! config.resolveSessions(), cookieName: SteamPress.Provider.cookieName, cookieFactory: Provider.createCookieFactory(for: .production))
+        config.addConfigurable(middleware: { (config) -> (SessionsMiddleware) in
+            return sessionsMiddleware
         }, name: "steampress-sessions")
+        
         let persistMiddleware = PersistMiddleware(BlogUser.self)
         config.addConfigurable(middleware: { (config) -> (PersistMiddleware<BlogUser>) in
             return persistMiddleware
@@ -812,7 +813,7 @@ class BlogAdminControllerTests: XCTestCase {
     private func createLoggedInRequest(method: HTTP.Method, path: String, for user: BlogUser? = nil) throws -> Request {
         let uri = "/blog/admin/\(path)/"
         let request = Request(method: method, uri: uri)
-        let cookie = Cookie(name: "steampress-session", value: "dummy-identifier")
+        let cookie = Cookie(name: SteamPress.Provider.cookieName, value: "dummy-identifier")
         
         let authAuthenticatedKey = "auth-authenticated"
         
