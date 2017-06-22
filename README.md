@@ -28,6 +28,8 @@ There is an example of how it can work in a site (and what it requires in terms 
 
 # How to Use
 
+**Note:** the `Production` environment will only work on HTTPS for security reasons.
+
 ## Integration
 
 In order for SteamPress to work properly, it requires various Middleware to do things like authentication. You must add these to your `droplet.json` so they are loaded up and SteamPress can work properly. In your `droplet.json` add `steampress-sessions` and `blog-persist` like so (and in this order):
