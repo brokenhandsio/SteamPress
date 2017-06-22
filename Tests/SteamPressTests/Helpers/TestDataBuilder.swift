@@ -9,8 +9,8 @@ struct TestDataBuilder {
         return BlogUser(name: name, username: username, password: "password".makeBytes(), profilePicture: "https://static.brokenhands.io/steampress/images/authors/luke.png", twitterHandle: "luke", biography: "The last Jedi", tagline: "Who is my father")
     }
     
-    static func anyPost(author: BlogUser, title: String = "An Exciting Post!", slugUrl: String = "some-exciting-title", creationDate: Date = Date(), published: Bool = true)  -> BlogPost {
-        return BlogPost(title: title, contents: "<p>This is a blog post</p>", author: author, creationDate: creationDate, slugUrl: slugUrl, published: published)
+    static func anyPost(author: BlogUser, title: String = "An Exciting Post!", contents: String = "This is a blog post", slugUrl: String = "some-exciting-title", creationDate: Date = Date(), published: Bool = true)  -> BlogPost {
+        return BlogPost(title: title, contents: contents, author: author, creationDate: creationDate, slugUrl: slugUrl, published: published)
     }
     
     static func anyPostWithImage(author: BlogUser) -> BlogPost {

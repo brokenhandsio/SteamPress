@@ -9,11 +9,11 @@ struct BlogLoginRedirectAuthMiddleware: Middleware {
         do {
             let user = try request.user()
             if user.resetPasswordRequired && request.uri.path != pathCreator.createPath(for: "admin/resetPassword") {
-                return Response(getRedirect: pathCreator.createPath(for: "admin/resetPassword"))
+                return Response(redirect: pathCreator.createPath(for: "admin/resetPassword"))
             }
             
         } catch {
-            return Response(getRedirect: pathCreator.createPath(for: "admin/login", query: "loginRequired"))
+            return Response(redirect: pathCreator.createPath(for: "admin/login", query: "loginRequired"))
         }
         return try next.respond(to: request)
     }

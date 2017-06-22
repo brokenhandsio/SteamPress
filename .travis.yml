@@ -23,7 +23,7 @@ script:
     - swift test
 
 after_success:
-    - eval "$(curl -sL https://swift.vapor.sh/codecov)"
+    - eval "$(curl -sL https://raw.githubusercontent.com/vapor-community/swift/master/codecov)"
 
 notifications:
   email:

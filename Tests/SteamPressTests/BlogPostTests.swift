@@ -8,6 +8,7 @@ import Foundation
 class BlogPostTests: XCTestCase {
 
     static var allTests = [
+        ("testLinuxTestSuiteIncludesAllTests", testLinuxTestSuiteIncludesAllTests),
         ("testThatSlugUrlCalculatedCorrectlyForTitleWithSpaces", testThatSlugUrlCalculatedCorrectlyForTitleWithSpaces),
         ("testThatSlugUrlCalculatedCorrectlyForTitleWithPunctuation", testThatSlugUrlCalculatedCorrectlyForTitleWithPunctuation),
         ("testThatSlugUrlNotChangedWhenSetWithValidSlugUrl", testThatSlugUrlNotChangedWhenSetWithValidSlugUrl),
@@ -30,6 +31,17 @@ class BlogPostTests: XCTestCase {
     
     override func tearDown() {
         try! Droplet.teardown(database: database)
+    }
+    
+    func testLinuxTestSuiteIncludesAllTests() {
+        #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
+            let thisClass = type(of: self)
+            let linuxCount = thisClass.allTests.count
+            let darwinCount = Int(thisClass
+                .defaultTestSuite().testCaseCount)
+            XCTAssertEqual(linuxCount, darwinCount,
+                           "\(darwinCount - linuxCount) tests are missing from allTests")
+        #endif
     }
 
     func testThatSlugUrlCalculatedCorrectlyForTitleWithSpaces() {

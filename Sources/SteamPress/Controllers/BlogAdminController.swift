@@ -99,7 +99,7 @@ struct BlogAdminController {
             }
         }
 
-        return Response(getRedirect: pathCreator.createPath(for: "posts/\(newPost.slugUrl)"))
+        return Response(redirect: pathCreator.createPath(for: "posts/\(newPost.slugUrl)"))
     }
 
     func deletePostHandler(request: Request) throws -> ResponseRepresentable {
@@ -118,7 +118,7 @@ struct BlogAdminController {
         }
 
         try post.delete()
-        return Response(getRedirect: pathCreator.createPath(for: "admin"))
+        return Response(redirect: pathCreator.createPath(for: "admin"))
     }
 
     func editPostHandler(request: Request) throws -> ResponseRepresentable {
@@ -134,13 +134,8 @@ struct BlogAdminController {
         let rawContents = request.data["inputPostContents"]?.string
         let rawTags = request.data["inputTags"]
         let rawSlugUrl = request.data["inputSlugUrl"]?.string
-        let draft = request.data["save-draft"]?.string
         let publish = request.data["publish"]?.string
-        
-        if draft == nil && publish == nil {
-            throw Abort.badRequest
-        }
-        
+
         let tagsArray = rawTags?.array ?? [rawTags?.string?.makeNode(in: nil) ?? nil]
 
         if let errors = validatePostCreation(title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl) {
@@ -195,7 +190,7 @@ struct BlogAdminController {
 
         try post.save()
 
-        return Response(getRedirect: pathCreator.createPath(for: "admin"))
+        return Response(redirect: pathCreator.createPath(for: "admin"))
     }
 
     // MARK: - User handlers
@@ -248,7 +243,7 @@ struct BlogAdminController {
             return try viewFactory.createUserView(editing: false, errors: ["There was an error creating the user. Please try again"], name: name, username: username, passwordError: passwordError, confirmPasswordError: confirmPasswordError, resetPasswordRequired: resetPasswordRequired, userId: nil, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline)
         }
         
-        return Response(getRedirect: pathCreator.createPath(for: "admin"))
+        return Response(redirect: pathCreator.createPath(for: "admin"))
         
     }
 
@@ -307,7 +302,7 @@ struct BlogAdminController {
         }
 
         try userToUpdate.save()
-        return Response(getRedirect: pathCreator.createPath(for: "admin"))
+        return Response(redirect: pathCreator.createPath(for: "admin"))
     }
 
     func deleteUserPostHandler(request: Request) throws -> ResponseRepresentable {
@@ -323,7 +318,7 @@ struct BlogAdminController {
         }
         else {
             try user.delete()
-            return Response(getRedirect: pathCreator.createPath(for: "admin"))
+            return Response(redirect: pathCreator.createPath(for: "admin"))
         }
     }
 
@@ -387,7 +382,7 @@ struct BlogAdminController {
         do {
             let user = try BlogUser.authenticate(passwordCredentials)
             request.auth.authenticate(user)
-            return Response(getRedirect: pathCreator.createPath(for: "admin"))
+            return Response(redirect: pathCreator.createPath(for: "admin"))
         }
         catch {
             log.debug("Got error logging in \(error)")
@@ -398,7 +393,7 @@ struct BlogAdminController {
 
     func logoutHandler(_ request: Request) throws -> ResponseRepresentable {
         try request.auth.unauthenticate()
-        return Response(getRedirect: pathCreator.createPath(for: pathCreator.blogPath))
+        return Response(redirect: pathCreator.createPath(for: pathCreator.blogPath))
     }
 
     // MARK: Admin Handler
@@ -427,23 +422,19 @@ struct BlogAdminController {
         var passwordError: Bool?
         var confirmPasswordError: Bool?
 
-        if rawPassword == nil {
-            resetPasswordErrors.append("You must specify a password")
-            passwordError = true
-        }
-
-        if rawConfirmPassword == nil {
-            resetPasswordErrors.append("You must confirm your password")
-            confirmPasswordError = true
-        }
-
-        // Return if we have any missing fields
-        if resetPasswordErrors.count > 0 {
-            return try viewFactory.createResetPasswordView(errors: resetPasswordErrors, passwordError: passwordError, confirmPasswordError: confirmPasswordError)
-        }
-
         guard let password = rawPassword, let confirmPassword = rawConfirmPassword else {
-            throw Abort.badRequest
+            if rawPassword == nil {
+                resetPasswordErrors.append("You must specify a password")
+                passwordError = true
+            }
+
+            if rawConfirmPassword == nil {
+                resetPasswordErrors.append("You must confirm your password")
+                confirmPasswordError = true
+            }
+            
+            // Return if we have any missing fields
+            return try viewFactory.createResetPasswordView(errors: resetPasswordErrors, passwordError: passwordError, confirmPasswordError: confirmPasswordError)
         }
 
         if password != confirmPassword {
@@ -469,7 +460,7 @@ struct BlogAdminController {
         user.resetPasswordRequired = false
         try user.save()
 
-        return Response(getRedirect: pathCreator.createPath(for: "admin"))
+        return Response(redirect: pathCreator.createPath(for: "admin"))
     }
 
     // MARK: - Validators

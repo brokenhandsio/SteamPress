@@ -11,6 +11,7 @@ public struct Provider: Vapor.Provider {
 
     private static let configFilename: String = "steampress"
     public static let repositoryName: String = "steampress"
+    static let cookieName = "steampress-session"
     
     private let blogPath: String?
     private let postsPerPage: Int
@@ -18,6 +19,22 @@ public struct Provider: Vapor.Provider {
     private let useBootstrap4: Bool
     private let enableAuthorsPages: Bool
     private let enableTagsPages: Bool
+    
+    static func createCookieFactory(for environment: Environment) -> ((_ request: Request) -> Cookie) {
+        let cookieFactory: (_ request: Request) -> Cookie = { req in
+            var cookie = Cookie(name: cookieName, value: "", secure: environment == .production, httpOnly: true, sameSite: .lax)
+            
+            if req.storage["remember_me"] as? Bool ?? false {
+                let oneMonthTime: TimeInterval = 30 * 24 * 60 * 60
+                let expiryDate = Date().addingTimeInterval(oneMonthTime)
+                cookie.expires = expiryDate
+            }
+            
+            return cookie
+        }
+        
+        return cookieFactory
+    }
     
     public func boot(_ config: Config) throws {
         try config.addProvider(AuthProvider.Provider.self)
@@ -36,20 +53,7 @@ public struct Provider: Vapor.Provider {
             return persistMiddleware
         }, name: "blog-persist")
         
-        let cookieName = "steampress-session"
-        let cookieFactory: (_ request: Request) -> Cookie = { req in
-            var cookie = Cookie(name: cookieName, value: "", secure: config.environment == .production, httpOnly: true, sameSite: .lax)
-            
-            if req.storage["remember_me"] as? Bool ?? false {
-                let oneMonthTime: TimeInterval = 30 * 24 * 60 * 60
-                let expiryDate = Date().addingTimeInterval(oneMonthTime)
-                cookie.expires = expiryDate
-            }
-            
-            return cookie
-        }
-        
-        let sessionsMiddleware = SessionsMiddleware(try config.resolveSessions(), cookieName: cookieName, cookieFactory: cookieFactory)
+        let sessionsMiddleware = SessionsMiddleware(try config.resolveSessions(), cookieName: Provider.cookieName, cookieFactory: Provider.createCookieFactory(for: config.environment))
         config.addConfigurable(middleware: { (config) -> (SessionsMiddleware) in
             return sessionsMiddleware
         }, name: "steampress-sessions")

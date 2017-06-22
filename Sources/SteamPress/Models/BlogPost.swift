@@ -78,16 +78,7 @@ public final class BlogPost: Model {
     }
 }
 
-extension BlogPost: Parameterizable {
-    public static var uniqueSlug: String = "blogpost"
-    
-    public static func make(for parameter: String) throws -> BlogPost {
-        guard let post = try BlogPost.makeQuery().filter(BlogPost.idKey, parameter).first() else {
-            throw RouterError.invalidParameter
-        }
-        return post
-    }
-}
+extension BlogPost: Parameterizable {}
 
 // MARK: - Node
 
