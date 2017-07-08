@@ -813,7 +813,6 @@ class BlogAdminControllerTests: XCTestCase {
     private func createLoggedInRequest(method: HTTP.Method, path: String, for user: BlogUser? = nil) throws -> Request {
         let uri = "/blog/admin/\(path)/"
         let request = Request(method: method, uri: uri)
-        let cookie = Cookie(name: SteamPress.Provider.cookieName, value: "dummy-identifier")
         
         let authAuthenticatedKey = "auth-authenticated"
         
@@ -825,9 +824,6 @@ class BlogAdminControllerTests: XCTestCase {
             try testUser.save()
             request.storage[authAuthenticatedKey] = testUser
         }
-        
-        
-        request.cookies.insert(cookie)
         
         return request
     }
