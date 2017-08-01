@@ -5,27 +5,27 @@ import FluentProvider
 
 // MARK: - Model
 
-final class BlogTag: Model {
+public final class BlogTag: Model {
     
-    struct Properties {
+    public struct Properties {
         static let id = "id"
         static let name = "name"
         static let urlEncodedName = "url_encoded_name"
         static let postCount = "post_count"
     }
     
-    let storage = Storage()
+    public let storage = Storage()
     
     var name: String
     
     init(name: String) {
         self.name = name    }
     
-    required init(row: Row) throws {
+    required public init(row: Row) throws {
         name = try row.get(Properties.name)
     }
     
-    func makeRow() throws -> Row {
+    public func makeRow() throws -> Row {
         var row = Row()
         try row.set(Properties.name, name)
         return row
@@ -36,12 +36,12 @@ extension BlogTag: Parameterizable {}
 
 // MARK: - Node
 
-enum BlogTagContext: Context {
+public enum BlogTagContext: Context {
     case withPostCount
 }
 
 extension BlogTag: NodeRepresentable {
-    func makeNode(in context: Context?) throws -> Node {
+    public func makeNode(in context: Context?) throws -> Node {
         
         var node = Node([:], in: context)
         try node.set(Properties.id, id)
@@ -69,13 +69,13 @@ extension BlogTag: NodeRepresentable {
 
 // MARK: - Relations
 
-extension BlogTag {
+public extension BlogTag {
     
-    var posts: Siblings<BlogTag, BlogPost, Pivot<BlogTag, BlogPost>> {
+    public var posts: Siblings<BlogTag, BlogPost, Pivot<BlogTag, BlogPost>> {
         return siblings()
     }
     
-    func sortedPosts() throws -> Query<BlogPost> {
+    public func sortedPosts() throws -> Query<BlogPost> {
         return try posts.filter(BlogPost.Properties.published, true).sort(BlogPost.Properties.created, .descending)
     }
     

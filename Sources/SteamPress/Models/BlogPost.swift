@@ -6,7 +6,7 @@ import FluentProvider
 
 public final class BlogPost: Model {
     
-    struct Properties {
+    public struct Properties {
         static let id = "id"
         static let title = "title"
         static let contents = "contents"

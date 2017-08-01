@@ -34,7 +34,7 @@ struct BlogPostDraft: Preparation {
 // MARK: - BlogUser
 
 extension BlogUser: Preparation {
-    static func prepare(_ database: Database) throws {
+    public static func prepare(_ database: Database) throws {
         try database.create(self) { users in
             users.id()
             users.string(Properties.name)
@@ -44,7 +44,7 @@ extension BlogUser: Preparation {
         }
     }
     
-    static func revert(_ database: Database) throws {
+    public static func revert(_ database: Database) throws {
         try database.delete(self)
     }
     
@@ -73,14 +73,14 @@ struct BlogUserExtraInformation: Preparation {
 
 extension BlogTag: Preparation {
     
-    static func prepare(_ database: Database) throws {
+    public static func prepare(_ database: Database) throws {
         try database.create(self) { tag in
             tag.id()
             tag.string(Properties.name, unique: true)
         }
     }
     
-    static func revert(_ database: Database) throws {
+    public static func revert(_ database: Database) throws {
         try database.delete(self)
     }
 }

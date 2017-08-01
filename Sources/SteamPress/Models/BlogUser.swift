@@ -6,9 +6,9 @@ import Foundation
 
 // MARK: - Model
 
-final class BlogUser: Model {
+public final class BlogUser: Model {
     
-    struct Properties {
+    public struct Properties {
         static let id = "id"
         static let name = "name"
         static let username = "username"
@@ -21,7 +21,7 @@ final class BlogUser: Model {
         static let postCount = "post_count"
     }
     
-    let storage = Storage()
+    public let storage = Storage()
     
     var name: String
     var username: String
@@ -42,7 +42,7 @@ final class BlogUser: Model {
         self.tagline = tagline
     }
     
-    init(row: Row) throws {
+    public init(row: Row) throws {
         name = try row.get(Properties.name)
         username = try row.get(Properties.username)
         let passwordAsString: String = try row.get(Properties.password)
@@ -54,7 +54,7 @@ final class BlogUser: Model {
         tagline = try? row.get(Properties.tagline)
     }
     
-    func makeRow() throws -> Row {
+    public func makeRow() throws -> Row {
         var row = Row()
         try row.set(Properties.name, name)
         try row.set(Properties.username, username)
@@ -73,13 +73,13 @@ extension BlogUser: Parameterizable {}
 
 // MARK: - Node
 
-enum BlogUserContext: Context {
+public enum BlogUserContext: Context {
     case withPostCount
 }
 
 extension BlogUser: NodeRepresentable {
 
-    func makeNode(in context: Context?) throws -> Node {
+    public func makeNode(in context: Context?) throws -> Node {
         var node = Node([:], in: context)
         try node.set(Properties.id, id)
         try node.set(Properties.name, name)
@@ -144,11 +144,11 @@ extension BCryptHasher: PasswordHasherVerifier {}
 // MARK: - Relations
 
 extension BlogUser {
-    var posts: Children<BlogUser, BlogPost> {
+    public var posts: Children<BlogUser, BlogPost> {
         return children()
     }
     
-    func sortedPosts() throws -> Query<BlogPost> {
+    public func sortedPosts() throws -> Query<BlogPost> {
         return try posts.filter(BlogPost.Properties.published, true).sort(BlogPost.Properties.created, .descending)
     }
 }
