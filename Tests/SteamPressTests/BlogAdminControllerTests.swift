@@ -75,8 +75,6 @@ class BlogAdminControllerTests: XCTestCase {
     // MARK: - Overrides
     
     override func setUp() {
-//        database = Database(try! MemoryDriver(()))
-//        try! Droplet.prepare(database: database)
         BlogUser.passwordHasher = FakePasswordHasher()
         var config = Config([:])
         let sessionsMiddleware = SessionsMiddleware(try! config.resolveSessions(), cookieName: SteamPress.Provider.cookieName, cookieFactory: Provider.createCookieFactory(for: .production))
@@ -105,10 +103,6 @@ class BlogAdminControllerTests: XCTestCase {
             user.resetPasswordRequired = false
             try! user.save()
         }
-    }
-    
-    override func tearDown() {
-        //try! Droplet.teardown(database: database)
     }
     
     // Courtesy of https://oleb.net/blog/2017/03/keeping-xctest-in-sync/
