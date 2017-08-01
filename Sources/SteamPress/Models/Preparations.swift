@@ -1,4 +1,5 @@
 import Fluent
+import Vapor
 
 // MARK: - BlogPost
 
@@ -68,6 +69,31 @@ struct BlogUserExtraInformation: Preparation {
     
     static func revert(_ database: Database) throws {}
 }
+
+struct BlogAdminUser: Preparation {
+    
+    static var log: LogProtocol?
+    
+    static func prepare(_ database: Database) throws {
+        do {
+            let password = String.random()
+            
+            let hashedPassword = try BlogUser.passwordHasher.make(password)
+            let user = BlogUser(name: "Admin", username: "admin", password: hashedPassword, profilePicture: nil, twitterHandle: nil, biography: nil, tagline: "Admin for the blog")
+            user.resetPasswordRequired = true
+            try user.save()
+            
+            log?.error("An Admin user been created for you - the username is admin and the password is \(password)")
+            log?.error("You will be asked to change your password once you have logged in, please do this immediately!")
+        }
+        catch {
+            log?.error("There was an error creating a new admin user: \(error)")
+        }
+    }
+    
+    static func revert(_ database: Database) throws {}
+}
+
 
 // MARK: - BlogTag
 

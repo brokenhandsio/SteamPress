@@ -46,6 +46,7 @@ public struct Provider: Vapor.Provider {
         config.preparations.append(Pivot<BlogPost, BlogTag>.self)
         config.preparations.append(BlogPostDraft.self)
         config.preparations.append(BlogUserExtraInformation.self)
+        config.preparations.append(BlogAdminUser.self)
         
         // Sessions
         let persistMiddleware = PersistMiddleware(BlogUser.self)
@@ -62,6 +63,8 @@ public struct Provider: Vapor.Provider {
     public func boot(_ drop: Droplet) {
         
         BlogPost.postsPerPage = postsPerPage
+        
+        BlogAdminUser.log = drop.log
         
         // Set up Leaf tag
         if let leaf = drop.view as? LeafRenderer {

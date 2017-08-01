@@ -324,25 +324,6 @@ struct BlogAdminController {
 
     // MARK: - Login Handlers
     func loginHandler(_ request: Request) throws -> ResponseRepresentable {
-        // See if we need to create an admin user on first login
-        do {
-            let users = try BlogUser.all()
-            if users.count == 0 {
-                let password = String.random()
-                
-                let hashedPassword = try BlogUser.passwordHasher.make(password)
-                let user = BlogUser(name: "Admin", username: "admin", password: hashedPassword, profilePicture: nil, twitterHandle: nil, biography: nil, tagline: "Admin for the blog")
-                user.resetPasswordRequired = true
-                try user.save()
-                
-                log.error("An Admin user been created for you - the username is admin and the password is \(password)")
-                log.error("You will be asked to change your password once you have logged in, please do this immediately!")
-            }
-        }
-        catch {
-            log.error("There was an error creating a new admin user: \(error)")
-        }
-        
         let loginRequired = request.uri.query == "loginRequired"
         return try viewFactory.createLoginView(loginWarning: loginRequired, errors: nil, username: nil, password: nil)
     }

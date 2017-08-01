@@ -11,7 +11,7 @@ class BlogAdminControllerTests: XCTestCase {
     static var allTests = [
         ("testLinuxTestSuiteIncludesAllTests", testLinuxTestSuiteIncludesAllTests),
         ("testLogin", testLogin),
-        ("testUserIsCreatedWhenAccessingLoginPageForFirstTime", testUserIsCreatedWhenAccessingLoginPageForFirstTime),
+        ("testUserIsCreatedWhenSettingUpSteamPressFirstTime", testUserIsCreatedWhenSettingUpSteamPressFirstTime),
         ("testNoUserCreatedWhenAccessingLoginPageIfOneAlreadyExists", testNoUserCreatedWhenAccessingLoginPageIfOneAlreadyExists),
         ("testCannotAccessAdminPageWithoutBeingLoggedIn", testCannotAccessAdminPageWithoutBeingLoggedIn),
         ("testCannotAccessCreateBlogPostPageWithoutBeingLoggedIn", testCannotAccessCreateBlogPostPageWithoutBeingLoggedIn),
@@ -75,9 +75,10 @@ class BlogAdminControllerTests: XCTestCase {
     // MARK: - Overrides
     
     override func setUp() {
-        database = Database(try! MemoryDriver(()))
-        try! Droplet.prepare(database: database)
-        var config = try! Config()
+//        database = Database(try! MemoryDriver(()))
+//        try! Droplet.prepare(database: database)
+        BlogUser.passwordHasher = FakePasswordHasher()
+        var config = Config([:])
         let sessionsMiddleware = SessionsMiddleware(try! config.resolveSessions(), cookieName: SteamPress.Provider.cookieName, cookieFactory: Provider.createCookieFactory(for: .production))
         config.addConfigurable(middleware: { (config) -> (SessionsMiddleware) in
             return sessionsMiddleware
@@ -88,15 +89,26 @@ class BlogAdminControllerTests: XCTestCase {
             return persistMiddleware
         }, name: "blog-persist")
         try! config.set("droplet.middleware", ["error", "steampress-sessions", "blog-persist"])
+        try! config.set("steampress.postsPerPage", 5)
+        try! config.set("fluent.driver", "memory")
+        
+        try! config.addProvider(SteamPress.Provider.self)
+        try! config.addProvider(FluentProvider.Provider.self)
         
         drop = try! Droplet(config)
         capturingViewFactory = CapturingViewFactory()
         let adminController = BlogAdminController(drop: drop, pathCreator: BlogPathCreator(blogPath: "blog"), viewFactory: capturingViewFactory)
         adminController.addRoutes()
+        let adminUser = try! BlogUser.all().first
+        
+        if let user = adminUser {
+            user.resetPasswordRequired = false
+            try! user.save()
+        }
     }
     
     override func tearDown() {
-        try! Droplet.teardown(database: database)
+        //try! Droplet.teardown(database: database)
     }
     
     // Courtesy of https://oleb.net/blog/2017/03/keeping-xctest-in-sync/
@@ -114,6 +126,7 @@ class BlogAdminControllerTests: XCTestCase {
     // MARK: - Login Integration Test
     
     func testLogin() throws {
+        BlogUser.passwordHasher = BCryptHasher()
         let hashedPassword = try BlogUser.passwordHasher.make("password")
         let newUser = TestDataBuilder.anyUser()
         newUser.password = hashedPassword
@@ -156,15 +169,7 @@ class BlogAdminControllerTests: XCTestCase {
     }
     
     // MARK: - Login Tests
-    func testUserIsCreatedWhenAccessingLoginPageForFirstTime() throws {
-        BlogUser.passwordHasher = FakePasswordHasher()
-        
-        XCTAssertEqual(try BlogUser.count(), 0)
-        
-        let loginRequest = Request(method: .get, uri: "/blog/admin/login/")
-        let response = try drop.respond(to: loginRequest)
-        
-        XCTAssertEqual(response.status, .ok)
+    func testUserIsCreatedWhenSettingUpSteamPressFirstTime() throws {
         XCTAssertEqual(try BlogUser.count(), 1)
         XCTAssertEqual(try BlogUser.all().first?.username, "admin")
     }
@@ -172,13 +177,13 @@ class BlogAdminControllerTests: XCTestCase {
     func testNoUserCreatedWhenAccessingLoginPageIfOneAlreadyExists() throws {
         let user = TestDataBuilder.anyUser()
         try user.save()
-        XCTAssertEqual(try BlogUser.count(), 1)
+        XCTAssertEqual(try BlogUser.count(), 2)
         
         let loginRequest = Request(method: .get, uri: "/blog/admin/login/")
         let response = try drop.respond(to: loginRequest)
         
         XCTAssertEqual(response.status, .ok)
-        XCTAssertEqual(try BlogUser.count(), 1)
+        XCTAssertEqual(try BlogUser.count(), 2)
     }
     
     // MARK: - Access restriction tests
@@ -322,13 +327,11 @@ class BlogAdminControllerTests: XCTestCase {
         let response = try drop.respond(to: request)
         
         XCTAssertEqual(response.status, .seeOther)
-        XCTAssertEqual(try BlogUser.count(), 1)
+        XCTAssertEqual(try BlogUser.count(), 2)
         XCTAssertNotEqual(try BlogUser.all().first?.name, "Han")
     }
     
     func testCannotDeleteSelf() throws {
-        let adminUser = TestDataBuilder.anyUser(name: "admin", username: "admin")
-        try adminUser.save()
         let user = TestDataBuilder.anyUser(name: "Han", username: "han")
         try user.save()
         
@@ -339,10 +342,11 @@ class BlogAdminControllerTests: XCTestCase {
     }
     
     func testCannotDeleteLastUser() throws {
-        let user = TestDataBuilder.anyUser(name: "Han", username: "han")
-        try user.save()
+        let user = try BlogUser.all().first
         
-        let request = try createLoggedInRequest(method: .get, path: "users/\(user.id!.string!)/delete", for: user)
+        let userID = user!.id!.string!
+        
+        let request = try createLoggedInRequest(method: .get, path: "users/\(userID)/delete", for: user)
         _ = try drop.respond(to: request)
         
         XCTAssertTrue(capturingViewFactory.adminViewErrors?.contains("You cannot delete the last user") ?? false)
@@ -567,7 +571,7 @@ class BlogAdminControllerTests: XCTestCase {
         let _ = try drop.respond(to: request)
         
         // We create the first user when setting up the logged in request
-        XCTAssertEqual(try BlogUser.count(), 2)
+        XCTAssertEqual(try BlogUser.count(), 3)
         let user = try BlogUser.makeQuery().filter("name", newName).all().first
         XCTAssertNotNil(user)
         XCTAssertEqual(user?.username, newUsername)
@@ -794,10 +798,10 @@ class BlogAdminControllerTests: XCTestCase {
         
         let _  = try drop.respond(to: request)
         
-        XCTAssertEqual(try BlogUser.count(), 1)
-        XCTAssertEqual(try BlogUser.all().first?.id, author.id)
-        XCTAssertEqual(try BlogUser.all().first?.name, newName)
-        XCTAssertEqual(try BlogUser.all().first?.username, newUsername)
+        XCTAssertEqual(try BlogUser.count(), 2)
+        XCTAssertEqual(try BlogUser.all()[1].id, author.id)
+        XCTAssertEqual(try BlogUser.all()[1].name, newName)
+        XCTAssertEqual(try BlogUser.all()[1].username, newUsername)
     }
     
     // MARK: - Helper functions
