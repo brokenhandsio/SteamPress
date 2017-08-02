@@ -144,7 +144,7 @@ let steampress = SteamPress.Provider(postsPerPage:5, enableAuthorsPages: true, e
 
 ## Logging In
 
-When you first visit the login page of the admin section of the blog it will create a user for you to use for login, with the username `admin`. The password will be printed out to the console and you will be required to reset your password when you first login. It is recommended you do this as soon as your site is up and running.
+When you first launch SteamPress a preparation runs that seeds the database with an admin user. The username is `admin` and the password will be printined out to your app's logs. You will be required to reset your password when you first login. It is recommended you do this as soon as your site is up and running.
 
 ## Comments
 
