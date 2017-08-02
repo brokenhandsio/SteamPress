@@ -9,16 +9,16 @@ import Foundation
 public final class BlogUser: Model {
     
     public struct Properties {
-        static let id = "id"
-        static let name = "name"
-        static let username = "username"
-        static let password = "password"
-        static let resetPasswordRequired = "reset_password_required"
-        static let profilePicture = "profile_picture"
-        static let twitterHandle = "twitter_handle"
-        static let biography = "biography"
-        static let tagline = "tagline"
-        static let postCount = "post_count"
+        public static let id = "id"
+        public static let name = "name"
+        public static let username = "username"
+        public static let password = "password"
+        public static let resetPasswordRequired = "reset_password_required"
+        public static let profilePicture = "profile_picture"
+        public static let twitterHandle = "twitter_handle"
+        public static let biography = "biography"
+        public static let tagline = "tagline"
+        public static let postCount = "post_count"
     }
     
     public let storage = Storage()

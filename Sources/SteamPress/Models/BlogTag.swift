@@ -8,10 +8,10 @@ import FluentProvider
 public final class BlogTag: Model {
     
     public struct Properties {
-        static let id = "id"
-        static let name = "name"
-        static let urlEncodedName = "url_encoded_name"
-        static let postCount = "post_count"
+        public static let id = "id"
+        public static let name = "name"
+        public static let urlEncodedName = "url_encoded_name"
+        public static let postCount = "post_count"
     }
     
     public let storage = Storage()
