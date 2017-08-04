@@ -50,7 +50,7 @@ struct BlogController {
     func indexHandler(request: Request) throws -> ResponseRepresentable {
         let tags = try BlogTag.all()
         let authors = try BlogUser.all()
-        let paginatedBlogPosts = try BlogPost.makeQuery().filter("published", true).sort("created", .descending).paginate(for: request)
+        let paginatedBlogPosts = try BlogPost.makeQuery().filter(BlogPost.Properties.published, true).sort(BlogPost.Properties.created, .descending).paginate(for: request)
 
         return try viewFactory.blogIndexView(uri: request.uri, paginatedPosts: paginatedBlogPosts, tags: tags, authors: authors, loggedInUser: getLoggedInUser(in: request))
     }
@@ -61,7 +61,7 @@ struct BlogController {
 
     func blogPostHandler(request: Request) throws -> ResponseRepresentable {
         let blogSlugUrl: String = try request.parameters.next()
-        guard let blogPost = try BlogPost.makeQuery().filter("slug_url", blogSlugUrl).first() else {
+        guard let blogPost = try BlogPost.makeQuery().filter(BlogPost.Properties.slugUrl, blogSlugUrl).first() else {
             throw Abort.notFound
         }
 
@@ -79,7 +79,7 @@ struct BlogController {
             throw Abort.badRequest
         }
 
-        guard let tag = try BlogTag.makeQuery().filter("name", decodedTagName).first() else {
+        guard let tag = try BlogTag.makeQuery().filter(BlogTag.Properties.name, decodedTagName).first() else {
             throw Abort.notFound
         }
 
@@ -91,7 +91,7 @@ struct BlogController {
     func authorViewHandler(request: Request) throws -> ResponseRepresentable {
         let authorUsername: String = try request.parameters.next()
         
-        guard let author = try BlogUser.makeQuery().filter("username", authorUsername).first() else {
+        guard let author = try BlogUser.makeQuery().filter(BlogUser.Properties.username, authorUsername).first() else {
             throw Abort.notFound
         }
 

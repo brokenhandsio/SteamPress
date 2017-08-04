@@ -156,8 +156,8 @@ struct LeafViewFactory: ViewFactory {
     }
 
     func createBlogAdminView(errors: [String]? = nil) throws -> View {
-        let publishedBlogPosts = try BlogPost.makeQuery().filter("published", true).sort("created", .descending).all()
-        let draftBlogPosts = try BlogPost.makeQuery().filter("published", false).sort("created", .descending).all()
+        let publishedBlogPosts = try BlogPost.makeQuery().filter(BlogPost.Properties.published, true).sort(BlogPost.Properties.created, .descending).all()
+        let draftBlogPosts = try BlogPost.makeQuery().filter(BlogPost.Properties.published, false).sort(BlogPost.Properties.created, .descending).all()
         let users = try BlogUser.all()
 
         var parameters: [String: Vapor.Node] = [:]

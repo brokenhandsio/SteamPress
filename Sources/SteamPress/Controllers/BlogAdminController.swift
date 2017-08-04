@@ -164,7 +164,7 @@ struct BlogAdminController {
         let tagsToAdd = newTagSet.subtracting(existingSet)
 
         for deleteTag in tagsToDelete {
-            let tag = try BlogTag.makeQuery().filter("name", deleteTag).first()
+            let tag = try BlogTag.makeQuery().filter(BlogTag.Properties.name, deleteTag).first()
             guard let tagToCleanUp = tag else {
                 throw Abort.badRequest
             }
@@ -283,7 +283,7 @@ struct BlogAdminController {
         }
 
         // We now have valid data
-        guard let userId = user.id, let userToUpdate = try BlogUser.makeQuery().filter("id", userId).first() else {
+        guard let userId = user.id, let userToUpdate = try BlogUser.find(userId) else {
             throw Abort.badRequest
         }
         userToUpdate.name = name
