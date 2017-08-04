@@ -51,7 +51,7 @@ struct LeafViewFactory: ViewFactory {
             parameters["slug_url_supplied"] = slugUrlSupplied
         }
 
-        if let tagsSupplied = tags, tagsSupplied.count > 0 {
+        if let tagsSupplied = tags, !tagsSupplied.isEmpty {
             parameters["tags_supplied"] = try tagsSupplied.makeNode(in: nil)
         }
 
@@ -164,11 +164,11 @@ struct LeafViewFactory: ViewFactory {
         parameters["users"] = try users.makeNode(in: nil
         )
 
-        if publishedBlogPosts.count > 0 {
+        if !publishedBlogPosts.isEmpty {
             parameters["published_posts"] = try publishedBlogPosts.makeNode(in: BlogPostContext.all)
         }
 
-        if draftBlogPosts.count > 0 {
+        if !draftBlogPosts.isEmpty {
             parameters["draft_posts"] = try draftBlogPosts.makeNode(in: BlogPostContext.all)
         }
 
@@ -229,11 +229,11 @@ struct LeafViewFactory: ViewFactory {
             parameters["posts"] = try paginatedPosts.makeNode(for: uri, in: BlogPostContext.longSnippet)
         }
 
-        if tags.count > 0 {
+        if !tags.isEmpty {
             parameters["tags"] = try tags.makeNode(in: nil)
         }
 
-        if authors.count > 0 {
+        if !authors.isEmpty {
             parameters["authors"] = try authors.makeNode(in: nil)
         }
 
@@ -282,7 +282,7 @@ struct LeafViewFactory: ViewFactory {
     func allTagsView(uri: URI, allTags: [BlogTag], user: BlogUser?) throws -> View {
         var parameters: [String: NodeRepresentable] = [:]
 
-        if allTags.count > 0 {
+        if !allTags.isEmpty {
             let sortedTags = allTags.sorted { return (try? $0.sortedPosts().count() > $1.sortedPosts().count()) ?? false }
             parameters["tags"] = try sortedTags.makeNode(in: BlogTagContext.withPostCount)
         }
@@ -293,7 +293,7 @@ struct LeafViewFactory: ViewFactory {
     func allAuthorsView(uri: URI, allAuthors: [BlogUser], user: BlogUser?) throws -> View {
         var parameters: [String: NodeRepresentable] = [:]
 
-        if allAuthors.count > 0 {
+        if !allAuthors.isEmpty {
             let sortedAuthors = allAuthors.sorted { return (try? $0.sortedPosts().count() > $1.sortedPosts().count()) ?? false }
             parameters["authors"] = try sortedAuthors.makeNode(in: BlogUserContext.withPostCount)
         }

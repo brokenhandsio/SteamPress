@@ -214,7 +214,7 @@ struct BlogAdminController {
         let (createUserRawErrors, passwordRawError, confirmPasswordRawError) = validateUserSaveDataExists(edit: false, name: rawName, username: rawUsername, password: rawPassword, confirmPassword: rawConfirmPassword, profilePicture: profilePicture)
 
         // Return if we have any missing fields
-        if (createUserRawErrors?.count ?? 0) > 0 {
+        if !(createUserRawErrors?.isEmpty ?? true) {
             return try viewFactory.createUserView(editing: false, errors: createUserRawErrors, name: rawName, username: rawUsername, passwordError: passwordRawError, confirmPasswordError: confirmPasswordRawError, resetPasswordRequired: resetPasswordRequired, userId: nil, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline)
         }
 
@@ -224,7 +224,7 @@ struct BlogAdminController {
 
         let (createUserErrors, passwordError, confirmPasswordError) = validateUserSaveData(edit: false, name: name, username: username, password: password, confirmPassword: confirmPassword)
 
-        if (createUserErrors?.count ?? 0) > 0 {
+        if !(createUserErrors?.isEmpty ?? true) {
             return try viewFactory.createUserView(editing: false, errors: createUserErrors, name: name, username: username, passwordError: passwordError, confirmPasswordError: confirmPasswordError, resetPasswordRequired: resetPasswordRequired, userId: nil, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline)
         }
 
@@ -268,7 +268,7 @@ struct BlogAdminController {
         let (saveUserRawErrors, passwordRawError, confirmPasswordRawError) = validateUserSaveDataExists(edit: true, name: rawName, username: rawUsername, password: rawPassword, confirmPassword: rawConfirmPassword, profilePicture: profilePicture)
         
         // Return if we have any missing fields
-        if (saveUserRawErrors?.count ?? 0) > 0 {
+        if !(saveUserRawErrors?.isEmpty ?? true) {
             return try viewFactory.createUserView(editing: true, errors: saveUserRawErrors, name: rawName, username: rawUsername, passwordError: passwordRawError, confirmPasswordError: confirmPasswordRawError, resetPasswordRequired: resetPasswordRequired, userId: user.id, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline)
         }
 
@@ -278,7 +278,7 @@ struct BlogAdminController {
 
         let (saveUserErrors, passwordError, confirmPasswordError) = validateUserSaveData(edit: true, name: name, username: username, password: rawPassword, confirmPassword: rawConfirmPassword, previousUsername: user.username)
 
-        if (saveUserErrors?.count ?? 0) > 0 {
+        if !(saveUserErrors?.isEmpty ?? true) {
             return try viewFactory.createUserView(editing: true, errors: saveUserErrors, name: name, username: username, passwordError: passwordError, confirmPasswordError: confirmPasswordError, resetPasswordRequired: resetPasswordRequired, userId: user.id, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline)
         }
 
@@ -343,7 +343,7 @@ struct BlogAdminController {
             loginErrors.append("You must supply your password")
         }
         
-        if loginErrors.count > 0 {
+        if !loginErrors.isEmpty {
             return try viewFactory.createLoginView(loginWarning: false, errors: loginErrors, username: rawUsername, password: rawPassword)
         }
         
@@ -431,7 +431,7 @@ struct BlogAdminController {
             passwordError = true
         }
 
-        if resetPasswordErrors.count > 0 {
+        if !resetPasswordErrors.isEmpty {
             return try viewFactory.createResetPasswordView(errors: resetPasswordErrors, passwordError: passwordError, confirmPasswordError: confirmPasswordError)
         }
 

@@ -131,14 +131,14 @@ extension BlogPost: NodeRepresentable {
             try node.set(Properties.longSnippet, longSnippet())
 
             let allTags = try tags.all()
-            if allTags.count > 0 {
+            if !allTags.isEmpty {
                 try node.set(Properties.tags, allTags)
             }
             break
         case BlogPostContext.all:
             let allTags = try tags.all()
 
-            if allTags.count > 0 {
+            if !allTags.isEmpty {
                 try node.set(Properties.tags, allTags)
             }
             
