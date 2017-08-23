@@ -99,7 +99,7 @@ struct LeafViewFactory: ViewFactory {
             parameters["confirm_password_error"] = confirmPasswordError
         }
 
-        if let _ = resetPasswordRequired {
+        if resetPasswordRequired != nil {
             parameters["reset_password_on_login_supplied"] = true
         }
 

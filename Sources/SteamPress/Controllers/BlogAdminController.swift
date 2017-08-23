@@ -85,7 +85,7 @@ struct BlogAdminController {
 
         var published = false
 
-        if let _ = publish {
+        if publish != nil {
             published = true
         }
 
@@ -148,7 +148,7 @@ struct BlogAdminController {
 
         post.title = title
         post.contents = contents
-        if (post.slugUrl != slugUrl) {
+        if post.slugUrl != slugUrl {
             post.slugUrl = BlogPost.generateUniqueSlugUrl(from: slugUrl, logger: log)
         }
 
@@ -182,7 +182,7 @@ struct BlogAdminController {
             post.lastEdited = Date()
         } else {
             post.created = Date()
-            if let _ = publish {
+            if publish != nil {
                 post.published = true
             }
         }

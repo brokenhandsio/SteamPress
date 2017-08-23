@@ -198,7 +198,7 @@ extension PaginatorTag {
 }
 
 extension PaginatorTag.Error: Equatable {
-    static func ==(lhs: PaginatorTag.Error, rhs: PaginatorTag.Error) -> Bool {
+    static func == (lhs: PaginatorTag.Error, rhs: PaginatorTag.Error) -> Bool {
         switch (lhs, rhs) {
         case (.expectedOneArgument(let a), .expectedOneArgument(let b)):
             return a == b

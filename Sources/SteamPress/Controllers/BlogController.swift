@@ -33,12 +33,12 @@ struct BlogController {
             index.get(apiPath, tagsPath, handler: tagApiHandler)
             index.get(blogPostsPath, handler: blogPostIndexRedirectHandler)
 
-            if (enableAuthorsPages) {
+            if enableAuthorsPages {
                 index.get(authorsPath, String.parameter, handler: authorViewHandler)
                 index.get(authorsPath, handler: allAuthorsViewHandler)
             }
 
-            if (enableTagsPages) {
+            if enableTagsPages {
                 index.get(tagsPath, String.parameter, handler: tagViewHandler)
                 index.get(tagsPath, handler: allTagsViewHandler)
             }

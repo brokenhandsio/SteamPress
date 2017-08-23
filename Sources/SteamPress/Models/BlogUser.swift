@@ -9,7 +9,7 @@ import Foundation
 public final class BlogUser: Model {
 
     public struct Properties {
-        public static let id = "id"
+        public static let userID = "id"
         public static let name = "name"
         public static let username = "username"
         public static let password = "password"
@@ -81,7 +81,7 @@ extension BlogUser: NodeRepresentable {
 
     public func makeNode(in context: Context?) throws -> Node {
         var node = Node([:], in: context)
-        try node.set(Properties.id, id)
+        try node.set(Properties.userID, id)
         try node.set(Properties.name, name)
         try node.set(Properties.username, username)
         try node.set(Properties.resetPasswordRequired, resetPasswordRequired)

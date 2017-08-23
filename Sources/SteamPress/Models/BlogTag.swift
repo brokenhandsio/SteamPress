@@ -7,7 +7,7 @@ import FluentProvider
 public final class BlogTag: Model {
 
     public struct Properties {
-        public static let id = "id"
+        public static let tagID = "id"
         public static let name = "name"
         public static let urlEncodedName = "url_encoded_name"
         public static let postCount = "post_count"
@@ -43,7 +43,7 @@ extension BlogTag: NodeRepresentable {
     public func makeNode(in context: Context?) throws -> Node {
 
         var node = Node([:], in: context)
-        try node.set(Properties.id, id)
+        try node.set(Properties.tagID, id)
         try node.set(Properties.name, name)
 
         guard let urlEncodedName = name.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) else {

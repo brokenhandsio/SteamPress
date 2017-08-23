@@ -22,7 +22,8 @@ public struct Provider: Vapor.Provider {
 
     static func createCookieFactory(for environment: Environment) -> ((_ request: Request) -> Cookie) {
         let cookieFactory: (_ request: Request) -> Cookie = { req in
-            var cookie = Cookie(name: cookieName, value: "", secure: environment == .production, httpOnly: true, sameSite: .lax)
+            var cookie = Cookie(name: cookieName, value: "", secure: environment == .production,
+                                httpOnly: true, sameSite: .lax)
 
             if req.storage["remember_me"] as? Bool ?? false {
                 let oneMonthTime: TimeInterval = 30 * 24 * 60 * 60
@@ -54,7 +55,9 @@ public struct Provider: Vapor.Provider {
             return persistMiddleware
         }, name: "blog-persist")
 
-        let sessionsMiddleware = SessionsMiddleware(try config.resolveSessions(), cookieName: Provider.cookieName, cookieFactory: Provider.createCookieFactory(for: config.environment))
+        let cookieFactory = Provider.createCookieFactory(for: config.environment)
+        let sessionsMiddleware = SessionsMiddleware(try config.resolveSessions(), cookieName: Provider.cookieName,
+                                                    cookieFactory: cookieFactory)
         config.addConfigurable(middleware: { (_) -> (SessionsMiddleware) in
             return sessionsMiddleware
         }, name: "steampress-sessions")
@@ -69,13 +72,18 @@ public struct Provider: Vapor.Provider {
         // Set up Leaf tag
         if let leaf = drop.view as? LeafRenderer {
             leaf.stem.register(Markdown())
-            leaf.stem.register(PaginatorTag(blogPathCreator: pathCreator, paginationLabel: "Blog Post Pages", useBootstrap4: useBootstrap4))
+            leaf.stem.register(PaginatorTag(blogPathCreator: pathCreator, paginationLabel: "Blog Post Pages",
+                                            useBootstrap4: useBootstrap4))
         }
 
-        let viewFactory = LeafViewFactory(viewRenderer: drop.view, disqusName: drop.config["disqus", "disqusName"]?.string, siteTwitterHandle: drop.config["twitter", "siteHandle"]?.string)
+        let viewFactory = LeafViewFactory(viewRenderer: drop.view,
+                                          disqusName: drop.config["disqus", "disqusName"]?.string,
+                                          siteTwitterHandle: drop.config["twitter", "siteHandle"]?.string)
 
         // Set up the controllers
-        let blogController = BlogController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, enableAuthorsPages: enableAuthorsPages, enableTagsPages: enableTagsPages)
+        let blogController = BlogController(drop: drop, pathCreator: pathCreator,
+                                            viewFactory: viewFactory, enableAuthorsPages: enableAuthorsPages,
+                                            enableTagsPages: enableTagsPages)
         let blogAdminController = BlogAdminController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory)
 
         // Add the routes
@@ -86,7 +94,7 @@ public struct Provider: Vapor.Provider {
     public init(config: Config) throws {
 
         guard let postsPerPage = config[Provider.configFilename, "postsPerPage"]?.int else {
-            throw Error.InvalidConfiguration(message: "Missing postsPerPage variable in Steampress' config file")
+            throw Error.invalidConfiguration(message: "Missing postsPerPage variable in Steampress' config file")
         }
 
         var blogPath: String? = nil
@@ -99,19 +107,28 @@ public struct Provider: Vapor.Provider {
         let enableAuthorsPages = config[Provider.configFilename, "enableAuthorsPages"]?.bool ?? true
         let enableTagsPages = config[Provider.configFilename, "enableTagsPages"]?.bool ?? true
 
-        self.init(postsPerPage: postsPerPage, blogPath: blogPath, useBootstrap4: useBootstrap4, enableAuthorsPages: enableAuthorsPages, enableTagsPages: enableTagsPages)
+        self.init(postsPerPage: postsPerPage, blogPath: blogPath, useBootstrap4: useBootstrap4,
+                  enableAuthorsPages: enableAuthorsPages, enableTagsPages: enableTagsPages)
     }
 
     /**
-         Initialiser for SteamPress' Provider to add a blog to your Vapor App. You can pass it an optional `blogPath` to add the blog to. For instance, if you pass in "blog", your blog will be accessible at http://mysite.com/blog/, or if you pass in `nil` your blog will be added to the root of your site (i.e. http://mysite.com/)
+         Initialiser for SteamPress' Provider to add a blog to your Vapor App. You can pass it an optional 
+         `blogPath` to add the blog to. For instance, if you pass in "blog", your blog will be accessible 
+         at http://mysite.com/blog/, or if you pass in `nil` your blog will be added to the root of your 
+         site (i.e. http://mysite.com/)
 
-         - Parameter postsPerPage: The number of posts to show per page on the main index page of the blog (integrates with Paginator)
+         - Parameter postsPerPage: The number of posts to show per page on the main index page of the 
+                                   blog (integrates with Paginator)
          - Parameter blogPath: The path to add the blog too
-         - Parameter useBootstrap4: Flag used to deterimine whether to use Bootstrap v4 for Paginator. Defaults to true
-         - Parameter enableAuthorsPages: Flag used to determine whether to publicly expose the authors endpoints or not. Defaults to true
-         - Parameter enableTagsPages: Flag used to determine whether to publicy expose the tags endpoints or not. Defaults to true
+         - Parameter useBootstrap4: Flag used to deterimine whether to use Bootstrap v4 for Paginator. 
+                                    Defaults to true
+         - Parameter enableAuthorsPages: Flag used to determine whether to publicly expose the authors endpoints 
+                                         or not. Defaults to true
+         - Parameter enableTagsPages: Flag used to determine whether to publicy expose the tags endpoints or not. 
+                                      Defaults to true
      */
-    public init(postsPerPage: Int, blogPath: String? = nil, useBootstrap4: Bool = true, enableAuthorsPages: Bool = true, enableTagsPages: Bool = true) {
+    public init(postsPerPage: Int, blogPath: String? = nil, useBootstrap4: Bool = true,
+                enableAuthorsPages: Bool = true, enableTagsPages: Bool = true) {
         self.postsPerPage = postsPerPage
         self.blogPath = blogPath
         self.pathCreator = BlogPathCreator(blogPath: self.blogPath)
@@ -121,7 +138,7 @@ public struct Provider: Vapor.Provider {
     }
 
     enum Error: Swift.Error {
-        case InvalidConfiguration(message: String)
+        case invalidConfiguration(message: String)
     }
 
     public func beforeRun(_: Vapor.Droplet) {}

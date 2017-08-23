@@ -7,7 +7,7 @@ import FluentProvider
 public final class BlogPost: Model {
 
     public struct Properties {
-        public static let id = "id"
+        public static let blogPostID = "id"
         public static let title = "title"
         public static let contents = "contents"
         public static let slugUrl = "slug_url"
@@ -37,7 +37,8 @@ public final class BlogPost: Model {
     public var slugUrl: String
     public var published: Bool
 
-    init(title: String, contents: String, author: BlogUser, creationDate: Date, slugUrl: String, published: Bool, logger: LogProtocol? = nil) {
+    init(title: String, contents: String, author: BlogUser, creationDate: Date, slugUrl: String,
+         published: Bool, logger: LogProtocol? = nil) {
         self.title = title
         self.contents = contents
         self.author = author.id
@@ -93,7 +94,7 @@ extension BlogPost: NodeRepresentable {
         let createdTime = created.timeIntervalSince1970
 
         var node = Node([:], in: context)
-        try node.set(Properties.id, id)
+        try node.set(Properties.blogPostID, id)
         try node.set(Properties.title, title)
         try node.set(Properties.contents, contents)
         try node.set(BlogUser.foreignIdKey, author)

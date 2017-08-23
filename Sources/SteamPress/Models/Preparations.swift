@@ -79,7 +79,8 @@ struct BlogAdminUser: Preparation {
             let password = String.random()
 
             let hashedPassword = try BlogUser.passwordHasher.make(password)
-            let user = BlogUser(name: "Admin", username: "admin", password: hashedPassword, profilePicture: nil, twitterHandle: nil, biography: nil, tagline: "Admin for the blog")
+            let user = BlogUser(name: "Admin", username: "admin", password: hashedPassword, profilePicture: nil,
+                                twitterHandle: nil, biography: nil, tagline: "Admin for the blog")
             user.resetPasswordRequired = true
             try user.save()
 
