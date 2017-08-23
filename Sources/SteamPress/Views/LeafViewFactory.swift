@@ -25,8 +25,7 @@ struct LeafViewFactory: ViewFactory {
                 throw Abort.serverError
             }
             postPathPrefix = uri.description.substring(to: editSubstringIndex) + "posts/"
-        }
-        else {
+        } else {
             postPathPrefix = uri.description.replacingOccurrences(of: "admin/createPost", with: "posts")
         }
 
@@ -65,8 +64,7 @@ struct LeafViewFactory: ViewFactory {
                 throw Abort.badRequest
             }
             parameters["post"] = try post.makeNode(in: BlogPostContext.all)
-        }
-        else {
+        } else {
             parameters["create_blog_post_page"] = true
         }
 
@@ -206,8 +204,7 @@ struct LeafViewFactory: ViewFactory {
 
         if isMyProfile {
             parameters["my_profile"] = true.makeNode(in: nil)
-        }
-        else {
+        } else {
             parameters["profile_page"] = true.makeNode(in: nil)
         }
 
@@ -271,7 +268,7 @@ struct LeafViewFactory: ViewFactory {
         var parameters: [String: NodeRepresentable] = [:]
         parameters["tag"] = try tag.makeNode(in: BlogTagContext.withPostCount)
         parameters["tag_page"] = true
-        
+
         if paginatedPosts.total > 0 {
             parameters["posts"] = try paginatedPosts.makeNode(for: uri, in: BlogPostContext.longSnippet)
         }

@@ -4,7 +4,7 @@ import Vapor
 // MARK: - BlogPost
 
 extension BlogPost: Preparation {
-    
+
     public static func prepare(_ database: Database) throws {
         try database.create(self) { posts in
             posts.id()
@@ -16,7 +16,7 @@ extension BlogPost: Preparation {
             posts.string(Properties.slugUrl, unique: true)
         }
     }
-    
+
     public static func revert(_ database: Database) throws {
         try database.delete(self)
     }
@@ -28,7 +28,7 @@ struct BlogPostDraft: Preparation {
             blogPost.bool(BlogPost.Properties.published, optional: false, default: true)
         }
     }
-    
+
     static func revert(_ database: Database) throws {}
 }
 
@@ -44,11 +44,11 @@ extension BlogUser: Preparation {
             users.bool(Properties.resetPasswordRequired)
         }
     }
-    
+
     public static func revert(_ database: Database) throws {
         try database.delete(self)
     }
-    
+
 }
 
 struct BlogUserExtraInformation: Preparation {
@@ -66,48 +66,45 @@ struct BlogUserExtraInformation: Preparation {
             users.string(BlogUser.Properties.tagline, optional: true, default: nil)
         }
     }
-    
+
     static func revert(_ database: Database) throws {}
 }
 
 struct BlogAdminUser: Preparation {
-    
+
     static var log: LogProtocol?
-    
+
     static func prepare(_ database: Database) throws {
         do {
             let password = String.random()
-            
+
             let hashedPassword = try BlogUser.passwordHasher.make(password)
             let user = BlogUser(name: "Admin", username: "admin", password: hashedPassword, profilePicture: nil, twitterHandle: nil, biography: nil, tagline: "Admin for the blog")
             user.resetPasswordRequired = true
             try user.save()
-            
+
             log?.error("An Admin user been created for you - the username is admin and the password is \(password)")
             log?.error("You will be asked to change your password once you have logged in, please do this immediately!")
-        }
-        catch {
+        } catch {
             log?.error("There was an error creating a new admin user: \(error)")
         }
     }
-    
+
     static func revert(_ database: Database) throws {}
 }
-
 
 // MARK: - BlogTag
 
 extension BlogTag: Preparation {
-    
+
     public static func prepare(_ database: Database) throws {
         try database.create(self) { tag in
             tag.id()
             tag.string(Properties.name, unique: true)
         }
     }
-    
+
     public static func revert(_ database: Database) throws {
         try database.delete(self)
     }
 }
-

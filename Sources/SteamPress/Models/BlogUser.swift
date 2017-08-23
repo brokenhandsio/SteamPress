@@ -7,7 +7,7 @@ import Foundation
 // MARK: - Model
 
 public final class BlogUser: Model {
-    
+
     public struct Properties {
         public static let id = "id"
         public static let name = "name"
@@ -20,9 +20,9 @@ public final class BlogUser: Model {
         public static let tagline = "tagline"
         public static let postCount = "post_count"
     }
-    
+
     public let storage = Storage()
-    
+
     var name: String
     var username: String
     var password: Bytes
@@ -31,7 +31,7 @@ public final class BlogUser: Model {
     var twitterHandle: String?
     var biography: String?
     var tagline: String?
-    
+
     init(name: String, username: String, password: Bytes, profilePicture: String?, twitterHandle: String?, biography: String?, tagline: String?) {
         self.name = name
         self.username = username.lowercased()
@@ -41,7 +41,7 @@ public final class BlogUser: Model {
         self.biography = biography
         self.tagline = tagline
     }
-    
+
     public init(row: Row) throws {
         name = try row.get(Properties.name)
         username = try row.get(Properties.username)
@@ -53,7 +53,7 @@ public final class BlogUser: Model {
         biography = try? row.get(Properties.biography)
         tagline = try? row.get(Properties.tagline)
     }
-    
+
     public func makeRow() throws -> Row {
         var row = Row()
         try row.set(Properties.name, name)
@@ -66,7 +66,7 @@ public final class BlogUser: Model {
         try row.set(Properties.tagline, tagline)
         return row
     }
-    
+
 }
 
 extension BlogUser: Parameterizable {}
@@ -85,37 +85,37 @@ extension BlogUser: NodeRepresentable {
         try node.set(Properties.name, name)
         try node.set(Properties.username, username)
         try node.set(Properties.resetPasswordRequired, resetPasswordRequired)
-        
+
         if let profilePicture = profilePicture {
             try node.set(Properties.profilePicture, profilePicture)
         }
-        
+
         if let twitterHandle = twitterHandle {
             try node.set(Properties.twitterHandle, twitterHandle)
         }
-        
+
         if let biography = biography {
             try node.set(Properties.biography, biography)
         }
-        
+
         if let tagline = tagline {
             try node.set(Properties.tagline, tagline)
         }
-        
+
         guard let providedContext = context else {
             return node
         }
-        
+
         switch providedContext {
         case BlogUserContext.withPostCount:
             try node.set(Properties.postCount, try sortedPosts().count())
         default:
             break
         }
-        
+
         return node
     }
-    
+
 }
 
 // MARK: - Authentication
@@ -147,9 +147,8 @@ extension BlogUser {
     public var posts: Children<BlogUser, BlogPost> {
         return children()
     }
-    
+
     public func sortedPosts() throws -> Query<BlogPost> {
         return try posts.filter(BlogPost.Properties.published, true).sort(BlogPost.Properties.created, .descending)
     }
 }
-

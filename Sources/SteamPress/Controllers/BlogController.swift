@@ -74,7 +74,7 @@ struct BlogController {
 
     func tagViewHandler(request: Request) throws -> ResponseRepresentable {
         let tagName: String = try request.parameters.next()
-        
+
         guard let decodedTagName = tagName.removingPercentEncoding else {
             throw Abort.badRequest
         }
@@ -90,7 +90,7 @@ struct BlogController {
 
     func authorViewHandler(request: Request) throws -> ResponseRepresentable {
         let authorUsername: String = try request.parameters.next()
-        
+
         guard let author = try BlogUser.makeQuery().filter(BlogUser.Properties.username, authorUsername).first() else {
             throw Abort.notFound
         }
@@ -117,8 +117,7 @@ struct BlogController {
 
         do {
             loggedInUser = try request.user()
-        }
-        catch {}
+        } catch {}
 
         return loggedInUser
     }

@@ -12,33 +12,33 @@ public struct Provider: Vapor.Provider {
     private static let configFilename: String = "steampress"
     public static let repositoryName: String = "steampress"
     static let cookieName = "steampress-session"
-    
+
     private let blogPath: String?
     private let postsPerPage: Int
     private let pathCreator: BlogPathCreator
     private let useBootstrap4: Bool
     private let enableAuthorsPages: Bool
     private let enableTagsPages: Bool
-    
+
     static func createCookieFactory(for environment: Environment) -> ((_ request: Request) -> Cookie) {
         let cookieFactory: (_ request: Request) -> Cookie = { req in
             var cookie = Cookie(name: cookieName, value: "", secure: environment == .production, httpOnly: true, sameSite: .lax)
-            
+
             if req.storage["remember_me"] as? Bool ?? false {
                 let oneMonthTime: TimeInterval = 30 * 24 * 60 * 60
                 let expiryDate = Date().addingTimeInterval(oneMonthTime)
                 cookie.expires = expiryDate
             }
-            
+
             return cookie
         }
-        
+
         return cookieFactory
     }
-    
+
     public func boot(_ config: Config) throws {
         try config.addProvider(AuthProvider.Provider.self)
-        
+
         // Database preparations
         config.preparations.append(BlogUser.self)
         config.preparations.append(BlogPost.self)
@@ -47,31 +47,31 @@ public struct Provider: Vapor.Provider {
         config.preparations.append(BlogPostDraft.self)
         config.preparations.append(BlogUserExtraInformation.self)
         config.preparations.append(BlogAdminUser.self)
-        
+
         // Sessions
         let persistMiddleware = PersistMiddleware(BlogUser.self)
-        config.addConfigurable(middleware: { (config) -> (PersistMiddleware<BlogUser>) in
+        config.addConfigurable(middleware: { (_) -> (PersistMiddleware<BlogUser>) in
             return persistMiddleware
         }, name: "blog-persist")
-        
+
         let sessionsMiddleware = SessionsMiddleware(try config.resolveSessions(), cookieName: Provider.cookieName, cookieFactory: Provider.createCookieFactory(for: config.environment))
-        config.addConfigurable(middleware: { (config) -> (SessionsMiddleware) in
+        config.addConfigurable(middleware: { (_) -> (SessionsMiddleware) in
             return sessionsMiddleware
         }, name: "steampress-sessions")
     }
 
     public func boot(_ drop: Droplet) {
-        
+
         BlogPost.postsPerPage = postsPerPage
-        
+
         BlogAdminUser.log = drop.log
-        
+
         // Set up Leaf tag
         if let leaf = drop.view as? LeafRenderer {
             leaf.stem.register(Markdown())
             leaf.stem.register(PaginatorTag(blogPathCreator: pathCreator, paginationLabel: "Blog Post Pages", useBootstrap4: useBootstrap4))
         }
-        
+
         let viewFactory = LeafViewFactory(viewRenderer: drop.view, disqusName: drop.config["disqus", "disqusName"]?.string, siteTwitterHandle: drop.config["twitter", "siteHandle"]?.string)
 
         // Set up the controllers
@@ -84,13 +84,13 @@ public struct Provider: Vapor.Provider {
     }
 
     public init(config: Config) throws {
-        
+
         guard let postsPerPage = config[Provider.configFilename, "postsPerPage"]?.int else {
             throw Error.InvalidConfiguration(message: "Missing postsPerPage variable in Steampress' config file")
         }
-        
+
         var blogPath: String? = nil
-        
+
         if let blogPathFromConfig = config[Provider.configFilename, "blogPath"]?.string {
             blogPath = blogPathFromConfig
         }
@@ -119,11 +119,11 @@ public struct Provider: Vapor.Provider {
         self.enableAuthorsPages = enableAuthorsPages
         self.enableTagsPages = enableTagsPages
     }
-    
+
     enum Error: Swift.Error {
         case InvalidConfiguration(message: String)
     }
 
     public func beforeRun(_: Vapor.Droplet) {}
-    
+
 }

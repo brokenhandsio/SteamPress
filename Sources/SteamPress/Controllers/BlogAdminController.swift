@@ -63,11 +63,11 @@ struct BlogAdminController {
         let rawSlugUrl = request.data["inputSlugUrl"]?.string
         let draft = request.data["save-draft"]?.string
         let publish = request.data["publish"]?.string
-        
+
         if draft == nil && publish == nil {
             throw Abort.badRequest
         }
-        
+
         let tagsArray = rawTags?.array ?? [rawTags?.string?.makeNode(in: nil) ?? nil]
 
         if let createPostErrors = validatePostCreation(title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl) {
@@ -82,9 +82,9 @@ struct BlogAdminController {
 
         // Make sure slugUrl is unique
         slugUrl = BlogPost.generateUniqueSlugUrl(from: slugUrl, logger: log)
-        
+
         var published = false
-        
+
         if let _ = publish {
             published = true
         }
@@ -157,8 +157,8 @@ struct BlogAdminController {
         let newTagsStringArray = tagsArray.map { $0.string ?? "" }.filter { $0 != "" }
 
         // Work out new tags and tags to delete
-        let existingSet:Set<String> = Set(existingStringArray)
-        let newTagSet:Set<String> = Set(newTagsStringArray)
+        let existingSet: Set<String> = Set(existingStringArray)
+        let newTagSet: Set<String> = Set(newTagsStringArray)
 
         let tagsToDelete = existingSet.subtracting(newTagSet)
         let tagsToAdd = newTagSet.subtracting(existingSet)
@@ -177,11 +177,10 @@ struct BlogAdminController {
         for newTagString in tagsToAdd {
             try BlogTag.addTag(newTagString, to: post)
         }
-        
+
         if post.published {
             post.lastEdited = Date()
-        }
-        else {
+        } else {
             post.created = Date()
             if let _ = publish {
                 post.published = true
@@ -231,20 +230,19 @@ struct BlogAdminController {
         // We now have valid data
         let hashedPassword = try BlogUser.passwordHasher.make(password)
         let newUser = BlogUser(name: name, username: username.lowercased(), password: hashedPassword, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline)
-        
+
         if resetPasswordRequired {
             newUser.resetPasswordRequired = true
         }
-        
+
         do {
             try newUser.save()
-        }
-        catch {
+        } catch {
             return try viewFactory.createUserView(editing: false, errors: ["There was an error creating the user. Please try again"], name: name, username: username, passwordError: passwordError, confirmPasswordError: confirmPasswordError, resetPasswordRequired: resetPasswordRequired, userId: nil, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline)
         }
-        
+
         return Response(redirect: pathCreator.createPath(for: "admin"))
-        
+
     }
 
     func editUserHandler(request: Request) throws -> ResponseRepresentable {
@@ -266,7 +264,7 @@ struct BlogAdminController {
         let twitterHandle = request.data["inputTwitterHandle"]?.string
 
         let (saveUserRawErrors, passwordRawError, confirmPasswordRawError) = validateUserSaveDataExists(edit: true, name: rawName, username: rawUsername, password: rawPassword, confirmPassword: rawConfirmPassword, profilePicture: profilePicture)
-        
+
         // Return if we have any missing fields
         if !(saveUserRawErrors?.isEmpty ?? true) {
             return try viewFactory.createUserView(editing: true, errors: saveUserRawErrors, name: rawName, username: rawUsername, passwordError: passwordRawError, confirmPasswordError: confirmPasswordRawError, resetPasswordRequired: resetPasswordRequired, userId: user.id, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline)
@@ -315,8 +313,7 @@ struct BlogAdminController {
         // Make sure we aren't deleting ourselves!
         else if try request.user().id == user.id {
             return try viewFactory.createBlogAdminView(errors: ["You cannot delete yourself whilst logged in"])
-        }
-        else {
+        } else {
             try user.delete()
             return Response(redirect: pathCreator.createPath(for: "admin"))
         }
@@ -327,45 +324,43 @@ struct BlogAdminController {
         let loginRequired = request.uri.query == "loginRequired"
         return try viewFactory.createLoginView(loginWarning: loginRequired, errors: nil, username: nil, password: nil)
     }
-    
-    func loginPostHandler(_ request: Request) throws -> ResponseRepresentable {        
+
+    func loginPostHandler(_ request: Request) throws -> ResponseRepresentable {
         let rawUsername = request.data["inputUsername"]?.string
         let rawPassword = request.data["inputPassword"]?.string
         let rememberMe = request.data["remember-me"]?.string != nil
-        
+
         var loginErrors: [String] = []
-        
+
         if rawUsername == nil {
             loginErrors.append("You must supply your username")
         }
-        
+
         if rawPassword == nil {
             loginErrors.append("You must supply your password")
         }
-        
+
         if !loginErrors.isEmpty {
             return try viewFactory.createLoginView(loginWarning: false, errors: loginErrors, username: rawUsername, password: rawPassword)
         }
-        
+
         guard let username = rawUsername, let password = rawPassword else {
             throw Abort.badRequest
         }
-        
+
         let passwordCredentials = Password(username: username.lowercased(), password: password)
-        
+
         if rememberMe {
             request.storage["remember_me"] = true
-        }
-        else {
+        } else {
             request.storage.removeValue(forKey: "remember_me")
         }
-        
+
         do {
             let user = try BlogUser.authenticate(passwordCredentials)
             request.auth.authenticate(user)
             return Response(redirect: pathCreator.createPath(for: "admin"))
-        }
-        catch {
+        } catch {
             log.debug("Got error logging in \(error)")
             let loginError = ["Your username or password was incorrect"]
             return try viewFactory.createLoginView(loginWarning: false, errors: loginError, username: username, password: "")
@@ -413,7 +408,7 @@ struct BlogAdminController {
                 resetPasswordErrors.append("You must confirm your password")
                 confirmPasswordError = true
             }
-            
+
             // Return if we have any missing fields
             return try viewFactory.createResetPasswordView(errors: resetPasswordErrors, passwordError: passwordError, confirmPasswordError: confirmPasswordError)
         }
@@ -436,7 +431,7 @@ struct BlogAdminController {
         }
 
         let user = try request.user()
-        
+
         user.password = try BlogUser.passwordHasher.make(password)
         user.resetPasswordRequired = false
         try user.save()
@@ -492,7 +487,7 @@ struct BlogAdminController {
                 confirmPasswordError = true
             }
         }
-        
+
         return (userSaveErrors, passwordError, confirmPasswordError)
     }
 
@@ -540,8 +535,7 @@ struct BlogAdminController {
                     userSaveErrors.append("Sorry that username has already been taken")
                 }
             }
-        }
-        catch {
+        } catch {
             userSaveErrors.append("Unable to validate username")
         }
 
@@ -569,8 +563,7 @@ extension String {
         let whitespaceSet = CharacterSet.whitespacesAndNewlines
         if isEmpty || self.trimmingCharacters(in: whitespaceSet).isEmpty {
             return true
-        }
-        else {
+        } else {
             return false
         }
     }

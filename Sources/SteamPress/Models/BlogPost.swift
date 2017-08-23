@@ -5,7 +5,7 @@ import FluentProvider
 // MARK: - Model
 
 public final class BlogPost: Model {
-    
+
     public struct Properties {
         public static let id = "id"
         public static let title = "title"
@@ -24,7 +24,7 @@ public final class BlogPost: Model {
         public static let longSnippet = "long_snippet"
         public static let tags = "tags"
     }
-    
+
     static var postsPerPage = 10
 
     public let storage = Storage()
@@ -46,7 +46,7 @@ public final class BlogPost: Model {
         self.lastEdited = nil
         self.published = published
     }
-    
+
     public required init(row: Row) throws {
         title = try row.get(Properties.title)
         contents = try row.get(Properties.contents)
@@ -55,17 +55,17 @@ public final class BlogPost: Model {
         published = try row.get(Properties.published)
         let createdTime: Double = try row.get(Properties.created)
         let lastEditedTime: Double? = try? row.get(Properties.lastEdited)
-        
+
         created = Date(timeIntervalSince1970: createdTime)
-        
+
         if let lastEditedTime = lastEditedTime {
             lastEdited = Date(timeIntervalSince1970: lastEditedTime)
         }
     }
-    
+
     public func makeRow() throws -> Row {
         let createdTime = created.timeIntervalSince1970
-        
+
         var row = Row()
         try row.set(Properties.title, title)
         try row.set(Properties.contents, contents)
@@ -91,7 +91,7 @@ public enum BlogPostContext: Context {
 extension BlogPost: NodeRepresentable {
     public func makeNode(in context: Context?) throws -> Node {
         let createdTime = created.timeIntervalSince1970
-        
+
         var node = Node([:], in: context)
         try node.set(Properties.id, id)
         try node.set(Properties.title, title)
@@ -104,11 +104,11 @@ extension BlogPost: NodeRepresentable {
         if let lastEdited = lastEdited {
             try node.set(Properties.lastEdited, lastEdited.timeIntervalSince1970)
         }
-        
+
         guard let providedContext = context else {
             return node
         }
-        
+
         if type(of: providedContext) != BlogPostContext.self {
             return node
         }
@@ -118,11 +118,11 @@ extension BlogPost: NodeRepresentable {
         dateFormatter.dateStyle = .full
         dateFormatter.timeStyle = .none
         let createdDate = dateFormatter.string(from: created)
-        
+
         try node.set(Properties.authorName, postAuthor.get()?.name)
         try node.set(Properties.authorUsername, postAuthor.get()?.username)
         try node.set(Properties.createdDate, createdDate)
-        
+
         switch providedContext {
         case BlogPostContext.shortSnippet:
             try node.set(Properties.shortSnippet, shortSnippet())
@@ -141,12 +141,12 @@ extension BlogPost: NodeRepresentable {
             if !allTags.isEmpty {
                 try node.set(Properties.tags, allTags)
             }
-            
+
             let iso8601Formatter = DateFormatter()
             iso8601Formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
             iso8601Formatter.locale = Locale(identifier: "en_US_POSIX")
             iso8601Formatter.timeZone = TimeZone(secondsFromGMT: 0)
-            
+
             try node.set(Properties.createdDateIso8601, iso8601Formatter.string(from: created))
 
             if let lastEdited = lastEdited {
@@ -209,7 +209,7 @@ extension BlogPost {
             logger?.debug("Error uniqueing the slug URL: \(error)")
             // Swallow error - this will propragate the error up to the DB driver which should fail if it is not unique
         }
-        
+
         return newSlugUrl
     }
 }
@@ -220,7 +220,7 @@ extension BlogPost {
     var postAuthor: Parent<BlogPost, BlogUser> {
         return parent(id: author)
     }
-    
+
     var tags: Siblings<BlogPost, BlogTag, Pivot<BlogPost, BlogTag>> {
         return siblings()
     }
@@ -232,7 +232,7 @@ extension BlogPost: Paginatable {
     public static var defaultPageSorts: [Sort] {
         return []
     }
-    
+
     public static var defaultPageSize: Int {
         return postsPerPage
     }
@@ -242,7 +242,7 @@ extension Page {
     public func makeNode(for uri: URI, in context: Context?) throws -> Node {
         var node = Node([:], in: context)
         try node.set("data", data.makeNode(in: context))
-        
+
         var paginationNode = Node([:], in: context)
         try paginationNode.set("total", total)
         try paginationNode.set("current_page", number)
@@ -252,7 +252,7 @@ extension Page {
         if total % size != 0 {
             pages += 1
         }
-        
+
         try paginationNode.set("total_pages", pages)
         if number < pages {
             try paginationNode.set("next_page", "?page=\(number + 1)")
@@ -260,9 +260,7 @@ extension Page {
         if number > 1 {
             try paginationNode.set("previous_page", "?page=\(number - 1)")
         }
-        
-        
-        
+
         try node.set("pagination", paginationNode)
         return node
     }
