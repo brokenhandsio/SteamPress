@@ -20,7 +20,6 @@ class BlogAdminControllerTests: XCTestCase {
         ("testCannotSendEditPostPageWithoutLogin", testCannotSendEditPostPageWithoutLogin),
         ("testCannotAccessCreateUserPageWithoutLogin", testCannotAccessCreateUserPageWithoutLogin),
         ("testCannotSendCreateUserPageWithoutLogin", testCannotSendCreateUserPageWithoutLogin),
-        ("testCannotAccessProfilePageWithoutLogin", testCannotAccessProfilePageWithoutLogin),
         ("testCannotAccessEditUserPageWithoutLogin", testCannotAccessEditUserPageWithoutLogin),
         ("testCannotSendEditUserPageWithoutLogin", testCannotSendEditUserPageWithoutLogin),
         ("testCannotDeletePostWithoutLogin", testCannotDeletePostWithoutLogin),
@@ -32,7 +31,6 @@ class BlogAdminControllerTests: XCTestCase {
         ("testCanAccessEditPostPageWhenLoggedIn", testCanAccessEditPostPageWhenLoggedIn),
         ("testCanAccessCreateUserPageWhenLoggedIn", testCanAccessCreateUserPageWhenLoggedIn),
         ("testCanAccessEditUserPageWhenLoggedIn", testCanAccessEditUserPageWhenLoggedIn),
-        ("testCanAccessProfilePageWhenLoggedIn", testCanAccessProfilePageWhenLoggedIn),
         ("testCanAccessResetPasswordPage", testCanAccessResetPasswordPage),
         ("testCanDeleteBlogPost", testCanDeleteBlogPost),
         ("testCanDeleteUser", testCanDeleteUser),
@@ -210,10 +208,6 @@ class BlogAdminControllerTests: XCTestCase {
         try assertLoginRequired(method: .post, path: "createUser")
     }
     
-    func testCannotAccessProfilePageWithoutLogin() throws {
-        try assertLoginRequired(method: .get, path: "profile")
-    }
-    
     func testCannotAccessEditUserPageWithoutLogin() throws {
         try assertLoginRequired(method: .get, path: "users/1/edit")
     }
@@ -276,15 +270,6 @@ class BlogAdminControllerTests: XCTestCase {
         let userToEdit = TestDataBuilder.anyUser(name: "Leia", username: "leia")
         try userToEdit.save()
         let request = try createLoggedInRequest(method: .get, path: "users/\(userToEdit.id!.string!)/edit")
-        let response = try drop.respond(to: request)
-        
-        XCTAssertEqual(response.status, .ok)
-    }
-    
-    func testCanAccessProfilePageWhenLoggedIn() throws {
-        let user = TestDataBuilder.anyUser()
-        try user.save()
-        let request = try createLoggedInRequest(method: .get, path: "profile", for: user)
         let response = try drop.respond(to: request)
         
         XCTAssertEqual(response.status, .ok)

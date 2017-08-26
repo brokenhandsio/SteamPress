@@ -15,7 +15,7 @@ protocol ViewFactory {
     func createLoginView(loginWarning: Bool, errors: [String]?, username: String?, password: String?) throws -> View
     func createBlogAdminView(errors: [String]?) throws -> View
     func createResetPasswordView(errors: [String]?, passwordError: Bool?, confirmPasswordError: Bool?) throws -> View
-    func createProfileView(uri: URI, author: BlogUser, isMyProfile: Bool,
+    func createProfileView(uri: URI, author: BlogUser,
                            paginatedPosts: Page<BlogPost>, loggedInUser: BlogUser?) throws -> View
 
     // MARK: - Blog Controller

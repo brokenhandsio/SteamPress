@@ -156,7 +156,6 @@ class BlogControllerTests: XCTestCase {
         XCTAssertEqual(viewFactory.authorPosts?.total, 1)
         XCTAssertEqual(viewFactory.authorPosts?.data[0].title, post.title)
         XCTAssertEqual(viewFactory.authorPosts?.data[0].contents, post.contents)
-        XCTAssertEqual(viewFactory.isMyProfile, false)
     }
 
     func testTagView() throws {

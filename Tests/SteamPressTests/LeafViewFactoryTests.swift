@@ -44,7 +44,6 @@ class LeafViewFactoryTests: XCTestCase {
         ("testDisqusNameNotPassedToBlogIndexIfNotPassedIn", testDisqusNameNotPassedToBlogIndexIfNotPassedIn),
         ("testTwitterHandleNotPassedToBlogIndexIfNotPassedIn", testTwitterHandleNotPassedToBlogIndexIfNotPassedIn),
         ("testAuthorViewHasCorrectParametersSet", testAuthorViewHasCorrectParametersSet),
-        ("testAuthorViewMyProfileSetIfViewingMyProfile", testAuthorViewMyProfileSetIfViewingMyProfile),
         ("testAuthorViewHasNoPostsSetIfNoneCreated", testAuthorViewHasNoPostsSetIfNoneCreated),
         ("testAuthorViewGetsLoggedInUserIfProvider", testAuthorViewGetsLoggedInUserIfProvider),
         ("testAuthorViewDoesNotGetDisqusNameIfNotProvided", testAuthorViewDoesNotGetDisqusNameIfNotProvided),
@@ -421,7 +420,7 @@ class LeafViewFactoryTests: XCTestCase {
     
     func testAuthorViewHasCorrectParametersSet() throws {
         let (author, posts) = try setupAuthorPage()
-        let _ = try viewFactory.createProfileView(uri: authorURI, author: author, isMyProfile: false, paginatedPosts: posts, loggedInUser: nil)
+        let _ = try viewFactory.createProfileView(uri: authorURI, author: author, paginatedPosts: posts, loggedInUser: nil)
         
         XCTAssertEqual(viewRenderer.capturedContext?["author"]?["name"]?.string, author.name)
         XCTAssertEqual(viewRenderer.capturedContext?["posts"]?["data"]?.array?.count, posts.total)
@@ -438,50 +437,43 @@ class LeafViewFactoryTests: XCTestCase {
         XCTAssertEqual(viewRenderer.capturedContext?["author"]?["profile_picture"]?.string, author.profilePicture?.description)
         XCTAssertEqual(viewRenderer.leafPath, "blog/profile")
     }
-    
-    func testAuthorViewMyProfileSetIfViewingMyProfile() throws {
-        let (author, posts) = try setupAuthorPage()
-        let _ = try viewFactory.createProfileView(uri: authorURI, author: author, isMyProfile: true, paginatedPosts: posts, loggedInUser: nil)
-        XCTAssertTrue((viewRenderer.capturedContext?["my_profile"]?.bool) ?? false)
-        XCTAssertNil(viewRenderer.capturedContext?["profile_page"])
-    }
-    
+
     func testAuthorViewHasNoPostsSetIfNoneCreated() throws {
         let (author, _) = try setupAuthorPage()
         let emptyPosts = try BlogPost.makeQuery().filter("title", "Some non-existing query").paginate(for: authorRequest)
-        let _ = try viewFactory.createProfileView(uri: authorURI, author: author, isMyProfile: true, paginatedPosts: emptyPosts, loggedInUser: nil)
+        let _ = try viewFactory.createProfileView(uri: authorURI, author: author, paginatedPosts: emptyPosts, loggedInUser: nil)
         XCTAssertNil(viewRenderer.capturedContext?["posts"])
     }
     
     func testAuthorViewGetsLoggedInUserIfProvider() throws {
         let (author, posts) = try setupAuthorPage()
-        let _ = try viewFactory.createProfileView(uri: authorURI, author: author, isMyProfile: true, paginatedPosts: posts, loggedInUser: author)
+        let _ = try viewFactory.createProfileView(uri: authorURI, author: author, paginatedPosts: posts, loggedInUser: author)
         XCTAssertEqual(viewRenderer.capturedContext?["user"]?["name"]?.string, author.name)
     }
     
     func testAuthorViewDoesNotGetDisqusNameIfNotProvided() throws {
         viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil)
         let (author, posts) = try setupAuthorPage()
-        let _ = try viewFactory.createProfileView(uri: authorURI, author: author, isMyProfile: true, paginatedPosts: posts, loggedInUser: nil)
+        let _ = try viewFactory.createProfileView(uri: authorURI, author: author, paginatedPosts: posts, loggedInUser: nil)
         XCTAssertNil(viewRenderer.capturedContext?["disqus_name"]?.string)
     }
     
     func testAuthorViewDoesNotGetTwitterHandleIfNotProvided() throws {
         viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil)
         let (author, posts) = try setupAuthorPage()
-        let _ = try viewFactory.createProfileView(uri: authorURI, author: author, isMyProfile: true, paginatedPosts: posts, loggedInUser: nil)
+        let _ = try viewFactory.createProfileView(uri: authorURI, author: author, paginatedPosts: posts, loggedInUser: nil)
         XCTAssertNil(viewRenderer.capturedContext?["site_twitter_handle"]?.string)
     }
     
     func testAuthorViewGetsPostCount() throws {
         let (author, posts) = try setupAuthorPage()
-        _ = try viewFactory.createProfileView(uri: authorURI, author: author, isMyProfile: false, paginatedPosts: posts, loggedInUser: nil)
+        _ = try viewFactory.createProfileView(uri: authorURI, author: author, paginatedPosts: posts, loggedInUser: nil)
         XCTAssertEqual(viewRenderer.capturedContext?["author"]?["post_count"]?.int, 2)
     }
     
     func testAuthorViewGetsLongSnippetForPosts() throws {
         let (author, posts) = try setupAuthorPage()
-        _ = try viewFactory.createProfileView(uri: authorURI, author: author, isMyProfile: false, paginatedPosts: posts, loggedInUser: nil)
+        _ = try viewFactory.createProfileView(uri: authorURI, author: author, paginatedPosts: posts, loggedInUser: nil)
         XCTAssertNotNil(viewRenderer.capturedContext?["posts"]?["data"]?.array?.first?["long_snippet"]?.string)
     }
 

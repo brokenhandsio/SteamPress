@@ -38,7 +38,6 @@ struct BlogAdminController {
         routerSecure.post("createPost", handler: createPostPostHandler)
         routerSecure.get("createUser", handler: createUserHandler)
         routerSecure.post("createUser", handler: createUserPostHandler)
-        routerSecure.get("profile", handler: profileHandler)
         routerSecure.get("posts", BlogPost.parameter, "delete", handler: deletePostHandler)
         routerSecure.get("posts", BlogPost.parameter, "edit", handler: editPostHandler)
         routerSecure.post("posts", BlogPost.parameter, "edit", handler: editPostPostHandler)
@@ -375,15 +374,6 @@ struct BlogAdminController {
     // MARK: Admin Handler
     func adminHandler(_ request: Request) throws -> ResponseRepresentable {
         return try viewFactory.createBlogAdminView(errors: nil)
-    }
-
-    // MARK: - Profile Handler
-    func profileHandler(_ request: Request) throws -> ResponseRepresentable {
-
-        let user = try request.user()
-        let posts = try user.sortedPosts().paginate(for: request)
-
-        return try viewFactory.createProfileView(uri: request.uri, author: user, isMyProfile: true, paginatedPosts: posts, loggedInUser: user)
     }
 
     // MARK: - Password handlers

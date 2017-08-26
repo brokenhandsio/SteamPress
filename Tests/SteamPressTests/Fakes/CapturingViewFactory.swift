@@ -43,12 +43,10 @@ class CapturingViewFactory: ViewFactory {
     }
     
     private(set) var author: BlogUser? = nil
-    private(set) var isMyProfile: Bool? = nil
     private(set) var authorPosts: Page<BlogPost>? = nil
     private(set) var authorURI: URI? = nil
-    func createProfileView(uri: URI, author: BlogUser, isMyProfile: Bool, paginatedPosts: Page<BlogPost>, loggedInUser: BlogUser?) throws -> View {
+    func createProfileView(uri: URI, author: BlogUser, paginatedPosts: Page<BlogPost>, loggedInUser: BlogUser?) throws -> View {
         self.author = author
-        self.isMyProfile = isMyProfile
         self.authorPosts = paginatedPosts
         self.authorURI = uri
         return createDummyView()
