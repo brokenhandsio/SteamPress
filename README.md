@@ -1,10 +1,20 @@
-# SteamPress
-
-[![Language](https://img.shields.io/badge/Swift-3.1-brightgreen.svg)](http://swift.org)
-[![Build Status](https://travis-ci.org/brokenhandsio/SteamPress.svg?branch=master)](https://travis-ci.org/brokenhandsio/SteamPress)
-[![codecov](https://codecov.io/gh/brokenhandsio/SteamPress/branch/master/graph/badge.svg)](https://codecov.io/gh/brokenhandsio/SteamPress)
-[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/brokenhandsio/SteamPress/master/LICENSE)
-
+<p align="center">
+    <img src="https://user-images.githubusercontent.com/9938337/29742058-ed41dcc0-8a6f-11e7-9cfc-680501cdfb97.png" alt="SteamPress">
+    <br>
+    <br>
+    <a href="https://swift.org">
+        <img src="http://img.shields.io/badge/Swift-3.1-brightgreen.svg" alt="Language">
+    </a>
+    <a href="https://travis-ci.org/brokenhandsio/SteamPress">
+        <img src="https://travis-ci.org/brokenhandsio/SteamPress.svg?branch=master" alt="Build Status">
+    </a>
+    <a href="https://codecov.io/gh/brokenhandsio/SteamPress">
+        <img src="https://codecov.io/gh/brokenhandsio/SteamPress/branch/master/graph/badge.svg" alt="Code Coverage">
+    </a>
+    <a href="https://raw.githubusercontent.com/brokenhandsio/SteamPress/master/LICENSE">
+        <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License">
+    </a>
+</p>
 
 SteamPress is a Swift blogging engine for use with the Vapor Framework to deploy blogs to sites that run on top of Vapor. It uses [Fluent](https://github.com/vapor/fluent) so will work with any database that has a Fluent Driver. It also incorporates [LeafMarkdown](https://github.com/brokenhandsio/LeafMarkdown) allowing you to write your posts in Markdown and then use Leaf to render the markdown.
 
