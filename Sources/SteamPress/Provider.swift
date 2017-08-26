@@ -48,6 +48,7 @@ public struct Provider: Vapor.Provider {
         config.preparations.append(BlogPostDraft.self)
         config.preparations.append(BlogUserExtraInformation.self)
         config.preparations.append(BlogAdminUser.self)
+        config.preparations.append(BlogIndexes.self)
 
         // Sessions
         let persistMiddleware = PersistMiddleware(BlogUser.self)

@@ -109,3 +109,19 @@ extension BlogTag: Preparation {
         try database.delete(self)
     }
 }
+
+// MARK: - Blog Indexes
+
+struct BlogIndexes: Preparation {
+    static func prepare(_ database: Database) throws {
+        try database.index(BlogTag.Properties.name, for: BlogTag.self)
+        try database.index(BlogUser.Properties.username, for: BlogUser.self)
+        try database.index(BlogPost.Properties.slugUrl, for: BlogPost.self)
+    }
+    
+    static func revert(_ database: Database) throws {
+        try database.deleteIndex(BlogPost.Properties.slugUrl, for: BlogPost.self)
+        try database.deleteIndex(BlogUser.Properties.userID, for: BlogUser.self)
+        try database.deleteIndex(BlogTag.Properties.name, for: BlogTag.self)
+    }
+}
