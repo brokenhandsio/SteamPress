@@ -65,6 +65,8 @@ class BlogAdminControllerTests: XCTestCase {
         ("testAdminPageGetsLoggedInUser", testAdminPageGetsLoggedInUser),
         ("testCreatePostPageGetsLoggedInUser", testCreatePostPageGetsLoggedInUser),
         ("testEditPostPageGetsLoggedInUser", testEditPostPageGetsLoggedInUser),
+        ("testCreateUserPageGetsLoggedInUser", testCreatePostPageGetsLoggedInUser),
+        ("testEditUserPageGetsLoggedInUser", testEditPostPageGetsLoggedInUser),
     ]
     
     // MARK: - Properties
@@ -814,6 +816,22 @@ class BlogAdminControllerTests: XCTestCase {
         _ = try drop.respond(to: request)
         
         XCTAssertEqual(user.name, capturingViewFactory.createBlogPostUser?.name)
+    }
+    
+    func testCreateUserPageGetsLoggedInUser() throws {
+        let request = try createLoggedInRequest(method: .get, path: "createUser", for: user)
+        _ = try drop.respond(to: request)
+        
+        XCTAssertEqual(user.name, capturingViewFactory.createUserLoggedInUser?.name)
+    }
+    
+    func testEditUserPageGetsLoggedInUser() throws {
+        let user = TestDataBuilder.anyUser()
+        try user.save()
+        let request = try createLoggedInRequest(method: .get, path: "users/\(user.id!.string!)/edit", for: user)
+        _ = try drop.respond(to: request)
+        
+        XCTAssertEqual(user.name, capturingViewFactory.createUserLoggedInUser?.name)
     }
     
     // MARK: - Helper functions

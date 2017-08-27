@@ -72,13 +72,14 @@ struct LeafViewFactory: ViewFactory {
         return try viewRenderer.make("blog/admin/createPost", parameters)
     }
 
-    func createUserView(editing: Bool = false, errors: [String]? = nil, name: String? = nil, username: String? = nil, passwordError: Bool? = nil, confirmPasswordError: Bool? = nil, resetPasswordRequired: Bool? = nil, userId: Identifier? = nil, profilePicture: String? = nil, twitterHandle: String? = nil, biography: String? = nil, tagline: String? = nil) throws -> View {
+    func createUserView(editing: Bool = false, errors: [String]? = nil, name: String? = nil, username: String? = nil, passwordError: Bool? = nil, confirmPasswordError: Bool? = nil, resetPasswordRequired: Bool? = nil, userId: Identifier? = nil, profilePicture: String? = nil, twitterHandle: String? = nil, biography: String? = nil, tagline: String? = nil, loggedInUser: BlogUser) throws -> View {
         let nameError = name == nil && errors != nil
         let usernameError = username == nil && errors != nil
 
         var parameters: [String: NodeRepresentable] = [:]
         parameters["name_error"] = nameError
         parameters["username_error"] = usernameError
+        parameters["user"] = loggedInUser
 
         if let createUserErrors = errors {
             parameters["errors"] = try createUserErrors.makeNode(in: nil)

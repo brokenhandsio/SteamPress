@@ -11,7 +11,7 @@ protocol ViewFactory {
     func createUserView(editing: Bool, errors: [String]?, name: String?, username: String?, passwordError: Bool?,
                         confirmPasswordError: Bool?, resetPasswordRequired: Bool?, userId: Identifier?,
                         profilePicture: String?, twitterHandle: String?, biography: String?,
-                        tagline: String?) throws -> View
+                        tagline: String?, loggedInUser: BlogUser) throws -> View
     func createLoginView(loginWarning: Bool, errors: [String]?, username: String?, password: String?) throws -> View
     func createBlogAdminView(errors: [String]?, user: BlogUser) throws -> View
     func createResetPasswordView(errors: [String]?, passwordError: Bool?, confirmPasswordError: Bool?) throws -> View
