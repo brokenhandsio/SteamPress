@@ -529,9 +529,10 @@ class LeafViewFactoryTests: XCTestCase {
         let (posts, _, users) = try setupBlogIndex()
         let draftPost = TestDataBuilder.anyPost(author: users.first!, title: "[DRAFT] This will be awesome", published: false)
         try draftPost.save()
-        let _ = try viewFactory.createBlogAdminView()
+        let _ = try viewFactory.createBlogAdminView(user: TestDataBuilder.anyUser())
         XCTAssertNil(viewRenderer.capturedContext?["errors"])
         XCTAssertTrue((viewRenderer.capturedContext?["blog_admin_page"]?.bool) ?? false)
+        XCTAssertEqual(viewRenderer.capturedContext?["user"]?["name"]?.string, users.first?.name)
         XCTAssertEqual(viewRenderer.capturedContext?["users"]?.array?.count, 2)
         XCTAssertEqual(viewRenderer.capturedContext?["users"]?.array?.first?["name"]?.string, users.first?.name)
         XCTAssertEqual(viewRenderer.capturedContext?["published_posts"]?.array?.count, 2)
@@ -542,13 +543,13 @@ class LeafViewFactoryTests: XCTestCase {
     }
     
     func testNoPostsPassedToAdminViewIfNone() throws {
-        let _ = try viewFactory.createBlogAdminView()
+        let _ = try viewFactory.createBlogAdminView(user: TestDataBuilder.anyUser())
         XCTAssertNil(viewRenderer.capturedContext?["posts"])
     }
     
     func testAdminPageWithErrors() throws {
         let expectedError = "You cannot delete yourself!"
-        let _ = try viewFactory.createBlogAdminView(errors: [expectedError])
+        let _ = try viewFactory.createBlogAdminView(errors: [expectedError], user: TestDataBuilder.anyUser())
         XCTAssertEqual(viewRenderer.capturedContext?["errors"]?.array?.first?.string, expectedError)
     }
     

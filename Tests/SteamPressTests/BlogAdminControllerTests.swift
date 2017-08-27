@@ -62,6 +62,7 @@ class BlogAdminControllerTests: XCTestCase {
         ("testUserCannotBeCreatedWithInvalidUsername", testUserCannotBeCreatedWithInvalidUsername),
         ("testPostCanBeUpdated", testPostCanBeUpdated),
         ("testUserCanBeUpdated", testUserCanBeUpdated),
+        ("testAdminPageGetsLoggedInUser", testAdminPageGetsLoggedInUser),
     ]
     
     // MARK: - Properties
@@ -69,6 +70,7 @@ class BlogAdminControllerTests: XCTestCase {
     var database: Database!
     var drop: Droplet!
     var capturingViewFactory: CapturingViewFactory!
+    var user: BlogUser!
     
     // MARK: - Overrides
     
@@ -97,10 +99,14 @@ class BlogAdminControllerTests: XCTestCase {
         adminController.addRoutes()
         let adminUser = try! BlogUser.all().first
         
-        if let user = adminUser {
-            user.resetPasswordRequired = false
-            try! user.save()
+        guard let createdUser = adminUser else {
+            XCTFail()
+            return
         }
+        
+        user = createdUser
+        user.resetPasswordRequired = false
+        try! user.save()
     }
     
     // Courtesy of https://oleb.net/blog/2017/03/keeping-xctest-in-sync/
@@ -783,6 +789,13 @@ class BlogAdminControllerTests: XCTestCase {
         XCTAssertEqual(try BlogUser.all()[1].username, newUsername)
     }
     
+    func testAdminPageGetsLoggedInUser() throws {
+        let request = try createLoggedInRequest(method: .get, path: "", for: user)
+        _ = try drop.respond(to: request)
+        
+        XCTAssertEqual(user.name, capturingViewFactory.adminUser?.name)
+    }
+    
     // MARK: - Helper functions
     
     private func assertLoginRequired(method: HTTP.Method, path: String) throws {
@@ -795,6 +808,7 @@ class BlogAdminControllerTests: XCTestCase {
     
     private func createLoggedInRequest(method: HTTP.Method, path: String, for user: BlogUser? = nil) throws -> Request {
         let uri = "/blog/admin/\(path)/"
+        
         let request = Request(method: method, uri: uri)
         
         let authAuthenticatedKey = "auth-authenticated"

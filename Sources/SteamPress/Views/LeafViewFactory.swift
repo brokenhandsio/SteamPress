@@ -153,14 +153,14 @@ struct LeafViewFactory: ViewFactory {
         return try viewRenderer.make("blog/admin/login", parameters)
     }
 
-    func createBlogAdminView(errors: [String]? = nil) throws -> View {
+    func createBlogAdminView(errors: [String]? = nil, user: BlogUser) throws -> View {
         let publishedBlogPosts = try BlogPost.makeQuery().filter(BlogPost.Properties.published, true).sort(BlogPost.Properties.created, .descending).all()
         let draftBlogPosts = try BlogPost.makeQuery().filter(BlogPost.Properties.published, false).sort(BlogPost.Properties.created, .descending).all()
         let users = try BlogUser.all()
 
         var parameters: [String: Vapor.Node] = [:]
-        parameters["users"] = try users.makeNode(in: nil
-        )
+        parameters["users"] = try users.makeNode(in: nil)
+        parameters["user"] = try user.makeNode(in: nil)
 
         if !publishedBlogPosts.isEmpty {
             parameters["published_posts"] = try publishedBlogPosts.makeNode(in: BlogPostContext.all)

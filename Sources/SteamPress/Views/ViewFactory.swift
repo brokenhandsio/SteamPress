@@ -13,7 +13,7 @@ protocol ViewFactory {
                         profilePicture: String?, twitterHandle: String?, biography: String?,
                         tagline: String?) throws -> View
     func createLoginView(loginWarning: Bool, errors: [String]?, username: String?, password: String?) throws -> View
-    func createBlogAdminView(errors: [String]?) throws -> View
+    func createBlogAdminView(errors: [String]?, user: BlogUser) throws -> View
     func createResetPasswordView(errors: [String]?, passwordError: Bool?, confirmPasswordError: Bool?) throws -> View
     func createProfileView(uri: URI, author: BlogUser,
                            paginatedPosts: Page<BlogPost>, loggedInUser: BlogUser?) throws -> View

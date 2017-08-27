@@ -307,11 +307,11 @@ struct BlogAdminController {
         // Check we have at least one user left
         let users = try BlogUser.all()
         if users.count <= 1 {
-            return try viewFactory.createBlogAdminView(errors: ["You cannot delete the last user"])
+            return try viewFactory.createBlogAdminView(errors: ["You cannot delete the last user"], user: try request.user())
         }
         // Make sure we aren't deleting ourselves!
         else if try request.user().id == user.id {
-            return try viewFactory.createBlogAdminView(errors: ["You cannot delete yourself whilst logged in"])
+            return try viewFactory.createBlogAdminView(errors: ["You cannot delete yourself whilst logged in"], user: try request.user())
         } else {
             try user.delete()
             return Response(redirect: pathCreator.createPath(for: "admin"))
@@ -373,7 +373,7 @@ struct BlogAdminController {
 
     // MARK: Admin Handler
     func adminHandler(_ request: Request) throws -> ResponseRepresentable {
-        return try viewFactory.createBlogAdminView(errors: nil)
+        return try viewFactory.createBlogAdminView(errors: nil, user: try request.user())
     }
 
     // MARK: - Password handlers

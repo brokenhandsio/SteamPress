@@ -27,7 +27,9 @@ class CapturingViewFactory: ViewFactory {
     }
     
     private(set) var adminViewErrors: [String]? = nil
-    func createBlogAdminView(errors: [String]?) throws -> View {
+    private(set) var adminUser: BlogUser? = nil
+    func createBlogAdminView(errors: [String]?, user: BlogUser) throws -> View {
+        adminUser = user
         adminViewErrors = errors
         return createDummyView()
     }
