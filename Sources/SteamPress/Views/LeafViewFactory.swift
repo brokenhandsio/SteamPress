@@ -11,6 +11,7 @@ struct LeafViewFactory: ViewFactory {
     let viewRenderer: ViewRenderer
     let disqusName: String?
     let siteTwitterHandle: String?
+    let googleAnalyticsIdentifier: String?
 
     // MARK: - Admin Controller Views
 
@@ -312,6 +313,10 @@ struct LeafViewFactory: ViewFactory {
 
         if let siteTwitterHandle = siteTwitterHandle {
             viewParameters["site_twitter_handle"] = siteTwitterHandle.makeNode(in: nil)
+        }
+        
+        if let googleAnalyticsIdentifier = googleAnalyticsIdentifier {
+            viewParameters["google_analytics_identifier"] = googleAnalyticsIdentifier.makeNode(in: nil)
         }
 
         return try viewRenderer.make(template, viewParameters.makeNode(in: nil))
