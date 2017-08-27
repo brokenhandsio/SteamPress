@@ -37,7 +37,6 @@ class BlogAdminControllerTests: XCTestCase {
         ("testCannotDeleteSelf", testCannotDeleteSelf),
         ("testCannotDeleteLastUser", testCannotDeleteLastUser),
         ("testUserCannotResetPasswordWithMismatchingPasswords", testUserCannotResetPasswordWithMismatchingPasswords),
-        ("testUserCannotResetPasswordWithBasicPassword", testUserCannotResetPasswordWithBasicPassword),
         ("testUserCanResetPassword", testUserCanResetPassword),
         ("testUserCannotResetPasswordWithoutPassword", testUserCannotResetPasswordWithoutPassword),
         ("testUserCannotResetPasswordWithoutConfirmPassword", testUserCannotResetPasswordWithoutConfirmPassword),
@@ -360,22 +359,6 @@ class BlogAdminControllerTests: XCTestCase {
         XCTAssertTrue(capturingViewFactory.resetPasswordErrors?.contains("Your passwords must match!") ?? false)
     }
     
-    func testUserCannotResetPasswordWithBasicPassword() throws {
-        let user = TestDataBuilder.anyUser()
-        try user.save()
-        
-        let request = try createLoggedInRequest(method: .post, path: "resetPassword", for: user)
-        let resetPasswordData = try Node(node: [
-            "inputPassword": "simplepassword",
-            "inputConfirmPassword": "simplepassword"
-            ])
-        request.formURLEncoded = resetPasswordData
-        
-        _ = try drop.respond(to: request)
-        
-        XCTAssertTrue(capturingViewFactory.resetPasswordErrors?.contains("Your password must contain a lowercase letter, an upperacase letter, a number and a symbol") ?? false)
-    }
-    
     func testUserCanResetPassword() throws {
         BlogUser.passwordHasher = FakePasswordHasher()
         let user = TestDataBuilder.anyUser()
@@ -432,8 +415,8 @@ class BlogAdminControllerTests: XCTestCase {
         
         let request = try createLoggedInRequest(method: .post, path: "resetPassword", for: user)
         let resetPasswordData = try Node(node: [
-            "inputPassword": "S12$",
-            "inputConfirmPassword": "S12$"
+            "inputPassword": "S12$345",
+            "inputConfirmPassword": "S12$345"
             ])
         request.formURLEncoded = resetPasswordData
         
