@@ -481,20 +481,24 @@ class LeafViewFactoryTests: XCTestCase {
     // MARK: - Admin pages
     
     func testPasswordViewGivenCorrectParameters() throws {
-        let _ = try viewFactory.createResetPasswordView(errors: nil, passwordError: nil, confirmPasswordError: nil)
+        let user = TestDataBuilder.anyUser()
+        let _ = try viewFactory.createResetPasswordView(errors: nil, passwordError: nil, confirmPasswordError: nil, user: user)
         XCTAssertNil(viewRenderer.capturedContext?["errors"])
         XCTAssertNil(viewRenderer.capturedContext?["password_error"])
         XCTAssertNil(viewRenderer.capturedContext?["confirm_password_error"])
+        XCTAssertEqual(viewRenderer.capturedContext?["user"]?["name"]?.string, user.name)
         XCTAssertEqual(viewRenderer.leafPath, "blog/admin/resetPassword")
     }
     
     func testPasswordViewHasCorrectParametersWhenError() throws {
+        let user = TestDataBuilder.anyUser()
         let expectedError = "Passwords do not match"
-        let _ = try viewFactory.createResetPasswordView(errors: [expectedError], passwordError: true, confirmPasswordError: true)
+        let _ = try viewFactory.createResetPasswordView(errors: [expectedError], passwordError: true, confirmPasswordError: true, user: user)
         XCTAssertEqual(viewRenderer.capturedContext?["errors"]?.array?.count, 1)
         XCTAssertEqual((viewRenderer.capturedContext?["errors"]?.array?.first)?.string, expectedError)
         XCTAssertTrue((viewRenderer.capturedContext?["password_error"]?.bool) ?? false)
         XCTAssertTrue((viewRenderer.capturedContext?["confirm_password_error"]?.bool) ?? false)
+        XCTAssertEqual(viewRenderer.capturedContext?["user"]?["name"]?.string, user.name)
     }
     
     func testLoginViewGetsCorrectParameters() throws {

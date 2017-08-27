@@ -181,9 +181,10 @@ struct LeafViewFactory: ViewFactory {
         return try viewRenderer.make("blog/admin/index", parameters)
     }
 
-    func createResetPasswordView(errors: [String]? = nil, passwordError: Bool? = nil, confirmPasswordError: Bool? = nil) throws -> View {
+    func createResetPasswordView(errors: [String]? = nil, passwordError: Bool? = nil, confirmPasswordError: Bool? = nil, user: BlogUser) throws -> View {
 
         var parameters: [String: Vapor.Node] = [:]
+        parameters["user"] = try user.makeNode(in: nil)
 
         if let resetPasswordErrors = errors {
             parameters["errors"] = try resetPasswordErrors.makeNode(in: nil)

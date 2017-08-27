@@ -41,10 +41,12 @@ class CapturingViewFactory: ViewFactory {
     private(set) var resetPasswordErrors: [String]? = nil
     private(set) var resetPasswordErrorFlag: Bool? = nil
     private(set) var resetPasswordConfirmErrorFlag: Bool? = nil
-    func createResetPasswordView(errors: [String]?, passwordError: Bool?, confirmPasswordError: Bool?) throws -> View {
+    private(set) var resetPasswordUser: BlogUser?
+    func createResetPasswordView(errors: [String]?, passwordError: Bool?, confirmPasswordError: Bool?, user: BlogUser) throws -> View {
         self.resetPasswordErrors = errors
         self.resetPasswordErrorFlag = passwordError
         self.resetPasswordConfirmErrorFlag = confirmPasswordError
+        self.resetPasswordUser = user
         return createDummyView()
     }
     

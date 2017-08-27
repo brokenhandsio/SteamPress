@@ -378,7 +378,7 @@ struct BlogAdminController {
 
     // MARK: - Password handlers
     func resetPasswordHandler(_ request: Request) throws -> ResponseRepresentable {
-        return try viewFactory.createResetPasswordView(errors: nil, passwordError: nil, confirmPasswordError: nil)
+        return try viewFactory.createResetPasswordView(errors: nil, passwordError: nil, confirmPasswordError: nil, user: request.user())
     }
 
     func resetPasswordPostHandler(_ request: Request) throws -> ResponseRepresentable {
@@ -400,7 +400,7 @@ struct BlogAdminController {
             }
 
             // Return if we have any missing fields
-            return try viewFactory.createResetPasswordView(errors: resetPasswordErrors, passwordError: passwordError, confirmPasswordError: confirmPasswordError)
+            return try viewFactory.createResetPasswordView(errors: resetPasswordErrors, passwordError: passwordError, confirmPasswordError: confirmPasswordError, user: request.user())
         }
 
         if password != confirmPassword {
@@ -417,7 +417,7 @@ struct BlogAdminController {
         }
 
         if !resetPasswordErrors.isEmpty {
-            return try viewFactory.createResetPasswordView(errors: resetPasswordErrors, passwordError: passwordError, confirmPasswordError: confirmPasswordError)
+            return try viewFactory.createResetPasswordView(errors: resetPasswordErrors, passwordError: passwordError, confirmPasswordError: confirmPasswordError, user: request.user())
         }
 
         let user = try request.user()
