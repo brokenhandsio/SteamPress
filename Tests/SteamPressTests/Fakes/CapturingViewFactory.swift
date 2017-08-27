@@ -11,8 +11,10 @@ class CapturingViewFactory: ViewFactory {
     }
     
     private(set) var createPostErrors: [String]? = nil
-    func createBlogPostView(uri: URI, errors: [String]?, title: String?, contents: String?, slugUrl: String?, tags: [Node]?, isEditing: Bool, postToEdit: BlogPost?, draft: Bool) throws -> View {
+    private(set) var createBlogPostUser: BlogUser?
+    func createBlogPostView(uri: URI, errors: [String]?, title: String?, contents: String?, slugUrl: String?, tags: [Node]?, isEditing: Bool, postToEdit: BlogPost?, draft: Bool, user: BlogUser) throws -> View {
         self.createPostErrors = errors
+        self.createBlogPostUser = user
         return createDummyView()
     }
     
@@ -47,7 +49,7 @@ class CapturingViewFactory: ViewFactory {
     private(set) var author: BlogUser? = nil
     private(set) var authorPosts: Page<BlogPost>? = nil
     private(set) var authorURI: URI? = nil
-    func createProfileView(uri: URI, author: BlogUser, paginatedPosts: Page<BlogPost>, loggedInUser: BlogUser?) throws -> View {
+    func profileView(uri: URI, author: BlogUser, paginatedPosts: Page<BlogPost>, loggedInUser: BlogUser?) throws -> View {
         self.author = author
         self.authorPosts = paginatedPosts
         self.authorURI = uri
