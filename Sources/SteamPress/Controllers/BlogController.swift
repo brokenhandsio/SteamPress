@@ -97,7 +97,7 @@ struct BlogController {
 
         let posts = try author.sortedPosts().paginate(for: request)
 
-        return try viewFactory.createProfileView(uri: request.uri, author: author, paginatedPosts: posts, loggedInUser: getLoggedInUser(in: request))
+        return try viewFactory.profileView(uri: request.uri, author: author, paginatedPosts: posts, loggedInUser: getLoggedInUser(in: request))
     }
 
     func allTagsViewHandler(request: Request) throws -> ResponseRepresentable {

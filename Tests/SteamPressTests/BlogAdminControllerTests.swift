@@ -61,6 +61,12 @@ class BlogAdminControllerTests: XCTestCase {
         ("testUserCannotBeCreatedWithInvalidUsername", testUserCannotBeCreatedWithInvalidUsername),
         ("testPostCanBeUpdated", testPostCanBeUpdated),
         ("testUserCanBeUpdated", testUserCanBeUpdated),
+        ("testAdminPageGetsLoggedInUser", testAdminPageGetsLoggedInUser),
+        ("testCreatePostPageGetsLoggedInUser", testCreatePostPageGetsLoggedInUser),
+        ("testEditPostPageGetsLoggedInUser", testEditPostPageGetsLoggedInUser),
+        ("testCreateUserPageGetsLoggedInUser", testCreatePostPageGetsLoggedInUser),
+        ("testEditUserPageGetsLoggedInUser", testEditPostPageGetsLoggedInUser),
+        ("testResetPasswordPageGetsLoggedInUser", testResetPasswordPageGetsLoggedInUser),
     ]
     
     // MARK: - Properties
@@ -68,6 +74,7 @@ class BlogAdminControllerTests: XCTestCase {
     var database: Database!
     var drop: Droplet!
     var capturingViewFactory: CapturingViewFactory!
+    var user: BlogUser!
     
     // MARK: - Overrides
     
@@ -96,10 +103,14 @@ class BlogAdminControllerTests: XCTestCase {
         adminController.addRoutes()
         let adminUser = try! BlogUser.all().first
         
-        if let user = adminUser {
-            user.resetPasswordRequired = false
-            try! user.save()
+        guard let createdUser = adminUser else {
+            XCTFail()
+            return
         }
+        
+        user = createdUser
+        user.resetPasswordRequired = false
+        try! user.save()
     }
     
     // Courtesy of https://oleb.net/blog/2017/03/keeping-xctest-in-sync/
@@ -766,6 +777,54 @@ class BlogAdminControllerTests: XCTestCase {
         XCTAssertEqual(try BlogUser.all()[1].username, newUsername)
     }
     
+    func testAdminPageGetsLoggedInUser() throws {
+        let request = try createLoggedInRequest(method: .get, path: "", for: user)
+        _ = try drop.respond(to: request)
+        
+        XCTAssertEqual(user.name, capturingViewFactory.adminUser?.name)
+    }
+    
+    func testCreatePostPageGetsLoggedInUser() throws {
+        let request = try createLoggedInRequest(method: .get, path: "createPost", for: user)
+        _ = try drop.respond(to: request)
+        
+        XCTAssertEqual(user.name, capturingViewFactory.createBlogPostUser?.name)
+    }
+    
+    func testEditPostPageGetsLoggedInUser() throws {
+        let user = TestDataBuilder.anyUser()
+        try user.save()
+        let post = TestDataBuilder.anyPost(author: user)
+        try post.save()
+        let request = try createLoggedInRequest(method: .get, path: "posts/\(post.id!.string!)/edit", for: user)
+        _ = try drop.respond(to: request)
+        
+        XCTAssertEqual(user.name, capturingViewFactory.createBlogPostUser?.name)
+    }
+    
+    func testCreateUserPageGetsLoggedInUser() throws {
+        let request = try createLoggedInRequest(method: .get, path: "createUser", for: user)
+        _ = try drop.respond(to: request)
+        
+        XCTAssertEqual(user.name, capturingViewFactory.createUserLoggedInUser?.name)
+    }
+    
+    func testEditUserPageGetsLoggedInUser() throws {
+        let user = TestDataBuilder.anyUser()
+        try user.save()
+        let request = try createLoggedInRequest(method: .get, path: "users/\(user.id!.string!)/edit", for: user)
+        _ = try drop.respond(to: request)
+        
+        XCTAssertEqual(user.name, capturingViewFactory.createUserLoggedInUser?.name)
+    }
+    
+    func testResetPasswordPageGetsLoggedInUser() throws {
+        let request = try createLoggedInRequest(method: .get, path: "resetPassword", for: user)
+        _ = try drop.respond(to: request)
+        
+        XCTAssertEqual(user.name, capturingViewFactory.resetPasswordUser?.name)
+    }
+    
     // MARK: - Helper functions
     
     private func assertLoginRequired(method: HTTP.Method, path: String) throws {
@@ -778,6 +837,7 @@ class BlogAdminControllerTests: XCTestCase {
     
     private func createLoggedInRequest(method: HTTP.Method, path: String, for user: BlogUser? = nil) throws -> Request {
         let uri = "/blog/admin/\(path)/"
+        
         let request = Request(method: method, uri: uri)
         
         let authAuthenticatedKey = "auth-authenticated"

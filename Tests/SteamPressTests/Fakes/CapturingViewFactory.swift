@@ -11,14 +11,18 @@ class CapturingViewFactory: ViewFactory {
     }
     
     private(set) var createPostErrors: [String]? = nil
-    func createBlogPostView(uri: URI, errors: [String]?, title: String?, contents: String?, slugUrl: String?, tags: [Node]?, isEditing: Bool, postToEdit: BlogPost?, draft: Bool) throws -> View {
+    private(set) var createBlogPostUser: BlogUser?
+    func createBlogPostView(uri: URI, errors: [String]?, title: String?, contents: String?, slugUrl: String?, tags: [Node]?, isEditing: Bool, postToEdit: BlogPost?, draft: Bool, user: BlogUser) throws -> View {
         self.createPostErrors = errors
+        self.createBlogPostUser = user
         return createDummyView()
     }
     
     private(set) var createUserErrors: [String]? = nil
-    func createUserView(editing: Bool, errors: [String]?, name: String?, username: String?, passwordError: Bool?, confirmPasswordError: Bool?, resetPasswordRequired: Bool?, userId: Identifier?, profilePicture: String?, twitterHandle: String?, biography: String?, tagline: String?) throws -> View {
+    private(set) var createUserLoggedInUser: BlogUser?
+    func createUserView(editing: Bool, errors: [String]?, name: String?, username: String?, passwordError: Bool?, confirmPasswordError: Bool?, resetPasswordRequired: Bool?, userId: Identifier?, profilePicture: String?, twitterHandle: String?, biography: String?, tagline: String?, loggedInUser: BlogUser) throws -> View {
         self.createUserErrors = errors
+        self.createUserLoggedInUser = loggedInUser
         return createDummyView()
     }
     
@@ -27,7 +31,9 @@ class CapturingViewFactory: ViewFactory {
     }
     
     private(set) var adminViewErrors: [String]? = nil
-    func createBlogAdminView(errors: [String]?) throws -> View {
+    private(set) var adminUser: BlogUser? = nil
+    func createBlogAdminView(errors: [String]?, user: BlogUser) throws -> View {
+        adminUser = user
         adminViewErrors = errors
         return createDummyView()
     }
@@ -35,17 +41,19 @@ class CapturingViewFactory: ViewFactory {
     private(set) var resetPasswordErrors: [String]? = nil
     private(set) var resetPasswordErrorFlag: Bool? = nil
     private(set) var resetPasswordConfirmErrorFlag: Bool? = nil
-    func createResetPasswordView(errors: [String]?, passwordError: Bool?, confirmPasswordError: Bool?) throws -> View {
+    private(set) var resetPasswordUser: BlogUser?
+    func createResetPasswordView(errors: [String]?, passwordError: Bool?, confirmPasswordError: Bool?, user: BlogUser) throws -> View {
         self.resetPasswordErrors = errors
         self.resetPasswordErrorFlag = passwordError
         self.resetPasswordConfirmErrorFlag = confirmPasswordError
+        self.resetPasswordUser = user
         return createDummyView()
     }
     
     private(set) var author: BlogUser? = nil
     private(set) var authorPosts: Page<BlogPost>? = nil
     private(set) var authorURI: URI? = nil
-    func createProfileView(uri: URI, author: BlogUser, paginatedPosts: Page<BlogPost>, loggedInUser: BlogUser?) throws -> View {
+    func profileView(uri: URI, author: BlogUser, paginatedPosts: Page<BlogPost>, loggedInUser: BlogUser?) throws -> View {
         self.author = author
         self.authorPosts = paginatedPosts
         self.authorURI = uri

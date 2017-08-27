@@ -14,7 +14,7 @@ struct LeafViewFactory: ViewFactory {
 
     // MARK: - Admin Controller Views
 
-    func createBlogPostView(uri: URI, errors: [String]? = nil, title: String? = nil, contents: String? = nil, slugUrl: String? = nil, tags: [Vapor.Node]? = nil, isEditing: Bool = false, postToEdit: BlogPost? = nil, draft: Bool = true) throws -> View {
+    func createBlogPostView(uri: URI, errors: [String]? = nil, title: String? = nil, contents: String? = nil, slugUrl: String? = nil, tags: [Vapor.Node]? = nil, isEditing: Bool = false, postToEdit: BlogPost? = nil, draft: Bool = true, user: BlogUser) throws -> View {
         let titleError = (title == nil || (title?.isWhitespace() ?? false)) && errors != nil
         let contentsError = (contents == nil || (contents?.isWhitespace() ?? false)) && errors != nil
 
@@ -33,6 +33,7 @@ struct LeafViewFactory: ViewFactory {
         parameters["post_path_prefix"] = postPathPrefix
         parameters["title_error"] = titleError
         parameters["contents_error"] = contentsError
+        parameters["user"] = user
 
         if let createBlogErrors = errors {
             parameters["errors"] = try createBlogErrors.makeNode(in: nil)
@@ -71,13 +72,14 @@ struct LeafViewFactory: ViewFactory {
         return try viewRenderer.make("blog/admin/createPost", parameters)
     }
 
-    func createUserView(editing: Bool = false, errors: [String]? = nil, name: String? = nil, username: String? = nil, passwordError: Bool? = nil, confirmPasswordError: Bool? = nil, resetPasswordRequired: Bool? = nil, userId: Identifier? = nil, profilePicture: String? = nil, twitterHandle: String? = nil, biography: String? = nil, tagline: String? = nil) throws -> View {
+    func createUserView(editing: Bool = false, errors: [String]? = nil, name: String? = nil, username: String? = nil, passwordError: Bool? = nil, confirmPasswordError: Bool? = nil, resetPasswordRequired: Bool? = nil, userId: Identifier? = nil, profilePicture: String? = nil, twitterHandle: String? = nil, biography: String? = nil, tagline: String? = nil, loggedInUser: BlogUser) throws -> View {
         let nameError = name == nil && errors != nil
         let usernameError = username == nil && errors != nil
 
         var parameters: [String: NodeRepresentable] = [:]
         parameters["name_error"] = nameError
         parameters["username_error"] = usernameError
+        parameters["user"] = loggedInUser
 
         if let createUserErrors = errors {
             parameters["errors"] = try createUserErrors.makeNode(in: nil)
@@ -153,14 +155,14 @@ struct LeafViewFactory: ViewFactory {
         return try viewRenderer.make("blog/admin/login", parameters)
     }
 
-    func createBlogAdminView(errors: [String]? = nil) throws -> View {
+    func createBlogAdminView(errors: [String]? = nil, user: BlogUser) throws -> View {
         let publishedBlogPosts = try BlogPost.makeQuery().filter(BlogPost.Properties.published, true).sort(BlogPost.Properties.created, .descending).all()
         let draftBlogPosts = try BlogPost.makeQuery().filter(BlogPost.Properties.published, false).sort(BlogPost.Properties.created, .descending).all()
         let users = try BlogUser.all()
 
         var parameters: [String: Vapor.Node] = [:]
-        parameters["users"] = try users.makeNode(in: nil
-        )
+        parameters["users"] = try users.makeNode(in: nil)
+        parameters["user"] = try user.makeNode(in: nil)
 
         if !publishedBlogPosts.isEmpty {
             parameters["published_posts"] = try publishedBlogPosts.makeNode(in: BlogPostContext.all)
@@ -179,9 +181,10 @@ struct LeafViewFactory: ViewFactory {
         return try viewRenderer.make("blog/admin/index", parameters)
     }
 
-    func createResetPasswordView(errors: [String]? = nil, passwordError: Bool? = nil, confirmPasswordError: Bool? = nil) throws -> View {
+    func createResetPasswordView(errors: [String]? = nil, passwordError: Bool? = nil, confirmPasswordError: Bool? = nil, user: BlogUser) throws -> View {
 
         var parameters: [String: Vapor.Node] = [:]
+        parameters["user"] = try user.makeNode(in: nil)
 
         if let resetPasswordErrors = errors {
             parameters["errors"] = try resetPasswordErrors.makeNode(in: nil)
@@ -196,19 +199,6 @@ struct LeafViewFactory: ViewFactory {
         }
 
         return try viewRenderer.make("blog/admin/resetPassword", parameters)
-    }
-
-    func createProfileView(uri: URI, author: BlogUser, paginatedPosts: Page<BlogPost>, loggedInUser: BlogUser?) throws -> View {
-        var parameters: [String: Vapor.Node] = [:]
-        parameters["author"] = try author.makeNode(in: BlogUserContext.withPostCount)
-
-        parameters["profile_page"] = true.makeNode(in: nil)
-
-        if paginatedPosts.total > 0 {
-            parameters["posts"] = try paginatedPosts.makeNode(for: uri, in: BlogPostContext.longSnippet)
-        }
-
-        return try createPublicView(template: "blog/profile", uri: uri, parameters: parameters, user: loggedInUser)
     }
 
     // MARK: - Blog Controller Views
@@ -292,6 +282,19 @@ struct LeafViewFactory: ViewFactory {
         }
 
         return try createPublicView(template: "blog/authors", uri: uri, parameters: parameters, user: user)
+    }
+    
+    func profileView(uri: URI, author: BlogUser, paginatedPosts: Page<BlogPost>, loggedInUser: BlogUser?) throws -> View {
+        var parameters: [String: Vapor.Node] = [:]
+        parameters["author"] = try author.makeNode(in: BlogUserContext.withPostCount)
+        
+        parameters["profile_page"] = true.makeNode(in: nil)
+        
+        if paginatedPosts.total > 0 {
+            parameters["posts"] = try paginatedPosts.makeNode(for: uri, in: BlogPostContext.longSnippet)
+        }
+        
+        return try createPublicView(template: "blog/profile", uri: uri, parameters: parameters, user: loggedInUser)
     }
 
     private func createPublicView(template: String, uri: URI, parameters: [String: NodeRepresentable], user: BlogUser? = nil) throws -> View {

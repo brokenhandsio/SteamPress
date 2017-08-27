@@ -420,7 +420,7 @@ class LeafViewFactoryTests: XCTestCase {
     
     func testAuthorViewHasCorrectParametersSet() throws {
         let (author, posts) = try setupAuthorPage()
-        let _ = try viewFactory.createProfileView(uri: authorURI, author: author, paginatedPosts: posts, loggedInUser: nil)
+        let _ = try viewFactory.profileView(uri: authorURI, author: author, paginatedPosts: posts, loggedInUser: nil)
         
         XCTAssertEqual(viewRenderer.capturedContext?["author"]?["name"]?.string, author.name)
         XCTAssertEqual(viewRenderer.capturedContext?["posts"]?["data"]?.array?.count, posts.total)
@@ -441,39 +441,39 @@ class LeafViewFactoryTests: XCTestCase {
     func testAuthorViewHasNoPostsSetIfNoneCreated() throws {
         let (author, _) = try setupAuthorPage()
         let emptyPosts = try BlogPost.makeQuery().filter("title", "Some non-existing query").paginate(for: authorRequest)
-        let _ = try viewFactory.createProfileView(uri: authorURI, author: author, paginatedPosts: emptyPosts, loggedInUser: nil)
+        let _ = try viewFactory.profileView(uri: authorURI, author: author, paginatedPosts: emptyPosts, loggedInUser: nil)
         XCTAssertNil(viewRenderer.capturedContext?["posts"])
     }
     
     func testAuthorViewGetsLoggedInUserIfProvider() throws {
         let (author, posts) = try setupAuthorPage()
-        let _ = try viewFactory.createProfileView(uri: authorURI, author: author, paginatedPosts: posts, loggedInUser: author)
+        let _ = try viewFactory.profileView(uri: authorURI, author: author, paginatedPosts: posts, loggedInUser: author)
         XCTAssertEqual(viewRenderer.capturedContext?["user"]?["name"]?.string, author.name)
     }
     
     func testAuthorViewDoesNotGetDisqusNameIfNotProvided() throws {
         viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil)
         let (author, posts) = try setupAuthorPage()
-        let _ = try viewFactory.createProfileView(uri: authorURI, author: author, paginatedPosts: posts, loggedInUser: nil)
+        let _ = try viewFactory.profileView(uri: authorURI, author: author, paginatedPosts: posts, loggedInUser: nil)
         XCTAssertNil(viewRenderer.capturedContext?["disqus_name"]?.string)
     }
     
     func testAuthorViewDoesNotGetTwitterHandleIfNotProvided() throws {
         viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil)
         let (author, posts) = try setupAuthorPage()
-        let _ = try viewFactory.createProfileView(uri: authorURI, author: author, paginatedPosts: posts, loggedInUser: nil)
+        let _ = try viewFactory.profileView(uri: authorURI, author: author, paginatedPosts: posts, loggedInUser: nil)
         XCTAssertNil(viewRenderer.capturedContext?["site_twitter_handle"]?.string)
     }
     
     func testAuthorViewGetsPostCount() throws {
         let (author, posts) = try setupAuthorPage()
-        _ = try viewFactory.createProfileView(uri: authorURI, author: author, paginatedPosts: posts, loggedInUser: nil)
+        _ = try viewFactory.profileView(uri: authorURI, author: author, paginatedPosts: posts, loggedInUser: nil)
         XCTAssertEqual(viewRenderer.capturedContext?["author"]?["post_count"]?.int, 2)
     }
     
     func testAuthorViewGetsLongSnippetForPosts() throws {
         let (author, posts) = try setupAuthorPage()
-        _ = try viewFactory.createProfileView(uri: authorURI, author: author, paginatedPosts: posts, loggedInUser: nil)
+        _ = try viewFactory.profileView(uri: authorURI, author: author, paginatedPosts: posts, loggedInUser: nil)
         XCTAssertNotNil(viewRenderer.capturedContext?["posts"]?["data"]?.array?.first?["long_snippet"]?.string)
     }
 
@@ -481,20 +481,24 @@ class LeafViewFactoryTests: XCTestCase {
     // MARK: - Admin pages
     
     func testPasswordViewGivenCorrectParameters() throws {
-        let _ = try viewFactory.createResetPasswordView(errors: nil, passwordError: nil, confirmPasswordError: nil)
+        let user = TestDataBuilder.anyUser()
+        let _ = try viewFactory.createResetPasswordView(errors: nil, passwordError: nil, confirmPasswordError: nil, user: user)
         XCTAssertNil(viewRenderer.capturedContext?["errors"])
         XCTAssertNil(viewRenderer.capturedContext?["password_error"])
         XCTAssertNil(viewRenderer.capturedContext?["confirm_password_error"])
+        XCTAssertEqual(viewRenderer.capturedContext?["user"]?["name"]?.string, user.name)
         XCTAssertEqual(viewRenderer.leafPath, "blog/admin/resetPassword")
     }
     
     func testPasswordViewHasCorrectParametersWhenError() throws {
+        let user = TestDataBuilder.anyUser()
         let expectedError = "Passwords do not match"
-        let _ = try viewFactory.createResetPasswordView(errors: [expectedError], passwordError: true, confirmPasswordError: true)
+        let _ = try viewFactory.createResetPasswordView(errors: [expectedError], passwordError: true, confirmPasswordError: true, user: user)
         XCTAssertEqual(viewRenderer.capturedContext?["errors"]?.array?.count, 1)
         XCTAssertEqual((viewRenderer.capturedContext?["errors"]?.array?.first)?.string, expectedError)
         XCTAssertTrue((viewRenderer.capturedContext?["password_error"]?.bool) ?? false)
         XCTAssertTrue((viewRenderer.capturedContext?["confirm_password_error"]?.bool) ?? false)
+        XCTAssertEqual(viewRenderer.capturedContext?["user"]?["name"]?.string, user.name)
     }
     
     func testLoginViewGetsCorrectParameters() throws {
@@ -529,9 +533,10 @@ class LeafViewFactoryTests: XCTestCase {
         let (posts, _, users) = try setupBlogIndex()
         let draftPost = TestDataBuilder.anyPost(author: users.first!, title: "[DRAFT] This will be awesome", published: false)
         try draftPost.save()
-        let _ = try viewFactory.createBlogAdminView()
+        let _ = try viewFactory.createBlogAdminView(user: TestDataBuilder.anyUser())
         XCTAssertNil(viewRenderer.capturedContext?["errors"])
         XCTAssertTrue((viewRenderer.capturedContext?["blog_admin_page"]?.bool) ?? false)
+        XCTAssertEqual(viewRenderer.capturedContext?["user"]?["name"]?.string, users.first?.name)
         XCTAssertEqual(viewRenderer.capturedContext?["users"]?.array?.count, 2)
         XCTAssertEqual(viewRenderer.capturedContext?["users"]?.array?.first?["name"]?.string, users.first?.name)
         XCTAssertEqual(viewRenderer.capturedContext?["published_posts"]?.array?.count, 2)
@@ -542,18 +547,19 @@ class LeafViewFactoryTests: XCTestCase {
     }
     
     func testNoPostsPassedToAdminViewIfNone() throws {
-        let _ = try viewFactory.createBlogAdminView()
+        let _ = try viewFactory.createBlogAdminView(user: TestDataBuilder.anyUser())
         XCTAssertNil(viewRenderer.capturedContext?["posts"])
     }
     
     func testAdminPageWithErrors() throws {
         let expectedError = "You cannot delete yourself!"
-        let _ = try viewFactory.createBlogAdminView(errors: [expectedError])
+        let _ = try viewFactory.createBlogAdminView(errors: [expectedError], user: TestDataBuilder.anyUser())
         XCTAssertEqual(viewRenderer.capturedContext?["errors"]?.array?.first?.string, expectedError)
     }
     
     func testCreateUserViewGetsCorrectParameters() throws {
-        let _ = try viewFactory.createUserView()
+        let user = TestDataBuilder.anyUser()
+        let _ = try viewFactory.createUserView(loggedInUser: user)
         XCTAssertFalse((viewRenderer.capturedContext?["name_error"]?.bool) ?? true)
         XCTAssertFalse((viewRenderer.capturedContext?["username_error"]?.bool) ?? true)
         XCTAssertNil(viewRenderer.capturedContext?["errors"])
@@ -569,11 +575,13 @@ class LeafViewFactoryTests: XCTestCase {
         XCTAssertNil(viewRenderer.capturedContext?["biography_supplied"])
         XCTAssertNil(viewRenderer.capturedContext?["tagline_supplied"])
         XCTAssertEqual(viewRenderer.leafPath, "blog/admin/createUser")
+        XCTAssertEqual(viewRenderer.capturedContext?["user"]?["name"]?.string, user.name)
     }
     
     func testCreateUserViewWhenErrors() throws {
+        let user = TestDataBuilder.anyUser()
         let expectedError = "Not valid password"
-        let _ = try viewFactory.createUserView(errors: [expectedError], name: "Luke", username: "luke", passwordError: true, confirmPasswordError: true, resetPasswordRequired: true, profilePicture: "https://static.brokenhands.io/steampress/images/authors/luke.png", twitterHandle: "luke", biography: "The last Jedi in the Galaxy", tagline: "A son without a father")
+        let _ = try viewFactory.createUserView(errors: [expectedError], name: "Luke", username: "luke", passwordError: true, confirmPasswordError: true, resetPasswordRequired: true, profilePicture: "https://static.brokenhands.io/steampress/images/authors/luke.png", twitterHandle: "luke", biography: "The last Jedi in the Galaxy", tagline: "A son without a father", loggedInUser: user)
         XCTAssertFalse((viewRenderer.capturedContext?["name_error"]?.bool) ?? true)
         XCTAssertFalse((viewRenderer.capturedContext?["username_error"]?.bool) ?? true)
         XCTAssertEqual(viewRenderer.capturedContext?["errors"]?.array?.first?.string, expectedError)
@@ -586,17 +594,21 @@ class LeafViewFactoryTests: XCTestCase {
         XCTAssertEqual(viewRenderer.capturedContext?["twitter_handle_supplied"]?.string, "luke")
         XCTAssertEqual(viewRenderer.capturedContext?["tagline_supplied"]?.string, "A son without a father")
         XCTAssertEqual(viewRenderer.capturedContext?["biography_supplied"]?.string, "The last Jedi in the Galaxy")
+        XCTAssertEqual(viewRenderer.capturedContext?["user"]?["name"]?.string, user.name)
     }
     
     func testCreateUserViewWhenNoNameOrUsernameSupplied() throws {
+        let user = TestDataBuilder.anyUser()
         let expectedError = "No name supplied"
-        let _ = try viewFactory.createUserView(errors: [expectedError], name: nil, username: nil, passwordError: true, confirmPasswordError: true, resetPasswordRequired: true)
+        let _ = try viewFactory.createUserView(errors: [expectedError], name: nil, username: nil, passwordError: true, confirmPasswordError: true, resetPasswordRequired: true, loggedInUser: user)
         XCTAssertTrue((viewRenderer.capturedContext?["name_error"]?.bool) ?? false)
         XCTAssertTrue((viewRenderer.capturedContext?["username_error"]?.bool) ?? false)
+        XCTAssertEqual(viewRenderer.capturedContext?["user"]?["name"]?.string, user.name)
     }
     
     func testCreateUserViewForEditing() throws {
-        let _ = try viewFactory.createUserView(editing: true, errors: nil, name: "Luke", username: "luke", userId: Identifier(StructuredData.number(1), in: nil), profilePicture: "https://static.brokenhands.io/steampress/images/authors/luke.png", twitterHandle: "luke", biography: "The last Jedi in the Galaxy", tagline: "A son without a father")
+        let user = TestDataBuilder.anyUser()
+        let _ = try viewFactory.createUserView(editing: true, errors: nil, name: "Luke", username: "luke", userId: Identifier(StructuredData.number(1), in: nil), profilePicture: "https://static.brokenhands.io/steampress/images/authors/luke.png", twitterHandle: "luke", biography: "The last Jedi in the Galaxy", tagline: "A son without a father", loggedInUser: user)
         XCTAssertEqual(viewRenderer.capturedContext?["name_supplied"]?.string, "Luke")
         XCTAssertEqual(viewRenderer.capturedContext?["username_supplied"]?.string, "luke")
         XCTAssertTrue((viewRenderer.capturedContext?["editing"]?.bool) ?? false)
@@ -606,12 +618,13 @@ class LeafViewFactoryTests: XCTestCase {
         XCTAssertEqual(viewRenderer.capturedContext?["tagline_supplied"]?.string, "A son without a father")
         XCTAssertEqual(viewRenderer.capturedContext?["biography_supplied"]?.string, "The last Jedi in the Galaxy")
         XCTAssertEqual(viewRenderer.leafPath, "blog/admin/createUser")
+        XCTAssertEqual(viewRenderer.capturedContext?["user"]?["name"]?.string, user.name)
     }
     
     func testCreateUserViewThrowsWhenTryingToEditWithoutUserId() throws {
         var errored = false
         do {
-            let _ = try viewFactory.createUserView(editing: true, errors: nil, name: "Luke", username: "luke", userId: nil)
+            let _ = try viewFactory.createUserView(editing: true, errors: nil, name: "Luke", username: "luke", userId: nil, loggedInUser: TestDataBuilder.anyUser())
         } catch {
             errored = true
         }
@@ -620,7 +633,8 @@ class LeafViewFactoryTests: XCTestCase {
     }
     
     func testCreateBlogPostViewGetsCorrectParameters() throws {
-        let _ = try viewFactory.createBlogPostView(uri: createPostURI)
+        let user = TestDataBuilder.anyUser()
+        let _ = try viewFactory.createBlogPostView(uri: createPostURI, user: user)
         XCTAssertEqual(viewRenderer.capturedContext?["post_path_prefix"]?.string, "https://test.com:443/posts/")
         XCTAssertFalse((viewRenderer.capturedContext?["title_error"]?.bool) ?? true)
         XCTAssertFalse((viewRenderer.capturedContext?["contents_error"]?.bool) ?? true)
@@ -633,6 +647,7 @@ class LeafViewFactoryTests: XCTestCase {
         XCTAssertTrue((viewRenderer.capturedContext?["create_blog_post_page"]?.bool) ?? false)
         XCTAssertTrue((viewRenderer.capturedContext?["draft"]?.bool) ?? false)
         XCTAssertNil(viewRenderer.capturedContext?["editing"])
+        XCTAssertEqual(viewRenderer.capturedContext?["user"]?["name"]?.string, user.name)
     }
     
     func testCreateBlogPostViewWhenEditing() throws {
@@ -640,7 +655,7 @@ class LeafViewFactoryTests: XCTestCase {
         try author.save()
         let postToEdit = TestDataBuilder.anyPost(author: author)
         try postToEdit.save()
-        let _ = try viewFactory.createBlogPostView(uri: editPostURI, title: postToEdit.title, contents: postToEdit.contents, slugUrl: postToEdit.slugUrl, tags: [Node(node: "test")], isEditing: true, postToEdit: postToEdit)
+        let _ = try viewFactory.createBlogPostView(uri: editPostURI, title: postToEdit.title, contents: postToEdit.contents, slugUrl: postToEdit.slugUrl, tags: [Node(node: "test")], isEditing: true, postToEdit: postToEdit, user: author)
         XCTAssertEqual(viewRenderer.capturedContext?["post_path_prefix"]?.string, "https://test.com:443/posts/")
         XCTAssertFalse((viewRenderer.capturedContext?["title_error"]?.bool) ?? true)
         XCTAssertFalse((viewRenderer.capturedContext?["contents_error"]?.bool) ?? true)
@@ -654,12 +669,13 @@ class LeafViewFactoryTests: XCTestCase {
         XCTAssertEqual(viewRenderer.capturedContext?["post"]?["title"]?.string, postToEdit.title)
         XCTAssertNil(viewRenderer.capturedContext?["create_blog_post_page"])
         XCTAssertEqual(viewRenderer.capturedContext?["post"]?["published"]?.bool, true)
+        XCTAssertEqual(viewRenderer.capturedContext?["user"]?["name"]?.string, author.name)
     }
     
     func testEditBlogPostViewThrowsWithNoPostToEdit() throws {
         var errored = false
         do {
-            let _ = try viewFactory.createBlogPostView(uri: createPostURI, isEditing: true, postToEdit: nil)
+            let _ = try viewFactory.createBlogPostView(uri: createPostURI, isEditing: true, postToEdit: nil, user: TestDataBuilder.anyUser())
         } catch {
             errored = true
         }
@@ -669,11 +685,13 @@ class LeafViewFactoryTests: XCTestCase {
     
     func testCreateBlogPostViewWithErrorsAndNoTitleOrContentsSupplied() throws {
         let expectedError = "Please enter a title"
-        let _ = try viewFactory.createBlogPostView(uri: createPostURI, errors: [expectedError], title: nil, contents: nil, slugUrl: nil, tags: nil, isEditing: false)
+        let user = TestDataBuilder.anyUser()
+        let _ = try viewFactory.createBlogPostView(uri: createPostURI, errors: [expectedError], title: nil, contents: nil, slugUrl: nil, tags: nil, isEditing: false, user: user)
         XCTAssertTrue((viewRenderer.capturedContext?["title_error"]?.bool) ?? false)
         XCTAssertTrue((viewRenderer.capturedContext?["contents_error"]?.bool) ?? false)
         XCTAssertEqual(viewRenderer.capturedContext?["errors"]?.array?.count, 1)
         XCTAssertEqual(viewRenderer.capturedContext?["errors"]?.array?.first?.string, expectedError)
+        XCTAssertEqual(viewRenderer.capturedContext?["user"]?["name"]?.string, user.name)
     }
     
     func testDraftPassedThroughWhenEditingABlogPostThatHasNotBeenPublished() throws {
@@ -681,7 +699,7 @@ class LeafViewFactoryTests: XCTestCase {
         try author.save()
         let postToEdit = TestDataBuilder.anyPost(author: author, published: false)
         try postToEdit.save()
-        let _ = try viewFactory.createBlogPostView(uri: editPostURI, title: postToEdit.title, contents: postToEdit.contents, slugUrl: postToEdit.slugUrl, tags: [Node(node: "test")], isEditing: true, postToEdit: postToEdit)
+        let _ = try viewFactory.createBlogPostView(uri: editPostURI, title: postToEdit.title, contents: postToEdit.contents, slugUrl: postToEdit.slugUrl, tags: [Node(node: "test")], isEditing: true, postToEdit: postToEdit, user: TestDataBuilder.anyUser())
         XCTAssertEqual(viewRenderer.capturedContext?["post"]?["published"]?.bool, false)
     }
     
