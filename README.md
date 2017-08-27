@@ -180,6 +180,8 @@ The Twitter handle of the site can be configured with a `twitter.json` config fi
 
 SteamPress expects there to be a number of Leaf template files in the correct location in `Resources/Views`. All these files should be in a `blog` directory, with the admin template files being in an `admin` directory. For an example of how it SteamPress works with the leaf templates, see the [Example SteamPress site](https://github.com/brokenhandsio/SteamPressExample).
 
+For every Leaf template, a `user` parameter will be passed in for the currently logged in user, if there is a user currently logged in. This is useful for displaying a 'Create Post' link throughout the site when logged in etc.
+
 The basic structure of your `Resources/View` directory should be:
 
 * `blog`
@@ -205,7 +207,6 @@ This is the index page of the blog. The parameters it will receive are:
 * `posts` - a Node containing data about the posts and metadata for the paginator. You can access the posts by calling the `.data` object on it, which is an array of blog posts if there are any, in date descending order. The posts will be made with a `longSnippet` context (see below)
 * `tags` - an array of tags if there are any
 * `authors` - an array of the authors if there are any
-* `user` - the currently logged in user if a user is currently logged in
 * `disqus_name` - the name of your Disqus site if configured
 * `blog_index_page` - a boolean saying we are on the index page of the blog - useful for navbars
 * `site_twitter_handle` - the Twitter handle for the site if configured
@@ -219,7 +220,6 @@ This is the page for viewing a single entire blog post. The parameters set are:
 * `post` - the full current post, with the `all` context
 * `author` - the author of the post
 * `blog_post_page` - a boolean saying we are on the blog post page
-* `user` - the currently logged in user if a user is currently logged in
 * `disqus_name` - the name of your Disqus site if configured
 * `post_uri` - The URI of the post
 * `post_uri_encoded` - A URL-query encoded for of the URI for passing to Share buttons
@@ -236,7 +236,6 @@ This is the page for a tag. A blog post can be tagged with many tags and a tag c
 * `tag` - the tag
 * `posts` - a Node containing data about the posts and metadata for the paginator. You can access the posts by calling the `.data` object on it, which is an array of blog posts if there are any, in date descending order. The posts will be made with a `longSnippet` context (see below)
 * `tag_page` - a boolean saying we are on the tag page
-* `user` - the currently logged in user if a user is currently logged in
 * `disqus_name` - the name of your Disqus site if configured
 * `site_twitter_handle` - the Twitter handle for the site if configured
 * `uri` - the URI of the page - useful for Open Graph
@@ -248,7 +247,6 @@ This is the page for viewing a profile of a user. This is generally used for vie
 * `author` - the user the page is for
 * `profile_page` - a boolean set to to true if we are viewing the profile page
 * `posts` - all the posts the user has written if they have written any in `shortSnippet` form
-* `user` - the currently logged in user if a user is currently logged in
 * `disqus_name` - the name of your Disqus site if configured
 * `site_twitter_handle` - the Twitter handle for the site if configured
 * `uri` - the URI of the page - useful for Open Graph
@@ -258,7 +256,6 @@ This is the page for viewing a profile of a user. This is generally used for vie
 This is the page for viewing all of the tags on the blog. This provides some more navigation points for the blog as well as providing a page in case the user strips off the tag from the Tag's URL. The parameters that can be passed to it are:
 
 * `tags` - an array of all the tags on the blog, in `withPostCount` context (see below) sorted by post count
-* `user` - the currently logged in user if a user is currently logged in
 * `site_twitter_handle` - the Twitter handle for the site if configured
 * `uri` - the URI of the page - useful for Open Graph
 
@@ -267,7 +264,6 @@ This is the page for viewing all of the tags on the blog. This provides some mor
 This is the page for viewing all of the authors on the blog. It provides a useful page for user's to see everyone who has contributed to the site.
 
 * `authors` - an array of all the `BlogUser`s on the blog, in `withPostCount` context (see below) sorted by post count
-* `user` - the currently logged in user if a user is currently logged in
 * `site_twitter_handle` - the Twitter handle for the site if configured
 * `uri` - the URI of the page - useful for Open Graph
 
