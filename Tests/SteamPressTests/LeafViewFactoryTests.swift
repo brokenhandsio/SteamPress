@@ -17,6 +17,7 @@ class LeafViewFactoryTests: XCTestCase {
         ("testTagsPageGetsPassedTagsSortedByPageCount", testTagsPageGetsPassedTagsSortedByPageCount),
         ("testTwitterHandleNotSetOnAllTagsPageIfNotGiven", testTwitterHandleNotSetOnAllTagsPageIfNotGiven),
         ("testDisqusNameNotSetOnAllTagsPageIfNotGiven", testDisqusNameNotSetOnAllTagsPageIfNotGiven),
+        ("testGAIdentifierNotSetOnAllTagsPageIfNotGiven", testGAIdentifierNotSetOnAllTagsPageIfNotGiven),
         ("testLoggedInUserSetOnAllTagsPageIfPassedIn", testLoggedInUserSetOnAllTagsPageIfPassedIn),
         ("testNoTagsGivenIfEmptyArrayPassedToAllTagsPage", testNoTagsGivenIfEmptyArrayPassedToAllTagsPage),
         ("testParametersAreSetCorrectlyOnAllAuthorsPage", testParametersAreSetCorrectlyOnAllAuthorsPage),
@@ -24,18 +25,21 @@ class LeafViewFactoryTests: XCTestCase {
         ("testAuthorsPageGetsPassedAuthorsSortedByPageCount", testAuthorsPageGetsPassedAuthorsSortedByPageCount),
         ("testTwitterHandleNotSetOnAllAuthorsPageIfNotProvided", testTwitterHandleNotSetOnAllAuthorsPageIfNotProvided),
         ("testDisqusNameNotSetOnAllAuthorsPageIfNotProvided", testDisqusNameNotSetOnAllAuthorsPageIfNotProvided),
+        ("testGAIdentifierNotSetOnAllAuthorsPageIfNotProvided", testGAIdentifierNotSetOnAllAuthorsPageIfNotProvided),
         ("testNoLoggedInUserPassedToAllAuthorsPageIfNoneProvided", testNoLoggedInUserPassedToAllAuthorsPageIfNoneProvided),
         ("testNoAuthorsGivenToAuthorsPageIfNonePassedToAllAuthorsPage", testNoAuthorsGivenToAuthorsPageIfNonePassedToAllAuthorsPage),
         ("testTagPageGetsTagWithCorrectParamsAndPostCount", testTagPageGetsTagWithCorrectParamsAndPostCount),
         ("testNoLoggedInUserPassedToTagPageIfNoneProvided", testNoLoggedInUserPassedToTagPageIfNoneProvided),
         ("testDisqusNameNotPassedToTagPageIfNotSet", testDisqusNameNotPassedToTagPageIfNotSet),
         ("testTwitterHandleNotPassedToTagPageIfNotSet", testTwitterHandleNotPassedToTagPageIfNotSet),
+        ("testGAIdentifierNotPassedToTagPageIfNotSet", testGAIdentifierNotPassedToTagPageIfNotSet),
         ("testBlogPageGetsImageUrlIfOneInPostMarkdown", testBlogPageGetsImageUrlIfOneInPostMarkdown),
         ("testDescriptionOnBlogPostPageIsShortSnippetTextCleaned", testDescriptionOnBlogPostPageIsShortSnippetTextCleaned),
         ("testBlogPostPageGetsCorrectParameters", testBlogPostPageGetsCorrectParameters),
         ("testUserPassedToBlogPostPageIfUserPassedIn", testUserPassedToBlogPostPageIfUserPassedIn),
         ("testDisqusNameNotPassedToBlogPostPageIfNotPassedIn", testDisqusNameNotPassedToBlogPostPageIfNotPassedIn),
         ("testTwitterHandleNotPassedToBlogPostPageIfNotPassedIn", testTwitterHandleNotPassedToBlogPostPageIfNotPassedIn),
+        ("testGAIdentifierNotPassedToBlogPostPageIfNotPassedIn", testGAIdentifierNotPassedToBlogPostPageIfNotPassedIn),
         ("testBlogIndexPageGivenCorrectParameters", testBlogIndexPageGivenCorrectParameters),
         ("testNoPostsPassedIntoBlogIndexIfNoneAvailable", testNoPostsPassedIntoBlogIndexIfNoneAvailable),
         ("testNoAuthorsPassedIntoBlogIndexIfNoneCreated", testNoAuthorsPassedIntoBlogIndexIfNoneCreated),
@@ -43,11 +47,13 @@ class LeafViewFactoryTests: XCTestCase {
         ("testUserPassedToBlogIndexIfUserPassedIn", testUserPassedToBlogIndexIfUserPassedIn),
         ("testDisqusNameNotPassedToBlogIndexIfNotPassedIn", testDisqusNameNotPassedToBlogIndexIfNotPassedIn),
         ("testTwitterHandleNotPassedToBlogIndexIfNotPassedIn", testTwitterHandleNotPassedToBlogIndexIfNotPassedIn),
+        ("testGAIdentifierNotPassedToBlogIndexIfNotPassedIn", testGAIdentifierNotPassedToBlogIndexIfNotPassedIn),
         ("testAuthorViewHasCorrectParametersSet", testAuthorViewHasCorrectParametersSet),
         ("testAuthorViewHasNoPostsSetIfNoneCreated", testAuthorViewHasNoPostsSetIfNoneCreated),
         ("testAuthorViewGetsLoggedInUserIfProvider", testAuthorViewGetsLoggedInUserIfProvider),
         ("testAuthorViewDoesNotGetDisqusNameIfNotProvided", testAuthorViewDoesNotGetDisqusNameIfNotProvided),
         ("testAuthorViewDoesNotGetTwitterHandleIfNotProvided", testAuthorViewDoesNotGetTwitterHandleIfNotProvided),
+        ("testAuthorViewDoesNotGetGAIdentifierIfNotProvided", testAuthorViewDoesNotGetGAIdentifierIfNotProvided),
         ("testPasswordViewGivenCorrectParameters", testPasswordViewGivenCorrectParameters),
         ("testPasswordViewHasCorrectParametersWhenError", testPasswordViewHasCorrectParametersWhenError),
         ("testLoginViewGetsCorrectParameters", testLoginViewGetsCorrectParameters),
@@ -89,12 +95,13 @@ class LeafViewFactoryTests: XCTestCase {
     
     private let siteTwitterHandle = "brokenhandsio"
     private let disqusName = "steampress"
+    private let googleAnalyticsIdentifier = "UA-12345678-1"
     
     // MARK: - Overrides
     
     override func setUp() {
         viewRenderer = CapturingViewRenderer()
-        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: disqusName, siteTwitterHandle: siteTwitterHandle)
+        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: disqusName, siteTwitterHandle: siteTwitterHandle, googleAnalyticsIdentifier: googleAnalyticsIdentifier)
         tagRequest = Request(method: .get, uri: tagURI)
         authorRequest = Request(method: .get, uri: authorURI)
         indexRequest = Request(method: .get, uri: indexURI)
@@ -134,6 +141,7 @@ class LeafViewFactoryTests: XCTestCase {
         XCTAssertEqual(viewRenderer.capturedContext?["uri"]?.string, "https://test.com:443/tags/")
         XCTAssertEqual(viewRenderer.capturedContext?["site_twitter_handle"]?.string, siteTwitterHandle)
         XCTAssertEqual(viewRenderer.capturedContext?["disqus_name"]?.string, disqusName)
+        XCTAssertEqual(viewRenderer.capturedContext?["google_analytics_identifier"]?.string, googleAnalyticsIdentifier)
         XCTAssertNil(viewRenderer.capturedContext?["user"])
         XCTAssertEqual(viewRenderer.leafPath, "blog/tags")
     }
@@ -174,15 +182,21 @@ class LeafViewFactoryTests: XCTestCase {
     }
     
     func testTwitterHandleNotSetOnAllTagsPageIfNotGiven() throws {
-        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil)
+        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil, googleAnalyticsIdentifier: nil)
         _ = try viewFactory.allTagsView(uri: tagsURI, allTags: [], user: nil)
         XCTAssertNil(viewRenderer.capturedContext?["site_twitter_handle"]?.string)
     }
     
     func testDisqusNameNotSetOnAllTagsPageIfNotGiven() throws {
-        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil)
+        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil, googleAnalyticsIdentifier: nil)
         _ = try viewFactory.allTagsView(uri: tagsURI, allTags: [], user: nil)
         XCTAssertNil(viewRenderer.capturedContext?["disqus_name"]?.string)
+    }
+    
+    func testGAIdentifierNotSetOnAllTagsPageIfNotGiven() throws {
+        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil, googleAnalyticsIdentifier: nil)
+        _ = try viewFactory.allTagsView(uri: tagsURI, allTags: [], user: nil)
+        XCTAssertNil(viewRenderer.capturedContext?["google_analytics_identifier"]?.string)
     }
     
     func testLoggedInUserSetOnAllTagsPageIfPassedIn() throws {
@@ -212,6 +226,7 @@ class LeafViewFactoryTests: XCTestCase {
         XCTAssertEqual(viewRenderer.capturedContext?["uri"]?.string, "https://test.com:443/authors/")
         XCTAssertEqual(viewRenderer.capturedContext?["site_twitter_handle"]?.string, siteTwitterHandle)
         XCTAssertEqual(viewRenderer.capturedContext?["disqus_name"]?.string, disqusName)
+        XCTAssertEqual(viewRenderer.capturedContext?["google_analytics_identifier"]?.string, googleAnalyticsIdentifier)
         XCTAssertEqual(viewRenderer.capturedContext?["user"]?["name"]?.string, "Luke")
         XCTAssertEqual(viewRenderer.leafPath, "blog/authors")
     }
@@ -242,15 +257,21 @@ class LeafViewFactoryTests: XCTestCase {
     }
     
     func testTwitterHandleNotSetOnAllAuthorsPageIfNotProvided() throws {
-        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil)
+        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil, googleAnalyticsIdentifier: nil)
         _ = try viewFactory.allAuthorsView(uri: authorsURI, allAuthors: [], user: nil)
         XCTAssertNil(viewRenderer.capturedContext?["site_twitter_handle"]?.string)
     }
     
     func testDisqusNameNotSetOnAllAuthorsPageIfNotProvided() throws {
-        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil)
+        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil, googleAnalyticsIdentifier: nil)
         _ = try viewFactory.allAuthorsView(uri: authorsURI, allAuthors: [], user: nil)
         XCTAssertNil(viewRenderer.capturedContext?["disqus_name"]?.string)
+    }
+    
+    func testGAIdentifierNotSetOnAllAuthorsPageIfNotProvided() throws {
+        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil, googleAnalyticsIdentifier: nil)
+        _ = try viewFactory.allAuthorsView(uri: authorsURI, allAuthors: [], user: nil)
+        XCTAssertNil(viewRenderer.capturedContext?["google_analytics_identifier"]?.string)
     }
     
     func testNoLoggedInUserPassedToAllAuthorsPageIfNoneProvided() throws {
@@ -277,6 +298,7 @@ class LeafViewFactoryTests: XCTestCase {
         XCTAssertEqual(viewRenderer.capturedContext?["user"]?["name"]?.string, "Luke")
         XCTAssertEqual(viewRenderer.capturedContext?["site_twitter_handle"]?.string, siteTwitterHandle)
         XCTAssertEqual(viewRenderer.capturedContext?["disqus_name"]?.string, disqusName)
+        XCTAssertEqual(viewRenderer.capturedContext?["google_analytics_identifier"]?.string, googleAnalyticsIdentifier)
         XCTAssertEqual(viewRenderer.leafPath, "blog/tag")
     }
     
@@ -287,17 +309,24 @@ class LeafViewFactoryTests: XCTestCase {
     }
     
     func testDisqusNameNotPassedToTagPageIfNotSet() throws {
-        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil)
+        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil, googleAnalyticsIdentifier: nil)
         let testTag = try setupTagPage()
         _ = try viewFactory.tagView(uri: tagURI, tag: testTag, paginatedPosts: try testTag.sortedPosts().paginate(for: tagRequest), user: nil)
         XCTAssertNil(viewRenderer.capturedContext?["disqus_name"]?.string)
     }
     
     func testTwitterHandleNotPassedToTagPageIfNotSet() throws {
-        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil)
+        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil, googleAnalyticsIdentifier: nil)
         let testTag = try setupTagPage()
         _ = try viewFactory.tagView(uri: tagURI, tag: testTag, paginatedPosts: try testTag.sortedPosts().paginate(for: tagRequest), user: nil)
         XCTAssertNil(viewRenderer.capturedContext?["site_twitter_handle"]?.string)
+    }
+    
+    func testGAIdentifierNotPassedToTagPageIfNotSet() throws {
+        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil, googleAnalyticsIdentifier: nil)
+        let testTag = try setupTagPage()
+        _ = try viewFactory.tagView(uri: tagURI, tag: testTag, paginatedPosts: try testTag.sortedPosts().paginate(for: tagRequest), user: nil)
+        XCTAssertNil(viewRenderer.capturedContext?["google_analytics_identifier"]?.string)
     }
     
     // MARK: - Blog Page
@@ -328,6 +357,7 @@ class LeafViewFactoryTests: XCTestCase {
         XCTAssertNil(viewRenderer.capturedContext?["user"])
         XCTAssertEqual(viewRenderer.capturedContext?["disqus_name"]?.string, disqusName)
         XCTAssertEqual(viewRenderer.capturedContext?["site_twitter_handle"]?.string, siteTwitterHandle)
+        XCTAssertEqual(viewRenderer.capturedContext?["google_analytics_identifier"]?.string, googleAnalyticsIdentifier)
         XCTAssertNotNil((viewRenderer.capturedContext?["post_image"])?.string)
         XCTAssertNotNil((viewRenderer.capturedContext?["post_image_alt"])?.string)
         XCTAssertEqual(viewRenderer.capturedContext?["post_uri"]?.string, postURI.description)
@@ -344,17 +374,24 @@ class LeafViewFactoryTests: XCTestCase {
     }
     
     func testDisqusNameNotPassedToBlogPostPageIfNotPassedIn() throws {
-        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil)
+        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil, googleAnalyticsIdentifier: nil)
         let (postWithImage, user) = try setupBlogPost()
         _ = try viewFactory.blogPostView(uri: postURI, post: postWithImage, author: user, user: nil)
         XCTAssertNil(viewRenderer.capturedContext?["disqus_name"]?.string)
     }
     
     func testTwitterHandleNotPassedToBlogPostPageIfNotPassedIn() throws {
-        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil)
+        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil, googleAnalyticsIdentifier: nil)
         let (postWithImage, user) = try setupBlogPost()
         _ = try viewFactory.blogPostView(uri: postURI, post: postWithImage, author: user, user: nil)
         XCTAssertNil(viewRenderer.capturedContext?["site_twitter_handle"]?.string)
+    }
+    
+    func testGAIdentifierNotPassedToBlogPostPageIfNotPassedIn() throws {
+        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil, googleAnalyticsIdentifier: nil)
+        let (postWithImage, user) = try setupBlogPost()
+        _ = try viewFactory.blogPostView(uri: postURI, post: postWithImage, author: user, user: nil)
+        XCTAssertNil(viewRenderer.capturedContext?["google_analytics_identifier"]?.string)
     }
     
     // MARK: - Blog Index
@@ -375,6 +412,7 @@ class LeafViewFactoryTests: XCTestCase {
         XCTAssertEqual(viewRenderer.leafPath, "blog/blog")
         XCTAssertEqual(viewRenderer.capturedContext?["disqus_name"]?.string, disqusName)
         XCTAssertEqual(viewRenderer.capturedContext?["site_twitter_handle"]?.string, siteTwitterHandle)
+        XCTAssertEqual(viewRenderer.capturedContext?["google_analytics_identifier"]?.string, googleAnalyticsIdentifier)
     }
     
     func testNoPostsPassedIntoBlogIndexIfNoneAvailable() throws {
@@ -403,17 +441,24 @@ class LeafViewFactoryTests: XCTestCase {
     }
     
     func testDisqusNameNotPassedToBlogIndexIfNotPassedIn() throws {
-        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil)
+        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil, googleAnalyticsIdentifier: nil)
         let (posts, tags, authors) = try setupBlogIndex()
         _ = try viewFactory.blogIndexView(uri: indexURI, paginatedPosts: posts, tags: tags, authors: authors, loggedInUser: nil)
         XCTAssertNil(viewRenderer.capturedContext?["disqus_name"]?.string)
     }
     
     func testTwitterHandleNotPassedToBlogIndexIfNotPassedIn() throws {
-        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil)
+        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil, googleAnalyticsIdentifier: nil)
         let (posts, tags, authors) = try setupBlogIndex()
         _ = try viewFactory.blogIndexView(uri: indexURI, paginatedPosts: posts, tags: tags, authors: authors, loggedInUser: nil)
         XCTAssertNil(viewRenderer.capturedContext?["site_twitter_handle"]?.string)
+    }
+    
+    func testGAIdentifierNotPassedToBlogIndexIfNotPassedIn() throws {
+        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil, googleAnalyticsIdentifier: nil)
+        let (posts, tags, authors) = try setupBlogIndex()
+        _ = try viewFactory.blogIndexView(uri: indexURI, paginatedPosts: posts, tags: tags, authors: authors, loggedInUser: nil)
+        XCTAssertNil(viewRenderer.capturedContext?["google_analytics_identifier"]?.string)
     }
     
     // MARK: - Author page
@@ -431,6 +476,7 @@ class LeafViewFactoryTests: XCTestCase {
         XCTAssertNil(viewRenderer.capturedContext?["user"])
         XCTAssertEqual(viewRenderer.capturedContext?["disqus_name"]?.string, disqusName)
         XCTAssertEqual(viewRenderer.capturedContext?["site_twitter_handle"]?.string, siteTwitterHandle)
+        XCTAssertEqual(viewRenderer.capturedContext?["google_analytics_identifier"]?.string, googleAnalyticsIdentifier)
         XCTAssertEqual(viewRenderer.capturedContext?["author"]?["tagline"]?.string, author.tagline)
         XCTAssertEqual(viewRenderer.capturedContext?["author"]?["twitter_handle"]?.string, author.twitterHandle)
         XCTAssertEqual(viewRenderer.capturedContext?["author"]?["biography"]?.string, author.biography)
@@ -452,17 +498,24 @@ class LeafViewFactoryTests: XCTestCase {
     }
     
     func testAuthorViewDoesNotGetDisqusNameIfNotProvided() throws {
-        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil)
+        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil, googleAnalyticsIdentifier: nil)
         let (author, posts) = try setupAuthorPage()
         let _ = try viewFactory.profileView(uri: authorURI, author: author, paginatedPosts: posts, loggedInUser: nil)
         XCTAssertNil(viewRenderer.capturedContext?["disqus_name"]?.string)
     }
     
     func testAuthorViewDoesNotGetTwitterHandleIfNotProvided() throws {
-        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil)
+        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil, googleAnalyticsIdentifier: nil)
         let (author, posts) = try setupAuthorPage()
         let _ = try viewFactory.profileView(uri: authorURI, author: author, paginatedPosts: posts, loggedInUser: nil)
         XCTAssertNil(viewRenderer.capturedContext?["site_twitter_handle"]?.string)
+    }
+    
+    func testAuthorViewDoesNotGetGAIdentifierIfNotProvided() throws {
+        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil, googleAnalyticsIdentifier: nil)
+        let (author, posts) = try setupAuthorPage()
+        let _ = try viewFactory.profileView(uri: authorURI, author: author, paginatedPosts: posts, loggedInUser: nil)
+        XCTAssertNil(viewRenderer.capturedContext?["google_analytics_identifier"]?.string)
     }
     
     func testAuthorViewGetsPostCount() throws {
