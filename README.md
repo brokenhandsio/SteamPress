@@ -243,10 +243,9 @@ This is the page for a tag. A blog post can be tagged with many tags and a tag c
 
 ### `profile.leaf`
 
-This is the page for viewing a profile of a user. This is generally used for viewing all posts written by a user, as well as some information about them. This template is also used by the Admin section for viewing a 'My Profile' page when logged in. The parameters it can have set are:
+This is the page for viewing a profile of a user. This is generally used for viewing all posts written by a user, as well as some information about them. The parameters it can have set are:
 
 * `author` - the user the page is for
-* `my_profile` - a boolean set to true if we are viewing the my profile page
 * `profile_page` - a boolean set to to true if we are viewing the profile page
 * `posts` - all the posts the user has written if they have written any in `shortSnippet` form
 * `user` - the currently logged in user if a user is currently logged in
