@@ -81,7 +81,7 @@ public struct Provider: Vapor.Provider {
         let viewFactory = LeafViewFactory(viewRenderer: drop.view,
                                           disqusName: drop.config["disqus", "disqusName"]?.string,
                                           siteTwitterHandle: drop.config["twitter", "siteHandle"]?.string,
-                                          googleAnalyticsIdentifier: nil)
+                                          googleAnalyticsIdentifier: drop.config["googleAnalytics", "identifier"]?.string)
 
         // Set up the controllers
         let blogController = BlogController(drop: drop, pathCreator: pathCreator,

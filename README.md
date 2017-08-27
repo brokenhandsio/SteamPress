@@ -160,11 +160,13 @@ When you first launch SteamPress a preparation runs that seeds the database with
 
 SteamPress currently supports using [Disqus](https://disqus.com) for the comments engine. To use Disqus, just add a config file `disqus.json` to your site that looks like:
 
-```swift
+```json
 {
-    "disqusName": "NAME_OF_YOUR_DISQUS_SITE" // This can be found from your Disqus admin panel
+    "disqusName": "NAME_OF_YOUR_DISQUS_SITE"
 }
 ```
+
+(You can get the name of your Disqus site from your Disqus admin panel)
 
 This will pass it through to the Leaf templates for the Blog index (`blog.leaf`), blog posts (`blogpost.leaf`), author page (`profile.leaf`) and tag page (`tag.leaf`) so you can include it if needs be. If you want to manually set up comments you can do this yourself and just include the necessary files for your provider. This is mainly to provide easy configuration for the [Platform site](https://github.com/brokenhandsio/SteamPressExample).
 
@@ -175,6 +177,20 @@ SteamPress supports both Open Graph and Twitter Cards. The Blog Post `all` Conte
 The Blog Post page will also be passed a number of other useful parameters for Open Graph and Twitter Cards. See the `blogpost.leaf` section below.
 
 The Twitter handle of the site can be configured with a `twitter.json` config file (or injected in) with a property `siteHandle` (the site's twitter handle without the `@`). If set, this will be injected into the public pages as described below. This is for the `twitter:site` tag for Twitter Cards
+
+## Google Analytics Support
+
+SteamPress makes it easy to integrate Google Analytics into your blog. If you create a `googleAnalytics.json` config file that looks like:
+
+```json
+{
+    "identifier": "YOUR_IDENTIFIER"
+}
+```
+
+(You can get your identifier from the Google Analytics console, it will look something like UA-12345678-1)
+
+This will pass a `google_analytics_identifier` parameter through to all of the public pages which you can include and then use the [Example Site's javascript](https://github.com/brokenhandsio/SteamPressExample/blob/master/Public/static/js/analytics.js) to integrate with.
 
 # Expected Leaf Templates
 
@@ -211,6 +227,7 @@ This is the index page of the blog. The parameters it will receive are:
 * `blog_index_page` - a boolean saying we are on the index page of the blog - useful for navbars
 * `site_twitter_handle` - the Twitter handle for the site if configured
 * `uri` - the URI of the page - useful for Open Graph
+* `google_analytics_identifier` - your Google Analytics identifier if configured
 
 
 ### `blogpost.leaf`
@@ -228,6 +245,7 @@ This is the page for viewing a single entire blog post. The parameters set are:
 * `post_image` - The first image in the blog post if one is there. Useful for OpenGraph and Twitter Cards
 * `post_image_alt` - The alt text of the first image if it exists. Useful for Twitter Cards
 * `site_twitter_handle` - the Twitter handle for the site if configured
+* `google_analytics_identifier` - your Google Analytics identifier if configured
 
 ### `tag.leaf`
 
@@ -239,6 +257,7 @@ This is the page for a tag. A blog post can be tagged with many tags and a tag c
 * `disqus_name` - the name of your Disqus site if configured
 * `site_twitter_handle` - the Twitter handle for the site if configured
 * `uri` - the URI of the page - useful for Open Graph
+* `google_analytics_identifier` - your Google Analytics identifier if configured
 
 ### `profile.leaf`
 
@@ -250,6 +269,7 @@ This is the page for viewing a profile of a user. This is generally used for vie
 * `disqus_name` - the name of your Disqus site if configured
 * `site_twitter_handle` - the Twitter handle for the site if configured
 * `uri` - the URI of the page - useful for Open Graph
+* `google_analytics_identifier` - your Google Analytics identifier if configured
 
 ### `tags.leaf`
 
@@ -258,6 +278,7 @@ This is the page for viewing all of the tags on the blog. This provides some mor
 * `tags` - an array of all the tags on the blog, in `withPostCount` context (see below) sorted by post count
 * `site_twitter_handle` - the Twitter handle for the site if configured
 * `uri` - the URI of the page - useful for Open Graph
+* `google_analytics_identifier` - your Google Analytics identifier if configured
 
 ### `authors.leaf`
 
@@ -266,6 +287,7 @@ This is the page for viewing all of the authors on the blog. It provides a usefu
 * `authors` - an array of all the `BlogUser`s on the blog, in `withPostCount` context (see below) sorted by post count
 * `site_twitter_handle` - the Twitter handle for the site if configured
 * `uri` - the URI of the page - useful for Open Graph
+* `google_analytics_identifier` - your Google Analytics identifier if configured
 
 ## Admin Site
 
