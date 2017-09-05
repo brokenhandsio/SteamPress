@@ -22,12 +22,12 @@ struct LeafViewFactory: ViewFactory {
         let postPathPrefix: String
 
         if isEditing {
-            guard let editSubstringIndex = uri.description.range(of: "admin/posts")?.lowerBound else {
+            guard let editSubstringIndex = uri.descriptionWithoutPort.range(of: "admin/posts")?.lowerBound else {
                 throw Abort.serverError
             }
-            postPathPrefix = uri.description.substring(to: editSubstringIndex) + "posts/"
+            postPathPrefix = uri.descriptionWithoutPort.substring(to: editSubstringIndex) + "posts/"
         } else {
-            postPathPrefix = uri.description.replacingOccurrences(of: "admin/createPost", with: "posts")
+            postPathPrefix = uri.descriptionWithoutPort.replacingOccurrences(of: "admin/createPost", with: "posts")
         }
 
         var parameters: [String: NodeRepresentable] = [:]
@@ -230,9 +230,9 @@ struct LeafViewFactory: ViewFactory {
         parameters["post"] = try post.makeNode(in: BlogPostContext.all)
         parameters["author"] = try author.makeNode(in: nil)
         parameters["blog_post_page"] = true.makeNode(in: nil)
-        parameters["post_uri"] = uri.description.makeNode(in: nil)
-        parameters["post_uri_encoded"] = uri.description.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)?.makeNode(in: nil) ?? uri.description.makeNode(in: nil)
-        parameters["site_uri"] = uri.getRootUri().description.makeNode(in: nil)
+        parameters["post_uri"] = uri.descriptionWithoutPort.makeNode(in: nil)
+        parameters["post_uri_encoded"] = uri.descriptionWithoutPort.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)?.makeNode(in: nil) ?? uri.descriptionWithoutPort.makeNode(in: nil)
+        parameters["site_uri"] = uri.getRootUri().descriptionWithoutPort.makeNode(in: nil)
         parameters["post_description"] = try SwiftSoup.parse(markdownToHTML(post.shortSnippet())).text().makeNode(in: nil)
 
         let image = try SwiftSoup.parse(markdownToHTML(post.contents)).select("img").first()
@@ -301,7 +301,7 @@ struct LeafViewFactory: ViewFactory {
     private func createPublicView(template: String, uri: URI, parameters: [String: NodeRepresentable], user: BlogUser? = nil) throws -> View {
         var viewParameters = parameters
 
-        viewParameters["uri"] = uri.description.makeNode(in: nil)
+        viewParameters["uri"] = uri.descriptionWithoutPort.makeNode(in: nil)
 
         if let user = user {
             viewParameters["user"] = try user.makeNode(in: nil)
@@ -326,5 +326,26 @@ struct LeafViewFactory: ViewFactory {
 extension URI {
     func getRootUri() -> URI {
         return URI(scheme: self.scheme, userInfo: nil, hostname: self.hostname, port: self.port, path: "", query: nil, fragment: nil).removingPath()
+    }
+
+    var descriptionWithoutPort: String {
+        get {
+            if scheme.isSecure {
+                return self.description.replacingFirstOccurrence(of: ":443", with: "")
+            }
+            else {
+                return self.description.replacingFirstOccurrence(of: ":80", with: "")
+            }
+        }
+    }
+}
+
+private extension String {
+    func replacingFirstOccurrence(of target: String, with replaceString: String) -> String
+    {
+        if let range = self.range(of: target) {
+            return self.replacingCharacters(in: range, with: replaceString)
+        }
+        return self
     }
 }
