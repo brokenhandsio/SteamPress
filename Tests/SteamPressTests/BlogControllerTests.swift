@@ -17,6 +17,7 @@ class BlogControllerTests: XCTestCase {
         ("testTagView", testTagView),
         ("testIndexPageGetsUri", testIndexPageGetsUri),
         ("testBlogPageGetsUri", testBlogPageGetsUri),
+        ("testHTTPSPassedThroughToBlogPageURI", testHTTPSPassedThroughToBlogPageURI),
         ("testProfilePageGetsUri", testProfilePageGetsUri),
         ("testTagPageGetsUri", testTagPageGetsUri),
         ("testAllAuthorsPageGetsUri", testAllAuthorsPageGetsUri),
@@ -181,6 +182,16 @@ class BlogControllerTests: XCTestCase {
         _ = try drop.respond(to: blogPostRequest)
         
         XCTAssertEqual(blogPostPath, viewFactory.blogPostURI?.description)
+    }
+
+    func testHTTPSPassedThroughToBlogPageURI() throws {
+        try setupDrop()
+
+
+        let httpsRequest = Request(method: .get, uri: "https://localhost\(blogPostPath)")
+        _ = try drop.respond(to: httpsRequest)
+
+        XCTAssertEqual("https://localhost/posts/test-path/", viewFactory.blogPostURI?.descriptionWithoutPort)
     }
     
     func testProfilePageGetsUri() throws {
