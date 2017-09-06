@@ -67,6 +67,8 @@ class BlogAdminControllerTests: XCTestCase {
         ("testCreateUserPageGetsLoggedInUser", testCreatePostPageGetsLoggedInUser),
         ("testEditUserPageGetsLoggedInUser", testEditPostPageGetsLoggedInUser),
         ("testResetPasswordPageGetsLoggedInUser", testResetPasswordPageGetsLoggedInUser),
+        ("testCreatePostPageGetsURI", testCreatePostPageGetsURI),
+        ("testCreatePostPageGetsHTTPSURIIfFromReverseProxy", testCreatePostPageGetsHTTPSURIIfFromReverseProxy),
     ]
     
     // MARK: - Properties
@@ -823,6 +825,25 @@ class BlogAdminControllerTests: XCTestCase {
         _ = try drop.respond(to: request)
         
         XCTAssertEqual(user.name, capturingViewFactory.resetPasswordUser?.name)
+    }
+
+    func testCreatePostPageGetsURI() throws {
+        let request = try createLoggedInRequest(method: .get, path: "createPost")
+        _ = try drop.respond(to: request)
+
+        XCTAssertEqual(capturingViewFactory.createPostURI?.descriptionWithoutPort, "/blog/admin/createPost/")
+    }
+
+    func testCreatePostPageGetsHTTPSURIIfFromReverseProxy() throws {
+        let request = Request(method: .get, uri: "http://geeks.brokenhands.io/blog/admin/createPost/")
+        let user = TestDataBuilder.anyUser()
+        try user.save()
+        request.storage["auth-authenticated"] = user
+        request.headers["X-Forwarded-Proto"] = "https"
+
+        _ = try drop.respond(to: request)
+
+        XCTAssertEqual(capturingViewFactory.createPostURI?.descriptionWithoutPort, "https://geeks.brokenhands.io/blog/admin/createPost/")
     }
     
     // MARK: - Helper functions
