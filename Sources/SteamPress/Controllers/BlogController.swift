@@ -52,7 +52,7 @@ struct BlogController {
         let authors = try BlogUser.all()
         let paginatedBlogPosts = try BlogPost.makeQuery().filter(BlogPost.Properties.published, true).sort(BlogPost.Properties.created, .descending).paginate(for: request)
 
-        return try viewFactory.blogIndexView(uri: request.uri, paginatedPosts: paginatedBlogPosts, tags: tags, authors: authors, loggedInUser: getLoggedInUser(in: request))
+        return try viewFactory.blogIndexView(uri: getRequestURI(from: request), paginatedPosts: paginatedBlogPosts, tags: tags, authors: authors, loggedInUser: getLoggedInUser(in: request))
     }
 
     func blogPostIndexRedirectHandler(request: Request) throws -> ResponseRepresentable {
@@ -69,7 +69,7 @@ struct BlogController {
             throw Abort.badRequest
         }
 
-        return try viewFactory.blogPostView(uri: request.uri, post: blogPost, author: author, user: getLoggedInUser(in: request))
+        return try viewFactory.blogPostView(uri: getRequestURI(from: request), post: blogPost, author: author, user: getLoggedInUser(in: request))
     }
 
     func tagViewHandler(request: Request) throws -> ResponseRepresentable {
@@ -85,7 +85,7 @@ struct BlogController {
 
         let paginatedBlogPosts = try tag.sortedPosts().paginate(for: request)
 
-        return try viewFactory.tagView(uri: request.uri, tag: tag, paginatedPosts: paginatedBlogPosts, user: getLoggedInUser(in: request))
+        return try viewFactory.tagView(uri: getRequestURI(from: request), tag: tag, paginatedPosts: paginatedBlogPosts, user: getLoggedInUser(in: request))
     }
 
     func authorViewHandler(request: Request) throws -> ResponseRepresentable {
@@ -97,15 +97,15 @@ struct BlogController {
 
         let posts = try author.sortedPosts().paginate(for: request)
 
-        return try viewFactory.profileView(uri: request.uri, author: author, paginatedPosts: posts, loggedInUser: getLoggedInUser(in: request))
+        return try viewFactory.profileView(uri: getRequestURI(from: request), author: author, paginatedPosts: posts, loggedInUser: getLoggedInUser(in: request))
     }
 
     func allTagsViewHandler(request: Request) throws -> ResponseRepresentable {
-        return try viewFactory.allTagsView(uri: request.uri, allTags: BlogTag.all(), user: getLoggedInUser(in: request))
+        return try viewFactory.allTagsView(uri: getRequestURI(from: request), allTags: BlogTag.all(), user: getLoggedInUser(in: request))
     }
 
     func allAuthorsViewHandler(request: Request) throws -> ResponseRepresentable {
-        return try viewFactory.allAuthorsView(uri: request.uri, allAuthors: BlogUser.all(), user: getLoggedInUser(in: request))
+        return try viewFactory.allAuthorsView(uri: getRequestURI(from: request), allAuthors: BlogUser.all(), user: getLoggedInUser(in: request))
     }
 
     func tagApiHandler(request: Request) throws -> ResponseRepresentable {
@@ -120,5 +120,14 @@ struct BlogController {
         } catch {}
 
         return loggedInUser
+    }
+
+    private func getRequestURI(from request: Request) -> URI {
+
+        if request.headers["X-Forwarded-Proto"] == "https" {
+            return URI(scheme: "https", userInfo: request.uri.userInfo, hostname: request.uri.hostname, port: nil, path: request.uri.path, query: request.uri.query, fragment: request.uri.fragment)
+        }
+
+        return request.uri
     }
 }

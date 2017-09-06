@@ -16,12 +16,19 @@ class BlogControllerTests: XCTestCase {
         ("testAuthorView", testAuthorView),
         ("testTagView", testTagView),
         ("testIndexPageGetsUri", testIndexPageGetsUri),
+        ("testIndexPageGetsHTTPSUriFromReverseProxy", testIndexPageGetsHTTPSUriFromReverseProxy),
         ("testBlogPageGetsUri", testBlogPageGetsUri),
         ("testHTTPSPassedThroughToBlogPageURI", testHTTPSPassedThroughToBlogPageURI),
+        ("testHTTPSURIPassedThroughAsBlogPageURIIfAccessingViaReverseProxyOverHTTPS", testHTTPSURIPassedThroughAsBlogPageURIIfAccessingViaReverseProxyOverHTTPS),
+        ("testBlogPostPageGetHTPSURIFromReverseProxyLowerCase", testBlogPostPageGetHTPSURIFromReverseProxyLowerCase),
         ("testProfilePageGetsUri", testProfilePageGetsUri),
+        ("testProfilePageGetsHTTPSUriFromReverseProxy", testProfilePageGetsHTTPSUriFromReverseProxy),
         ("testTagPageGetsUri", testTagPageGetsUri),
+        ("testTagPageGetsHTTPSUriFromReverseProxy", testTagPageGetsHTTPSUriFromReverseProxy),
         ("testAllAuthorsPageGetsUri", testAllAuthorsPageGetsUri),
+        ("testAllAuthorsPageGetsHTTPSUriFromReverseProxy", testAllAuthorsPageGetsHTTPSUriFromReverseProxy),
         ("testAllTagsPageGetsUri", testAllTagsPageGetsUri),
+        ("testAllTagsPageGetsHTTPSUriFromReverseProxy", testAllTagsPageGetsHTTPSUriFromReverseProxy),
         ("testAllTagsPageGetsAllTags", testAllTagsPageGetsAllTags),
         ("testAllAuthorsPageGetAllAuthors", testAllAuthorsPageGetAllAuthors),
         ("testTagPageGetsOnlyPublishedPostsInDescendingOrder", testTagPageGetsOnlyPublishedPostsInDescendingOrder),
@@ -175,6 +182,17 @@ class BlogControllerTests: XCTestCase {
         
         XCTAssertEqual(blogIndexPath, viewFactory.blogIndexURI?.description)
     }
+
+    func testIndexPageGetsHTTPSUriFromReverseProxy() throws {
+        try setupDrop()
+
+        let httpsReverseProxyRequest = Request(method: .get, uri: "http://geeks.brokenhands.io\(blogIndexPath)")
+        httpsReverseProxyRequest.headers["X-Forwarded-Proto"] = "https"
+
+        _ = try drop.respond(to: httpsReverseProxyRequest)
+
+        XCTAssertEqual("https://geeks.brokenhands.io/", viewFactory.blogIndexURI?.descriptionWithoutPort)
+    }
     
     func testBlogPageGetsUri() throws {
         try setupDrop()
@@ -187,11 +205,32 @@ class BlogControllerTests: XCTestCase {
     func testHTTPSPassedThroughToBlogPageURI() throws {
         try setupDrop()
 
-
         let httpsRequest = Request(method: .get, uri: "https://localhost\(blogPostPath)")
         _ = try drop.respond(to: httpsRequest)
 
         XCTAssertEqual("https://localhost/posts/test-path/", viewFactory.blogPostURI?.descriptionWithoutPort)
+    }
+
+    func testHTTPSURIPassedThroughAsBlogPageURIIfAccessingViaReverseProxyOverHTTPS() throws {
+        try setupDrop()
+
+        let httpsReverseProxyRequest = Request(method: .get, uri: "http://geeks.brokenhands.io\(blogPostPath)")
+        httpsReverseProxyRequest.headers["X-Forwarded-Proto"] = "https"
+
+        _ = try drop.respond(to: httpsReverseProxyRequest)
+
+        XCTAssertEqual("https://geeks.brokenhands.io/posts/test-path/", viewFactory.blogPostURI?.descriptionWithoutPort)
+    }
+
+    func testBlogPostPageGetHTPSURIFromReverseProxyLowerCase() throws {
+        try setupDrop()
+
+        let httpsReverseProxyRequest = Request(method: .get, uri: "http://geeks.brokenhands.io\(blogPostPath)")
+        httpsReverseProxyRequest.headers["x-forwarded-proto"] = "https"
+
+        _ = try drop.respond(to: httpsReverseProxyRequest)
+
+        XCTAssertEqual("https://geeks.brokenhands.io/posts/test-path/", viewFactory.blogPostURI?.descriptionWithoutPort)
     }
     
     func testProfilePageGetsUri() throws {
@@ -201,6 +240,17 @@ class BlogControllerTests: XCTestCase {
         
         XCTAssertEqual(authorPath, viewFactory.authorURI?.description)
     }
+
+    func testProfilePageGetsHTTPSUriFromReverseProxy() throws {
+        try setupDrop()
+
+        let httpsReverseProxyRequest = Request(method: .get, uri: "http://geeks.brokenhands.io\(authorPath)")
+        httpsReverseProxyRequest.headers["X-Forwarded-Proto"] = "https"
+
+        _ = try drop.respond(to: httpsReverseProxyRequest)
+
+        XCTAssertEqual("https://geeks.brokenhands.io/authors/luke/", viewFactory.authorURI?.descriptionWithoutPort)
+    }
     
     func testTagPageGetsUri() throws {
         try setupDrop()
@@ -208,6 +258,17 @@ class BlogControllerTests: XCTestCase {
         _ = try drop.respond(to: tagRequest)
         
         XCTAssertEqual(tagPath, viewFactory.tagURI?.description)
+    }
+
+    func testTagPageGetsHTTPSUriFromReverseProxy() throws {
+        try setupDrop()
+
+        let httpsReverseProxyRequest = Request(method: .get, uri: "http://geeks.brokenhands.io\(tagPath)")
+        httpsReverseProxyRequest.headers["X-Forwarded-Proto"] = "https"
+
+        _ = try drop.respond(to: httpsReverseProxyRequest)
+
+        XCTAssertEqual("https://geeks.brokenhands.io/tags/tatooine/", viewFactory.tagURI?.descriptionWithoutPort)
     }
     
     func testAllAuthorsPageGetsUri() throws {
@@ -217,6 +278,17 @@ class BlogControllerTests: XCTestCase {
         
         XCTAssertEqual(allAuthorsPath, viewFactory.allAuthorsURI?.description)
     }
+
+    func testAllAuthorsPageGetsHTTPSUriFromReverseProxy() throws {
+        try setupDrop()
+
+        let httpsReverseProxyRequest = Request(method: .get, uri: "http://geeks.brokenhands.io\(allAuthorsPath)")
+        httpsReverseProxyRequest.headers["X-Forwarded-Proto"] = "https"
+
+        _ = try drop.respond(to: httpsReverseProxyRequest)
+
+        XCTAssertEqual("https://geeks.brokenhands.io/authors/", viewFactory.allAuthorsURI?.descriptionWithoutPort)
+    }
     
     func testAllTagsPageGetsUri() throws {
         try setupDrop()
@@ -224,6 +296,17 @@ class BlogControllerTests: XCTestCase {
         _ = try drop.respond(to: allTagsRequest)
         
         XCTAssertEqual(allTagsPath, viewFactory.allTagsURI?.description)
+    }
+
+    func testAllTagsPageGetsHTTPSUriFromReverseProxy() throws {
+        try setupDrop()
+
+        let httpsReverseProxyRequest = Request(method: .get, uri: "http://geeks.brokenhands.io\(allTagsPath)")
+        httpsReverseProxyRequest.headers["X-Forwarded-Proto"] = "https"
+
+        _ = try drop.respond(to: httpsReverseProxyRequest)
+
+        XCTAssertEqual("https://geeks.brokenhands.io/tags/", viewFactory.allTagsURI?.descriptionWithoutPort)
     }
     
     func testAllTagsPageGetsAllTags() throws {
