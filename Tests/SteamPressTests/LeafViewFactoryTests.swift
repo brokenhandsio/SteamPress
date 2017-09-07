@@ -74,6 +74,7 @@ class LeafViewFactoryTests: XCTestCase {
         ("testDraftPassedThroughWhenEditingABlogPostThatHasNotBeenPublished", testDraftPassedThroughWhenEditingABlogPostThatHasNotBeenPublished),
         ("testAuthorViewGetsPostCount", testAuthorViewGetsPostCount),
         ("testAuthorViewGetsLongSnippetForPosts", testAuthorViewGetsLongSnippetForPosts),
+        ("testSiteURIForHTTPDoesNotContainPort", testSiteURIForHTTPDoesNotContainPort),
         ]
     
     // MARK: - Properties
@@ -138,7 +139,7 @@ class LeafViewFactoryTests: XCTestCase {
         XCTAssertEqual(viewRenderer.capturedContext?["tags"]?.array?.count, 2)
         XCTAssertEqual((viewRenderer.capturedContext?["tags"]?.array?.first)?["name"], "tag1")
         XCTAssertEqual((viewRenderer.capturedContext?["tags"]?.array?[1])?["name"], "tag2")
-        XCTAssertEqual(viewRenderer.capturedContext?["uri"]?.string, "https://test.com:443/tags/")
+        XCTAssertEqual(viewRenderer.capturedContext?["uri"]?.string, "https://test.com/tags/")
         XCTAssertEqual(viewRenderer.capturedContext?["site_twitter_handle"]?.string, siteTwitterHandle)
         XCTAssertEqual(viewRenderer.capturedContext?["disqus_name"]?.string, disqusName)
         XCTAssertEqual(viewRenderer.capturedContext?["google_analytics_identifier"]?.string, googleAnalyticsIdentifier)
@@ -223,7 +224,7 @@ class LeafViewFactoryTests: XCTestCase {
         XCTAssertEqual(viewRenderer.capturedContext?["authors"]?.array?.count, 2)
         XCTAssertEqual((viewRenderer.capturedContext?["authors"]?.array?.first)?["name"], "Luke")
         XCTAssertEqual((viewRenderer.capturedContext?["authors"]?.array?[1])?["name"], "Han")
-        XCTAssertEqual(viewRenderer.capturedContext?["uri"]?.string, "https://test.com:443/authors/")
+        XCTAssertEqual(viewRenderer.capturedContext?["uri"]?.string, "https://test.com/authors/")
         XCTAssertEqual(viewRenderer.capturedContext?["site_twitter_handle"]?.string, siteTwitterHandle)
         XCTAssertEqual(viewRenderer.capturedContext?["disqus_name"]?.string, disqusName)
         XCTAssertEqual(viewRenderer.capturedContext?["google_analytics_identifier"]?.string, googleAnalyticsIdentifier)
@@ -293,7 +294,7 @@ class LeafViewFactoryTests: XCTestCase {
         XCTAssertEqual((viewRenderer.capturedContext?["tag"])?["name"], "tatooine")
         XCTAssertEqual(viewRenderer.capturedContext?["posts"]?["data"]?.array?.count, 1)
         XCTAssertEqual((viewRenderer.capturedContext?["posts"]?["data"]?.array?.first)?["title"]?.string, TestDataBuilder.anyPost(author: TestDataBuilder.anyUser()).title)
-        XCTAssertEqual(viewRenderer.capturedContext?["uri"]?.string, "https://test.com:443/tags/tatooine/")
+        XCTAssertEqual(viewRenderer.capturedContext?["uri"]?.string, "https://test.com/tags/tatooine/")
         XCTAssertEqual(viewRenderer.capturedContext?["tag_page"]?.bool, true)
         XCTAssertEqual(viewRenderer.capturedContext?["user"]?["name"]?.string, "Luke")
         XCTAssertEqual(viewRenderer.capturedContext?["site_twitter_handle"]?.string, siteTwitterHandle)
@@ -360,10 +361,9 @@ class LeafViewFactoryTests: XCTestCase {
         XCTAssertEqual(viewRenderer.capturedContext?["google_analytics_identifier"]?.string, googleAnalyticsIdentifier)
         XCTAssertNotNil((viewRenderer.capturedContext?["post_image"])?.string)
         XCTAssertNotNil((viewRenderer.capturedContext?["post_image_alt"])?.string)
-        XCTAssertEqual(viewRenderer.capturedContext?["post_uri"]?.string, postURI.description)
-        // TODO - important to note!
-        XCTAssertEqual(viewRenderer.capturedContext?["site_uri"]?.string, "https://test.com:443/")
-        XCTAssertEqual(viewRenderer.capturedContext?["post_uri_encoded"]?.string, postURI.description)
+        XCTAssertEqual(viewRenderer.capturedContext?["post_uri"]?.string, "https://test.com/posts/test-post/")
+        XCTAssertEqual(viewRenderer.capturedContext?["site_uri"]?.string, "https://test.com/")
+        XCTAssertEqual(viewRenderer.capturedContext?["post_uri_encoded"]?.string, "https://test.com/posts/test-post/")
         XCTAssertEqual(viewRenderer.leafPath, "blog/blogpost")
     }
     
@@ -400,7 +400,7 @@ class LeafViewFactoryTests: XCTestCase {
         let (posts, tags, authors) = try setupBlogIndex()
         _ = try viewFactory.blogIndexView(uri: indexURI, paginatedPosts: posts, tags: tags, authors: authors, loggedInUser: nil)
 
-        XCTAssertEqual(viewRenderer.capturedContext?["uri"]?.string, indexURI.description)
+        XCTAssertEqual(viewRenderer.capturedContext?["uri"]?.string, indexURI.descriptionWithoutPort)
         XCTAssertTrue((viewRenderer.capturedContext?["blog_index_page"]?.bool) ?? false)
         
         XCTAssertEqual(viewRenderer.capturedContext?["posts"]?["data"]?.array?.count, posts.total)
@@ -470,7 +470,7 @@ class LeafViewFactoryTests: XCTestCase {
         XCTAssertEqual(viewRenderer.capturedContext?["author"]?["name"]?.string, author.name)
         XCTAssertEqual(viewRenderer.capturedContext?["posts"]?["data"]?.array?.count, posts.total)
         XCTAssertEqual((viewRenderer.capturedContext?["posts"]?["data"]?.array?.first)?["title"]?.string, TestDataBuilder.anyPostWithImage(author: TestDataBuilder.anyUser()).title)
-        XCTAssertEqual(viewRenderer.capturedContext?["uri"]?.string, authorURI.description)
+        XCTAssertEqual(viewRenderer.capturedContext?["uri"]?.string, authorURI.descriptionWithoutPort)
         XCTAssertTrue((viewRenderer.capturedContext?["profile_page"]?.bool) ?? false)
         XCTAssertNil(viewRenderer.capturedContext?["my_profile"])
         XCTAssertNil(viewRenderer.capturedContext?["user"])
@@ -688,7 +688,7 @@ class LeafViewFactoryTests: XCTestCase {
     func testCreateBlogPostViewGetsCorrectParameters() throws {
         let user = TestDataBuilder.anyUser()
         let _ = try viewFactory.createBlogPostView(uri: createPostURI, user: user)
-        XCTAssertEqual(viewRenderer.capturedContext?["post_path_prefix"]?.string, "https://test.com:443/posts/")
+        XCTAssertEqual(viewRenderer.capturedContext?["post_path_prefix"]?.string, "https://test.com/posts/")
         XCTAssertFalse((viewRenderer.capturedContext?["title_error"]?.bool) ?? true)
         XCTAssertFalse((viewRenderer.capturedContext?["contents_error"]?.bool) ?? true)
         XCTAssertNil(viewRenderer.capturedContext?["errors"])
@@ -709,7 +709,7 @@ class LeafViewFactoryTests: XCTestCase {
         let postToEdit = TestDataBuilder.anyPost(author: author)
         try postToEdit.save()
         let _ = try viewFactory.createBlogPostView(uri: editPostURI, title: postToEdit.title, contents: postToEdit.contents, slugUrl: postToEdit.slugUrl, tags: [Node(node: "test")], isEditing: true, postToEdit: postToEdit, user: author)
-        XCTAssertEqual(viewRenderer.capturedContext?["post_path_prefix"]?.string, "https://test.com:443/posts/")
+        XCTAssertEqual(viewRenderer.capturedContext?["post_path_prefix"]?.string, "https://test.com/posts/")
         XCTAssertFalse((viewRenderer.capturedContext?["title_error"]?.bool) ?? true)
         XCTAssertFalse((viewRenderer.capturedContext?["contents_error"]?.bool) ?? true)
         XCTAssertNil(viewRenderer.capturedContext?["errors"])
@@ -754,6 +754,14 @@ class LeafViewFactoryTests: XCTestCase {
         try postToEdit.save()
         let _ = try viewFactory.createBlogPostView(uri: editPostURI, title: postToEdit.title, contents: postToEdit.contents, slugUrl: postToEdit.slugUrl, tags: [Node(node: "test")], isEditing: true, postToEdit: postToEdit, user: TestDataBuilder.anyUser())
         XCTAssertEqual(viewRenderer.capturedContext?["post"]?["published"]?.bool, false)
+    }
+
+    func testSiteURIForHTTPDoesNotContainPort() throws {
+        let (postWithImage, user) = try setupBlogPost()
+        let httpURI = URI(scheme: "http", hostname: "test.com", path: "posts/test-post/")
+        _ = try viewFactory.blogPostView(uri: httpURI, post: postWithImage, author: user, user: nil)
+
+        XCTAssertEqual(viewRenderer.capturedContext?["site_uri"]?.string, "http://test.com/")
     }
     
     // MARK: - Helpers

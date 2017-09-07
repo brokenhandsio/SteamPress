@@ -12,9 +12,11 @@ class CapturingViewFactory: ViewFactory {
     
     private(set) var createPostErrors: [String]? = nil
     private(set) var createBlogPostUser: BlogUser?
+    private(set) var createPostURI: URI?
     func createBlogPostView(uri: URI, errors: [String]?, title: String?, contents: String?, slugUrl: String?, tags: [Node]?, isEditing: Bool, postToEdit: BlogPost?, draft: Bool, user: BlogUser) throws -> View {
         self.createPostErrors = errors
         self.createBlogPostUser = user
+        self.createPostURI = uri
         return createDummyView()
     }
     
