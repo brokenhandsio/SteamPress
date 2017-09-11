@@ -10,6 +10,7 @@ class RSSFeedTests: XCTestCase {
     static var allTests = [
         ("testLinuxTestSuiteIncludesAllTests", testLinuxTestSuiteIncludesAllTests),
         ("testNoPostsReturnsCorrectRSSFeed", testNoPostsReturnsCorrectRSSFeed),
+        ("testNoPostsReturnsCorrectRSSFeed", testNoPostsReturnsCorrectRSSFeed),
         ]
 
     // MARK: - Properties
@@ -52,6 +53,18 @@ class RSSFeedTests: XCTestCase {
 
     func testNoPostsReturnsCorrectRSSFeed() throws {
         let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>https://www.steampress.io</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n</channel>\n\n</rss>"
+
+        let actualXmlResponse = try drop.respond(to: rssRequest)
+
+        XCTAssertEqual(actualXmlResponse.body.bytes?.makeString(), expectedXML)
+    }
+
+    func testOnePostReturnsCorrectRSSFeed() throws {
+        let author = TestDataBuilder.anyUser()
+        try author.save()
+        let post1 = TestDataBuilder.anyPost(author: author)
+        try post1.save()
+        let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>https://www.steampress.io</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<item>\n<title>\n\(post1.title)\n</title>\n<description>\n\(post1.shortSnippet())\n</description>\n<link>\n/posts/\(post1.slugUrl)\n</link>\n</item>\n</channel>\n\n</rss>"
 
         let actualXmlResponse = try drop.respond(to: rssRequest)
 
