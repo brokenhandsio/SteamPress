@@ -23,7 +23,7 @@ struct BlogRSSController {
 
         var xmlFeed = xmlStart
 
-        for post in try BlogPost.all() {
+        for post in try BlogPost.makeQuery().filter(BlogPost.Properties.published, true).all() {
             xmlFeed += post.getPostRSSFeed()
         }
 
