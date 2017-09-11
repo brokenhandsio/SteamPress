@@ -13,6 +13,7 @@ class RSSFeedTests: XCTestCase {
         ("testNoPostsReturnsCorrectRSSFeed", testNoPostsReturnsCorrectRSSFeed),
         ("testMultiplePostsReturnsCorrectRSSFeed", testMultiplePostsReturnsCorrectRSSFeed),
         ("testDraftsAreNotIncludedInFeed", testDraftsAreNotIncludedInFeed),
+        ("testBlogTitleCanBeConfigured", testBlogTitleCanBeConfigured),
         ]
 
     // MARK: - Properties
@@ -25,15 +26,7 @@ class RSSFeedTests: XCTestCase {
     override func setUp() {
         database = try! Database(MemoryDriver())
         try! Droplet.prepare(database: database)
-        var config = Config([:])
-
-        try! config.set("steampress.postsPerPage", 5)
-        try! config.set("droplet.middleware", ["error", "steampress-sessions", "blog-persist"])
-        try! config.set("fluent.driver", "memory")
-        try! config.addProvider(SteamPress.Provider.self)
-        try! config.addProvider(FluentProvider.Provider.self)
-
-        drop = try! Droplet(config)
+        try! setupDrop()
     }
 
     override func tearDown() {
@@ -103,5 +96,39 @@ class RSSFeedTests: XCTestCase {
         let actualXmlResponse = try drop.respond(to: rssRequest)
 
         XCTAssertEqual(actualXmlResponse.body.bytes?.makeString(), expectedXML)
+    }
+
+    func testBlogTitleCanBeConfigured() throws {
+        let title = "SteamPress - The Open Source Blog"
+        try setupDrop(title: title)
+
+        let author = TestDataBuilder.anyUser()
+        try author.save()
+        let post1 = TestDataBuilder.anyPost(author: author)
+        try post1.save()
+        let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>\(title)</title>\n<link>https://www.steampress.io</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<item>\n<title>\n\(post1.title)\n</title>\n<description>\n\(post1.shortSnippet())\n</description>\n<link>\n/posts/\(post1.slugUrl)\n</link>\n</item>\n</channel>\n\n</rss>"
+
+        let actualXmlResponse = try drop.respond(to: rssRequest)
+
+        XCTAssertEqual(actualXmlResponse.body.bytes?.makeString(), expectedXML)
+    }
+
+    // MARK: - Private functions
+
+    private func setupDrop(title: String? = nil) throws {
+        var config = Config([:])
+
+        try config.set("steampress.postsPerPage", 5)
+
+        if let title = title {
+            try config.set("steampress.title", title)
+        }
+
+        try config.set("droplet.middleware", ["error", "steampress-sessions", "blog-persist"])
+        try config.set("fluent.driver", "memory")
+        try config.addProvider(SteamPress.Provider.self)
+        try config.addProvider(FluentProvider.Provider.self)
+
+        drop = try Droplet(config)
     }
 }
