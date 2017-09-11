@@ -88,10 +88,12 @@ public struct Provider: Vapor.Provider {
                                             viewFactory: viewFactory, enableAuthorsPages: enableAuthorsPages,
                                             enableTagsPages: enableTagsPages)
         let blogAdminController = BlogAdminController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory)
+        let rssFeedController = BlogRSSController(drop: drop)
 
         // Add the routes
         blogController.addRoutes()
         blogAdminController.addRoutes()
+        rssFeedController.addRoutes()
     }
 
     public init(config: Config) throws {

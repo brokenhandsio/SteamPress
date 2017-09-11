@@ -15,14 +15,22 @@ class RSSFeedTests: XCTestCase {
     // MARK: - Properties
     private var database: Database!
     private var drop: Droplet!
-    private let rssRequest = Request(method: .get, uri: "blog/feed.xml")
+    private let rssRequest = Request(method: .get, uri: "/feed")
 
     // MARK: - Overrides
 
     override func setUp() {
         database = try! Database(MemoryDriver())
         try! Droplet.prepare(database: database)
-        drop = try! Droplet()
+        var config = Config([:])
+
+        try! config.set("steampress.postsPerPage", 5)
+        try! config.set("droplet.middleware", ["error", "steampress-sessions", "blog-persist"])
+        try! config.set("fluent.driver", "memory")
+        try! config.addProvider(SteamPress.Provider.self)
+        try! config.addProvider(FluentProvider.Provider.self)
+
+        drop = try! Droplet(config)
     }
 
     override func tearDown() {
