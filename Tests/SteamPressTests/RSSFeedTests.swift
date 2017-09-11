@@ -16,7 +16,7 @@ class RSSFeedTests: XCTestCase {
     // MARK: - Properties
     private var database: Database!
     private var drop: Droplet!
-    private let rssRequest = Request(method: .get, uri: "/feed")
+    private let rssRequest = Request(method: .get, uri: "/rss.xml")
 
     // MARK: - Overrides
 

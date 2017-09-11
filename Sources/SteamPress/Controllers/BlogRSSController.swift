@@ -14,7 +14,7 @@ struct BlogRSSController {
 
     // MARK: - Route setup
     func addRoutes() {
-        drop.get("feed", handler: rssXmlFeedHandler)
+        drop.get("rss.xml", handler: rssXmlFeedHandler)
     }
 
     // MARK: - Route Handler
