@@ -5,13 +5,15 @@ struct BlogRSSController {
     // MARK: - Properties
     fileprivate let drop: Droplet
     fileprivate let title: String?
+    fileprivate let description: String?
 
     let xmlEnd = "</channel>\n\n</rss>"
 
     // MARK: - Initialiser
-    init(drop: Droplet, title: String?) {
+    init(drop: Droplet, title: String?, description: String?) {
         self.drop = drop
         self.title = title
+        self.description = description
     }
 
     // MARK: - Route setup
@@ -37,12 +39,17 @@ struct BlogRSSController {
     private func getXMLStart() -> String {
 
         var title = "SteamPress Blog"
+        var description = "SteamPress is an open-source blogging engine written for Vapor in Swift"
 
         if let providedTitle = self.title {
             title = providedTitle
         }
 
-        return "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>\(title)</title>\n<link>https://www.steampress.io</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n"
+        if let providedDescription = self.description {
+            description = providedDescription
+        }
+
+        return "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>\(title)</title>\n<link>https://www.steampress.io</link>\n<description>\(description)</description>\n"
     }
 }
 

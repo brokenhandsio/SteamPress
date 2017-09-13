@@ -14,6 +14,7 @@ class RSSFeedTests: XCTestCase {
         ("testMultiplePostsReturnsCorrectRSSFeed", testMultiplePostsReturnsCorrectRSSFeed),
         ("testDraftsAreNotIncludedInFeed", testDraftsAreNotIncludedInFeed),
         ("testBlogTitleCanBeConfigured", testBlogTitleCanBeConfigured),
+        ("testBlogTitleCanBeConfigured", testBlogTitleCanBeConfigured),
         ]
 
     // MARK: - Properties
@@ -113,15 +114,34 @@ class RSSFeedTests: XCTestCase {
         XCTAssertEqual(actualXmlResponse.body.bytes?.makeString(), expectedXML)
     }
 
+    func testBlogDescriptionCanBeConfigured() throws {
+        let description = "Our fancy new RSS-feed blog"
+        try setupDrop(description: description)
+
+        let author = TestDataBuilder.anyUser()
+        try author.save()
+        let post1 = TestDataBuilder.anyPost(author: author)
+        try post1.save()
+        let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>https://www.steampress.io</link>\n<description>\(description)</description>\n<item>\n<title>\n\(post1.title)\n</title>\n<description>\n\(post1.shortSnippet())\n</description>\n<link>\n/posts/\(post1.slugUrl)\n</link>\n</item>\n</channel>\n\n</rss>"
+
+        let actualXmlResponse = try drop.respond(to: rssRequest)
+
+        XCTAssertEqual(actualXmlResponse.body.bytes?.makeString(), expectedXML)
+    }
+
     // MARK: - Private functions
 
-    private func setupDrop(title: String? = nil) throws {
+    private func setupDrop(title: String? = nil, description: String? = nil) throws {
         var config = Config([:])
 
         try config.set("steampress.postsPerPage", 5)
 
         if let title = title {
             try config.set("steampress.title", title)
+        }
+
+        if let description = description {
+            try config.set("steampress.description", description)
         }
 
         try config.set("droplet.middleware", ["error", "steampress-sessions", "blog-persist"])
