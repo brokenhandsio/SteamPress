@@ -15,6 +15,7 @@ class RSSFeedTests: XCTestCase {
         ("testDraftsAreNotIncludedInFeed", testDraftsAreNotIncludedInFeed),
         ("testBlogTitleCanBeConfigured", testBlogTitleCanBeConfigured),
         ("testBlogTitleCanBeConfigured", testBlogTitleCanBeConfigured),
+        ("testRSSFeedEndpointAddedToCorrectEndpointWhenBlogInSubPath", testRSSFeedEndpointAddedToCorrectEndpointWhenBlogInSubPath),
         ]
 
     // MARK: - Properties
@@ -129,9 +130,20 @@ class RSSFeedTests: XCTestCase {
         XCTAssertEqual(actualXmlResponse.body.bytes?.makeString(), expectedXML)
     }
 
+    func testRSSFeedEndpointAddedToCorrectEndpointWhenBlogInSubPath() throws {
+        try setupDrop(path: "blog-path")
+
+        let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>https://www.steampress.io</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n</channel>\n\n</rss>"
+
+        let request = Request(method: .get, uri: "/blog-path/rss.xml")
+        let actualXmlResponse = try drop.respond(to: request)
+
+        XCTAssertEqual(actualXmlResponse.body.bytes?.makeString(), expectedXML)
+    }
+
     // MARK: - Private functions
 
-    private func setupDrop(title: String? = nil, description: String? = nil) throws {
+    private func setupDrop(title: String? = nil, description: String? = nil, path: String? = nil) throws {
         var config = Config([:])
 
         try config.set("steampress.postsPerPage", 5)
@@ -142,6 +154,10 @@ class RSSFeedTests: XCTestCase {
 
         if let description = description {
             try config.set("steampress.description", description)
+        }
+
+        if let path = path {
+            try config.set("steampress.blogPath", path)
         }
 
         try config.set("droplet.middleware", ["error", "steampress-sessions", "blog-persist"])

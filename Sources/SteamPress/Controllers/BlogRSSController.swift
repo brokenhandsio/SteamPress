@@ -4,21 +4,25 @@ struct BlogRSSController {
 
     // MARK: - Properties
     fileprivate let drop: Droplet
+    fileprivate let pathCreator: BlogPathCreator
     fileprivate let title: String?
     fileprivate let description: String?
 
     let xmlEnd = "</channel>\n\n</rss>"
 
     // MARK: - Initialiser
-    init(drop: Droplet, title: String?, description: String?) {
+    init(drop: Droplet, pathCreator: BlogPathCreator, title: String?, description: String?) {
         self.drop = drop
+        self.pathCreator = pathCreator
         self.title = title
         self.description = description
     }
 
     // MARK: - Route setup
     func addRoutes() {
-        drop.get("rss.xml", handler: rssXmlFeedHandler)
+        drop.group(pathCreator.blogPath ?? "") { index in
+            index.get("rss.xml", handler: rssXmlFeedHandler)
+        }
     }
 
     // MARK: - Route Handler
