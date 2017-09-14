@@ -32,7 +32,7 @@ struct BlogRSSController {
         var xmlFeed = getXMLStart()
 
         for post in try BlogPost.makeQuery().filter(BlogPost.Properties.published, true).all() {
-            xmlFeed += post.getPostRSSFeed()
+            xmlFeed += post.getPostRSSFeed(pathCreator: pathCreator)
         }
 
         xmlFeed += xmlEnd
@@ -52,14 +52,16 @@ struct BlogRSSController {
         if let providedDescription = self.description {
             description = providedDescription
         }
+        
+        let link = pathCreator.createPath(for: nil)
 
-        return "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>\(title)</title>\n<link>https://www.steampress.io</link>\n<description>\(description)</description>\n<generator>SteamPress</generator>\n"
+        return "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>\(title)</title>\n<link>\(link)</link>\n<description>\(description)</description>\n<generator>SteamPress</generator>\n"
     }
 }
 
 extension BlogPost {
-    func getPostRSSFeed() -> String {
-        
-        return "<item>\n<title>\n\(title)\n</title>\n<description>\n\(shortSnippet())\n</description>\n<link>\n/posts/\(slugUrl)\n</link>\n</item>\n"
+    func getPostRSSFeed(pathCreator: BlogPathCreator) -> String {
+        let link = pathCreator.createPath(for: "posts/\(slugUrl)")
+        return "<item>\n<title>\n\(title)\n</title>\n<description>\n\(shortSnippet())\n</description>\n<link>\n\(link)\n</link>\n</item>\n"
     }
 }
