@@ -34,7 +34,7 @@ struct BlogRSSController {
         var xmlFeed = getXMLStart()
 
         for post in try BlogPost.makeQuery().filter(BlogPost.Properties.published, true).all() {
-            xmlFeed += post.getPostRSSFeed(pathCreator: pathCreator)
+            xmlFeed += try post.getPostRSSFeed(pathCreator: pathCreator)
         }
 
         xmlFeed += xmlEnd
@@ -68,8 +68,16 @@ struct BlogRSSController {
 }
 
 extension BlogPost {
-    func getPostRSSFeed(pathCreator: BlogPathCreator) -> String {
+    func getPostRSSFeed(pathCreator: BlogPathCreator) throws -> String {
         let link = pathCreator.createPath(for: "posts/\(slugUrl)")
-        return "<item>\n<title>\n\(title)\n</title>\n<description>\n\(shortSnippet())\n</description>\n<link>\n\(link)\n</link>\n</item>\n"
+        var postEntry = "<item>\n<title>\n\(title)\n</title>\n<description>\n\(shortSnippet())\n</description>\n<link>\n\(link)\n</link>\n"
+        
+        for tag in try tags.all() {
+            postEntry += "<category>\(tag.name)</category>\n"
+        }
+        
+        postEntry += "</item>\n"
+        
+        return postEntry
     }
 }

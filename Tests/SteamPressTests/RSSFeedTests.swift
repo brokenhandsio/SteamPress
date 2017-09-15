@@ -18,6 +18,7 @@ class RSSFeedTests: XCTestCase {
         ("testRSSFeedEndpointAddedToCorrectEndpointWhenBlogInSubPath", testRSSFeedEndpointAddedToCorrectEndpointWhenBlogInSubPath),
         ("testPostLinkWhenBlogIsPlacedAtSubPath", testPostLinkWhenBlogIsPlacedAtSubPath),
         ("testCopyrightCanBeAddedToRSS", testCopyrightCanBeAddedToRSS),
+        ("testThatTagsAreAddedToPostCorrectly", testThatTagsAreAddedToPostCorrectly),
         ]
 
     // MARK: - Properties
@@ -149,14 +150,30 @@ class RSSFeedTests: XCTestCase {
         
         XCTAssertEqual(actualXmlResponse.body.bytes?.makeString(), expectedXML)
     }
+    
+    func testThatTagsAreAddedToPostCorrectly() throws {
+        let (post, _) = try createPost(tags: ["Vapor 2", "Engineering"])
+        let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<item>\n<title>\n\(post.title)\n</title>\n<description>\n\(post.shortSnippet())\n</description>\n<link>\n/posts/\(post.slugUrl)/\n</link>\n<category>Vapor 2</category>\n<category>Engineering</category>\n</item>\n</channel>\n\n</rss>"
+        
+        let actualXmlResponse = try drop.respond(to: rssRequest)
+        
+        XCTAssertEqual(actualXmlResponse.body.bytes?.makeString(), expectedXML)
+    }
 
     // MARK: - Private functions
     
-    private func createPost() throws -> (BlogPost, BlogUser) {
+    private func createPost(tags: [String]? = nil) throws -> (BlogPost, BlogUser) {
         let author = TestDataBuilder.anyUser()
         try author.save()
         let post = TestDataBuilder.anyPost(author: author)
         try post.save()
+        
+        if let tags = tags {
+            for tag in tags {
+                try BlogTag.addTag(tag, to: post)
+            }
+        }
+        
         return (post, author)
     }
 

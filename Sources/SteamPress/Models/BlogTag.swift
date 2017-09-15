@@ -17,7 +17,7 @@ public final class BlogTag: Model {
 
     var name: String
 
-    init(name: String) {
+    public init(name: String) {
         self.name = name    }
 
     required public init(row: Row) throws {
