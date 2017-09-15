@@ -52,7 +52,7 @@ class RSSFeedTests: XCTestCase {
     }
 
     func testNoPostsReturnsCorrectRSSFeed() throws {
-        let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n</channel>\n\n</rss>"
+        let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n</channel>\n\n</rss>"
 
         let actualXmlResponse = try drop.respond(to: rssRequest)
 
@@ -61,7 +61,7 @@ class RSSFeedTests: XCTestCase {
 
     func testOnePostReturnsCorrectRSSFeed() throws {
         let (post, _) = try createPost()
-        let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<item>\n<title>\n\(post.title)\n</title>\n<description>\n\(post.shortSnippet())\n</description>\n<link>\n/posts/\(post.slugUrl)/\n</link>\n</item>\n</channel>\n\n</rss>"
+        let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<item>\n<title>\n\(post.title)\n</title>\n<description>\n\(post.shortSnippet())\n</description>\n<link>\n/posts/\(post.slugUrl)/\n</link>\n</item>\n</channel>\n\n</rss>"
 
         let actualXmlResponse = try drop.respond(to: rssRequest)
 
@@ -74,7 +74,7 @@ class RSSFeedTests: XCTestCase {
         let contents = "This is some short contents"
         let post2 = BlogPost(title: anotherTitle, contents: contents, author: author, creationDate: Date(), slugUrl: "another-title", published: true)
         try post2.save()
-        let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<item>\n<title>\n\(post.title)\n</title>\n<description>\n\(post.shortSnippet())\n</description>\n<link>\n/posts/\(post.slugUrl)/\n</link>\n</item>\n<item>\n<title>\n\(anotherTitle)\n</title>\n<description>\n\(contents)\n\n</description>\n<link>\n/posts/another-title/\n</link>\n</item>\n</channel>\n\n</rss>"
+        let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<item>\n<title>\n\(post.title)\n</title>\n<description>\n\(post.shortSnippet())\n</description>\n<link>\n/posts/\(post.slugUrl)/\n</link>\n</item>\n<item>\n<title>\n\(anotherTitle)\n</title>\n<description>\n\(contents)\n\n</description>\n<link>\n/posts/another-title/\n</link>\n</item>\n</channel>\n\n</rss>"
 
         let actualXmlResponse = try drop.respond(to: rssRequest)
 
@@ -87,7 +87,7 @@ class RSSFeedTests: XCTestCase {
         let contents = "This is some short contents"
         let post2 = BlogPost(title: anotherTitle, contents: contents, author: author, creationDate: Date(), slugUrl: "another-title", published: false)
         try post2.save()
-        let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<item>\n<title>\n\(post.title)\n</title>\n<description>\n\(post.shortSnippet())\n</description>\n<link>\n/posts/\(post.slugUrl)/\n</link>\n</item>\n</channel>\n\n</rss>"
+        let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<item>\n<title>\n\(post.title)\n</title>\n<description>\n\(post.shortSnippet())\n</description>\n<link>\n/posts/\(post.slugUrl)/\n</link>\n</item>\n</channel>\n\n</rss>"
 
         let actualXmlResponse = try drop.respond(to: rssRequest)
 
@@ -99,7 +99,7 @@ class RSSFeedTests: XCTestCase {
         try setupDrop(title: title)
 
         let (post, _) = try createPost()
-        let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>\(title)</title>\n<link>/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<item>\n<title>\n\(post.title)\n</title>\n<description>\n\(post.shortSnippet())\n</description>\n<link>\n/posts/\(post.slugUrl)/\n</link>\n</item>\n</channel>\n\n</rss>"
+        let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>\(title)</title>\n<link>/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<item>\n<title>\n\(post.title)\n</title>\n<description>\n\(post.shortSnippet())\n</description>\n<link>\n/posts/\(post.slugUrl)/\n</link>\n</item>\n</channel>\n\n</rss>"
 
         let actualXmlResponse = try drop.respond(to: rssRequest)
 
@@ -111,7 +111,7 @@ class RSSFeedTests: XCTestCase {
         try setupDrop(description: description)
 
         let (post, _) = try createPost()
-        let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/</link>\n<description>\(description)</description>\n<generator>SteamPress</generator>\n<item>\n<title>\n\(post.title)\n</title>\n<description>\n\(post.shortSnippet())\n</description>\n<link>\n/posts/\(post.slugUrl)/\n</link>\n</item>\n</channel>\n\n</rss>"
+        let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/</link>\n<description>\(description)</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<item>\n<title>\n\(post.title)\n</title>\n<description>\n\(post.shortSnippet())\n</description>\n<link>\n/posts/\(post.slugUrl)/\n</link>\n</item>\n</channel>\n\n</rss>"
 
         let actualXmlResponse = try drop.respond(to: rssRequest)
 
@@ -121,7 +121,7 @@ class RSSFeedTests: XCTestCase {
     func testRSSFeedEndpointAddedToCorrectEndpointWhenBlogInSubPath() throws {
         try setupDrop(path: "blog-path")
 
-        let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/blog-path/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n</channel>\n\n</rss>"
+        let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/blog-path/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n</channel>\n\n</rss>"
 
         let request = Request(method: .get, uri: "/blog-path/rss.xml")
         let actualXmlResponse = try drop.respond(to: request)
@@ -132,7 +132,7 @@ class RSSFeedTests: XCTestCase {
     func testPostLinkWhenBlogIsPlacedAtSubPath() throws {
         try setupDrop(path: "blog-path")
         let (post, _) = try createPost()
-        let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/blog-path/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<item>\n<title>\n\(post.title)\n</title>\n<description>\n\(post.shortSnippet())\n</description>\n<link>\n/blog-path/posts/\(post.slugUrl)/\n</link>\n</item>\n</channel>\n\n</rss>"
+        let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/blog-path/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<item>\n<title>\n\(post.title)\n</title>\n<description>\n\(post.shortSnippet())\n</description>\n<link>\n/blog-path/posts/\(post.slugUrl)/\n</link>\n</item>\n</channel>\n\n</rss>"
         
         let request = Request(method: .get, uri: "/blog-path/rss.xml")
         let actualXmlResponse = try drop.respond(to: request)
@@ -144,7 +144,7 @@ class RSSFeedTests: XCTestCase {
         let copyright = "Copyright ©️ 2017 SteamPress"
         try setupDrop(copyright: copyright)
         
-        let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<copyright>\(copyright)</copyright>\n</channel>\n\n</rss>"
+        let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<copyright>\(copyright)</copyright>\n</channel>\n\n</rss>"
         
         let actualXmlResponse = try drop.respond(to: rssRequest)
         
@@ -153,7 +153,7 @@ class RSSFeedTests: XCTestCase {
     
     func testThatTagsAreAddedToPostCorrectly() throws {
         let (post, _) = try createPost(tags: ["Vapor 2", "Engineering"])
-        let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<item>\n<title>\n\(post.title)\n</title>\n<description>\n\(post.shortSnippet())\n</description>\n<link>\n/posts/\(post.slugUrl)/\n</link>\n<category>Vapor 2</category>\n<category>Engineering</category>\n</item>\n</channel>\n\n</rss>"
+        let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<item>\n<title>\n\(post.title)\n</title>\n<description>\n\(post.shortSnippet())\n</description>\n<link>\n/posts/\(post.slugUrl)/\n</link>\n<category>Vapor 2</category>\n<category>Engineering</category>\n</item>\n</channel>\n\n</rss>"
         
         let actualXmlResponse = try drop.respond(to: rssRequest)
         

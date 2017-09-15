@@ -6,8 +6,8 @@
         "repositoryURL": "https://github.com/vapor/auth.git",
         "state": {
           "branch": null,
-          "revision": "dead10fcf21e2c58008ff43d3e9adbf49162fddb",
-          "version": "1.1.0"
+          "revision": "f5834fbcb6e658ae8313195cb915ebb475f4a6a8",
+          "version": "1.2.0"
         }
       },
       {
@@ -15,8 +15,8 @@
         "repositoryURL": "https://github.com/vapor/auth-provider.git",
         "state": {
           "branch": null,
-          "revision": "b04c9ce27c870ffd81476f86d1ebb9aa0cbe7802",
-          "version": "1.1.0"
+          "revision": "c8a89d5f32873a7ec6037e2c78a192526c496618",
+          "version": "1.2.0"
         }
       },
       {
@@ -96,8 +96,8 @@
         "repositoryURL": "https://github.com/vapor/fluent.git",
         "state": {
           "branch": null,
-          "revision": "2aad260d66212d780f8a0857a72a8840cef6eff7",
-          "version": "2.3.0"
+          "revision": "271ab0e0b9a81d0befc2673332715c3384f186bf",
+          "version": "2.4.0"
         }
       },
       {
