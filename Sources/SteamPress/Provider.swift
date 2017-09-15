@@ -91,7 +91,8 @@ public struct Provider: Vapor.Provider {
         let rssFeedController = BlogRSSController(drop: drop, pathCreator: pathCreator,
                                                   title: drop.config["steampress", "title"]?.string,
                                                   description: drop.config["steampress", "description"]?.string,
-                                                  copyright: drop.config["steampress", "copyright"]?.string)
+                                                  copyright: drop.config["steampress", "copyright"]?.string,
+                                                  imageURL: drop.config["steampress", "imageURL"]?.string)
 
         // Add the routes
         blogController.addRoutes()

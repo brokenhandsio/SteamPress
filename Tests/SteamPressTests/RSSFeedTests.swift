@@ -21,6 +21,7 @@ class RSSFeedTests: XCTestCase {
         ("testThatTagsAreAddedToPostCorrectly", testThatTagsAreAddedToPostCorrectly),
         ("testThatLinksComesFromRequestCorrectly", testThatLinksComesFromRequestCorrectly),
         ("testThatLinksSpecifyHTTPSWhenComingFromReverseProxy", testThatLinksSpecifyHTTPSWhenComingFromReverseProxy),
+        ("testImageIsProvidedIfSupplied", testImageIsProvidedIfSupplied),
         ]
 
     // MARK: - Properties
@@ -186,6 +187,18 @@ class RSSFeedTests: XCTestCase {
         
         XCTAssertEqual(actualXmlResponse.body.bytes?.makeString(), expectedXML)
     }
+    
+    func testImageIsProvidedIfSupplied() throws {
+        let image = "https://static.brokenhands.io/images/brokenhands.png"
+        try setupDrop(rssImage: image)
+        
+        let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>https://geeks.brokenhands.io/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<image>\n<url>\(image)</url>\n<title>SteamPress Blog</title>\n<link>https://geeks.brokenhands.io/</link>\n</image>\n</channel>\n\n</rss>"
+        
+        let httpsRequest = Request(method: .get, uri: "https://geeks.brokenhands.io/rss.xml")
+        let actualXmlResponse = try drop.respond(to: httpsRequest)
+        
+        XCTAssertEqual(actualXmlResponse.body.bytes?.makeString(), expectedXML)
+    }
 
     // MARK: - Private functions
     
@@ -204,7 +217,7 @@ class RSSFeedTests: XCTestCase {
         return (post, author)
     }
 
-    private func setupDrop(title: String? = nil, description: String? = nil, path: String? = nil, copyright: String? = nil) throws {
+    private func setupDrop(title: String? = nil, description: String? = nil, path: String? = nil, copyright: String? = nil, rssImage: String? = nil) throws {
         var config = Config([:])
 
         try config.set("steampress.postsPerPage", 5)
@@ -223,6 +236,10 @@ class RSSFeedTests: XCTestCase {
         
         if let copyright = copyright {
             try config.set("steampress.copyright", copyright)
+        }
+        
+        if let image = rssImage {
+            try config.set("steampress.imageURL", image)
         }
 
         try config.set("droplet.middleware", ["error", "steampress-sessions", "blog-persist"])

@@ -8,16 +8,18 @@ struct BlogRSSController {
     fileprivate let title: String?
     fileprivate let description: String?
     fileprivate let copyright: String?
+    fileprivate let imageURL: String?
 
     let xmlEnd = "</channel>\n\n</rss>"
 
     // MARK: - Initialiser
-    init(drop: Droplet, pathCreator: BlogPathCreator, title: String?, description: String?, copyright: String?) {
+    init(drop: Droplet, pathCreator: BlogPathCreator, title: String?, description: String?, copyright: String?, imageURL: String?) {
         self.drop = drop
         self.pathCreator = pathCreator
         self.title = title
         self.description = description
         self.copyright = copyright
+        self.imageURL = imageURL
     }
 
     // MARK: - Route setup
@@ -31,7 +33,7 @@ struct BlogRSSController {
 
     private func rssXmlFeedHandler(_ request: Request) throws -> ResponseRepresentable {
 
-        var xmlFeed = getXMLStart(for: request)
+        var xmlFeed = try getXMLStart(for: request)
 
         for post in try BlogPost.makeQuery().filter(BlogPost.Properties.published, true).all() {
             xmlFeed += try post.getPostRSSFeed(rootPath: getRootPath(for: request))
@@ -42,7 +44,7 @@ struct BlogRSSController {
         return xmlFeed
     }
 
-    private func getXMLStart(for request: Request) -> String {
+    private func getXMLStart(for request: Request) throws -> String {
 
         var title = "SteamPress Blog"
         var description = "SteamPress is an open-source blogging engine written for Vapor in Swift"
@@ -61,6 +63,10 @@ struct BlogRSSController {
         
         if let copyright = copyright {
             start += "<copyright>\(copyright)</copyright>\n"
+        }
+        
+        if let imageURL = imageURL {
+            start += "<image>\n<url>\(imageURL)</url>\n<title>\(title)</title>\n<link>\(link)</link>\n</image>\n"
         }
         
         return start
