@@ -1,4 +1,5 @@
 import Vapor
+import Foundation
 
 struct BlogRSSController {
 
@@ -11,6 +12,7 @@ struct BlogRSSController {
     fileprivate let imageURL: String?
 
     let xmlEnd = "</channel>\n\n</rss>"
+    let rfc822DateFormatter = DateFormatter()
 
     // MARK: - Initialiser
     init(drop: Droplet, pathCreator: BlogPathCreator, title: String?, description: String?, copyright: String?, imageURL: String?) {
@@ -20,6 +22,7 @@ struct BlogRSSController {
         self.description = description
         self.copyright = copyright
         self.imageURL = imageURL
+        rfc822DateFormatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ss z"
     }
 
     // MARK: - Route setup
@@ -35,8 +38,15 @@ struct BlogRSSController {
 
         var xmlFeed = try getXMLStart(for: request)
 
-        for post in try BlogPost.makeQuery().filter(BlogPost.Properties.published, true).all() {
-            xmlFeed += try post.getPostRSSFeed(rootPath: getRootPath(for: request))
+        let posts = try BlogPost.makeQuery().filter(BlogPost.Properties.published, true).sort(BlogPost.Properties.created, .descending).all()
+        
+        if !posts.isEmpty {
+            let postDate = posts[0].lastEdited ?? posts[0].created
+            xmlFeed += "<pubDate>\(rfc822DateFormatter.string(from: postDate))</pubDate>\n"
+        }
+        
+        for post in posts {
+            xmlFeed += try post.getPostRSSFeed(rootPath: getRootPath(for: request), dateFormatter: rfc822DateFormatter)
         }
 
         xmlFeed += xmlEnd
@@ -82,7 +92,7 @@ struct BlogRSSController {
 }
 
 extension BlogPost {
-    func getPostRSSFeed(rootPath: String) throws -> String {
+    func getPostRSSFeed(rootPath: String, dateFormatter: DateFormatter) throws -> String {
         let link = rootPath + "/posts/\(slugUrl)/"
         var postEntry = "<item>\n<title>\n\(title)\n</title>\n<description>\n\(shortSnippet())\n</description>\n<link>\n\(link)\n</link>\n"
         
@@ -90,7 +100,7 @@ extension BlogPost {
             postEntry += "<category>\(tag.name)</category>\n"
         }
         
-        postEntry += "</item>\n"
+        postEntry += "<pubDate>\(dateFormatter.string(from: lastEdited ?? created))</pubDate>\n</item>\n"
         
         return postEntry
     }
