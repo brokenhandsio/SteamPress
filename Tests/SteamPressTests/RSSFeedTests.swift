@@ -19,6 +19,8 @@ class RSSFeedTests: XCTestCase {
         ("testPostLinkWhenBlogIsPlacedAtSubPath", testPostLinkWhenBlogIsPlacedAtSubPath),
         ("testCopyrightCanBeAddedToRSS", testCopyrightCanBeAddedToRSS),
         ("testThatTagsAreAddedToPostCorrectly", testThatTagsAreAddedToPostCorrectly),
+        ("testThatLinksComesFromRequestCorrectly", testThatLinksComesFromRequestCorrectly),
+        ("testThatLinksSpecifyHTTPSWhenComingFromReverseProxy", testThatLinksSpecifyHTTPSWhenComingFromReverseProxy),
         ]
 
     // MARK: - Properties
@@ -156,6 +158,31 @@ class RSSFeedTests: XCTestCase {
         let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<item>\n<title>\n\(post.title)\n</title>\n<description>\n\(post.shortSnippet())\n</description>\n<link>\n/posts/\(post.slugUrl)/\n</link>\n<category>Vapor 2</category>\n<category>Engineering</category>\n</item>\n</channel>\n\n</rss>"
         
         let actualXmlResponse = try drop.respond(to: rssRequest)
+        
+        XCTAssertEqual(actualXmlResponse.body.bytes?.makeString(), expectedXML)
+    }
+    
+    func testThatLinksComesFromRequestCorrectly() throws {
+        try setupDrop(path: "blog-path")
+        let (post, _) = try createPost()
+        let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>http://geeks.brokenhands.io/blog-path/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<item>\n<title>\n\(post.title)\n</title>\n<description>\n\(post.shortSnippet())\n</description>\n<link>\nhttp://geeks.brokenhands.io/blog-path/posts/\(post.slugUrl)/\n</link>\n</item>\n</channel>\n\n</rss>"
+        
+        let httpRequest = Request(method: .get, uri: "http://geeks.brokenhands.io/blog-path/rss.xml")
+        
+        let actualXmlResponse = try drop.respond(to: httpRequest)
+        
+        XCTAssertEqual(actualXmlResponse.body.bytes?.makeString(), expectedXML)
+    }
+    
+    func testThatLinksSpecifyHTTPSWhenComingFromReverseProxy() throws {
+        try setupDrop(path: "blog-path")
+        let (post, _) = try createPost()
+        let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>https://geeks.brokenhands.io/blog-path/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<item>\n<title>\n\(post.title)\n</title>\n<description>\n\(post.shortSnippet())\n</description>\n<link>\nhttps://geeks.brokenhands.io/blog-path/posts/\(post.slugUrl)/\n</link>\n</item>\n</channel>\n\n</rss>"
+        
+        let httpsReverseProxyRequest = Request(method: .get, uri: "http://geeks.brokenhands.io/blog-path/rss.xml")
+        httpsReverseProxyRequest.headers["X-Forwarded-Proto"] = "https"
+        
+        let actualXmlResponse = try drop.respond(to: httpsReverseProxyRequest)
         
         XCTAssertEqual(actualXmlResponse.body.bytes?.makeString(), expectedXML)
     }
