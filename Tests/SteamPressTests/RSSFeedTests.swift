@@ -17,6 +17,7 @@ class RSSFeedTests: XCTestCase {
         ("testBlogTitleCanBeConfigured", testBlogTitleCanBeConfigured),
         ("testRSSFeedEndpointAddedToCorrectEndpointWhenBlogInSubPath", testRSSFeedEndpointAddedToCorrectEndpointWhenBlogInSubPath),
         ("testPostLinkWhenBlogIsPlacedAtSubPath", testPostLinkWhenBlogIsPlacedAtSubPath),
+        ("testCopyrightCanBeAddedToRSS", testCopyrightCanBeAddedToRSS),
         ]
 
     // MARK: - Properties
@@ -137,6 +138,17 @@ class RSSFeedTests: XCTestCase {
         
         XCTAssertEqual(actualXmlResponse.body.bytes?.makeString(), expectedXML)
     }
+    
+    func testCopyrightCanBeAddedToRSS() throws {
+        let copyright = "Copyright ©️ 2017 SteamPress"
+        try setupDrop(copyright: copyright)
+        
+        let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<copyright>\(copyright)</copyright>\n</channel>\n\n</rss>"
+        
+        let actualXmlResponse = try drop.respond(to: rssRequest)
+        
+        XCTAssertEqual(actualXmlResponse.body.bytes?.makeString(), expectedXML)
+    }
 
     // MARK: - Private functions
     
@@ -148,7 +160,7 @@ class RSSFeedTests: XCTestCase {
         return (post, author)
     }
 
-    private func setupDrop(title: String? = nil, description: String? = nil, path: String? = nil) throws {
+    private func setupDrop(title: String? = nil, description: String? = nil, path: String? = nil, copyright: String? = nil) throws {
         var config = Config([:])
 
         try config.set("steampress.postsPerPage", 5)
@@ -163,6 +175,10 @@ class RSSFeedTests: XCTestCase {
 
         if let path = path {
             try config.set("steampress.blogPath", path)
+        }
+        
+        if let copyright = copyright {
+            try config.set("steampress.copyright", copyright)
         }
 
         try config.set("droplet.middleware", ["error", "steampress-sessions", "blog-persist"])

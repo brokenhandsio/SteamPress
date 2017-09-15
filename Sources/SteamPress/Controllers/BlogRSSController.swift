@@ -7,15 +7,17 @@ struct BlogRSSController {
     fileprivate let pathCreator: BlogPathCreator
     fileprivate let title: String?
     fileprivate let description: String?
+    fileprivate let copyright: String?
 
     let xmlEnd = "</channel>\n\n</rss>"
 
     // MARK: - Initialiser
-    init(drop: Droplet, pathCreator: BlogPathCreator, title: String?, description: String?) {
+    init(drop: Droplet, pathCreator: BlogPathCreator, title: String?, description: String?, copyright: String?) {
         self.drop = drop
         self.pathCreator = pathCreator
         self.title = title
         self.description = description
+        self.copyright = copyright
     }
 
     // MARK: - Route setup
@@ -54,8 +56,14 @@ struct BlogRSSController {
         }
         
         let link = pathCreator.createPath(for: nil)
-
-        return "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>\(title)</title>\n<link>\(link)</link>\n<description>\(description)</description>\n<generator>SteamPress</generator>\n"
+        
+        var start = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>\(title)</title>\n<link>\(link)</link>\n<description>\(description)</description>\n<generator>SteamPress</generator>\n"
+        
+        if let copyright = copyright {
+            start += "<copyright>\(copyright)</copyright>\n"
+        }
+        
+        return start
     }
 }
 
