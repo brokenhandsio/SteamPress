@@ -1,43 +1,21 @@
 import Vapor
 import Foundation
 
-struct BlogRSSController {
-
-    // MARK: - Properties
-    fileprivate let drop: Droplet
-    fileprivate let pathCreator: BlogPathCreator
-    fileprivate let title: String?
-    fileprivate let description: String?
-    fileprivate let copyright: String?
-    fileprivate let imageURL: String?
-
+struct RSSFeedGenerator {
+    
+    let rfc822DateFormatter: DateFormatter
+    let title: String
+    let description: String
+    let copyright: String?
+    let imageURL: String?
     let xmlEnd = "</channel>\n\n</rss>"
-    let rfc822DateFormatter = DateFormatter()
-
-    // MARK: - Initialiser
-    init(drop: Droplet, pathCreator: BlogPathCreator, title: String?, description: String?, copyright: String?, imageURL: String?) {
-        self.drop = drop
-        self.pathCreator = pathCreator
-        self.title = title
-        self.description = description
-        self.copyright = copyright
-        self.imageURL = imageURL
-        rfc822DateFormatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ss z"
-    }
-
-    // MARK: - Route setup
-    func addRoutes() {
-        drop.group(pathCreator.blogPath ?? "") { index in
-            index.get("rss.xml", handler: rssXmlFeedHandler)
-        }
-    }
-
+    
     // MARK: - Route Handler
-
-    private func rssXmlFeedHandler(_ request: Request) throws -> ResponseRepresentable {
-
+    
+    public func feedHandler(_ request: Request) throws -> ResponseRepresentable {
+        
         var xmlFeed = try getXMLStart(for: request)
-
+        
         let posts = try BlogPost.makeQuery().filter(BlogPost.Properties.published, true).sort(BlogPost.Properties.created, .descending).all()
         
         if !posts.isEmpty {
@@ -48,26 +26,17 @@ struct BlogRSSController {
         for post in posts {
             xmlFeed += try post.getPostRSSFeed(rootPath: getRootPath(for: request), dateFormatter: rfc822DateFormatter)
         }
-
+        
         xmlFeed += xmlEnd
-
+        
         return xmlFeed
     }
-
+    
+    // MARK: - Private functions
+    
     private func getXMLStart(for request: Request) throws -> String {
-
-        var title = "SteamPress Blog"
-        var description = "SteamPress is an open-source blogging engine written for Vapor in Swift"
-
-        if let providedTitle = self.title {
-            title = providedTitle
-        }
-
-        if let providedDescription = self.description {
-            description = providedDescription
-        }
         
-        let link = getLink(for: request)
+        let link = getRootPath(for: request) + "/"
         
         var start = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>\(title)</title>\n<link>\(link)</link>\n<description>\(description)</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n"
         
@@ -80,10 +49,6 @@ struct BlogRSSController {
         }
         
         return start
-    }
-    
-    private func getLink(for request: Request) -> String {
-        return getRootPath(for: request) + "/"
     }
     
     private func getRootPath(for request: Request) -> String {
