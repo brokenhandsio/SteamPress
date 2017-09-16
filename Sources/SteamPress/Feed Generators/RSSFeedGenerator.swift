@@ -3,6 +3,8 @@ import Foundation
 
 struct RSSFeedGenerator {
     
+    // MARK: - Properties
+    
     let rfc822DateFormatter: DateFormatter
     let title: String
     let description: String
@@ -10,9 +12,21 @@ struct RSSFeedGenerator {
     let imageURL: String?
     let xmlEnd = "</channel>\n\n</rss>"
     
+    // MARK: - Initialiser
+    
+    init(title: String, description: String, copyright: String?, imageURL: String?) {
+        self.title = title
+        self.description = description
+        self.copyright = copyright
+        self.imageURL = imageURL
+        
+        rfc822DateFormatter = DateFormatter()
+        rfc822DateFormatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ss z"
+    }
+    
     // MARK: - Route Handler
     
-    public func feedHandler(_ request: Request) throws -> ResponseRepresentable {
+    func feedHandler(_ request: Request) throws -> ResponseRepresentable {
         
         var xmlFeed = try getXMLStart(for: request)
         

@@ -12,20 +12,17 @@ struct BlogFeedController {
     static let defaultDescription = "SteamPress is an open-source blogging engine written for Vapor in Swift"
 
     // MARK: - Initialiser
-    init(drop: Droplet, pathCreator: BlogPathCreator, title: String?, description: String?, copyright: String?, imageURL: String?) {
+    init(drop: Droplet, pathCreator: BlogPathCreator, title: String?, description: String?, copyright: String?,
+         imageURL: String?) {
         self.drop = drop
         self.pathCreator = pathCreator
-        
-        let rfc822DateFormatter = DateFormatter()
-        rfc822DateFormatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ss z"
         
         let feedTitle = title ?? BlogFeedController.defaultTitle
         let feedDescription = description ?? BlogFeedController.defaultDescription
         
-        atomGenerator = AtomFeedGenerator()
-        rssGenerator = RSSFeedGenerator(rfc822DateFormatter: rfc822DateFormatter, title: feedTitle,
-                                        description: feedDescription, copyright: copyright,
-                                        imageURL: imageURL)
+        atomGenerator = AtomFeedGenerator(title: feedTitle, description: feedDescription)
+        rssGenerator = RSSFeedGenerator(title: feedTitle, description: feedDescription,
+                                        copyright: copyright, imageURL: imageURL)
     }
 
     // MARK: - Route setup
