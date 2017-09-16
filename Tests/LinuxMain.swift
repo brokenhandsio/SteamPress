@@ -9,4 +9,5 @@ XCTMain([
     testCase(BlogTagTests.allTests),
     testCase(LeafViewFactoryTests.allTests),
     testCase(RSSFeedTests.allTests),
+    testCase(AtomFeedTests.allTests),
 ])
