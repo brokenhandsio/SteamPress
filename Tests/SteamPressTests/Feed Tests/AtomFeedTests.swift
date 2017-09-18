@@ -16,6 +16,12 @@ class AtomFeedTests: XCTestCase {
         ("testThatLinksAreCorrectForFullURI", testThatLinksAreCorrectForFullURI),
         ("testThatHTTPSLinksWorkWhenBehindReverseProxy", testThatHTTPSLinksWorkWhenBehindReverseProxy),
         ("testThatLogoCanBeConfigured", testThatLogoCanBeConfigured),
+        ("testThatFeedIsCorrectForOnePost", testThatFeedIsCorrectForOnePost),
+        ("testThatFeedCorrectForTwoPosts", testThatFeedCorrectForTwoPosts),
+        ("testThatDraftsDontAppearInFeed", testThatDraftsDontAppearInFeed),
+        ("testThatEditedPostsHaveUpdatedTimes", testThatEditedPostsHaveUpdatedTimes),
+        ("testThatFullLinksWorksForPosts", testThatFullLinksWorksForPosts),
+        ("testThatHTTPSLinksWorkForPostsBehindReverseProxy", testThatHTTPSLinksWorkForPostsBehindReverseProxy),
         ]
     
     // MARK: - Properties
@@ -123,7 +129,13 @@ class AtomFeedTests: XCTestCase {
     }
     
     func testThatFeedIsCorrectForOnePost() throws {
-        
+        try setupDrop()
+        let (post, author) = try createPost()
+        let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: Date()))</updated>\n<entry>\n<id>/posts-id/1/</id>\n<title>\(post.title)</title>\n<updated>\(dateFormatter.string(from: post.created))</updated>\n<published>\(dateFormatter.string(from: post.created))</published>\n<author>\n<name>\(author.name)</name>\n<uri>/authors/\(author.username)</uri>\n</author>\n<summary>\(post.shortSnippet())</summary>\n<link rel=\"alternate\" href=\"/posts/\(post.slugUrl)\"/>\n</entry>\n</feed>"
+
+        let actualXmlResponse = try drop.respond(to: atomRequest)
+
+        XCTAssertEqual(actualXmlResponse.body.bytes?.makeString(), expectedXML)
     }
     
     func testThatFeedCorrectForTwoPosts() throws {
@@ -134,7 +146,7 @@ class AtomFeedTests: XCTestCase {
         
     }
     
-    func testThatEditedPostsHaveNewIDAndUpdatedTimes() throws {
+    func testThatEditedPostsHaveUpdatedTimes() throws {
         
     }
     
