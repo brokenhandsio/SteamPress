@@ -10,11 +10,11 @@ class RSSFeedTests: XCTestCase {
     static var allTests = [
         ("testLinuxTestSuiteIncludesAllTests", testLinuxTestSuiteIncludesAllTests),
         ("testNoPostsReturnsCorrectRSSFeed", testNoPostsReturnsCorrectRSSFeed),
-        ("testNoPostsReturnsCorrectRSSFeed", testNoPostsReturnsCorrectRSSFeed),
+        ("testOnePostReturnsCorrectRSSFeed", testOnePostReturnsCorrectRSSFeed),
         ("testMultiplePostsReturnsCorrectRSSFeed", testMultiplePostsReturnsCorrectRSSFeed),
         ("testDraftsAreNotIncludedInFeed", testDraftsAreNotIncludedInFeed),
         ("testBlogTitleCanBeConfigured", testBlogTitleCanBeConfigured),
-        ("testBlogTitleCanBeConfigured", testBlogTitleCanBeConfigured),
+        ("testBlogDescriptionCanBeConfigured", testBlogDescriptionCanBeConfigured),
         ("testRSSFeedEndpointAddedToCorrectEndpointWhenBlogInSubPath", testRSSFeedEndpointAddedToCorrectEndpointWhenBlogInSubPath),
         ("testPostLinkWhenBlogIsPlacedAtSubPath", testPostLinkWhenBlogIsPlacedAtSubPath),
         ("testCopyrightCanBeAddedToRSS", testCopyrightCanBeAddedToRSS),

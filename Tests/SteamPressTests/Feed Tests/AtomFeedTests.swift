@@ -15,6 +15,7 @@ class AtomFeedTests: XCTestCase {
         ("testThatRightsCanBeConifgured", testThatRightsCanBeConifgured),
         ("testThatLinksAreCorrectForFullURI", testThatLinksAreCorrectForFullURI),
         ("testThatHTTPSLinksWorkWhenBehindReverseProxy", testThatHTTPSLinksWorkWhenBehindReverseProxy),
+        ("testThatLogoCanBeConfigured", testThatLogoCanBeConfigured),
         ]
     
     // MARK: - Properties
@@ -28,7 +29,6 @@ class AtomFeedTests: XCTestCase {
     override func setUp() {
         database = try! Database(MemoryDriver())
         try! Droplet.prepare(database: database)
-        try! setupDrop()
         dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
     }
     
@@ -50,6 +50,7 @@ class AtomFeedTests: XCTestCase {
     }
     
     func testNoPostsReturnsCorrectAtomFeed() throws {
+        try setupDrop()
         let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: Date()))</updated>\n</feed>"
         
         let actualXmlResponse = try drop.respond(to: atomRequest)
@@ -111,6 +112,40 @@ class AtomFeedTests: XCTestCase {
         XCTAssertEqual(actualXmlResponse.body.bytes?.makeString(), expectedXML)
     }
     
+    func testThatLogoCanBeConfigured() throws {
+        let imageURL = "https://static.brokenhands.io/images/feeds/atom.png"
+        try setupDrop(imageURL: imageURL)
+        let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: Date()))</updated>\n<logo>\(imageURL)</logo>\n</feed>"
+        
+        let actualXmlResponse = try drop.respond(to: atomRequest)
+        
+        XCTAssertEqual(actualXmlResponse.body.bytes?.makeString(), expectedXML)
+    }
+    
+    func testThatFeedIsCorrectForOnePost() throws {
+        
+    }
+    
+    func testThatFeedCorrectForTwoPosts() throws {
+        
+    }
+    
+    func testThatDraftsDontAppearInFeed() throws {
+        
+    }
+    
+    func testThatEditedPostsHaveNewIDAndUpdatedTimes() throws {
+        
+    }
+    
+    func testThatFullLinksWorksForPosts() throws {
+        
+    }
+    
+    func testThatHTTPSLinksWorkForPostsBehindReverseProxy() throws {
+        
+    }
+    
     // MARK: - Private functions
     
     private func createPost(tags: [String]? = nil) throws -> (BlogPost, BlogUser) {
@@ -128,7 +163,7 @@ class AtomFeedTests: XCTestCase {
         return (post, author)
     }
     
-    private func setupDrop(title: String? = nil, description: String? = nil, path: String? = nil, copyright: String? = nil, rssImage: String? = nil) throws {
+    private func setupDrop(title: String? = nil, description: String? = nil, path: String? = nil, copyright: String? = nil, imageURL: String? = nil) throws {
         var config = Config([:])
         
         try config.set("steampress.postsPerPage", 5)
@@ -149,7 +184,7 @@ class AtomFeedTests: XCTestCase {
             try config.set("steampress.copyright", copyright)
         }
         
-        if let image = rssImage {
+        if let image = imageURL {
             try config.set("steampress.imageURL", image)
         }
         
