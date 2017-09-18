@@ -1,4 +1,4 @@
-import SteamPress
+@testable import SteamPress
 import XCTest
 import Vapor
 import FluentProvider
@@ -33,13 +33,8 @@ class AtomFeedTests: XCTestCase {
     // MARK: - Overrides
     
     override func setUp() {
-        database = try! Database(MemoryDriver())
-        try! Droplet.prepare(database: database)
         dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
-    }
-    
-    override func tearDown() {
-        try! Droplet.teardown(database: database)
+        BlogUser.passwordHasher = FakePasswordHasher()
     }
     
     // MARK: - Tests
@@ -56,7 +51,7 @@ class AtomFeedTests: XCTestCase {
     }
     
     func testNoPostsReturnsCorrectAtomFeed() throws {
-        try setupDrop()
+        drop = try TestDataBuilder.setupSteamPressDrop()
         let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: Date()))</updated>\n</feed>"
         
         let actualXmlResponse = try drop.respond(to: atomRequest)
@@ -66,7 +61,7 @@ class AtomFeedTests: XCTestCase {
     
     func testThatFeedTitleCanBeConfigured() throws {
         let title = "My Awesome Blog"
-        try setupDrop(title: title)
+        drop = try TestDataBuilder.setupSteamPressDrop(title: title)
         
         let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>\(title)</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: Date()))</updated>\n</feed>"
         
@@ -77,7 +72,7 @@ class AtomFeedTests: XCTestCase {
     
     func testThatFeedSubtitleCanBeConfigured() throws {
         let description = "This is a test for my blog"
-        try setupDrop(description: description)
+        drop = try TestDataBuilder.setupSteamPressDrop(description: description)
         
         let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>\(description)</subtitle>\n<id>/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: Date()))</updated>\n</feed>"
         
@@ -88,7 +83,7 @@ class AtomFeedTests: XCTestCase {
     
     func testThatRightsCanBeConifgured() throws {
         let copyright = "Copyright ©️ 2017 SteamPress"
-        try setupDrop(copyright: copyright)
+        drop = try TestDataBuilder.setupSteamPressDrop(copyright: copyright)
         
         let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: Date()))</updated>\n<rights>\(copyright)</rights>\n</feed>"
         
@@ -98,7 +93,7 @@ class AtomFeedTests: XCTestCase {
     }
     
     func testThatLinksAreCorrectForFullURI() throws {
-        try setupDrop(path: "blog")
+        drop = try TestDataBuilder.setupSteamPressDrop(path: "blog")
         let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>https://geeks.brokenhands.io/blog/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"https://geeks.brokenhands.io/blog/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"https://geeks.brokenhands.io/blog/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: Date()))</updated>\n</feed>"
         
         let request = Request(method: .get, uri: "https://geeks.brokenhands.io/blog/atom.xml")
@@ -108,7 +103,7 @@ class AtomFeedTests: XCTestCase {
     }
     
     func testThatHTTPSLinksWorkWhenBehindReverseProxy() throws {
-        try setupDrop(path: "blog")
+        drop = try TestDataBuilder.setupSteamPressDrop(path: "blog")
         let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>https://geeks.brokenhands.io/blog/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"https://geeks.brokenhands.io/blog/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"https://geeks.brokenhands.io/blog/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: Date()))</updated>\n</feed>"
         
         let request = Request(method: .get, uri: "http://geeks.brokenhands.io/blog/atom.xml")
@@ -120,7 +115,7 @@ class AtomFeedTests: XCTestCase {
     
     func testThatLogoCanBeConfigured() throws {
         let imageURL = "https://static.brokenhands.io/images/feeds/atom.png"
-        try setupDrop(imageURL: imageURL)
+        drop = try TestDataBuilder.setupSteamPressDrop(imageURL: imageURL)
         let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: Date()))</updated>\n<logo>\(imageURL)</logo>\n</feed>"
         
         let actualXmlResponse = try drop.respond(to: atomRequest)
@@ -129,7 +124,7 @@ class AtomFeedTests: XCTestCase {
     }
     
     func testThatFeedIsCorrectForOnePost() throws {
-        try setupDrop()
+        drop = try TestDataBuilder.setupSteamPressDrop()
         let (post, author) = try createPost()
         let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: Date()))</updated>\n<entry>\n<id>/posts-id/1/</id>\n<title>\(post.title)</title>\n<updated>\(dateFormatter.string(from: post.created))</updated>\n<published>\(dateFormatter.string(from: post.created))</published>\n<author>\n<name>\(author.name)</name>\n<uri>/authors/\(author.username)</uri>\n</author>\n<summary>\(post.shortSnippet())</summary>\n<link rel=\"alternate\" href=\"/posts/\(post.slugUrl)\"/>\n</entry>\n</feed>"
 
@@ -173,38 +168,5 @@ class AtomFeedTests: XCTestCase {
         }
         
         return (post, author)
-    }
-    
-    private func setupDrop(title: String? = nil, description: String? = nil, path: String? = nil, copyright: String? = nil, imageURL: String? = nil) throws {
-        var config = Config([:])
-        
-        try config.set("steampress.postsPerPage", 5)
-        
-        if let title = title {
-            try config.set("steampress.title", title)
-        }
-        
-        if let description = description {
-            try config.set("steampress.description", description)
-        }
-        
-        if let path = path {
-            try config.set("steampress.blogPath", path)
-        }
-        
-        if let copyright = copyright {
-            try config.set("steampress.copyright", copyright)
-        }
-        
-        if let image = imageURL {
-            try config.set("steampress.imageURL", image)
-        }
-        
-        try config.set("droplet.middleware", ["error", "steampress-sessions", "blog-persist"])
-        try config.set("fluent.driver", "memory")
-        try config.addProvider(SteamPress.Provider.self)
-        try config.addProvider(FluentProvider.Provider.self)
-        
-        drop = try Droplet(config)
     }
 }

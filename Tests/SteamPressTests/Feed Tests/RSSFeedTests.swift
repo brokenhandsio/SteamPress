@@ -1,4 +1,4 @@
-import SteamPress
+@testable import SteamPress
 import XCTest
 import Vapor
 import FluentProvider
@@ -33,14 +33,9 @@ class RSSFeedTests: XCTestCase {
     // MARK: - Overrides
 
     override func setUp() {
-        database = try! Database(MemoryDriver())
-        try! Droplet.prepare(database: database)
-        try! setupDrop()
+        BlogUser.passwordHasher = FakePasswordHasher()
+        drop = try! TestDataBuilder.setupSteamPressDrop()
         dateFormatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ss z"
-    }
-
-    override func tearDown() {
-        try! Droplet.teardown(database: database)
     }
 
     // MARK: - Tests
@@ -101,7 +96,7 @@ class RSSFeedTests: XCTestCase {
 
     func testBlogTitleCanBeConfigured() throws {
         let title = "SteamPress - The Open Source Blog"
-        try setupDrop(title: title)
+        drop = try TestDataBuilder.setupSteamPressDrop(title: title)
 
         let (post, _) = try createPost()
         let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>\(title)</title>\n<link>/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n<item>\n<title>\n\(post.title)\n</title>\n<description>\n\(post.shortSnippet())\n</description>\n<link>\n/posts/\(post.slugUrl)/\n</link>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n</item>\n</channel>\n\n</rss>"
@@ -113,7 +108,7 @@ class RSSFeedTests: XCTestCase {
 
     func testBlogDescriptionCanBeConfigured() throws {
         let description = "Our fancy new RSS-feed blog"
-        try setupDrop(description: description)
+        drop = try TestDataBuilder.setupSteamPressDrop(description: description)
 
         let (post, _) = try createPost()
         let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/</link>\n<description>\(description)</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n<item>\n<title>\n\(post.title)\n</title>\n<description>\n\(post.shortSnippet())\n</description>\n<link>\n/posts/\(post.slugUrl)/\n</link>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n</item>\n</channel>\n\n</rss>"
@@ -124,7 +119,7 @@ class RSSFeedTests: XCTestCase {
     }
 
     func testRSSFeedEndpointAddedToCorrectEndpointWhenBlogInSubPath() throws {
-        try setupDrop(path: "blog-path")
+        drop = try TestDataBuilder.setupSteamPressDrop(path: "blog-path")
 
         let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/blog-path/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n</channel>\n\n</rss>"
 
@@ -135,7 +130,7 @@ class RSSFeedTests: XCTestCase {
     }
     
     func testPostLinkWhenBlogIsPlacedAtSubPath() throws {
-        try setupDrop(path: "blog-path")
+        drop = try TestDataBuilder.setupSteamPressDrop(path: "blog-path")
         let (post, _) = try createPost()
         let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/blog-path/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n<item>\n<title>\n\(post.title)\n</title>\n<description>\n\(post.shortSnippet())\n</description>\n<link>\n/blog-path/posts/\(post.slugUrl)/\n</link>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n</item>\n</channel>\n\n</rss>"
         
@@ -147,7 +142,7 @@ class RSSFeedTests: XCTestCase {
     
     func testCopyrightCanBeAddedToRSS() throws {
         let copyright = "Copyright ©️ 2017 SteamPress"
-        try setupDrop(copyright: copyright)
+        drop = try TestDataBuilder.setupSteamPressDrop(copyright: copyright)
         
         let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<copyright>\(copyright)</copyright>\n</channel>\n\n</rss>"
         
@@ -166,7 +161,7 @@ class RSSFeedTests: XCTestCase {
     }
     
     func testThatLinksComesFromRequestCorrectly() throws {
-        try setupDrop(path: "blog-path")
+        drop = try TestDataBuilder.setupSteamPressDrop(path: "blog-path")
         let (post, _) = try createPost()
         let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>http://geeks.brokenhands.io/blog-path/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n<item>\n<title>\n\(post.title)\n</title>\n<description>\n\(post.shortSnippet())\n</description>\n<link>\nhttp://geeks.brokenhands.io/blog-path/posts/\(post.slugUrl)/\n</link>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n</item>\n</channel>\n\n</rss>"
         
@@ -178,7 +173,7 @@ class RSSFeedTests: XCTestCase {
     }
     
     func testThatLinksSpecifyHTTPSWhenComingFromReverseProxy() throws {
-        try setupDrop(path: "blog-path")
+        drop = try TestDataBuilder.setupSteamPressDrop(path: "blog-path")
         let (post, _) = try createPost()
         let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>https://geeks.brokenhands.io/blog-path/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n<item>\n<title>\n\(post.title)\n</title>\n<description>\n\(post.shortSnippet())\n</description>\n<link>\nhttps://geeks.brokenhands.io/blog-path/posts/\(post.slugUrl)/\n</link>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n</item>\n</channel>\n\n</rss>"
         
@@ -192,7 +187,7 @@ class RSSFeedTests: XCTestCase {
     
     func testImageIsProvidedIfSupplied() throws {
         let image = "https://static.brokenhands.io/images/brokenhands.png"
-        try setupDrop(rssImage: image)
+        drop = try TestDataBuilder.setupSteamPressDrop(imageURL: image)
         
         let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>https://geeks.brokenhands.io/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<image>\n<url>\(image)</url>\n<title>SteamPress Blog</title>\n<link>https://geeks.brokenhands.io/</link>\n</image>\n</channel>\n\n</rss>"
         
@@ -217,38 +212,5 @@ class RSSFeedTests: XCTestCase {
         }
         
         return (post, author)
-    }
-
-    private func setupDrop(title: String? = nil, description: String? = nil, path: String? = nil, copyright: String? = nil, rssImage: String? = nil) throws {
-        var config = Config([:])
-
-        try config.set("steampress.postsPerPage", 5)
-
-        if let title = title {
-            try config.set("steampress.title", title)
-        }
-
-        if let description = description {
-            try config.set("steampress.description", description)
-        }
-
-        if let path = path {
-            try config.set("steampress.blogPath", path)
-        }
-        
-        if let copyright = copyright {
-            try config.set("steampress.copyright", copyright)
-        }
-        
-        if let image = rssImage {
-            try config.set("steampress.imageURL", image)
-        }
-
-        try config.set("droplet.middleware", ["error", "steampress-sessions", "blog-persist"])
-        try config.set("fluent.driver", "memory")
-        try config.addProvider(SteamPress.Provider.self)
-        try config.addProvider(FluentProvider.Provider.self)
-
-        drop = try Droplet(config)
     }
 }
