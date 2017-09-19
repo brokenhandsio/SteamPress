@@ -160,7 +160,20 @@ class AtomFeedTests: XCTestCase {
     }
     
     func testThatEditedPostsHaveUpdatedTimes() throws {
-        
+        drop = try TestDataBuilder.setupSteamPressDrop()
+        let firstPostDate = Date().addingTimeInterval(-3600)
+        let (post, author) = try createPost(createDate: firstPostDate)
+        let secondTitle = "Another Post"
+        let secondPostDate = Date().addingTimeInterval(-60)
+        let newEditDate = Date()
+        let post2 = BlogPost(title: secondTitle, contents: "#Some Interesting Post\nThis contains a load of contents...", author: author, creationDate: secondPostDate, slugUrl: "another-post", published: true)
+        post2.lastEdited = newEditDate
+        try post2.save()
+        let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: newEditDate))</updated>\n<entry>\n<id>/posts-id/2/</id>\n<title>\(secondTitle)</title>\n<updated>\(dateFormatter.string(from: newEditDate))</updated>\n<published>\(dateFormatter.string(from: secondPostDate))</published>\n<author>\n<name>\(author.name)</name>\n<uri>/authors/\(author.username)/</uri>\n</author>\n<summary>\(try post2.description())</summary>\n<link rel=\"alternate\" href=\"/posts/\(post2.slugUrl)/\" />\n</entry>\n<entry>\n<id>/posts-id/1/</id>\n<title>\(post.title)</title>\n<updated>\(dateFormatter.string(from: firstPostDate))</updated>\n<published>\(dateFormatter.string(from: firstPostDate))</published>\n<author>\n<name>\(author.name)</name>\n<uri>/authors/\(author.username)/</uri>\n</author>\n<summary>\(try post.description())</summary>\n<link rel=\"alternate\" href=\"/posts/\(post.slugUrl)/\" />\n</entry>\n</feed>"
+
+        let actualXmlResponse = try drop.respond(to: atomRequest)
+
+        XCTAssertEqual(actualXmlResponse.body.bytes?.makeString(), expectedXML)
     }
     
     func testThatTagsAppearWhenPostHasThem() throws {
@@ -177,10 +190,10 @@ class AtomFeedTests: XCTestCase {
     
     // MARK: - Private functions
     
-    private func createPost(tags: [String]? = nil) throws -> (BlogPost, BlogUser) {
+    private func createPost(tags: [String]? = nil, createDate: Date? = nil) throws -> (BlogPost, BlogUser) {
         let author = TestDataBuilder.anyUser()
         try author.save()
-        let post = TestDataBuilder.anyPost(author: author)
+        let post = TestDataBuilder.anyPost(author: author, creationDate: createDate ?? Date())
         try post.save()
         
         if let tags = tags {
