@@ -35,6 +35,7 @@ There is an example of how it can work in a site (and what it requires in terms 
 * Slug URLs for SEO optimisation and easy linking to posts
 * Support for comments via Disqus
 * Open Graph and Twitter Card support
+* RSS/Atom Feed support
 
 # How to Use
 
@@ -191,6 +192,16 @@ SteamPress makes it easy to integrate Google Analytics into your blog. If you cr
 (You can get your identifier from the Google Analytics console, it will look something like UA-12345678-1)
 
 This will pass a `google_analytics_identifier` parameter through to all of the public pages which you can include and then use the [Example Site's javascript](https://github.com/brokenhandsio/SteamPressExample/blob/master/Public/static/js/analytics.js) to integrate with.
+
+## Atom/RSS Support
+
+SteamPress automatically provides endpoints for registering RSS readers, either using RSS 2.0 or Atom 1.0. These endpoints can be found at the blog's `atom.xml` and `rss.xml` paths; e.g. if you blog is at `https://www.example.com/blog` then the atom feed will appear at `https://wwww.example.com/blog/atom.xml`. These will work by default, but you will probably want to configure some of fields. These can be added to your `steampress.json` config file, with the following values:
+
+* `title` - the title of the blog - a default "SteamPress Blog" will be provided otherwise
+* `description` - the description of the blog (or subtitle in atom) - a default "SteamPress is an open-source blogging engine written for Vapor in Swift" will be provided otherwise
+* `copyright` - an optional copyright message to add to the feeds
+* `imageURL` - an optional image/logo to add to the feeds. Note that for Atom this should a 2:1 landscape scaled image
+
 
 # Expected Leaf Templates
 
@@ -420,7 +431,6 @@ I anticipate SteamPress staying on a version 0 for some time, whilst some of the
 
 On the roadmap we have:
 
-* Sitemap/RSS feed for SEO
 * AMP/Facebook instant articles endpoints for posts
 * Searching through the blog
 * Saving state when logging in - if you go to a page (e.g. edit post) but need to be logged in, it would be great if you could head back to that page once logged in. Also, if you have edited a post and your session expires before you post it, wouldn't it be great if it remembered everything!

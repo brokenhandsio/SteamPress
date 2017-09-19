@@ -88,7 +88,7 @@ public struct Provider: Vapor.Provider {
                                             viewFactory: viewFactory, enableAuthorsPages: enableAuthorsPages,
                                             enableTagsPages: enableTagsPages)
         let blogAdminController = BlogAdminController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory)
-        let rssFeedController = BlogFeedController(drop: drop, pathCreator: pathCreator,
+        let feedController = BlogFeedController(drop: drop, pathCreator: pathCreator,
                                                    title: drop.config["steampress", "title"]?.string,
                                                    description: drop.config["steampress", "description"]?.string,
                                                    copyright: drop.config["steampress", "copyright"]?.string,
@@ -97,7 +97,7 @@ public struct Provider: Vapor.Provider {
         // Add the routes
         blogController.addRoutes()
         blogAdminController.addRoutes()
-        rssFeedController.addRoutes()
+        feedController.addRoutes()
     }
 
     public init(config: Config) throws {
