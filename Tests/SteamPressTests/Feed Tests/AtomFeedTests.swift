@@ -23,6 +23,7 @@ class AtomFeedTests: XCTestCase {
         ("testThatTagsAppearWhenPostHasThem", testThatTagsAppearWhenPostHasThem),
         ("testThatFullLinksWorksForPosts", testThatFullLinksWorksForPosts),
         ("testThatHTTPSLinksWorkForPostsBehindReverseProxy", testThatHTTPSLinksWorkForPostsBehindReverseProxy),
+        ("testCorrectHeaderSetForAtomFeed", testCorrectHeaderSetForAtomFeed),
         ]
     
     // MARK: - Properties
@@ -210,6 +211,13 @@ class AtomFeedTests: XCTestCase {
         let actualXmlResponse = try drop.respond(to: request)
 
         XCTAssertEqual(actualXmlResponse.body.bytes?.makeString(), expectedXML)
+    }
+
+    func testCorrectHeaderSetForAtomFeed() throws {
+        drop = try TestDataBuilder.setupSteamPressDrop()
+        let actualXmlResponse = try drop.respond(to: atomRequest)
+
+        XCTAssertEqual(actualXmlResponse.headers[.contentType], "application/atom+xml")
     }
     
     // MARK: - Private functions

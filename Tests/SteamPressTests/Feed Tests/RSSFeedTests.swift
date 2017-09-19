@@ -22,6 +22,7 @@ class RSSFeedTests: XCTestCase {
         ("testThatLinksComesFromRequestCorrectly", testThatLinksComesFromRequestCorrectly),
         ("testThatLinksSpecifyHTTPSWhenComingFromReverseProxy", testThatLinksSpecifyHTTPSWhenComingFromReverseProxy),
         ("testImageIsProvidedIfSupplied", testImageIsProvidedIfSupplied),
+        ("testCorrectHeaderSetForRSSFeed", testCorrectHeaderSetForRSSFeed),
         ]
 
     // MARK: - Properties
@@ -194,6 +195,13 @@ class RSSFeedTests: XCTestCase {
         let actualXmlResponse = try drop.respond(to: httpsRequest)
         
         XCTAssertEqual(actualXmlResponse.body.bytes?.makeString(), expectedXML)
+    }
+
+    func testCorrectHeaderSetForRSSFeed() throws {
+        drop = try TestDataBuilder.setupSteamPressDrop()
+        let actualXmlResponse = try drop.respond(to: rssRequest)
+
+        XCTAssertEqual(actualXmlResponse.headers[.contentType], "application/rss+xml")
     }
 
     // MARK: - Private functions

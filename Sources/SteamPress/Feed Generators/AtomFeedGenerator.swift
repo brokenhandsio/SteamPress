@@ -26,7 +26,7 @@ struct AtomFeedGenerator {
     
     // MARK: - Route Handler
     
-    func feedHandler(_ request: Request) throws -> ResponseRepresentable {
+    func feedHandler(_ request: Request) throws -> Response {
         
         var feed = try getFeedStart(for: request)
 
@@ -65,7 +65,7 @@ struct AtomFeedGenerator {
 
         feed += feedEnd
 
-        return feed
+        return Response(status: .ok, headers: [.contentType: "application/atom+xml"], body: feed.makeBytes())
     }
     
     // MARK: - Private functions

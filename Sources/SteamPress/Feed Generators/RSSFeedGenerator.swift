@@ -26,7 +26,7 @@ struct RSSFeedGenerator {
     
     // MARK: - Route Handler
     
-    func feedHandler(_ request: Request) throws -> ResponseRepresentable {
+    func feedHandler(_ request: Request) throws -> Response {
         
         var xmlFeed = try getXMLStart(for: request)
         
@@ -42,8 +42,8 @@ struct RSSFeedGenerator {
         }
         
         xmlFeed += xmlEnd
-        
-        return xmlFeed
+
+        return Response(status: .ok, headers: [.contentType: "application/rss+xml"], body: xmlFeed.makeBytes())
     }
     
     // MARK: - Private functions
