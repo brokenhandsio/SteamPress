@@ -27,6 +27,8 @@ struct TestDataBuilder {
     }
     
     static func setupSteamPressDrop(title: String? = nil, description: String? = nil, path: String? = nil, copyright: String? = nil, imageURL: String? = nil) throws -> Droplet {
+        BlogUser.passwordHasher = FakePasswordHasher()
+        
         var config = Config([:])
         
         try config.set("steampress.postsPerPage", 5)

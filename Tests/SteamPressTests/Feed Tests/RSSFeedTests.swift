@@ -33,7 +33,6 @@ class RSSFeedTests: XCTestCase {
     // MARK: - Overrides
 
     override func setUp() {
-        BlogUser.passwordHasher = FakePasswordHasher()
         drop = try! TestDataBuilder.setupSteamPressDrop()
         dateFormatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ss z"
     }

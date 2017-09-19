@@ -21,7 +21,7 @@ struct BlogFeedController {
         let feedDescription = description ?? BlogFeedController.defaultDescription
         
         atomGenerator = AtomFeedGenerator(title: feedTitle, description: feedDescription,
-                                          copyright: copyright)
+                                          copyright: copyright, imageURL: imageURL)
         rssGenerator = RSSFeedGenerator(title: feedTitle, description: feedDescription,
                                         copyright: copyright, imageURL: imageURL)
     }

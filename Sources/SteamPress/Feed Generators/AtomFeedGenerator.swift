@@ -7,6 +7,7 @@ struct AtomFeedGenerator {
     let title: String
     let description: String
     let copyright: String?
+    let imageURL: String?
     
     let xmlDeclaration = "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
     let feedStart = "<feed xmlns=\"http://www.w3.org/2005/Atom\">"
@@ -14,10 +15,11 @@ struct AtomFeedGenerator {
     let iso8601Formatter = DateFormatter()
    
     // MARK: - Initialiser
-    init(title: String, description: String, copyright: String?) {
+    init(title: String, description: String, copyright: String?, imageURL: String?) {
         self.title = title
         self.description = description
         self.copyright = copyright
+        self.imageURL = imageURL
         
         iso8601Formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
     }
@@ -39,6 +41,10 @@ struct AtomFeedGenerator {
         
         if let copyright = copyright {
             feed += "<rights>\(copyright)</rights>\n"
+        }
+        
+        if let imageURL = imageURL {
+            feed += "<logo>\(imageURL)</logo>\n"
         }
 
         for post in posts {
