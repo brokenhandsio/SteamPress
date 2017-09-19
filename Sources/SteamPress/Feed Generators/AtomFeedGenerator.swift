@@ -46,9 +46,15 @@ struct AtomFeedGenerator {
         if let imageURL = imageURL {
             feed += "<logo>\(imageURL)</logo>\n"
         }
+        
+        let blogPath = getRootPath(for: request) + "/"
 
         for post in posts {
-//            xmlFeed += try post.getPostRSSFeed(rootPath: getRootPath(for: request), dateFormatter: rfc822DateFormatter)
+            let updatedTime = post.lastEdited ?? post.created
+            guard let author = try post.postAuthor.get() else {
+                throw Abort.serverError
+            }
+            feed += "<entry>\n<id>\(blogPath)posts-id/\(post.id?.string ?? post.slugUrl)/</id>\n<title>\(post.title)</title>\n<updated>\(iso8601Formatter.string(from: updatedTime))</updated>\n<published>\(iso8601Formatter.string(from: post.created))</published>\n<author>\n<name>\(author.name)</name>\n<uri>\(blogPath)authors/\(author.username)/</uri>\n</author>\n<summary>\(try post.description())</summary>\n<link rel=\"alternate\" href=\"\(blogPath)posts/\(post.slugUrl)/\" />\n</entry>\n"
         }
 
         feed += feedEnd
