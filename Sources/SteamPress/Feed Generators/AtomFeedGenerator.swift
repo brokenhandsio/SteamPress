@@ -21,7 +21,9 @@ struct AtomFeedGenerator {
         self.copyright = copyright
         self.imageURL = imageURL
         
-        iso8601Formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
+        iso8601Formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
+        iso8601Formatter.locale = Locale(identifier: "en_US_POSIX")
+        iso8601Formatter.timeZone = TimeZone(secondsFromGMT: 0)
     }
     
     // MARK: - Route Handler

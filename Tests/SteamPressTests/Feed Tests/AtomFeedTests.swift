@@ -24,6 +24,7 @@ class AtomFeedTests: XCTestCase {
         ("testThatFullLinksWorksForPosts", testThatFullLinksWorksForPosts),
         ("testThatHTTPSLinksWorkForPostsBehindReverseProxy", testThatHTTPSLinksWorkForPostsBehindReverseProxy),
         ("testCorrectHeaderSetForAtomFeed", testCorrectHeaderSetForAtomFeed),
+        ("testThatDateFormatterIsCorrect", testThatDateFormatterIsCorrect),
         ]
     
     // MARK: - Properties
@@ -35,7 +36,9 @@ class AtomFeedTests: XCTestCase {
     // MARK: - Overrides
     
     override func setUp() {
-        dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
+        dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
+        dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+        dateFormatter.timeZone = TimeZone(secondsFromGMT: 0)
     }
     
     // MARK: - Tests
@@ -218,6 +221,17 @@ class AtomFeedTests: XCTestCase {
         let actualXmlResponse = try drop.respond(to: atomRequest)
 
         XCTAssertEqual(actualXmlResponse.headers[.contentType], "application/atom+xml")
+    }
+    
+    func testThatDateFormatterIsCorrect() throws {
+        drop = try TestDataBuilder.setupSteamPressDrop()
+        let createDate = Date(timeIntervalSince1970: 1505867108)
+        let (post, author) = try createPost(createDate: createDate)
+        let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>2017-09-20T00:25:08Z</updated>\n<entry>\n<id>/posts-id/1/</id>\n<title>\(post.title)</title>\n<updated>2017-09-20T00:25:08Z</updated>\n<published>2017-09-20T00:25:08Z</published>\n<author>\n<name>\(author.name)</name>\n<uri>/authors/\(author.username)/</uri>\n</author>\n<summary>\(try post.description())</summary>\n<link rel=\"alternate\" href=\"/posts/\(post.slugUrl)/\" />\n</entry>\n</feed>"
+        
+        let actualXmlResponse = try drop.respond(to: atomRequest)
+        
+        XCTAssertEqual(actualXmlResponse.body.bytes?.makeString(), expectedXML)
     }
     
     // MARK: - Private functions
