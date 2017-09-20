@@ -22,6 +22,8 @@ struct RSSFeedGenerator {
         
         rfc822DateFormatter = DateFormatter()
         rfc822DateFormatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ss z"
+        rfc822DateFormatter.locale = Locale(identifier: "en_US_POSIX")
+        rfc822DateFormatter.timeZone = TimeZone(secondsFromGMT: 0)
     }
     
     // MARK: - Route Handler

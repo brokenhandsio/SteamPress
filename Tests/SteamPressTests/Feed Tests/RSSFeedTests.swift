@@ -23,6 +23,7 @@ class RSSFeedTests: XCTestCase {
         ("testThatLinksSpecifyHTTPSWhenComingFromReverseProxy", testThatLinksSpecifyHTTPSWhenComingFromReverseProxy),
         ("testImageIsProvidedIfSupplied", testImageIsProvidedIfSupplied),
         ("testCorrectHeaderSetForRSSFeed", testCorrectHeaderSetForRSSFeed),
+        ("testThatDateFormatterIsCorrect", testThatDateFormatterIsCorrect),
         ]
 
     // MARK: - Properties
@@ -36,6 +37,8 @@ class RSSFeedTests: XCTestCase {
     override func setUp() {
         drop = try! TestDataBuilder.setupSteamPressDrop()
         dateFormatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ss z"
+        dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+        dateFormatter.timeZone = TimeZone(secondsFromGMT: 0)
     }
 
     // MARK: - Tests
@@ -203,13 +206,23 @@ class RSSFeedTests: XCTestCase {
 
         XCTAssertEqual(actualXmlResponse.headers[.contentType], "application/rss+xml")
     }
+    
+    func testThatDateFormatterIsCorrect() throws {
+        let createDate = Date(timeIntervalSince1970: 1505867108)
+        let (post, _) = try createPost(createDate: createDate)
+        let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<pubDate>Wed, 20 Sep 2017 00:25:08 GMT</pubDate>\n<item>\n<title>\n\(post.title)\n</title>\n<description>\n\(post.shortSnippet())\n</description>\n<link>\n/posts/\(post.slugUrl)/\n</link>\n<pubDate>Wed, 20 Sep 2017 00:25:08 GMT</pubDate>\n</item>\n</channel>\n\n</rss>"
+        
+        let actualXmlResponse = try drop.respond(to: rssRequest)
+        
+        XCTAssertEqual(actualXmlResponse.body.bytes?.makeString(), expectedXML)
+    }
 
     // MARK: - Private functions
     
-    private func createPost(tags: [String]? = nil) throws -> (BlogPost, BlogUser) {
+    private func createPost(tags: [String]? = nil, createDate: Date? = nil) throws -> (BlogPost, BlogUser) {
         let author = TestDataBuilder.anyUser()
         try author.save()
-        let post = TestDataBuilder.anyPost(author: author)
+        let post = TestDataBuilder.anyPost(author: author, creationDate: createDate ?? Date())
         try post.save()
         
         if let tags = tags {
