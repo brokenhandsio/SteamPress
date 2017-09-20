@@ -1,5 +1,7 @@
 import Foundation
 @testable import SteamPress
+import FluentProvider
+import Vapor
 
 struct TestDataBuilder {
     
@@ -22,5 +24,41 @@ struct TestDataBuilder {
     static func anyLongPost(author: BlogUser) -> BlogPost {
         let title = "Introduction To Steampress"
         return BlogPost(title: title, contents: longContents, author: author, creationDate: Date(), slugUrl: title, published: true)
+    }
+    
+    static func setupSteamPressDrop(title: String? = nil, description: String? = nil, path: String? = nil, copyright: String? = nil, imageURL: String? = nil) throws -> Droplet {
+        BlogUser.passwordHasher = FakePasswordHasher()
+        
+        var config = Config([:])
+        
+        try config.set("steampress.postsPerPage", 5)
+        
+        if let title = title {
+            try config.set("steampress.title", title)
+        }
+        
+        if let description = description {
+            try config.set("steampress.description", description)
+        }
+        
+        if let path = path {
+            try config.set("steampress.blogPath", path)
+        }
+        
+        if let copyright = copyright {
+            try config.set("steampress.copyright", copyright)
+        }
+        
+        if let image = imageURL {
+            try config.set("steampress.imageURL", image)
+        }
+        
+        try config.set("droplet.middleware", ["error", "steampress-sessions", "blog-persist"])
+        try config.set("fluent.driver", "memory")
+        try config.addProvider(SteamPress.Provider.self)
+        try config.addProvider(FluentProvider.Provider.self)
+        
+        let drop = try Droplet(config)
+        return drop
     }
 }

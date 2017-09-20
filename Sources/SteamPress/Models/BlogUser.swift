@@ -23,16 +23,16 @@ public final class BlogUser: Model {
 
     public let storage = Storage()
 
-    var name: String
-    var username: String
+    public var name: String
+    public var username: String
     var password: Bytes
     var resetPasswordRequired: Bool = false
-    var profilePicture: String?
-    var twitterHandle: String?
-    var biography: String?
-    var tagline: String?
+    public var profilePicture: String?
+    public var twitterHandle: String?
+    public var biography: String?
+    public var tagline: String?
 
-    init(name: String, username: String, password: Bytes, profilePicture: String?, twitterHandle: String?, biography: String?, tagline: String?) {
+    public init(name: String, username: String, password: Bytes, profilePicture: String?, twitterHandle: String?, biography: String?, tagline: String?) {
         self.name = name
         self.username = username.lowercased()
         self.password = password

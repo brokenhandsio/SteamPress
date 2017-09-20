@@ -233,7 +233,7 @@ struct LeafViewFactory: ViewFactory {
         parameters["post_uri"] = uri.descriptionWithoutPort.makeNode(in: nil)
         parameters["post_uri_encoded"] = uri.descriptionWithoutPort.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)?.makeNode(in: nil) ?? uri.descriptionWithoutPort.makeNode(in: nil)
         parameters["site_uri"] = uri.getRootUri().descriptionWithoutPort.makeNode(in: nil)
-        parameters["post_description"] = try SwiftSoup.parse(markdownToHTML(post.shortSnippet())).text().makeNode(in: nil)
+        parameters["post_description"] = try post.description().makeNode(in: nil)
 
         let image = try SwiftSoup.parse(markdownToHTML(post.contents)).select("img").first()
 
@@ -337,6 +337,12 @@ extension URI {
                 return self.description.replacingFirstOccurrence(of: ":80", with: "")
             }
         }
+    }
+}
+
+public extension BlogPost {
+    func description() throws -> String {
+        return try SwiftSoup.parse(markdownToHTML(shortSnippet())).text()
     }
 }
 

@@ -37,7 +37,7 @@ public final class BlogPost: Model {
     public var slugUrl: String
     public var published: Bool
 
-    init(title: String, contents: String, author: BlogUser, creationDate: Date, slugUrl: String,
+    public init(title: String, contents: String, author: BlogUser, creationDate: Date, slugUrl: String,
          published: Bool, logger: LogProtocol? = nil) {
         self.title = title
         self.contents = contents
