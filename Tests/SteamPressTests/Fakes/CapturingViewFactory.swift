@@ -111,4 +111,12 @@ class CapturingViewFactory: ViewFactory {
         self.allTagsPageTags = allTags
         return createDummyView()
     }
+    
+    private(set) var searchPosts: Page<BlogPost>?
+    private(set) var emptySearch: Bool?
+    func searchView(uri: URI, foundPosts: Page<BlogPost>?, emptySearch: Bool, user: BlogUser?) throws -> View {
+        self.searchPosts = foundPosts
+        self.emptySearch = emptySearch
+        return createDummyView()
+    }
 }

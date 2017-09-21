@@ -297,6 +297,20 @@ struct LeafViewFactory: ViewFactory {
         
         return try createPublicView(template: "blog/profile", uri: uri, parameters: parameters, user: loggedInUser)
     }
+    
+    func searchView(uri: URI, foundPosts: Page<BlogPost>?, emptySearch: Bool, user: BlogUser?) throws -> View {
+        var parameters: [String: Vapor.Node] = [:]
+        
+        if foundPosts?.total ?? 0 > 0 {
+            parameters["posts"] = try foundPosts?.makeNode(for: uri, in: BlogPostContext.longSnippet)
+        }
+        
+        if emptySearch {
+            parameters["emptySearch"] = true
+        }
+        
+        return try createPublicView(template: "blog/search", uri: uri, parameters: parameters, user: user)
+    }
 
     private func createPublicView(template: String, uri: URI, parameters: [String: NodeRepresentable], user: BlogUser? = nil) throws -> View {
         var viewParameters = parameters
@@ -321,6 +335,7 @@ struct LeafViewFactory: ViewFactory {
 
         return try viewRenderer.make(template, viewParameters.makeNode(in: nil))
     }
+    
 }
 
 extension URI {

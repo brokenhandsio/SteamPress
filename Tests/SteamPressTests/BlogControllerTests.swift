@@ -36,6 +36,9 @@ class BlogControllerTests: XCTestCase {
         ("testDisabledBlogAuthorsPath", testDisabledBlogAuthorsPath),
         ("testDisabledBlogTagsPath", testDisabledBlogTagsPath),
         ("testTagAPIEndpointReportsArrayOfTagsAsJson", testTagAPIEndpointReportsArrayOfTagsAsJson),
+        ("testBlogPassedToSearchPageCorrectly", testBlogPassedToSearchPageCorrectly),
+        ("testThatFlagSetIfEmptySearch", testThatFlagSetIfEmptySearch),
+        ("testThatFlagSetIfNoSearchTerm", testThatFlagSetIfNoSearchTerm),
     ]
 
     private var drop: Droplet!
@@ -410,4 +413,67 @@ class BlogControllerTests: XCTestCase {
         XCTAssertEqual(nodeArray[0]["name"]?.string, "The first tag")
         XCTAssertEqual(nodeArray[1]["name"]?.string, "The second tag")
     }
+    
+    func testBlogPassedToSearchPageCorrectly() throws {
+        try setupDrop()
+        let searchRequest = Request(method: .get, uri: "/search?term=Test")
+        let searchResponse = try drop.respond(to: searchRequest)
+        
+        XCTAssertEqual(searchResponse.status, .ok)
+        XCTAssertEqual(viewFactory.searchPosts?.data[0].title, post.title)
+        XCTAssertFalse(viewFactory.emptySearch ?? true)
+    }
+    
+    func testThatFlagSetIfEmptySearch() throws {
+        try setupDrop()
+        let searchRequest = Request(method: .get, uri: "/search?term=")
+        let searchResponse = try drop.respond(to: searchRequest)
+        
+        XCTAssertEqual(searchResponse.status, .ok)
+        XCTAssertNil(viewFactory.searchPosts)
+        XCTAssertTrue(viewFactory.emptySearch ?? false)
+    }
+    
+    func testThatFlagSetIfNoSearchTerm() throws {
+        try setupDrop()
+        let searchRequest = Request(method: .get, uri: "/search")
+        let searchResponse = try drop.respond(to: searchRequest)
+        
+        XCTAssertEqual(searchResponse.status, .ok)
+        XCTAssertNil(viewFactory.searchPosts)
+        XCTAssertTrue(viewFactory.emptySearch ?? false)
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

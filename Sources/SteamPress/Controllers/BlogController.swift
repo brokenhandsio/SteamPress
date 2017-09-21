@@ -10,6 +10,7 @@ struct BlogController {
     fileprivate let tagsPath = "tags"
     fileprivate let authorsPath = "authors"
     fileprivate let apiPath = "api"
+    fileprivate let searchPath = "search"
     fileprivate let drop: Droplet
     fileprivate let pathCreator: BlogPathCreator
     fileprivate let viewFactory: ViewFactory
@@ -32,6 +33,7 @@ struct BlogController {
             index.get(blogPostsPath, String.parameter, handler: blogPostHandler)
             index.get(apiPath, tagsPath, handler: tagApiHandler)
             index.get(blogPostsPath, handler: blogPostIndexRedirectHandler)
+            index.get(searchPath, handler: searchHandler)
 
             if enableAuthorsPages {
                 index.get(authorsPath, String.parameter, handler: authorViewHandler)
@@ -110,6 +112,20 @@ struct BlogController {
 
     func tagApiHandler(request: Request) throws -> ResponseRepresentable {
         return try JSON(node: BlogTag.all().makeNode(in: nil))
+    }
+    
+    func searchHandler(request: Request) throws -> ResponseRepresentable {
+        guard let searchTerm = request.query?["term"]?.string, searchTerm != "" else {
+            return try viewFactory.searchView(uri: request.getURIWithHTTPSIfReverseProxy(), foundPosts: nil, emptySearch: true, user: getLoggedInUser(in: request))
+        }
+        
+        let posts = try BlogPost.makeQuery().filter(BlogPost.Properties.published, true).or { orGroup in
+            try orGroup.filter(BlogPost.Properties.title, .contains, searchTerm)
+            try orGroup.filter(BlogPost.Properties.contents, .contains, searchTerm)
+        }
+        .sort(BlogPost.Properties.created, .descending).paginate(for: request)
+        
+        return try viewFactory.searchView(uri: request.uri, foundPosts: posts, emptySearch: false, user: getLoggedInUser(in: request))
     }
 
     private func getLoggedInUser(in request: Request) -> BlogUser? {
