@@ -116,7 +116,7 @@ struct BlogController {
     
     func searchHandler(request: Request) throws -> ResponseRepresentable {
         guard let searchTerm = request.query?["term"]?.string, searchTerm != "" else {
-            return try viewFactory.searchView(uri: request.getURIWithHTTPSIfReverseProxy(), foundPosts: nil, emptySearch: true, user: getLoggedInUser(in: request))
+            return try viewFactory.searchView(uri: request.getURIWithHTTPSIfReverseProxy(), searchTerm: nil, foundPosts: nil, emptySearch: true, user: getLoggedInUser(in: request))
         }
         
         let posts = try BlogPost.makeQuery().filter(BlogPost.Properties.published, true).or { orGroup in
@@ -125,7 +125,7 @@ struct BlogController {
         }
         .sort(BlogPost.Properties.created, .descending).paginate(for: request)
         
-        return try viewFactory.searchView(uri: request.uri, foundPosts: posts, emptySearch: false, user: getLoggedInUser(in: request))
+        return try viewFactory.searchView(uri: request.uri, searchTerm: searchTerm, foundPosts: posts, emptySearch: false, user: getLoggedInUser(in: request))
     }
 
     private func getLoggedInUser(in request: Request) -> BlogUser? {

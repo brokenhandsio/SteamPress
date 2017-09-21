@@ -769,7 +769,7 @@ class LeafViewFactoryTests: XCTestCase {
     
     func testSearchPageGetsCorrectParameters() throws {
         let (posts, _, users) = try setupBlogIndex()
-        _ = try viewFactory.searchView(uri: searchURI, foundPosts: posts, emptySearch: false, user: users[0])
+        _ = try viewFactory.searchView(uri: searchURI, searchTerm: "Test", foundPosts: posts, emptySearch: false, user: users[0])
         
         XCTAssertEqual(viewRenderer.capturedContext?["uri"]?.string, searchURI.descriptionWithoutPort)
         
@@ -778,13 +778,15 @@ class LeafViewFactoryTests: XCTestCase {
         XCTAssertEqual(viewRenderer.capturedContext?["user"]?["name"]?.string, users.first?.name)
         XCTAssertEqual(viewRenderer.leafPath, "blog/search")
         XCTAssertNil(viewRenderer.capturedContext?["emptySearch"]?.bool)
+        XCTAssertEqual(viewRenderer.capturedContext?["searchTerm"]?.string, "Test")
+        XCTAssertEqual(viewRenderer.capturedContext?["searchCount"]?.int, 2)
         XCTAssertEqual(viewRenderer.capturedContext?["disqus_name"]?.string, disqusName)
         XCTAssertEqual(viewRenderer.capturedContext?["site_twitter_handle"]?.string, siteTwitterHandle)
         XCTAssertEqual(viewRenderer.capturedContext?["google_analytics_identifier"]?.string, googleAnalyticsIdentifier)
     }
     
     func testSearchPageGetsFlagIfNoSearchTermProvided() throws {
-        _ = try viewFactory.searchView(uri: searchURI, foundPosts: nil, emptySearch: true, user: nil)
+        _ = try viewFactory.searchView(uri: searchURI, searchTerm: nil, foundPosts: nil, emptySearch: true, user: nil)
         
         XCTAssertTrue(viewRenderer.capturedContext?["emptySearch"]?.bool ?? false)
         XCTAssertNil(viewRenderer.capturedContext?["posts"])

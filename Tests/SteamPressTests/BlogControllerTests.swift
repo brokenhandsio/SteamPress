@@ -420,6 +420,7 @@ class BlogControllerTests: XCTestCase {
         let searchResponse = try drop.respond(to: searchRequest)
         
         XCTAssertEqual(searchResponse.status, .ok)
+        XCTAssertEqual(viewFactory.searchTerm, "Test")
         XCTAssertEqual(viewFactory.searchPosts?.data[0].title, post.title)
         XCTAssertFalse(viewFactory.emptySearch ?? true)
     }
