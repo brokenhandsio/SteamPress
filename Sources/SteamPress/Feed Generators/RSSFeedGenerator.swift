@@ -75,7 +75,7 @@ struct RSSFeedGenerator {
 extension BlogPost {
     func getPostRSSFeed(rootPath: String, dateFormatter: DateFormatter) throws -> String {
         let link = rootPath + "/posts/\(slugUrl)/"
-        var postEntry = "<item>\n<title>\n\(title)\n</title>\n<description>\n\(shortSnippet())\n</description>\n<link>\n\(link)\n</link>\n"
+        var postEntry = "<item>\n<title>\n\(title)\n</title>\n<description>\n\(try description())\n</description>\n<link>\n\(link)\n</link>\n"
         
         for tag in try tags.all() {
             postEntry += "<category>\(tag.name)</category>\n"
