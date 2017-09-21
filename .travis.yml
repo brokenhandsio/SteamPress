@@ -13,7 +13,7 @@ before_install:
             brew install vapor;
         else
             eval "$(curl -sL https://apt.vapor.sh)";
-            sudo apt-get install vapor=2.0.3;
+            sudo apt-get install vapor=2.0.3 swift=3.1.1;
             sudo chmod -R a+rx /usr/;
         fi
 
