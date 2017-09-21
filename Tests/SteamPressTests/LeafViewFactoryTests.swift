@@ -75,6 +75,9 @@ class LeafViewFactoryTests: XCTestCase {
         ("testAuthorViewGetsPostCount", testAuthorViewGetsPostCount),
         ("testAuthorViewGetsLongSnippetForPosts", testAuthorViewGetsLongSnippetForPosts),
         ("testSiteURIForHTTPDoesNotContainPort", testSiteURIForHTTPDoesNotContainPort),
+        ("testSearchPageGetsCorrectParameters", testSearchPageGetsCorrectParameters),
+        ("testSearchPageGetsFlagIfNoSearchTermProvided", testSearchPageGetsFlagIfNoSearchTermProvided),
+        ("testSearchPageGetsCountIfNoPagesFound", testSearchPageGetsCountIfNoPagesFound),
         ]
     
     // MARK: - Properties
@@ -93,6 +96,7 @@ class LeafViewFactoryTests: XCTestCase {
     private let authorURI = URI(scheme: "https", hostname: "test.com", path: "authors/luke/")
     private let createPostURI = URI(scheme: "https", hostname: "test.com", path: "admin/createPost/")
     private let editPostURI = URI(scheme: "https", hostname: "test.com", path: "admin/posts/1/edit/")
+    private let searchURI = URI(scheme: "https", hostname: "test.com", path: "search", query: "term=Test")
     
     private let siteTwitterHandle = "brokenhandsio"
     private let disqusName = "steampress"
@@ -762,6 +766,37 @@ class LeafViewFactoryTests: XCTestCase {
         _ = try viewFactory.blogPostView(uri: httpURI, post: postWithImage, author: user, user: nil)
 
         XCTAssertEqual(viewRenderer.capturedContext?["site_uri"]?.string, "http://test.com/")
+    }
+    
+    func testSearchPageGetsCorrectParameters() throws {
+        let (posts, _, users) = try setupBlogIndex()
+        _ = try viewFactory.searchView(uri: searchURI, searchTerm: "Test", foundPosts: posts, emptySearch: false, user: users[0])
+        
+        XCTAssertEqual(viewRenderer.capturedContext?["uri"]?.string, searchURI.descriptionWithoutPort)
+        
+        XCTAssertEqual(viewRenderer.capturedContext?["posts"]?["data"]?.array?.count, posts.total)
+        XCTAssertEqual((viewRenderer.capturedContext?["posts"]?["data"]?.array?.first)?["title"]?.string, posts.data.first?.title)
+        XCTAssertEqual(viewRenderer.capturedContext?["user"]?["name"]?.string, users.first?.name)
+        XCTAssertEqual(viewRenderer.leafPath, "blog/search")
+        XCTAssertNil(viewRenderer.capturedContext?["emptySearch"]?.bool)
+        XCTAssertEqual(viewRenderer.capturedContext?["searchTerm"]?.string, "Test")
+        XCTAssertEqual(viewRenderer.capturedContext?["searchCount"]?.int, 2)
+        XCTAssertEqual(viewRenderer.capturedContext?["disqus_name"]?.string, disqusName)
+        XCTAssertEqual(viewRenderer.capturedContext?["site_twitter_handle"]?.string, siteTwitterHandle)
+        XCTAssertEqual(viewRenderer.capturedContext?["google_analytics_identifier"]?.string, googleAnalyticsIdentifier)
+    }
+    
+    func testSearchPageGetsFlagIfNoSearchTermProvided() throws {
+        _ = try viewFactory.searchView(uri: searchURI, searchTerm: nil, foundPosts: nil, emptySearch: true, user: nil)
+        
+        XCTAssertTrue(viewRenderer.capturedContext?["emptySearch"]?.bool ?? false)
+        XCTAssertNil(viewRenderer.capturedContext?["posts"])
+    }
+    
+    func testSearchPageGetsCountIfNoPagesFound() throws {
+        _ = try viewFactory.searchView(uri: searchURI, searchTerm: "Test", foundPosts: BlogPost.makeQuery().paginate(for: indexRequest), emptySearch: false, user: nil)
+        
+        XCTAssertEqual(viewRenderer.capturedContext?["searchCount"]?.int, 0)
     }
     
     // MARK: - Helpers

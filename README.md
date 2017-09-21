@@ -36,6 +36,7 @@ There is an example of how it can work in a site (and what it requires in terms 
 * Support for comments via Disqus
 * Open Graph and Twitter Card support
 * RSS/Atom Feed support
+* Blog Search
 
 # How to Use
 
@@ -202,6 +203,10 @@ SteamPress automatically provides endpoints for registering RSS readers, either 
 * `copyright` - an optional copyright message to add to the feeds
 * `imageURL` - an optional image/logo to add to the feeds. Note that for Atom this should a 2:1 landscape scaled image
 
+## Search Support
+
+SteamPress has a built in blog search. It was register a route, `/search` under your blog path, which you can send a query through to, with a key of `term` to search the blog.
+
 
 # Expected Leaf Templates
 
@@ -218,6 +223,7 @@ The basic structure of your `Resources/View` directory should be:
   * `profile.leaf` - the page for a user profile
   * `tags.leaf` - the page for displaying all of the tags
   * `authors.leaf` - the page for displaying all of the authors
+  * `search.leaf` - the page to display search results
   * `admin`
     * `createPost.leaf` - the page for creating and editing a blog post
     * `createUser.leaf` - the page for creating and editing a user
@@ -299,6 +305,15 @@ This is the page for viewing all of the authors on the blog. It provides a usefu
 * `site_twitter_handle` - the Twitter handle for the site if configured
 * `uri` - the URI of the page - useful for Open Graph
 * `google_analytics_identifier` - your Google Analytics identifier if configured
+
+### `search.leaf`
+
+This is the page that will display search results. It has a number of parameters on it on top of the standard parameters:
+
+* `emptySearch` - returned if no search term of an empty search term was received
+* `searchTerm` - the search term if provided
+* `searchCount` - the number of results returned from the search
+* `posts` - the posts found from the search, paginated, in `longSnippet` form
 
 ## Admin Site
 
@@ -432,5 +447,4 @@ I anticipate SteamPress staying on a version 0 for some time, whilst some of the
 On the roadmap we have:
 
 * AMP/Facebook instant articles endpoints for posts
-* Searching through the blog
 * Saving state when logging in - if you go to a page (e.g. edit post) but need to be logged in, it would be great if you could head back to that page once logged in. Also, if you have edited a post and your session expires before you post it, wouldn't it be great if it remembered everything!

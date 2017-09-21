@@ -24,4 +24,5 @@ protocol ViewFactory {
     func allAuthorsView(uri: URI, allAuthors: [BlogUser], user: BlogUser?) throws -> View
     func allTagsView(uri: URI, allTags: [BlogTag], user: BlogUser?) throws -> View
     func profileView(uri: URI, author: BlogUser, paginatedPosts: Page<BlogPost>, loggedInUser: BlogUser?) throws -> View
+    func searchView(uri: URI, searchTerm: String?, foundPosts: Page<BlogPost>?, emptySearch: Bool, user: BlogUser?) throws -> View
 }
