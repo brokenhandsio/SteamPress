@@ -39,6 +39,8 @@ struct RSSFeedGenerator {
             xmlFeed += "<pubDate>\(rfc822DateFormatter.string(from: postDate))</pubDate>\n"
         }
         
+        xmlFeed += "<textinput>\n<description>Search \(title)</description>\n<title>Search</title>\n<link>\(getRootPath(for: request))/search?</link>\n<name>term</name>\n</textinput>\n"
+        
         for post in posts {
             xmlFeed += try post.getPostRSSFeed(rootPath: getRootPath(for: request), dateFormatter: rfc822DateFormatter)
         }
