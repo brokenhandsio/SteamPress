@@ -203,6 +203,10 @@ SteamPress automatically provides endpoints for registering RSS readers, either 
 * `copyright` - an optional copyright message to add to the feeds
 * `imageURL` - an optional image/logo to add to the feeds. Note that for Atom this should a 2:1 landscape scaled image
 
+## Search Support
+
+SteamPress has a built in blog search. It was register a route, `/search` under your blog path, which you can send a query through to, with a key of `term` to search the blog.
+
 
 # Expected Leaf Templates
 
