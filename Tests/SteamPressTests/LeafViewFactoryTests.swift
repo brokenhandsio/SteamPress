@@ -77,6 +77,7 @@ class LeafViewFactoryTests: XCTestCase {
         ("testSiteURIForHTTPDoesNotContainPort", testSiteURIForHTTPDoesNotContainPort),
         ("testSearchPageGetsCorrectParameters", testSearchPageGetsCorrectParameters),
         ("testSearchPageGetsFlagIfNoSearchTermProvided", testSearchPageGetsFlagIfNoSearchTermProvided),
+        ("testSearchPageGetsCountIfNoPagesFound", testSearchPageGetsCountIfNoPagesFound),
         ]
     
     // MARK: - Properties
@@ -790,6 +791,12 @@ class LeafViewFactoryTests: XCTestCase {
         
         XCTAssertTrue(viewRenderer.capturedContext?["emptySearch"]?.bool ?? false)
         XCTAssertNil(viewRenderer.capturedContext?["posts"])
+    }
+    
+    func testSearchPageGetsCountIfNoPagesFound() throws {
+        _ = try viewFactory.searchView(uri: searchURI, searchTerm: "Test", foundPosts: BlogPost.makeQuery().paginate(for: indexRequest), emptySearch: false, user: nil)
+        
+        XCTAssertEqual(viewRenderer.capturedContext?["searchCount"]?.int, 0)
     }
     
     // MARK: - Helpers

@@ -301,10 +301,12 @@ struct LeafViewFactory: ViewFactory {
     func searchView(uri: URI, searchTerm: String?, foundPosts: Page<BlogPost>?, emptySearch: Bool, user: BlogUser?) throws -> View {
         var parameters: [String: Vapor.Node] = [:]
         
-        if foundPosts?.total ?? 0 > 0 {
+        let searchCount = foundPosts?.total ?? 0
+        if searchCount > 0 {
             parameters["posts"] = try foundPosts?.makeNode(for: uri, in: BlogPostContext.longSnippet)
-            parameters["searchCount"] = foundPosts?.total.makeNode(in: nil)
         }
+        
+        parameters["searchCount"] = searchCount.makeNode(in: nil)
         
         if emptySearch {
             parameters["emptySearch"] = true
