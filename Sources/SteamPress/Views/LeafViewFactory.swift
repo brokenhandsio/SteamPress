@@ -25,7 +25,11 @@ struct LeafViewFactory: ViewFactory {
             guard let editSubstringIndex = uri.descriptionWithoutPort.range(of: "admin/posts")?.lowerBound else {
                 throw Abort.serverError
             }
+            #if swift(>=4)
+            postPathPrefix = uri.descriptionWithoutPort[..<editSubstringIndex] + "posts/"
+            #else
             postPathPrefix = uri.descriptionWithoutPort.substring(to: editSubstringIndex) + "posts/"
+            #endif
         } else {
             postPathPrefix = uri.descriptionWithoutPort.replacingOccurrences(of: "admin/createPost", with: "posts")
         }

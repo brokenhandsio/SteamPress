@@ -49,7 +49,7 @@ class RSSFeedTests: XCTestCase {
             let thisClass = type(of: self)
             let linuxCount = thisClass.allTests.count
             let darwinCount = Int(thisClass
-                .defaultTestSuite().testCaseCount)
+                .defaultTestSuite.testCaseCount)
             XCTAssertEqual(linuxCount, darwinCount,
                            "\(darwinCount - linuxCount) tests are missing from allTests")
         #endif

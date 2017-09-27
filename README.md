@@ -3,7 +3,7 @@
     <br>
     <br>
     <a href="https://swift.org">
-        <img src="http://img.shields.io/badge/Swift-3.1-brightgreen.svg" alt="Language">
+        <img src="http://img.shields.io/badge/Swift-4-brightgreen.svg" alt="Language">
     </a>
     <a href="https://travis-ci.org/brokenhandsio/SteamPress">
         <img src="https://travis-ci.org/brokenhandsio/SteamPress.svg?branch=master" alt="Build Status">
@@ -67,7 +67,7 @@ SteamPress is easy to integrate with your application. First add SteamPress to y
 ```swift
 dependencies: [
     ...,
-    .Package(url: "https://github.com/brokenhandsio/SteamPress", majorVersion: 0)
+    .package(url: "https://github.com/brokenhandsio/SteamPress", from: "0.15.0")
 ]
 ```
 
