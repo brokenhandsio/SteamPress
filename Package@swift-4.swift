@@ -9,7 +9,7 @@ let package = Package(
     ],
     dependencies: [
     	.package(url: "https://github.com/vapor/vapor.git", from: "2.2.0"),
-        .package(url: "https://github.com/scinfu/SwiftSoup.git", from: "1.4.0"),
+        .package(url: "https://github.com/scinfu/SwiftSoup.git", from: "1.5.1"),
         .package(url: "https://github.com/vapor-community/markdown-provider.git", from: "1.0.0"),
         .package(url: "https://github.com/vapor/leaf-provider.git", from: "1.1.0"),
         .package(url: "https://github.com/vapor/fluent-provider.git", from: "1.1.0"),
