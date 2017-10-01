@@ -67,7 +67,7 @@ SteamPress is easy to integrate with your application. First add SteamPress to y
 ```swift
 dependencies: [
     ...,
-    .package(url: "https://github.com/brokenhandsio/SteamPress", from: "0.15.0")
+    .package(url: "https://github.com/brokenhandsio/SteamPress", from: "0.16.0")
 ]
 ```
 
