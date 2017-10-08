@@ -16,7 +16,7 @@
     </a>
 </p>
 
-SteamPress is a Swift blogging engine for use with the Vapor Framework to deploy blogs to sites that run on top of Vapor. It uses [Fluent](https://github.com/vapor/fluent) so will work with any database that has a Fluent Driver. It also incorporates [LeafMarkdown](https://github.com/brokenhandsio/LeafMarkdown) allowing you to write your posts in Markdown and then use Leaf to render the markdown.
+SteamPress is a Swift blogging engine for use with the Vapor Framework to deploy blogs to sites that run on top of Vapor. It uses [Fluent](https://github.com/vapor/fluent) so will work with any database that has a Fluent Driver. It also incorporates a [Markdown Provider](https://github.com/vapor-community/markdown-provider) allowing you to write your posts in Markdown and then use Leaf to render the markdown.
 
 The blog can either be used as the root of your website (i.e. appearing at https://www.acme.org) or in a subpath (i.e. https://www.acme.org/blog/).
 
@@ -424,15 +424,15 @@ let shortSnippet = post.shortSnippet()
 let longSnippet = post.longSnippet()
 ```
 
-# Leaf Markdown
+# Markdown Provider
 
-LeafMarkdown allows you to render markdown as HTML in your Leaf files. To use, just simply use:
+The Markdown Provider allows you to render markdown as HTML in your Leaf files. To use, just simply use:
 
 ```
 #markdown(myObject.markdownContent)
 ```
 
-This will convert the `Node` object `myObject`'s `markdownContent` to HTML (you pass in `myObject` as a parameter to your Leaf view). It uses CommonMark under the hood, but for more details, see the [LeafMarkdown repo](https://github.com/brokenhandsio/LeafMarkdown).
+This will convert the `Node` object `myObject`'s `markdownContent` to HTML (you pass in `myObject` as a parameter to your Leaf view). It uses CommonMark under the hood, but for more details, see the [Markdown Provider repo](https://github.com/vapor-community/markdown-provider).
 
 # API
 
