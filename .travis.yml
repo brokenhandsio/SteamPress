@@ -5,9 +5,10 @@ language: generic
 sudo: required
 dist: trusty
 
-osx_image: xcode9
+osx_image: xcode9.1
 before_install:
     - if [ $TRAVIS_OS_NAME == "osx" ]; then
+            brew update;
             brew tap vapor/tap;
             brew update;
             brew install vapor;
@@ -23,7 +24,7 @@ script:
     - swift test
 
 after_success:
-    - eval "$(curl -sL https://raw.githubusercontent.com/vapor-community/swift/master/codecov)"
+    - eval "$(curl -sL https://raw.githubusercontent.com/vapor-community/swift/swift-4-codecov/codecov-swift4)"
 
 notifications:
   email:
