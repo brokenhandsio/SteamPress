@@ -543,7 +543,11 @@ extension String {
         var randomString: String = ""
 
         for _ in 0..<length {
+            #if swift(>=4)
+            let randomValue = Int.random(min: 0, max: base.count-1)
+            #else
             let randomValue = Int.random(min: 0, max: base.characters.count-1)
+            #endif
             randomString += "\(base[base.index(base.startIndex, offsetBy: Int(randomValue))])"
         }
         return randomString
