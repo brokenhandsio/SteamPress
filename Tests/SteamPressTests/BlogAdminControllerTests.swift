@@ -69,6 +69,7 @@ class BlogAdminControllerTests: XCTestCase {
         ("testResetPasswordPageGetsLoggedInUser", testResetPasswordPageGetsLoggedInUser),
         ("testCreatePostPageGetsURI", testCreatePostPageGetsURI),
         ("testCreatePostPageGetsHTTPSURIIfFromReverseProxy", testCreatePostPageGetsHTTPSURIIfFromReverseProxy),
+        ("testThatEditingPostGetsRedirectToPostPage", testThatEditingPostGetsRedirectToPostPage),
     ]
     
     // MARK: - Properties
@@ -844,6 +845,27 @@ class BlogAdminControllerTests: XCTestCase {
         _ = try drop.respond(to: request)
 
         XCTAssertEqual(capturingViewFactory.createPostURI?.descriptionWithoutPort, "https://geeks.brokenhands.io/blog/admin/createPost/")
+    }
+
+    func testThatEditingPostGetsRedirectToPostPage() throws {
+        let post = BlogPost(title: "Test Post", contents: "Blah 1", author: user, creationDate: Date(), slugUrl: "test-post", published: true)
+        try post.save()
+
+        let request = try createLoggedInRequest(method: .post, path: "posts/\(post.id!.string!)/edit", for: user)
+
+        let requestData = [
+            "inputTitle": "Test Post".makeNode(in: nil),
+            "inputPostContents": "Blah 2".makeNode(in: nil),
+            "inputSlugUrl": "test-post",
+            "publish": "publish"
+        ]
+
+        request.formURLEncoded = try requestData.makeNode(in: nil)
+
+        let response = try drop.respond(to: request)
+
+        XCTAssertEqual(response.status, .seeOther)
+        XCTAssertEqual(response.headers[.location], "/blog/posts/\(post.slugUrl)/")
     }
     
     // MARK: - Helper functions
