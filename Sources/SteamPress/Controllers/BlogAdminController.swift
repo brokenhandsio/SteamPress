@@ -188,7 +188,7 @@ struct BlogAdminController {
 
         try post.save()
 
-        return Response(redirect: pathCreator.createPath(for: "admin"))
+        return Response(redirect: pathCreator.createPath(for: "posts/\(post.slugUrl)"))
     }
 
     // MARK: - User handlers
