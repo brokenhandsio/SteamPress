@@ -1,11 +1,9 @@
-FROM swiftdocker/swift:latest
+FROM swift:4
 
 WORKDIR /package
 
 COPY . ./
 
-RUN swift --version
-RUN swift package tools-version
-RUN swift package --enable-prefetching fetch
+RUN swift package --enable-prefetching resolve
 RUN swift package clean
 CMD swift test
