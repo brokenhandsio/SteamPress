@@ -210,13 +210,8 @@ struct LeafViewFactory: ViewFactory {
         return try viewRenderer.make("blog/admin/resetPassword", parameters)
     }
 
-    func createLinkView(name: String, href: String) throws -> View {
-
-        var parameters: [String: Vapor.Node] = [:]
-        parameters["name"] = name
-        parameters["href"] = href
-
-        return try viewRenderer.make("blog/admin/createLink", parameters)
+    func createLinkView() throws -> View {
+        return try viewRenderer.make("blog/admin/createLink", [:])
     }
 
     // MARK: - Blog Controller Views
@@ -302,7 +297,7 @@ struct LeafViewFactory: ViewFactory {
             parameters["links"] = try allLinks.makeNode(in: nil)
         }
 
-        return try createPublicView(template: "blog/links", uri: uri, parameters: parameters, user: user)
+        return try createPublicView(template: "blog/links", uri: uri, parameters: parameters)
     }
 
     func allAuthorsView(uri: URI, allAuthors: [BlogUser], user: BlogUser?) throws -> View {

@@ -56,7 +56,7 @@ struct RSSFeedGenerator {
         
         let link = getRootPath(for: request) + "/"
         
-        var start = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>\(title)</title>\n<link>\(link)</link>\n<description>\(description)</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n"
+        var start = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>\(title)</title>\n<link>\(link)</link>\n<description>\(description)</description>\n<generator>PyDev</generator>\n<ttl>60</ttl>\n"
         
         if let copyright = copyright {
             start += "<copyright>\(copyright)</copyright>\n"

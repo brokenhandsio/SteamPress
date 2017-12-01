@@ -67,7 +67,6 @@ public struct Provider: Vapor.Provider {
 
     public func boot(_ drop: Droplet) {
 
-        print(enableLinksPages)
         BlogPost.postsPerPage = postsPerPage
 
         BlogAdminUser.log = drop.log

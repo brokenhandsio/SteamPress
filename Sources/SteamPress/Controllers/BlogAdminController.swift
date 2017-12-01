@@ -39,7 +39,7 @@ struct BlogAdminController {
         routerSecure.get("createUser", handler: createUserHandler)
         routerSecure.post("createUser", handler: createUserPostHandler)
         routerSecure.get("createLink", handler: createLinkHandler)
-        routerSecure.get("createLink", handler: createLinkPostHandler)
+        routerSecure.post("createLink", handler: createLinkPostHandler)
         routerSecure.get("posts", BlogPost.parameter, "delete", handler: deletePostHandler)
         routerSecure.get("posts", BlogPost.parameter, "edit", handler: editPostHandler)
         routerSecure.post("posts", BlogPost.parameter, "edit", handler: editPostPostHandler)
@@ -58,7 +58,7 @@ struct BlogAdminController {
     }
 
     func createLinkHandler(_ request: Request) throws -> ResponseRepresentable {
-        return try viewFactory.createLinkView(uri: request.getURIWithHTTPSIfReverseProxy(), name: nil, href: nil)
+        return try viewFactory.createLinkView()
     }
 
     func createLinkPostHandler(_ request: Request) throws -> ResponseRepresentable {
@@ -69,7 +69,7 @@ struct BlogAdminController {
             throw Abort.badRequest
         }
 
-        let newLink = BlogLink(name: name, href: href)
+        let newLink = BlogLink(name: name!, href: href!)
         try newLink.save()
 
         return Response(redirect: pathCreator.createPath(for: "links"))
