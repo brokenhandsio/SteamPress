@@ -8,6 +8,7 @@ struct BlogController {
     // MARK: - Properties
     fileprivate let blogPostsPath = "posts"
     fileprivate let tagsPath = "tags"
+    fileprivate let linksPath = "links"
     fileprivate let authorsPath = "authors"
     fileprivate let apiPath = "api"
     fileprivate let searchPath = "search"
@@ -16,14 +17,16 @@ struct BlogController {
     fileprivate let viewFactory: ViewFactory
     fileprivate let enableAuthorsPages: Bool
     fileprivate let enableTagsPages: Bool
+    fileprivate let enableLinksPages: Bool
 
     // MARK: - Initialiser
-    init(drop: Droplet, pathCreator: BlogPathCreator, viewFactory: ViewFactory, enableAuthorsPages: Bool, enableTagsPages: Bool) {
+    init(drop: Droplet, pathCreator: BlogPathCreator, viewFactory: ViewFactory, enableAuthorsPages: Bool, enableTagsPages: Bool, enableLinksPages: Bool) {
         self.drop = drop
         self.pathCreator = pathCreator
         self.viewFactory = viewFactory
         self.enableAuthorsPages = enableAuthorsPages
         self.enableTagsPages = enableTagsPages
+        self.enableLinksPages = enableLinksPages
     }
 
     // MARK: - Add routes
@@ -44,6 +47,10 @@ struct BlogController {
                 index.get(tagsPath, String.parameter, handler: tagViewHandler)
                 index.get(tagsPath, handler: allTagsViewHandler)
             }
+
+            if enableLinksPages {
+                index.get(linksPath, handler: allLinksViewHandler)
+            }
         }
     }
 
@@ -51,10 +58,11 @@ struct BlogController {
 
     func indexHandler(request: Request) throws -> ResponseRepresentable {
         let tags = try BlogTag.all()
+        let links = try BlogLink.all()
         let authors = try BlogUser.all()
         let paginatedBlogPosts = try BlogPost.makeQuery().filter(BlogPost.Properties.published, true).sort(BlogPost.Properties.created, .descending).paginate(for: request)
 
-        return try viewFactory.blogIndexView(uri: request.getURIWithHTTPSIfReverseProxy(), paginatedPosts: paginatedBlogPosts, tags: tags, authors: authors, loggedInUser: getLoggedInUser(in: request))
+        return try viewFactory.blogIndexView(uri: request.getURIWithHTTPSIfReverseProxy(), paginatedPosts: paginatedBlogPosts, tags: tags, links: links, authors: authors, loggedInUser: getLoggedInUser(in: request))
     }
 
     func blogPostIndexRedirectHandler(request: Request) throws -> ResponseRepresentable {
@@ -106,12 +114,20 @@ struct BlogController {
         return try viewFactory.allTagsView(uri: request.getURIWithHTTPSIfReverseProxy(), allTags: BlogTag.all(), user: getLoggedInUser(in: request))
     }
 
+    func allLinksViewHandler(request: Request) throws -> ResponseRepresentable {
+        return try viewFactory.allLinksView(uri: request.getURIWithHTTPSIfReverseProxy(), allLinks: BlogLink.all())
+    }
+
     func allAuthorsViewHandler(request: Request) throws -> ResponseRepresentable {
         return try viewFactory.allAuthorsView(uri: request.getURIWithHTTPSIfReverseProxy(), allAuthors: BlogUser.all(), user: getLoggedInUser(in: request))
     }
 
     func tagApiHandler(request: Request) throws -> ResponseRepresentable {
         return try JSON(node: BlogTag.all().makeNode(in: nil))
+    }
+
+    func linkApiHandler(request: Request) throws -> ResponseRepresentable {
+        return try JSON(node: BlogLink.all().makeNode(in: nil))
     }
     
     func searchHandler(request: Request) throws -> ResponseRepresentable {

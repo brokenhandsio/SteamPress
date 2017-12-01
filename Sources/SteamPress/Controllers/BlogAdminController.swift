@@ -38,6 +38,8 @@ struct BlogAdminController {
         routerSecure.post("createPost", handler: createPostPostHandler)
         routerSecure.get("createUser", handler: createUserHandler)
         routerSecure.post("createUser", handler: createUserPostHandler)
+        routerSecure.get("createLink", handler: createLinkHandler)
+        routerSecure.get("createLink", handler: createLinkPostHandler)
         routerSecure.get("posts", BlogPost.parameter, "delete", handler: deletePostHandler)
         routerSecure.get("posts", BlogPost.parameter, "edit", handler: editPostHandler)
         routerSecure.post("posts", BlogPost.parameter, "edit", handler: editPostPostHandler)
@@ -53,6 +55,24 @@ struct BlogAdminController {
     // MARK: - Blog Posts handlers
     func createPostHandler(_ request: Request) throws -> ResponseRepresentable {
         return try viewFactory.createBlogPostView(uri: request.getURIWithHTTPSIfReverseProxy(), errors: nil, title: nil, contents: nil, slugUrl: nil, tags: nil, isEditing: false, postToEdit: nil, draft: true, user: try request.user())
+    }
+
+    func createLinkHandler(_ request: Request) throws -> ResponseRepresentable {
+        return try viewFactory.createLinkView(uri: request.getURIWithHTTPSIfReverseProxy(), name: nil, href: nil)
+    }
+
+    func createLinkPostHandler(_ request: Request) throws -> ResponseRepresentable {
+        let name = request.data["inputName"]?.string
+        let href = request.data["inputHref"]?.string
+
+        if name == nil && href == nil {
+            throw Abort.badRequest
+        }
+
+        let newLink = BlogLink(name: name, href: href)
+        try newLink.save()
+
+        return Response(redirect: pathCreator.createPath(for: "links"))
     }
 
     func createPostPostHandler(_ request: Request) throws -> ResponseRepresentable {

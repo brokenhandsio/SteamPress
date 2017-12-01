@@ -19,6 +19,7 @@ public struct Provider: Vapor.Provider {
     private let useBootstrap4: Bool
     private let enableAuthorsPages: Bool
     private let enableTagsPages: Bool
+    private let enableLinksPages: Bool
 
     static func createCookieFactory(for environment: Environment) -> ((_ request: Request) -> Cookie) {
         let cookieFactory: (_ request: Request) -> Cookie = { req in
@@ -44,12 +45,12 @@ public struct Provider: Vapor.Provider {
         config.preparations.append(BlogUser.self)
         config.preparations.append(BlogPost.self)
         config.preparations.append(BlogTag.self)
+        config.preparations.append(BlogLink.self)
         config.preparations.append(Pivot<BlogPost, BlogTag>.self)
         config.preparations.append(BlogPostDraft.self)
         config.preparations.append(BlogUserExtraInformation.self)
         config.preparations.append(BlogAdminUser.self)
         config.preparations.append(BlogIndexes.self)
-
         // Sessions
         let persistMiddleware = PersistMiddleware(BlogUser.self)
         config.addConfigurable(middleware: { (_) -> (PersistMiddleware<BlogUser>) in
@@ -66,6 +67,7 @@ public struct Provider: Vapor.Provider {
 
     public func boot(_ drop: Droplet) {
 
+        print(enableLinksPages)
         BlogPost.postsPerPage = postsPerPage
 
         BlogAdminUser.log = drop.log
@@ -86,7 +88,7 @@ public struct Provider: Vapor.Provider {
         // Set up the controllers
         let blogController = BlogController(drop: drop, pathCreator: pathCreator,
                                             viewFactory: viewFactory, enableAuthorsPages: enableAuthorsPages,
-                                            enableTagsPages: enableTagsPages)
+                                            enableTagsPages: enableTagsPages, enableLinksPages: enableLinksPages)
         let blogAdminController = BlogAdminController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory)
         let feedController = BlogFeedController(drop: drop, pathCreator: pathCreator,
                                                    title: drop.config["steampress", "title"]?.string,
@@ -115,9 +117,10 @@ public struct Provider: Vapor.Provider {
         let useBootstrap4 = config[Provider.configFilename, "paginator", "useBootstrap4"]?.bool ?? true
         let enableAuthorsPages = config[Provider.configFilename, "enableAuthorsPages"]?.bool ?? true
         let enableTagsPages = config[Provider.configFilename, "enableTagsPages"]?.bool ?? true
+        let enableLinksPages = config[Provider.configFilename, "enableLinksPages"]?.bool ?? true
 
         self.init(postsPerPage: postsPerPage, blogPath: blogPath, useBootstrap4: useBootstrap4,
-                  enableAuthorsPages: enableAuthorsPages, enableTagsPages: enableTagsPages)
+                  enableAuthorsPages: enableAuthorsPages, enableTagsPages: enableTagsPages, enableLinksPages: enableLinksPages)
     }
 
     /**
@@ -135,15 +138,18 @@ public struct Provider: Vapor.Provider {
                                          or not. Defaults to true
          - Parameter enableTagsPages: Flag used to determine whether to publicy expose the tags endpoints or not. 
                                       Defaults to true
+         - Parameter enableLinksPages: Flag used to determine whether to publicy expose the links endpoints or not.
+                                    Defaults to true
      */
     public init(postsPerPage: Int, blogPath: String? = nil, useBootstrap4: Bool = true,
-                enableAuthorsPages: Bool = true, enableTagsPages: Bool = true) {
+                enableAuthorsPages: Bool = true, enableTagsPages: Bool = true, enableLinksPages: Bool = true) {
         self.postsPerPage = postsPerPage
         self.blogPath = blogPath
         self.pathCreator = BlogPathCreator(blogPath: self.blogPath)
         self.useBootstrap4 = useBootstrap4
         self.enableAuthorsPages = enableAuthorsPages
         self.enableTagsPages = enableTagsPages
+        self.enableLinksPages = enableLinksPages
     }
 
     enum Error: Swift.Error {

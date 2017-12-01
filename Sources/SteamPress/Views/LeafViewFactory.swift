@@ -210,9 +210,18 @@ struct LeafViewFactory: ViewFactory {
         return try viewRenderer.make("blog/admin/resetPassword", parameters)
     }
 
+    func createLinkView(name: String, href: String) throws -> View {
+
+        var parameters: [String: Vapor.Node] = [:]
+        parameters["name"] = name
+        parameters["href"] = href
+
+        return try viewRenderer.make("blog/admin/createLink", parameters)
+    }
+
     // MARK: - Blog Controller Views
 
-    func blogIndexView(uri: URI, paginatedPosts: Page<BlogPost>, tags: [BlogTag], authors: [BlogUser], loggedInUser: BlogUser?) throws -> View {
+    func blogIndexView(uri: URI, paginatedPosts: Page<BlogPost>, tags: [BlogTag], links: [BlogLink], authors: [BlogUser], loggedInUser: BlogUser?) throws -> View {
 
         var parameters: [String: Vapor.Node] = [:]
         parameters["blog_index_page"] = true.makeNode(in: nil)
@@ -223,6 +232,10 @@ struct LeafViewFactory: ViewFactory {
 
         if !tags.isEmpty {
             parameters["tags"] = try tags.makeNode(in: nil)
+        }
+
+        if !links.isEmpty {
+            parameters["links"] = try links.makeNode(in: nil)
         }
 
         if !authors.isEmpty {
@@ -280,6 +293,16 @@ struct LeafViewFactory: ViewFactory {
         }
 
         return try createPublicView(template: "blog/tags", uri: uri, parameters: parameters, user: user)
+    }
+
+    func allLinksView(uri: URI, allLinks: [BlogLink]) throws -> View {
+        var parameters: [String: NodeRepresentable] = [:]
+
+        if !allLinks.isEmpty {
+            parameters["links"] = try allLinks.makeNode(in: nil)
+        }
+
+        return try createPublicView(template: "blog/links", uri: uri, parameters: parameters, user: user)
     }
 
     func allAuthorsView(uri: URI, allAuthors: [BlogUser], user: BlogUser?) throws -> View {

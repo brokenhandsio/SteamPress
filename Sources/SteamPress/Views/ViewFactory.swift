@@ -15,14 +15,16 @@ protocol ViewFactory {
     func createLoginView(loginWarning: Bool, errors: [String]?, username: String?, password: String?) throws -> View
     func createBlogAdminView(errors: [String]?, user: BlogUser) throws -> View
     func createResetPasswordView(errors: [String]?, passwordError: Bool?, confirmPasswordError: Bool?, user: BlogUser) throws -> View
+    func createLinkView(name: String, href: String) throws -> View
 
     // MARK: - Blog Controller
     func blogIndexView(uri: URI, paginatedPosts: Page<BlogPost>, tags: [BlogTag],
-                       authors: [BlogUser], loggedInUser: BlogUser?) throws -> View
+                       links: [BlogLink], authors: [BlogUser], loggedInUser: BlogUser?) throws -> View
     func blogPostView(uri: URI, post: BlogPost, author: BlogUser, user: BlogUser?) throws -> View
     func tagView(uri: URI, tag: BlogTag, paginatedPosts: Page<BlogPost>, user: BlogUser?) throws -> View
     func allAuthorsView(uri: URI, allAuthors: [BlogUser], user: BlogUser?) throws -> View
     func allTagsView(uri: URI, allTags: [BlogTag], user: BlogUser?) throws -> View
+    func allLinksView(uri: URI, allLinks: [BlogLink]) throws -> View
     func profileView(uri: URI, author: BlogUser, paginatedPosts: Page<BlogPost>, loggedInUser: BlogUser?) throws -> View
     func searchView(uri: URI, searchTerm: String?, foundPosts: Page<BlogPost>?, emptySearch: Bool, user: BlogUser?) throws -> View
 }
