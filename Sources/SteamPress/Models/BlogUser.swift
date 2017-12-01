@@ -16,6 +16,7 @@ public final class BlogUser: Model {
         public static let resetPasswordRequired = "reset_password_required"
         public static let profilePicture = "profile_picture"
         public static let twitterHandle = "twitter_handle"
+        public static let links = "links"
         public static let biography = "biography"
         public static let tagline = "tagline"
         public static let postCount = "post_count"
@@ -31,8 +32,9 @@ public final class BlogUser: Model {
     public var twitterHandle: String?
     public var biography: String?
     public var tagline: String?
+    public var links: String?
 
-    public init(name: String, username: String, password: Bytes, profilePicture: String?, twitterHandle: String?, biography: String?, tagline: String?) {
+    public init(name: String, username: String, password: Bytes, profilePicture: String?, twitterHandle: String?, links: String?, biography: String?, tagline: String?) {
         self.name = name
         self.username = username.lowercased()
         self.password = password
@@ -40,6 +42,7 @@ public final class BlogUser: Model {
         self.twitterHandle = twitterHandle
         self.biography = biography
         self.tagline = tagline
+        self.links = links
     }
 
     public init(row: Row) throws {
@@ -52,6 +55,7 @@ public final class BlogUser: Model {
         twitterHandle = try? row.get(Properties.twitterHandle)
         biography = try? row.get(Properties.biography)
         tagline = try? row.get(Properties.tagline)
+        links = try? row.get(Properties.links)
     }
 
     public func makeRow() throws -> Row {
@@ -64,6 +68,7 @@ public final class BlogUser: Model {
         try row.set(Properties.twitterHandle, twitterHandle)
         try row.set(Properties.biography, biography)
         try row.set(Properties.tagline, tagline)
+        try row.set(Properties.links, links)
         return row
     }
 
@@ -100,6 +105,10 @@ extension BlogUser: NodeRepresentable {
 
         if let tagline = tagline {
             try node.set(Properties.tagline, tagline)
+        }
+
+        if let links = links {
+            try node.set(Properties.links, links)
         }
 
         guard let providedContext = context else {

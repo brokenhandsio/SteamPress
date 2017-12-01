@@ -77,7 +77,7 @@ struct LeafViewFactory: ViewFactory {
         return try viewRenderer.make("blog/admin/createPost", parameters)
     }
 
-    func createUserView(editing: Bool = false, errors: [String]? = nil, name: String? = nil, username: String? = nil, passwordError: Bool? = nil, confirmPasswordError: Bool? = nil, resetPasswordRequired: Bool? = nil, userId: Identifier? = nil, profilePicture: String? = nil, twitterHandle: String? = nil, biography: String? = nil, tagline: String? = nil, loggedInUser: BlogUser) throws -> View {
+    func createUserView(editing: Bool = false, errors: [String]? = nil, name: String? = nil, username: String? = nil, passwordError: Bool? = nil, confirmPasswordError: Bool? = nil, resetPasswordRequired: Bool? = nil, userId: Identifier? = nil, profilePicture: String? = nil, twitterHandle: String? = nil, links: String?, biography: String? = nil, tagline: String? = nil, loggedInUser: BlogUser) throws -> View {
         let nameError = name == nil && errors != nil
         let usernameError = username == nil && errors != nil
 
@@ -124,6 +124,10 @@ struct LeafViewFactory: ViewFactory {
 
         if let tagline = tagline {
             parameters["tagline_supplied"] = tagline
+        }
+
+        if let links = links {
+            parameters["links_supplied"] = links
         }
 
         if editing {
