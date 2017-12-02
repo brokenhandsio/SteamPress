@@ -23,8 +23,7 @@ public struct Provider: Vapor.Provider {
 
     static func createCookieFactory(for environment: Environment) -> ((_ request: Request) -> Cookie) {
         let cookieFactory: (_ request: Request) -> Cookie = { req in
-            var cookie = Cookie(name: cookieName, value: "", secure: environment == .production,
-                                httpOnly: true, sameSite: .lax)
+            var cookie = Cookie(name: cookieName, value: "", secure: environment == .production, httpOnly: true, sameSite: .lax)
 
             if req.storage["remember_me"] as? Bool ?? false {
                 let oneMonthTime: TimeInterval = 30 * 24 * 60 * 60
@@ -51,6 +50,7 @@ public struct Provider: Vapor.Provider {
         config.preparations.append(BlogUserExtraInformation.self)
         config.preparations.append(BlogAdminUser.self)
         config.preparations.append(BlogIndexes.self)
+
         // Sessions
         let persistMiddleware = PersistMiddleware(BlogUser.self)
         config.addConfigurable(middleware: { (_) -> (PersistMiddleware<BlogUser>) in
@@ -74,8 +74,8 @@ public struct Provider: Vapor.Provider {
         // Set up Leaf tag
         if let leaf = drop.view as? LeafRenderer {
             leaf.stem.register(Markdown())
-            leaf.stem.register(PaginatorTag(blogPathCreator: pathCreator, paginationLabel: "Blog Post Pages",
-                                            useBootstrap4: useBootstrap4))
+            let paginatorTag = PaginatorTag(blogPathCreator: pathCreator, paginationLabel: "Blog Post Pages", useBootstrap4: useBootstrap4)
+            leaf.stem.register(paginatorTag)
         }
 
         // TODO
@@ -85,10 +85,10 @@ public struct Provider: Vapor.Provider {
                                           googleAnalyticsIdentifier: drop.config["googleAnalytics", "identifier"]?.string)
 
         // Set up the controllers
-        let blogController = BlogController(drop: drop, pathCreator: pathCreator,
-                                            viewFactory: viewFactory, enableAuthorsPages: enableAuthorsPages,
-                                            enableTagsPages: enableTagsPages)
-        let blogAdminController = BlogAdminController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory)
+        let blogController = BlogController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory)
+        let postsController = BlogPostsController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory)
+        let authorsController = BlogAuthorsController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, enableAuthorsPages: enableAuthorsPages)
+        let tagsController = BlogTagsController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, enableTagsPages: enableTagsPages)
         let linksController = BlogLinksController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, enableLinksPages: enableLinksPages)
         let feedController = BlogFeedController(drop: drop, pathCreator: pathCreator,
                                                    title: drop.config["steampress", "title"]?.string,
@@ -98,7 +98,9 @@ public struct Provider: Vapor.Provider {
 
         // Add the routes
         blogController.addRoutes()
-        blogAdminController.addRoutes()
+        postsController.addRoutes()
+        authorsController.addRoutes()
+        tagsController.addRoutes()
         linksController.addRoutes()
         feedController.addRoutes()
     }
