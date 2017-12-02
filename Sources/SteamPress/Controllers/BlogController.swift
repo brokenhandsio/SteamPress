@@ -13,11 +13,11 @@ struct BlogController {
     fileprivate let searchPath = "search"
     fileprivate let drop: Droplet
     fileprivate let pathCreator: BlogPathCreator
-    fileprivate let viewFactory: ViewFactory
+    fileprivate let viewFactory: BlogLeafViewFactory
     fileprivate let log: LogProtocol
 
     // MARK: - Initialiser
-    init(drop: Droplet, pathCreator: BlogPathCreator, viewFactory: ViewFactory) {
+    init(drop: Droplet, pathCreator: BlogPathCreator, viewFactory: BlogLeafViewFactory) {
         self.drop = drop
         self.pathCreator = pathCreator
         self.viewFactory = viewFactory

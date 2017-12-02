@@ -7,14 +7,14 @@ struct BlogTagsController {
 
     fileprivate let drop: Droplet
     fileprivate let pathCreator: BlogPathCreator
-    fileprivate let viewFactory: ViewFactory
+    fileprivate let viewFactory: TagLeafViewFactory
     fileprivate let apiPath = "api"
 
     fileprivate let tagsPath = "tags"
     fileprivate let enableTagsPages: Bool
 
     // MARK: - Initialiser
-    init(drop: Droplet, pathCreator: BlogPathCreator, viewFactory: ViewFactory, enableTagsPages: Bool) {
+    init(drop: Droplet, pathCreator: BlogPathCreator, viewFactory: TagLeafViewFactory, enableTagsPages: Bool) {
         self.drop = drop
         self.pathCreator = pathCreator
         self.viewFactory = viewFactory

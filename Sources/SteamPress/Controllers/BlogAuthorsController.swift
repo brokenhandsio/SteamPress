@@ -7,13 +7,13 @@ struct BlogAuthorsController {
 
     fileprivate let drop: Droplet
     fileprivate let pathCreator: BlogPathCreator
-    fileprivate let viewFactory: ViewFactory
+    fileprivate let viewFactory: AuthorLeafViewFactory
 
     fileprivate let authorsPath = "authors"
     fileprivate let enableAuthorsPages: Bool
 
     // MARK: - Initialiser
-    init(drop: Droplet, pathCreator: BlogPathCreator, viewFactory: ViewFactory, enableAuthorsPages: Bool) {
+    init(drop: Droplet, pathCreator: BlogPathCreator, viewFactory: AuthorLeafViewFactory, enableAuthorsPages: Bool) {
         self.drop = drop
         self.pathCreator = pathCreator
         self.viewFactory = viewFactory
@@ -176,11 +176,11 @@ struct BlogAuthorsController {
         // Check we have at least one user left
         let users = try BlogUser.all()
         if users.count <= 1 {
-            return try viewFactory.createBlogAdminView(errors: ["You cannot delete the last user"], user: try request.user())
+            throw Abort.badRequest
         }
-            // Make sure we aren't deleting ourselves!
+        // Make sure we aren't deleting ourselves!
         else if try request.user().id == user.id {
-            return try viewFactory.createBlogAdminView(errors: ["You cannot delete yourself whilst logged in"], user: try request.user())
+            throw Abort.badRequest
         } else {
             try user.delete()
             return Response(redirect: pathCreator.createPath(for: "admin"))

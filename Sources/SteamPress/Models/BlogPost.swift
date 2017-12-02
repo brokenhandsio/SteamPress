@@ -1,6 +1,8 @@
 import Foundation
 import Vapor
 import FluentProvider
+import SwiftSoup
+import SwiftMarkdown
 
 // MARK: - Model
 
@@ -26,9 +28,7 @@ public final class BlogPost: Model {
     }
 
     static var postsPerPage = 10
-
     public let storage = Storage()
-
     public var title: String
     public var contents: String
     public var author: Identifier?
@@ -80,6 +80,12 @@ public final class BlogPost: Model {
 }
 
 extension BlogPost: Parameterizable {}
+
+public extension BlogPost {
+    func description() throws -> String {
+        return try SwiftSoup.parse(markdownToHTML(shortSnippet())).text()
+    }
+}
 
 // MARK: - Node
 

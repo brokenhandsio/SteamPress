@@ -26,4 +26,12 @@ extension String {
             return false
         }
     }
+
+    func replacingFirstOccurrence(of target: String, with replaceString: String) -> String
+    {
+        if let range = self.range(of: target) {
+            return self.replacingCharacters(in: range, with: replaceString)
+        }
+        return self
+    }
 }

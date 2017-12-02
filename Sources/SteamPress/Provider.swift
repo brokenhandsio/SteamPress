@@ -78,18 +78,17 @@ public struct Provider: Vapor.Provider {
             leaf.stem.register(paginatorTag)
         }
 
-        // TODO
-        let viewFactory = LeafViewFactory(viewRenderer: drop.view,
-                                          disqusName: drop.config["disqus", "disqusName"]?.string,
-                                          siteTwitterHandle: drop.config["twitter", "siteHandle"]?.string,
-                                          googleAnalyticsIdentifier: drop.config["googleAnalytics", "identifier"]?.string)
+        let viewFactory = ViewFactory(viewRenderer: drop.view,
+                                      disqusName: drop.config["disqus", "disqusName"]?.string,
+                                      siteTwitterHandle: drop.config["twitter", "siteHandle"]?.string,
+                                      googleAnalyticsIdentifier: drop.config["googleAnalytics", "identifier"]?.string)
 
         // Set up the controllers
-        let blogController = BlogController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory)
-        let postsController = BlogPostsController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory)
-        let authorsController = BlogAuthorsController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, enableAuthorsPages: enableAuthorsPages)
-        let tagsController = BlogTagsController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, enableTagsPages: enableTagsPages)
-        let linksController = BlogLinksController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, enableLinksPages: enableLinksPages)
+        let blogController = BlogController(drop: drop, pathCreator: pathCreator, viewFactory: BlogLeafViewFactory(viewFactory: viewFactory))
+        let postsController = BlogPostsController(drop: drop, pathCreator: pathCreator, viewFactory: PostLeafViewFactory(viewFactory: viewFactory))
+        let authorsController = BlogAuthorsController(drop: drop, pathCreator: pathCreator, viewFactory: AuthorLeafViewFactory(viewFactory: viewFactory), enableAuthorsPages: enableAuthorsPages)
+        let tagsController = BlogTagsController(drop: drop, pathCreator: pathCreator, viewFactory: TagLeafViewFactory(viewFactory: viewFactory), enableTagsPages: enableTagsPages)
+        let linksController = BlogLinksController(drop: drop, pathCreator: pathCreator, viewFactory: LinkLeafViewFactory(viewFactory: viewFactory), enableLinksPages: enableLinksPages)
         let feedController = BlogFeedController(drop: drop, pathCreator: pathCreator,
                                                    title: drop.config["steampress", "title"]?.string,
                                                    description: drop.config["steampress", "description"]?.string,

@@ -1,30 +1,47 @@
 import Vapor
 import URI
-import Fluent
+import HTTP
+import SwiftMarkdown
+import SwiftSoup
 import Foundation
+import Fluent
 
-protocol ViewFactory {
+struct ViewFactory {
 
-    // MARK: - Admin Controller
-    func createBlogPostView(uri: URI, errors: [String]?, title: String?, contents: String?, slugUrl: String?,
-                            tags: [Node]?, isEditing: Bool, postToEdit: BlogPost?, draft: Bool, user: BlogUser) throws -> View
-    func createUserView(editing: Bool, errors: [String]?, name: String?, username: String?, passwordError: Bool?,
-                        confirmPasswordError: Bool?, resetPasswordRequired: Bool?, userId: Identifier?,
-                        profilePicture: String?, twitterHandle: String?, biography: String?,
-                        tagline: String?, loggedInUser: BlogUser) throws -> View
-    func createLoginView(loginWarning: Bool, errors: [String]?, username: String?, password: String?) throws -> View
-    func createBlogAdminView(errors: [String]?, user: BlogUser) throws -> View
-    func createResetPasswordView(errors: [String]?, passwordError: Bool?, confirmPasswordError: Bool?, user: BlogUser) throws -> View
-    func createLinkView(isEditing: Bool, linkToEdit: BlogLink?) throws -> View
+    public let viewRenderer: ViewRenderer
 
-    // MARK: - Blog Controller
-    func blogIndexView(uri: URI, paginatedPosts: Page<BlogPost>, tags: [BlogTag],
-                       links: [BlogLink], authors: [BlogUser], loggedInUser: BlogUser?) throws -> View
-    func blogPostView(uri: URI, post: BlogPost, author: BlogUser, user: BlogUser?) throws -> View
-    func tagView(uri: URI, tag: BlogTag, paginatedPosts: Page<BlogPost>, user: BlogUser?) throws -> View
-    func allAuthorsView(uri: URI, allAuthors: [BlogUser], user: BlogUser?) throws -> View
-    func allTagsView(uri: URI, allTags: [BlogTag], user: BlogUser?) throws -> View
-    func allLinksView(uri: URI, allLinks: [BlogLink]) throws -> View
-    func profileView(uri: URI, author: BlogUser, paginatedPosts: Page<BlogPost>, loggedInUser: BlogUser?) throws -> View
-    func searchView(uri: URI, searchTerm: String?, foundPosts: Page<BlogPost>?, emptySearch: Bool, user: BlogUser?) throws -> View
+    let disqusName: String?
+    let siteTwitterHandle: String?
+    let googleAnalyticsIdentifier: String?
+    
+    init(viewRenderer: ViewRenderer, disqusName: String?, siteTwitterHandle: String?, googleAnalyticsIdentifier: String?) {
+        self.viewRenderer = viewRenderer
+        self.disqusName = disqusName
+        self.siteTwitterHandle = siteTwitterHandle
+        self.googleAnalyticsIdentifier = googleAnalyticsIdentifier
+    }
+
+    public func createPublicView(template: String, uri: URI, parameters: [String: NodeRepresentable], user: BlogUser? = nil) throws -> View {
+        var viewParameters = parameters
+
+        viewParameters["uri"] = uri.descriptionWithoutPort.makeNode(in: nil)
+
+        if let user = user {
+            viewParameters["user"] = try user.makeNode(in: nil)
+        }
+
+        if let disqusName = disqusName {
+            viewParameters["disqus_name"] = disqusName.makeNode(in: nil)
+        }
+
+        if let siteTwitterHandle = siteTwitterHandle {
+            viewParameters["site_twitter_handle"] = siteTwitterHandle.makeNode(in: nil)
+        }
+
+        if let googleAnalyticsIdentifier = googleAnalyticsIdentifier {
+            viewParameters["google_analytics_identifier"] = googleAnalyticsIdentifier.makeNode(in: nil)
+        }
+
+        return try viewRenderer.make(template, viewParameters.makeNode(in: nil))
+    }
 }
