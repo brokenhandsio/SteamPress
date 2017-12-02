@@ -19,11 +19,11 @@ public struct Provider: Vapor.Provider {
     private let useBootstrap4: Bool
     private let enableAuthorsPages: Bool
     private let enableTagsPages: Bool
+    private let enableLinksPages: Bool
 
     static func createCookieFactory(for environment: Environment) -> ((_ request: Request) -> Cookie) {
         let cookieFactory: (_ request: Request) -> Cookie = { req in
-            var cookie = Cookie(name: cookieName, value: "", secure: environment == .production,
-                                httpOnly: true, sameSite: .lax)
+            var cookie = Cookie(name: cookieName, value: "", secure: environment == .production, httpOnly: true, sameSite: .lax)
 
             if req.storage["remember_me"] as? Bool ?? false {
                 let oneMonthTime: TimeInterval = 30 * 24 * 60 * 60
@@ -44,6 +44,7 @@ public struct Provider: Vapor.Provider {
         config.preparations.append(BlogUser.self)
         config.preparations.append(BlogPost.self)
         config.preparations.append(BlogTag.self)
+        config.preparations.append(BlogLink.self)
         config.preparations.append(Pivot<BlogPost, BlogTag>.self)
         config.preparations.append(BlogPostDraft.self)
         config.preparations.append(BlogUserExtraInformation.self)
@@ -73,21 +74,21 @@ public struct Provider: Vapor.Provider {
         // Set up Leaf tag
         if let leaf = drop.view as? LeafRenderer {
             leaf.stem.register(Markdown())
-            leaf.stem.register(PaginatorTag(blogPathCreator: pathCreator, paginationLabel: "Blog Post Pages",
-                                            useBootstrap4: useBootstrap4))
+            let paginatorTag = PaginatorTag(blogPathCreator: pathCreator, paginationLabel: "Blog Post Pages", useBootstrap4: useBootstrap4)
+            leaf.stem.register(paginatorTag)
         }
 
-        // TODO
-        let viewFactory = LeafViewFactory(viewRenderer: drop.view,
-                                          disqusName: drop.config["disqus", "disqusName"]?.string,
-                                          siteTwitterHandle: drop.config["twitter", "siteHandle"]?.string,
-                                          googleAnalyticsIdentifier: drop.config["googleAnalytics", "identifier"]?.string)
+        let viewFactory = ViewFactory(viewRenderer: drop.view,
+                                      disqusName: drop.config["disqus", "disqusName"]?.string,
+                                      siteTwitterHandle: drop.config["twitter", "siteHandle"]?.string,
+                                      googleAnalyticsIdentifier: drop.config["googleAnalytics", "identifier"]?.string)
 
         // Set up the controllers
-        let blogController = BlogController(drop: drop, pathCreator: pathCreator,
-                                            viewFactory: viewFactory, enableAuthorsPages: enableAuthorsPages,
-                                            enableTagsPages: enableTagsPages)
-        let blogAdminController = BlogAdminController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory)
+        let blogController = BlogController(drop: drop, pathCreator: pathCreator, viewFactory: BlogLeafViewFactory(viewFactory: viewFactory))
+        let postsController = BlogPostsController(drop: drop, pathCreator: pathCreator, viewFactory: PostLeafViewFactory(viewFactory: viewFactory))
+        let authorsController = BlogAuthorsController(drop: drop, pathCreator: pathCreator, viewFactory: AuthorLeafViewFactory(viewFactory: viewFactory), enableAuthorsPages: enableAuthorsPages)
+        let tagsController = BlogTagsController(drop: drop, pathCreator: pathCreator, viewFactory: TagLeafViewFactory(viewFactory: viewFactory), enableTagsPages: enableTagsPages)
+        let linksController = BlogLinksController(drop: drop, pathCreator: pathCreator, viewFactory: LinkLeafViewFactory(viewFactory: viewFactory), enableLinksPages: enableLinksPages)
         let feedController = BlogFeedController(drop: drop, pathCreator: pathCreator,
                                                    title: drop.config["steampress", "title"]?.string,
                                                    description: drop.config["steampress", "description"]?.string,
@@ -96,7 +97,10 @@ public struct Provider: Vapor.Provider {
 
         // Add the routes
         blogController.addRoutes()
-        blogAdminController.addRoutes()
+        postsController.addRoutes()
+        authorsController.addRoutes()
+        tagsController.addRoutes()
+        linksController.addRoutes()
         feedController.addRoutes()
     }
 
@@ -115,9 +119,10 @@ public struct Provider: Vapor.Provider {
         let useBootstrap4 = config[Provider.configFilename, "paginator", "useBootstrap4"]?.bool ?? true
         let enableAuthorsPages = config[Provider.configFilename, "enableAuthorsPages"]?.bool ?? true
         let enableTagsPages = config[Provider.configFilename, "enableTagsPages"]?.bool ?? true
+        let enableLinksPages = config[Provider.configFilename, "enableLinksPages"]?.bool ?? true
 
         self.init(postsPerPage: postsPerPage, blogPath: blogPath, useBootstrap4: useBootstrap4,
-                  enableAuthorsPages: enableAuthorsPages, enableTagsPages: enableTagsPages)
+                  enableAuthorsPages: enableAuthorsPages, enableTagsPages: enableTagsPages, enableLinksPages: enableLinksPages)
     }
 
     /**
@@ -135,15 +140,18 @@ public struct Provider: Vapor.Provider {
                                          or not. Defaults to true
          - Parameter enableTagsPages: Flag used to determine whether to publicy expose the tags endpoints or not. 
                                       Defaults to true
+         - Parameter enableLinksPages: Flag used to determine whether to publicy expose the links endpoints or not.
+                                    Defaults to true
      */
     public init(postsPerPage: Int, blogPath: String? = nil, useBootstrap4: Bool = true,
-                enableAuthorsPages: Bool = true, enableTagsPages: Bool = true) {
+                enableAuthorsPages: Bool = true, enableTagsPages: Bool = true, enableLinksPages: Bool = true) {
         self.postsPerPage = postsPerPage
         self.blogPath = blogPath
         self.pathCreator = BlogPathCreator(blogPath: self.blogPath)
         self.useBootstrap4 = useBootstrap4
         self.enableAuthorsPages = enableAuthorsPages
         self.enableTagsPages = enableTagsPages
+        self.enableLinksPages = enableLinksPages
     }
 
     enum Error: Swift.Error {

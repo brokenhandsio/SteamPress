@@ -26,9 +26,7 @@ public final class BlogPost: Model {
     }
 
     static var postsPerPage = 10
-
     public let storage = Storage()
-
     public var title: String
     public var contents: String
     public var author: Identifier?
@@ -80,6 +78,8 @@ public final class BlogPost: Model {
 }
 
 extension BlogPost: Parameterizable {}
+
+
 
 // MARK: - Node
 

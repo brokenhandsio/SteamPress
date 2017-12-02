@@ -110,10 +110,27 @@ extension BlogTag: Preparation {
     }
 }
 
+// MARK: - BlogLink
+
+extension BlogLink: Preparation {
+    public static func prepare(_ database: Database) throws {
+        try database.create(self) { link in
+            link.id()
+            link.string(Properties.name)
+            link.string(Properties.href, unique: true)
+        }
+    }
+
+    public static func revert(_ database: Database) throws {
+        try database.delete(self)
+    }
+}
+
 // MARK: - Blog Indexes
 
 struct BlogIndexes: Preparation {
     static func prepare(_ database: Database) throws {
+        try database.index(BlogLink.Properties.href, for: BlogLink.self)
         try database.index(BlogTag.Properties.name, for: BlogTag.self)
         try database.index(BlogUser.Properties.username, for: BlogUser.self)
         try database.index(BlogPost.Properties.slugUrl, for: BlogPost.self)
@@ -123,5 +140,6 @@ struct BlogIndexes: Preparation {
         try database.deleteIndex(BlogPost.Properties.slugUrl, for: BlogPost.self)
         try database.deleteIndex(BlogUser.Properties.userID, for: BlogUser.self)
         try database.deleteIndex(BlogTag.Properties.name, for: BlogTag.self)
+        try database.deleteIndex(BlogLink.Properties.href, for: BlogLink.self)
     }
 }
