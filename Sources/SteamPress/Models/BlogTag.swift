@@ -84,18 +84,14 @@ public extension BlogTag {
 
     static func addTag(_ name: String, to post: BlogPost) throws {
         var pivotTag: BlogTag
-        let tag = try BlogTag.makeQuery().filter(Properties.name, name).first()
+        let foundTag = try BlogTag.makeQuery().filter(Properties.name, name).first()
 
-        if let existingTag = tag {
+        if let existingTag = foundTag {
             pivotTag = existingTag
         } else {
-            let newTag = BlogTag(name: name)
-            try newTag.save()
-            pivotTag = newTag
+            pivotTag = BlogTag(name: name)
+            try pivotTag.save()
         }
-
-        // Check if a new tag
-        let pivot = try pivotTag.posts.add(post)
-        try pivot.save()
+        try pivotTag.posts.add(post)
     }
 }

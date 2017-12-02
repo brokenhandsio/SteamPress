@@ -10,7 +10,7 @@ protocol ViewFactory {
                             tags: [Node]?, isEditing: Bool, postToEdit: BlogPost?, draft: Bool, user: BlogUser) throws -> View
     func createUserView(editing: Bool, errors: [String]?, name: String?, username: String?, passwordError: Bool?,
                         confirmPasswordError: Bool?, resetPasswordRequired: Bool?, userId: Identifier?,
-                        profilePicture: String?, twitterHandle: String?, links: String?, biography: String?,
+                        profilePicture: String?, twitterHandle: String?, biography: String?,
                         tagline: String?, loggedInUser: BlogUser) throws -> View
     func createLoginView(loginWarning: Bool, errors: [String]?, username: String?, password: String?) throws -> View
     func createBlogAdminView(errors: [String]?, user: BlogUser) throws -> View

@@ -60,9 +60,6 @@ struct BlogUserExtraInformation: Preparation {
             users.string(BlogUser.Properties.twitterHandle, optional: true, default: nil)
         }
         try database.modify(BlogUser.self) { users in
-            users.string(BlogUser.Properties.links, optional: true, default: nil)
-        }
-        try database.modify(BlogUser.self) { users in
             users.custom(BlogUser.Properties.biography, type: "TEXT", optional: true, default: nil)
         }
         try database.modify(BlogUser.self) { users in
@@ -83,7 +80,7 @@ struct BlogAdminUser: Preparation {
 
             let hashedPassword = try BlogUser.passwordHasher.make(password)
             let user = BlogUser(name: "Admin", username: "admin", password: hashedPassword, profilePicture: nil,
-                                twitterHandle: nil, links: nil, biography: nil, tagline: "Admin for the blog")
+                                twitterHandle: nil, biography: nil, tagline: "Admin for the blog")
             user.resetPasswordRequired = true
             try user.save()
 
