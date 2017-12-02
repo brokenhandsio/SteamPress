@@ -6,6 +6,12 @@ import SwiftSoup
 import Foundation
 import Fluent
 
+public extension BlogPost {
+    func description() throws -> String {
+        return try SwiftSoup.parse(markdownToHTML(shortSnippet())).text()
+    }
+}
+
 struct PostLeafViewFactory: PostViewFactory {
 
     let viewFactory: ViewFactory
