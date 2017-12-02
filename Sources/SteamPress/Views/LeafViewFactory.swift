@@ -166,6 +166,8 @@ struct LeafViewFactory: ViewFactory {
 
     func createBlogAdminView(errors: [String]? = nil, user: BlogUser) throws -> View {
         let publishedBlogPosts = try BlogPost.makeQuery().filter(BlogPost.Properties.published, true).sort(BlogPost.Properties.created, .descending).all()
+        let links = try BlogLink.all()
+
         let draftBlogPosts = try BlogPost.makeQuery().filter(BlogPost.Properties.published, false).sort(BlogPost.Properties.created, .descending).all()
         let users = try BlogUser.all()
 
@@ -175,6 +177,10 @@ struct LeafViewFactory: ViewFactory {
 
         if !publishedBlogPosts.isEmpty {
             parameters["published_posts"] = try publishedBlogPosts.makeNode(in: BlogPostContext.all)
+        }
+
+        if !links.isEmpty {
+            parameters["links"] = try links.makeNode(in: nil)
         }
 
         if !draftBlogPosts.isEmpty {
@@ -210,8 +216,18 @@ struct LeafViewFactory: ViewFactory {
         return try viewRenderer.make("blog/admin/resetPassword", parameters)
     }
 
-    func createLinkView() throws -> View {
-        return try viewRenderer.make("blog/admin/createLink", [:])
+    func createLinkView(isEditing: Bool = false, linkToEdit: BlogLink?) throws -> View {
+        var parameters: [String: Vapor.Node] = [:]
+
+        if isEditing {
+            guard let link = linkToEdit else {
+                throw Abort.badRequest
+            }
+            parameters["link"] = try link.makeNode(in: nil)
+            parameters["editing"] = true
+        }
+
+        return try viewRenderer.make("blog/admin/createLink", parameters)
     }
 
     // MARK: - Blog Controller Views
