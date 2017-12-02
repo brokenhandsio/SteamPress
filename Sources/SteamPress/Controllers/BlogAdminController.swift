@@ -41,9 +41,6 @@ struct BlogAdminController {
         routerSecure.get("createUser", handler: createUserHandler)
         routerSecure.post("createUser", handler: createUserPostHandler)
 
-        routerSecure.get("createLink", handler: createLinkHandler)
-        routerSecure.post("createLink", handler: createLinkPostHandler)
-
         routerSecure.get("posts", BlogPost.parameter, "delete", handler: deletePostHandler)
         routerSecure.get("posts", BlogPost.parameter, "edit", handler: editPostHandler)
         routerSecure.post("posts", BlogPost.parameter, "edit", handler: editPostPostHandler)
@@ -51,10 +48,6 @@ struct BlogAdminController {
         routerSecure.get("users", BlogUser.parameter, "edit", handler: editUserHandler)
         routerSecure.post("users", BlogUser.parameter, "edit", handler: editUserPostHandler)
         routerSecure.get("users", BlogUser.parameter, "delete", handler: deleteUserPostHandler)
-
-        routerSecure.get("links", BlogLink.parameter, "delete", handler: deleteLinkHandler)
-        routerSecure.get("links", BlogLink.parameter, "edit", handler: editLinkHandler)
-        routerSecure.post("links", BlogLink.parameter, "edit", handler: editLinkPostHandler)
 
         routerSecure.get("resetPassword", handler: resetPasswordHandler)
         routerSecure.post("resetPassword", handler: resetPasswordPostHandler)
@@ -65,54 +58,6 @@ struct BlogAdminController {
     // MARK: - Blog Posts handlers
     func createPostHandler(_ request: Request) throws -> ResponseRepresentable {
         return try viewFactory.createBlogPostView(uri: request.getURIWithHTTPSIfReverseProxy(), errors: nil, title: nil, contents: nil, slugUrl: nil, tags: nil, isEditing: false, postToEdit: nil, draft: true, user: try request.user())
-    }
-
-    func createLinkHandler(_ request: Request) throws -> ResponseRepresentable {
-        return try viewFactory.createLinkView(isEditing: false, linkToEdit: nil)
-    }
-
-    func createLinkPostHandler(_ request: Request) throws -> ResponseRepresentable {
-        let name = request.data["inputName"]?.string
-        let href = request.data["inputHref"]?.string
-
-        if name == nil && href == nil {
-            throw Abort.badRequest
-        }
-
-        let newLink = BlogLink(name: name!, href: href!)
-        try newLink.save()
-
-        return Response(redirect: pathCreator.createPath(for: "links"))
-    }
-
-    func editLinkHandler(_ request: Request) throws -> ResponseRepresentable {
-        let link = try request.parameters.next(BlogLink.self)
-
-        return try viewFactory.createLinkView(isEditing: true, linkToEdit: link)
-    }
-
-    func editLinkPostHandler(_ request: Request) throws -> ResponseRepresentable {
-        let link = try request.parameters.next(BlogLink.self)
-
-        let name = request.data["inputName"]?.string
-        let href = request.data["inputHref"]?.string
-
-        if name == nil && href == nil {
-            throw Abort.badRequest
-        }
-
-        link.name = name!
-        link.href = href!
-
-        try link.save()
-
-        return Response(redirect: pathCreator.createPath(for: "admin"))
-    }
-
-    func deleteLinkHandler(_ request: Request) throws -> ResponseRepresentable {
-        let link = try request.parameters.next(BlogLink.self)
-        try link.delete()
-        return Response(redirect: pathCreator.createPath(for: "admin"))
     }
 
     func createPostPostHandler(_ request: Request) throws -> ResponseRepresentable {

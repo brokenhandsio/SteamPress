@@ -8,7 +8,6 @@ struct BlogController {
     // MARK: - Properties
     fileprivate let blogPostsPath = "posts"
     fileprivate let tagsPath = "tags"
-    fileprivate let linksPath = "links"
     fileprivate let authorsPath = "authors"
     fileprivate let apiPath = "api"
     fileprivate let searchPath = "search"
@@ -17,16 +16,14 @@ struct BlogController {
     fileprivate let viewFactory: ViewFactory
     fileprivate let enableAuthorsPages: Bool
     fileprivate let enableTagsPages: Bool
-    fileprivate let enableLinksPages: Bool
 
     // MARK: - Initialiser
-    init(drop: Droplet, pathCreator: BlogPathCreator, viewFactory: ViewFactory, enableAuthorsPages: Bool, enableTagsPages: Bool, enableLinksPages: Bool) {
+    init(drop: Droplet, pathCreator: BlogPathCreator, viewFactory: ViewFactory, enableAuthorsPages: Bool, enableTagsPages: Bool) {
         self.drop = drop
         self.pathCreator = pathCreator
         self.viewFactory = viewFactory
         self.enableAuthorsPages = enableAuthorsPages
         self.enableTagsPages = enableTagsPages
-        self.enableLinksPages = enableLinksPages
     }
 
     // MARK: - Add routes
@@ -46,10 +43,6 @@ struct BlogController {
             if enableTagsPages {
                 index.get(tagsPath, String.parameter, handler: tagViewHandler)
                 index.get(tagsPath, handler: allTagsViewHandler)
-            }
-
-            if enableLinksPages {
-                index.get(linksPath, handler: allLinksViewHandler)
             }
         }
     }
@@ -112,10 +105,6 @@ struct BlogController {
 
     func allTagsViewHandler(request: Request) throws -> ResponseRepresentable {
         return try viewFactory.allTagsView(uri: request.getURIWithHTTPSIfReverseProxy(), allTags: BlogTag.all(), user: getLoggedInUser(in: request))
-    }
-
-    func allLinksViewHandler(request: Request) throws -> ResponseRepresentable {
-        return try viewFactory.allLinksView(uri: request.getURIWithHTTPSIfReverseProxy(), allLinks: BlogLink.all())
     }
 
     func allAuthorsViewHandler(request: Request) throws -> ResponseRepresentable {
