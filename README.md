@@ -94,6 +94,8 @@ This will look for a config file called `steampress.json` that looks like:
 
 The `blogPath` line is optional, if you want your blog to be at the root path of your site, just remove that line.
 
+**Note:** you should add the SteamPress Provider before you add the `FluentProvider` to ensure that the password for the admin account is logged out correctly.
+
 ### Manual initialisation
 
 You can also initialise the Provider manually, by creating it as so:
