@@ -1,6 +1,6 @@
 import Foundation
 @testable import SteamPress
-import FluentProvider
+import Fluent
 import Vapor
 
 struct TestDataBuilder {

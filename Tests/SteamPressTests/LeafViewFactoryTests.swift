@@ -1,6 +1,6 @@
 import XCTest
 import Vapor
-import URI
+//import URI
 import Fluent
 import HTTP
 import Foundation

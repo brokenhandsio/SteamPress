@@ -1,7 +1,7 @@
 @testable import SteamPress
 import XCTest
 import Vapor
-import FluentProvider
+import Fluent
 
 class RSSFeedTests: XCTestCase {
 

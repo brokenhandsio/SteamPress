@@ -2,10 +2,10 @@ import XCTest
 @testable import Vapor
 @testable import SteamPress
 import HTTP
-import FluentProvider
-import Sessions
-import Cookies
-import AuthProvider
+import Fluent
+//import Sessions
+//import Cookies
+//import AuthProvider
 
 class BlogAdminControllerTests: XCTestCase {
     static var allTests = [
