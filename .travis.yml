@@ -5,7 +5,7 @@ language: generic
 sudo: required
 dist: trusty
 
-osx_image: xcode9.1
+osx_image: xcode9.2
 before_install:
     - if [ $TRAVIS_OS_NAME == "osx" ]; then
             brew update;
