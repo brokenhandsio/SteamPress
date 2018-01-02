@@ -1,15 +1,15 @@
-//@testable import SteamPress
-//import XCTest
-//import Vapor
-//import Fluent
-//
-//class AtomFeedTests: XCTestCase {
-//    
-//    // MARK: - allTests
-//    
-//    static var allTests = [
-//        ("testLinuxTestSuiteIncludesAllTests", testLinuxTestSuiteIncludesAllTests),
-//        ("testNoPostsReturnsCorrectAtomFeed", testNoPostsReturnsCorrectAtomFeed),
+@testable import SteamPress
+import XCTest
+import Vapor
+import Fluent
+
+class AtomFeedTests: XCTestCase {
+
+    // MARK: - allTests
+
+    static var allTests = [
+        ("testLinuxTestSuiteIncludesAllTests", testLinuxTestSuiteIncludesAllTests),
+        ("testNoPostsReturnsCorrectAtomFeed", testNoPostsReturnsCorrectAtomFeed),
 //        ("testThatFeedTitleCanBeConfigured", testThatFeedTitleCanBeConfigured),
 //        ("testThatFeedSubtitleCanBeConfigured", testThatFeedSubtitleCanBeConfigured),
 //        ("testThatRightsCanBeConifgured", testThatRightsCanBeConifgured),
@@ -25,44 +25,43 @@
 //        ("testThatHTTPSLinksWorkForPostsBehindReverseProxy", testThatHTTPSLinksWorkForPostsBehindReverseProxy),
 //        ("testCorrectHeaderSetForAtomFeed", testCorrectHeaderSetForAtomFeed),
 //        ("testThatDateFormatterIsCorrect", testThatDateFormatterIsCorrect),
-//        ]
-//    
+        ]
+
 //    // MARK: - Properties
 //    private var database: Database!
-//    private var drop: Droplet!
-//    private let atomRequest = Request(method: .get, uri: "/atom.xml")
-//    private let dateFormatter = DateFormatter()
-//    
-//    // MARK: - Overrides
-//    
-//    override func setUp() {
-//        dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
-//        dateFormatter.locale = Locale(identifier: "en_US_POSIX")
-//        dateFormatter.timeZone = TimeZone(secondsFromGMT: 0)
-//    }
-//    
-//    // MARK: - Tests
-//    
-//    func testLinuxTestSuiteIncludesAllTests() {
-//        #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
-//            let thisClass = type(of: self)
-//            let linuxCount = thisClass.allTests.count
-//            let darwinCount = Int(thisClass
-//                .defaultTestSuite.testCaseCount)
-//            XCTAssertEqual(linuxCount, darwinCount,
-//                           "\(darwinCount - linuxCount) tests are missing from allTests")
-//        #endif
-//    }
-//    
-//    func testNoPostsReturnsCorrectAtomFeed() throws {
-//        drop = try TestDataBuilder.setupSteamPressDrop()
-//        let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: Date()))</updated>\n</feed>"
-//        
-//        let actualXmlResponse = try drop.respond(to: atomRequest)
-//        
-//        XCTAssertEqual(actualXmlResponse.body.bytes?.makeString(), expectedXML)
-//    }
-//    
+    private var app: Application!
+    private let atomRequest = HTTPRequest(method: .get, uri: "/atom.xml")
+    private let dateFormatter = DateFormatter()
+
+    // MARK: - Overrides
+
+    override func setUp() {
+        dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
+        dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+        dateFormatter.timeZone = TimeZone(secondsFromGMT: 0)
+    }
+
+    // MARK: - Tests
+
+    func testLinuxTestSuiteIncludesAllTests() {
+        #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
+            let thisClass = type(of: self)
+            let linuxCount = thisClass.allTests.count
+            let darwinCount = Int(thisClass
+                .defaultTestSuite.testCaseCount)
+            XCTAssertEqual(linuxCount, darwinCount,
+                           "\(darwinCount - linuxCount) tests are missing from allTests")
+        #endif
+    }
+
+    func testNoPostsReturnsCorrectAtomFeed() throws {
+        app = try TestDataBuilder.getSteamPressApp()
+        let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: Date()))</updated>\n</feed>"
+
+        let actualXmlResponse = try TestDataBuilder.getResponse(to: atomRequest, using: app)
+        XCTAssertEqual(actualXmlResponse.body.string, expectedXML)
+    }
+//
 //    func testThatFeedTitleCanBeConfigured() throws {
 //        let title = "My Awesome Blog"
 //        drop = try TestDataBuilder.setupSteamPressDrop(title: title)
@@ -250,5 +249,16 @@
 //        
 //        return (post, author)
 //    }
-//}
+}
+
+// TODO Move
+extension HTTPBody {
+    var string: String? {
+        guard let data = self.data else {
+            return nil
+        }
+
+        return String(data: data, encoding: .utf8)
+    }
+}
 

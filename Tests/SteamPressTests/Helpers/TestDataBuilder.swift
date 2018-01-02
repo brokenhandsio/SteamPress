@@ -61,4 +61,14 @@ struct TestDataBuilder {
 //        let drop = try Droplet(config)
 //        return drop
 //    }
+
+    static func getSteamPressApp() throws -> Application {
+        return try Application()
+    }
+
+    static func getResponse(to request: HTTPRequest, using app: Application) throws -> Response {
+        let responder = try app.make(Responder.self)
+        let wrappedRequest = Request(http: request, using: app)
+        return try responder.respond(to: wrappedRequest).blockingAwait()
+    }
 }
