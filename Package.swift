@@ -18,7 +18,7 @@ let package = Package(
     ],
     targets: [
         .target(name: "SteamPress", dependencies: ["Vapor", "SwiftSoup", "MarkdownProvider", "Leaf",
-                                                   "Fluent", "Authentication"/*, "Validation"*/]),
+                                                   "Fluent", "Authentication"/*, "Validation"*/, "FluentSQLite"]),
         .testTarget(name: "SteamPressTests", dependencies: ["SteamPress"]),
     ]
 )

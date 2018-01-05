@@ -1,11 +1,12 @@
-//import Foundation
-//import Vapor
-//import Fluent
-//
-//// MARK: - Model
-//
-//public final class BlogPost: Model {
-//
+import Foundation
+import Vapor
+import Fluent
+import FluentSQLite
+
+// MARK: - Model
+
+public final class BlogPost<DatabaseType>: Model where DatabaseType: QuerySupporting, DatabaseType: SchemaSupporting {
+
 //    public struct Properties {
 //        public static let blogPostID = "id"
 //        public static let title = "title"
@@ -24,60 +25,40 @@
 //        public static let longSnippet = "long_snippet"
 //        public static let tags = "tags"
 //    }
-//
+
 //    static var postsPerPage = 10
-//
-//    public let storage = Storage()
-//
-//    public var title: String
-//    public var contents: String
-//    public var author: Identifier?
-//    public var created: Date
-//    public var lastEdited: Date?
-//    public var slugUrl: String
-//    public var published: Bool
-//
-//    public init(title: String, contents: String, author: BlogUser, creationDate: Date, slugUrl: String,
-//         published: Bool, logger: LogProtocol? = nil) {
-//        self.title = title
-//        self.contents = contents
+
+    public typealias ID = UUID
+    public static var idKey: ReferenceWritableKeyPath<BlogPost<DatabaseType>, UUID?> {
+        return \BlogPost.blogID
+    }
+    public typealias Database = DatabaseType
+
+
+    public var blogID: UUID?
+    public var title: String
+    public var contents: String
+//    public var author: UUID?
+    public var created: Date
+    public var lastEdited: Date?
+    public var slugUrl: String
+    public var published: Bool
+
+    public init(title: String, contents: String, /* author: BlogUser,*/ creationDate: Date, slugUrl: String,
+         published: Bool/*, logger: LogProtocol? = nil*/) {
+        self.title = title
+        self.contents = contents
 //        self.author = author.id
-//        self.created = creationDate
+        self.created = creationDate
 //        self.slugUrl = BlogPost.generateUniqueSlugUrl(from: slugUrl, logger: logger)
-//        self.lastEdited = nil
-//        self.published = published
-//    }
-//
-//    public required init(row: Row) throws {
-//        title = try row.get(Properties.title)
-//        contents = try row.get(Properties.contents)
-//        author = try row.get(BlogUser.foreignIdKey)
-//        slugUrl = try row.get(Properties.slugUrl)
-//        published = try row.get(Properties.published)
-//        let createdTime: Double = try row.get(Properties.created)
-//        let lastEditedTime: Double? = try? row.get(Properties.lastEdited)
-//
-//        created = Date(timeIntervalSince1970: createdTime)
-//
-//        if let lastEditedTime = lastEditedTime {
-//            lastEdited = Date(timeIntervalSince1970: lastEditedTime)
-//        }
-//    }
-//
-//    public func makeRow() throws -> Row {
-//        let createdTime = created.timeIntervalSince1970
-//
-//        var row = Row()
-//        try row.set(Properties.title, title)
-//        try row.set(Properties.contents, contents)
-//        try row.set(BlogUser.foreignIdKey, author)
-//        try row.set(Properties.created, createdTime)
-//        try row.set(Properties.slugUrl, slugUrl)
-//        try row.set(Properties.published, published)
-//        try row.set(Properties.lastEdited, lastEdited?.timeIntervalSince1970)
-//        return row
-//    }
-//}
+        self.slugUrl = title
+        self.lastEdited = nil
+        self.published = published
+    }
+}
+
+extension BlogPost: Migration {}
+
 //
 //extension BlogPost: Parameterizable {}
 //

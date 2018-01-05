@@ -2,6 +2,7 @@ import Foundation
 @testable import SteamPress
 import Fluent
 import Vapor
+import FluentSQLite
 
 struct TestDataBuilder {
 
@@ -63,12 +64,32 @@ struct TestDataBuilder {
 //    }
 
     static func getSteamPressApp() throws -> Application {
-        return try Application()
+
+        var services = Services.default()
+        var databaseConfig = DatabaseConfig()
+        let databaseIdentifier = DatabaseIdentifier<SQLiteDatabase>.testDB
+        let testDatabase = SQLiteDatabase(storage: .file(path: "/tmp/db.sqlite"))
+        databaseConfig.add(database: testDatabase, as: databaseIdentifier)
+        services.use(databaseConfig)
+
+        let steampress = SteamPress.Provider(databaseIdentifier: databaseIdentifier)
+        try services.register(steampress)
+
+        try services.register(FluentProvider())
+
+        return try Application(services: services)
     }
 
     static func getResponse(to request: HTTPRequest, using app: Application) throws -> Response {
         let responder = try app.make(Responder.self)
         let wrappedRequest = Request(http: request, using: app)
         return try responder.respond(to: wrappedRequest).blockingAwait()
+    }
+
+}
+
+extension DatabaseIdentifier {
+    static var testDB: DatabaseIdentifier<SQLiteDatabase> {
+        return .init("testDB")
     }
 }

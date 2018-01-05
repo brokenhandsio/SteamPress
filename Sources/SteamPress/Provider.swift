@@ -1,5 +1,5 @@
-//import Vapor
-//import Fluent
+import Vapor
+import Fluent
 //import MarkdownProvider
 //import Leaf
 ////import AuthProvider
@@ -7,7 +7,31 @@
 ////import Cookies
 //import Foundation
 //
-//public struct Provider: Vapor.Provider {
+
+public struct Provider<DatabaseType>: Vapor.Provider where DatabaseType: QuerySupporting, DatabaseType: SchemaSupporting {
+
+    public static var repositoryName: String {
+        return "steampress"
+    }
+
+    let databaseIdentifier: DatabaseIdentifier<DatabaseType>
+
+    init(databaseIdentifier: DatabaseIdentifier<DatabaseType>) {
+        self.databaseIdentifier = databaseIdentifier
+    }
+
+    public func register(_ services: inout Services) throws {
+        var migrationConfig = MigrationConfig()
+        migrationConfig.add(model: BlogPost.self, database: databaseIdentifier)
+    }
+
+    public func boot(_ worker: Container) throws {
+        let router = try worker.make(Router.self, for: Container.self)
+
+    }
+
+
+}
 //
 //    private static let configFilename: String = "steampress"
 //    public static let repositoryName: String = "steampress"
