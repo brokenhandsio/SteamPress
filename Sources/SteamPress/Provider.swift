@@ -22,7 +22,8 @@ public struct Provider<DatabaseType>: Vapor.Provider where DatabaseType: QuerySu
 
     public func register(_ services: inout Services) throws {
         var migrationConfig = MigrationConfig()
-        migrationConfig.add(model: BlogPost.self, database: databaseIdentifier)
+        migrationConfig.add(model: BlogPost<DatabaseType>.self, database: databaseIdentifier)
+        services.use(migrationConfig)
     }
 
     public func boot(_ worker: Container) throws {

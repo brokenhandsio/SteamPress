@@ -71,6 +71,7 @@ struct TestDataBuilder {
         let testDatabase = SQLiteDatabase(storage: .file(path: "/tmp/db.sqlite"))
         databaseConfig.add(database: testDatabase, as: databaseIdentifier)
         services.use(databaseConfig)
+        services.use(SQLiteConfig())
 
         let steampress = SteamPress.Provider(databaseIdentifier: databaseIdentifier)
         try services.register(steampress)
