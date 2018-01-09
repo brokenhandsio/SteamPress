@@ -28,31 +28,32 @@ public final class BlogPost<DatabaseType>: Model where DatabaseType: QuerySuppor
 
 //    static var postsPerPage = 10
 
-    public typealias ID = UUID
-    public static var idKey: ReferenceWritableKeyPath<BlogPost<DatabaseType>, UUID?> {
+    // TODO convert to UUID?
+    public typealias ID = Int
+    public static var idKey: ReferenceWritableKeyPath<BlogPost<DatabaseType>, Int?> {
         return \BlogPost.blogID
     }
     public typealias Database = DatabaseType
 
-    public var blogID: UUID?
+    public var blogID: Int?
     public var title: String
     public var contents: String
-////    public var author: UUID?
+    public var author: Int?
     public var created: Date
     public var lastEdited: Date?
     public var slugUrl: String
-//    public var published: Bool
+    public var published: Bool
 
-    public init(title: String, contents: String, /* author: BlogUser,*/ creationDate: Date, slugUrl: String,
+    public init(title: String, contents: String, author: BlogUser<DatabaseType>, creationDate: Date, slugUrl: String,
          published: Bool/*, logger: LogProtocol? = nil*/) {
         self.title = title
         self.contents = contents
-//        self.author = author.id
+        self.author = author.userID
         self.created = creationDate
 //        self.slugUrl = BlogPost.generateUniqueSlugUrl(from: slugUrl, logger: logger)
         self.slugUrl = title
-//        self.lastEdited = nil
-//        self.published = published
+        self.lastEdited = nil
+        self.published = published
     }
 }
 

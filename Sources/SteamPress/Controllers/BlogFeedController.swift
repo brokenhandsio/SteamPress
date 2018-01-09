@@ -38,10 +38,9 @@ struct BlogFeedController<DatabaseType>: RouteCollection where DatabaseType: Que
 //    }
 
     func boot(router: Router) throws {
-        router.get("atom.xml", use: atomGenerator.feedHandler)
-//        router.group(pathCreator.blogPath ?? "", use: { index in
-//            index.get("atom.xml", use: atomGenerator.feedHandler)
-//        })
+        router.group(PathComponent(stringLiteral: "\(pathCreator.blogPath ?? "")"), use: { index in
+            index.get("atom.xml", use: atomGenerator.feedHandler)
+        })
     }
 }
 

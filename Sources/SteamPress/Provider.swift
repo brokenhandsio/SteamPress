@@ -16,8 +16,13 @@ public struct Provider<DatabaseType>: Vapor.Provider where DatabaseType: QuerySu
 
     let databaseIdentifier: DatabaseIdentifier<DatabaseType>
     let blogPath: String?
+    let title: String?
+    let description: String?
+    let copyright: String?
+    let imageURL: String?
     let pathCreator: BlogPathCreator
 
+    // TODO update
     /**
      Initialiser for SteamPress' Provider to add a blog to your Vapor App. You can pass it an optional
      `blogPath` to add the blog to. For instance, if you pass in "blog", your blog will be accessible
@@ -34,12 +39,24 @@ public struct Provider<DatabaseType>: Vapor.Provider where DatabaseType: QuerySu
      - Parameter enableTagsPages: Flag used to determine whether to publicy expose the tags endpoints or not.
      Defaults to true
      */
-    public init(databaseIdentifier: DatabaseIdentifier<DatabaseType>, postsPerPage: Int,
-                blogPath: String? = nil, useBootstrap4: Bool = true,
-                enableAuthorsPages: Bool = true, enableTagsPages: Bool = true) {
+    public init(databaseIdentifier: DatabaseIdentifier<DatabaseType>,
+                blogPath: String? = nil,
+                title: String? = nil,
+                description: String? = nil,
+                copyright: String? = nil,
+                imageURL: String? = nil,
+                postsPerPage: Int,
+                useBootstrap4: Bool = true,
+                enableAuthorsPages: Bool = true,
+                enableTagsPages: Bool = true) {
 //        self.postsPerPage = postsPerPage
         self.databaseIdentifier = databaseIdentifier
         self.blogPath = blogPath
+        self.title = title
+        self.description = description
+        self.copyright = copyright
+        self.imageURL = imageURL
+
         self.pathCreator = BlogPathCreator(blogPath: self.blogPath)
 //        self.useBootstrap4 = useBootstrap4
 //        self.enableAuthorsPages = enableAuthorsPages
@@ -49,6 +66,7 @@ public struct Provider<DatabaseType>: Vapor.Provider where DatabaseType: QuerySu
     public func register(_ services: inout Services) throws {
         var migrationConfig = MigrationConfig()
         migrationConfig.add(model: BlogPost<DatabaseType>.self, database: databaseIdentifier)
+        migrationConfig.add(model: BlogUser<DatabaseType>.self, database: databaseIdentifier)
         services.use(migrationConfig)
     }
 
@@ -56,7 +74,7 @@ public struct Provider<DatabaseType>: Vapor.Provider where DatabaseType: QuerySu
         let router = try worker.make(Router.self, for: Container.self)
 
 
-        let feedController = BlogFeedController<DatabaseType>(pathCreator: pathCreator, title: nil, description: nil, copyright: nil, imageURL: nil)
+        let feedController = BlogFeedController<DatabaseType>(pathCreator: pathCreator, title: title, description: description, copyright: copyright, imageURL: imageURL)
         try router.register(collection: feedController)
 
     }
