@@ -15,9 +15,35 @@ public struct Provider<DatabaseType>: Vapor.Provider where DatabaseType: QuerySu
     }
 
     let databaseIdentifier: DatabaseIdentifier<DatabaseType>
+    let blogPath: String?
+    let pathCreator: BlogPathCreator
 
-    init(databaseIdentifier: DatabaseIdentifier<DatabaseType>) {
+    /**
+     Initialiser for SteamPress' Provider to add a blog to your Vapor App. You can pass it an optional
+     `blogPath` to add the blog to. For instance, if you pass in "blog", your blog will be accessible
+     at http://mysite.com/blog/, or if you pass in `nil` your blog will be added to the root of your
+     site (i.e. http://mysite.com/)
+
+     - Parameter postsPerPage: The number of posts to show per page on the main index page of the
+     blog (integrates with Paginator)
+     - Parameter blogPath: The path to add the blog too
+     - Parameter useBootstrap4: Flag used to deterimine whether to use Bootstrap v4 for Paginator.
+     Defaults to true
+     - Parameter enableAuthorsPages: Flag used to determine whether to publicly expose the authors endpoints
+     or not. Defaults to true
+     - Parameter enableTagsPages: Flag used to determine whether to publicy expose the tags endpoints or not.
+     Defaults to true
+     */
+    public init(databaseIdentifier: DatabaseIdentifier<DatabaseType>, postsPerPage: Int,
+                blogPath: String? = nil, useBootstrap4: Bool = true,
+                enableAuthorsPages: Bool = true, enableTagsPages: Bool = true) {
+//        self.postsPerPage = postsPerPage
         self.databaseIdentifier = databaseIdentifier
+        self.blogPath = blogPath
+        self.pathCreator = BlogPathCreator(blogPath: self.blogPath)
+//        self.useBootstrap4 = useBootstrap4
+//        self.enableAuthorsPages = enableAuthorsPages
+//        self.enableTagsPages = enableTagsPages
     }
 
     public func register(_ services: inout Services) throws {
@@ -28,6 +54,10 @@ public struct Provider<DatabaseType>: Vapor.Provider where DatabaseType: QuerySu
 
     public func boot(_ worker: Container) throws {
         let router = try worker.make(Router.self, for: Container.self)
+
+
+        let feedController = BlogFeedController<DatabaseType>(pathCreator: pathCreator, title: nil, description: nil, copyright: nil, imageURL: nil)
+        try router.register(collection: feedController)
 
     }
 
@@ -145,31 +175,6 @@ public struct Provider<DatabaseType>: Vapor.Provider where DatabaseType: QuerySu
 //                  enableAuthorsPages: enableAuthorsPages, enableTagsPages: enableTagsPages)
 //    }
 //
-//    /**
-//         Initialiser for SteamPress' Provider to add a blog to your Vapor App. You can pass it an optional 
-//         `blogPath` to add the blog to. For instance, if you pass in "blog", your blog will be accessible 
-//         at http://mysite.com/blog/, or if you pass in `nil` your blog will be added to the root of your 
-//         site (i.e. http://mysite.com/)
-//
-//         - Parameter postsPerPage: The number of posts to show per page on the main index page of the 
-//                                   blog (integrates with Paginator)
-//         - Parameter blogPath: The path to add the blog too
-//         - Parameter useBootstrap4: Flag used to deterimine whether to use Bootstrap v4 for Paginator. 
-//                                    Defaults to true
-//         - Parameter enableAuthorsPages: Flag used to determine whether to publicly expose the authors endpoints 
-//                                         or not. Defaults to true
-//         - Parameter enableTagsPages: Flag used to determine whether to publicy expose the tags endpoints or not. 
-//                                      Defaults to true
-//     */
-//    public init(postsPerPage: Int, blogPath: String? = nil, useBootstrap4: Bool = true,
-//                enableAuthorsPages: Bool = true, enableTagsPages: Bool = true) {
-//        self.postsPerPage = postsPerPage
-//        self.blogPath = blogPath
-//        self.pathCreator = BlogPathCreator(blogPath: self.blogPath)
-//        self.useBootstrap4 = useBootstrap4
-//        self.enableAuthorsPages = enableAuthorsPages
-//        self.enableTagsPages = enableTagsPages
-//    }
 //
 //    enum Error: Swift.Error {
 //        case invalidConfiguration(message: String)
@@ -178,4 +183,8 @@ public struct Provider<DatabaseType>: Vapor.Provider where DatabaseType: QuerySu
 //    public func beforeRun(_: Vapor.Droplet) {}
 //
 //}
+
+
+// TODO remove
+extension Request: DatabaseConnectable {}
 

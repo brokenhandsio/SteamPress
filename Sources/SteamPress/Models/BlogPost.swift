@@ -34,15 +34,14 @@ public final class BlogPost<DatabaseType>: Model where DatabaseType: QuerySuppor
     }
     public typealias Database = DatabaseType
 
-
     public var blogID: UUID?
     public var title: String
     public var contents: String
-//    public var author: UUID?
+////    public var author: UUID?
     public var created: Date
     public var lastEdited: Date?
     public var slugUrl: String
-    public var published: Bool
+//    public var published: Bool
 
     public init(title: String, contents: String, /* author: BlogUser,*/ creationDate: Date, slugUrl: String,
          published: Bool/*, logger: LogProtocol? = nil*/) {
@@ -52,8 +51,8 @@ public final class BlogPost<DatabaseType>: Model where DatabaseType: QuerySuppor
         self.created = creationDate
 //        self.slugUrl = BlogPost.generateUniqueSlugUrl(from: slugUrl, logger: logger)
         self.slugUrl = title
-        self.lastEdited = nil
-        self.published = published
+//        self.lastEdited = nil
+//        self.published = published
     }
 }
 

@@ -1,8 +1,8 @@
-//import Vapor
+import Vapor
 ////import URI
 //import HTTP
-//import SwiftMarkdown
-//import SwiftSoup
+import SwiftMarkdown
+import SwiftSoup
 //import Foundation
 //import Fluent
 //
@@ -348,37 +348,40 @@
 //    }
 //    
 //}
-//
-//extension URI {
-//    func getRootUri() -> URI {
-//        return URI(scheme: self.scheme, userInfo: nil, hostname: self.hostname, port: self.port, path: "", query: nil, fragment: nil).removingPath()
-//    }
-//
-//    var descriptionWithoutPort: String {
-//        get {
-//            if scheme.isSecure {
-//                return self.description.replacingFirstOccurrence(of: ":443", with: "")
-//            }
-//            else {
-//                return self.description.replacingFirstOccurrence(of: ":80", with: "")
-//            }
-//        }
-//    }
-//}
-//
-//public extension BlogPost {
-//    func description() throws -> String {
+
+// TODO Move all of this
+
+extension URI {
+    func getRootUri() -> URI {
+        return URI(scheme: self.scheme, userInfo: nil, hostname: self.hostname, port: self.port, path: "", query: nil, fragment: nil)
+    }
+
+    var descriptionWithoutPort: String {
+        get {
+            if scheme == "https" {
+                return self.description.replacingFirstOccurrence(of: ":443", with: "")
+            }
+            else {
+                return self.description.replacingFirstOccurrence(of: ":80", with: "")
+            }
+        }
+    }
+}
+
+public extension BlogPost {
+    func description() throws -> String {
 //        return try SwiftSoup.parse(markdownToHTML(shortSnippet())).text()
-//    }
-//}
-//
-//private extension String {
-//    func replacingFirstOccurrence(of target: String, with replaceString: String) -> String
-//    {
-//        if let range = self.range(of: target) {
-//            return self.replacingCharacters(in: range, with: replaceString)
-//        }
-//        return self
-//    }
-//}
+        return ""
+    }
+}
+
+private extension String {
+    func replacingFirstOccurrence(of target: String, with replaceString: String) -> String
+    {
+        if let range = self.range(of: target) {
+            return self.replacingCharacters(in: range, with: replaceString)
+        }
+        return self
+    }
+}
 
