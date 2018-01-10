@@ -53,19 +53,17 @@ struct AtomFeedGenerator<DatabaseType> where DatabaseType: QuerySupporting, Data
 
             let blogPath = self.getRootPath(for: request) + "/"
 
-//            for post in posts {
-//                let updatedTime = post.lastEdited ?? post.created
-//                guard let author = try post.postAuthor.get() else {
-//                    throw Abort.serverError
-//                }
-//                feed += "<entry>\n<id>\(blogPath)posts-id/\(post.id?.string ?? post.slugUrl)/</id>\n<title>\(post.title)</title>\n<updated>\(iso8601Formatter.string(from: updatedTime))</updated>\n<published>\(iso8601Formatter.string(from: post.created))</published>\n<author>\n<name>\(author.name)</name>\n<uri>\(blogPath)authors/\(author.username)/</uri>\n</author>\n<summary>\(try post.description())</summary>\n<link rel=\"alternate\" href=\"\(blogPath)posts/\(post.slugUrl)/\" />\n"
-//
+            for post in posts {
+                let updatedTime = post.lastEdited ?? post.created
+                let author = try post.postAuthor.get(on: request).await(on: request)
+                feed += try "<entry>\n<id>\(blogPath)posts-id/\(post.requireID())/</id>\n<title>\(post.title)</title>\n<updated>\(self.iso8601Formatter.string(from: updatedTime))</updated>\n<published>\(self.iso8601Formatter.string(from: post.created))</published>\n<author>\n<name>\(author.name)</name>\n<uri>\(blogPath)authors/\(author.username)/</uri>\n</author>\n<summary>\(try post.description())</summary>\n<link rel=\"alternate\" href=\"\(blogPath)posts/\(post.slugUrl)/\" />\n"
+
 //                for tag in try post.tags.all() {
 //                    feed += "<category term=\"\(tag.name)\"/>\n"
 //                }
-//
-//                feed += "</entry>\n"
-//            }
+
+                feed += "</entry>\n"
+            }
 
             feed += self.feedEnd
 

@@ -67,7 +67,7 @@ public struct Provider<DatabaseType>: Vapor.Provider where DatabaseType: QuerySu
         var migrationConfig = MigrationConfig()
         migrationConfig.add(model: BlogPost<DatabaseType>.self, database: databaseIdentifier)
         migrationConfig.add(model: BlogUser<DatabaseType>.self, database: databaseIdentifier)
-        services.use(migrationConfig)
+        services.register(migrationConfig)
     }
 
     public func boot(_ worker: Container) throws {
@@ -201,8 +201,3 @@ public struct Provider<DatabaseType>: Vapor.Provider where DatabaseType: QuerySu
 //    public func beforeRun(_: Vapor.Droplet) {}
 //
 //}
-
-
-// TODO remove
-extension Request: DatabaseConnectable {}
-

@@ -75,10 +75,11 @@ struct TestDataBuilder {
 
         var services = Services.default()
         var databaseConfig = DatabaseConfig()
-        let testDatabase = SQLiteDatabase(storage: .memory)
+//        let testDatabase = SQLiteDatabase(storage: .memory)
+        let testDatabase = SQLiteDatabase(storage: .file(path: "/tmp/db.sqlite"))
         databaseConfig.add(database: testDatabase, as: DatabaseIdentifier<SQLiteDatabase>.sqlite)
-        services.use(databaseConfig)
-        services.use(SQLiteConfig())
+        services.register(databaseConfig)
+        services.register(SQLiteConfig())
 
         let steampress = SteamPress.Provider(databaseIdentifier: DatabaseIdentifier<SQLiteDatabase>.sqlite,
                                              blogPath: path,
@@ -109,10 +110,4 @@ struct TestDataBuilder {
         return try responder.respond(to: wrappedRequest).blockingAwait()
     }
 
-}
-
-extension DatabaseIdentifier {
-    static var testDB: DatabaseIdentifier<SQLiteDatabase> {
-        return .init("testDB")
-    }
 }

@@ -195,19 +195,25 @@ extension BlogPost: Migration {}
 //        return newSlugUrl
 //    }
 //}
-//
-//// MARK: - Relations
-//
-//extension BlogPost {
-//    var postAuthor: Parent<BlogPost, BlogUser> {
-//        return parent(id: author)
+
+// MARK: - Relations
+
+extension BlogPost {
+    var postAuthor: Parent<BlogPost, BlogUser<DatabaseType>> {
+        let parentID: KeyPath<BlogPost, Int?> = \BlogPost.author
+        return parent(parentID)
+    }
+}
+
+//    var creator: Parent<Acronym, User> {
+//        return parent(\.creatorID)
 //    }
-//
+
 //    var tags: Siblings<BlogPost, BlogTag, Pivot<BlogPost, BlogTag>> {
 //        return siblings()
 //    }
 //}
-//
+
 //// MARK: - Pagination
 //
 //extension BlogPost: Paginatable {
