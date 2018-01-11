@@ -38,17 +38,17 @@ public final class BlogPost<DatabaseType>: Model where DatabaseType: QuerySuppor
     public var blogID: Int?
     public var title: String
     public var contents: String
-    public var author: Int?
+    public var author: BlogUser<DatabaseType>.ID
     public var created: Date
     public var lastEdited: Date?
     public var slugUrl: String
     public var published: Bool
 
     public init(title: String, contents: String, author: BlogUser<DatabaseType>, creationDate: Date, slugUrl: String,
-         published: Bool/*, logger: LogProtocol? = nil*/) {
+         published: Bool/*, logger: LogProtocol? = nil*/) throws {
         self.title = title
         self.contents = contents
-        self.author = author.userID
+        self.author = try author.requireID()
         self.created = creationDate
 //        self.slugUrl = BlogPost.generateUniqueSlugUrl(from: slugUrl, logger: logger)
         self.slugUrl = title
@@ -200,8 +200,7 @@ extension BlogPost: Migration {}
 
 extension BlogPost {
     var postAuthor: Parent<BlogPost, BlogUser<DatabaseType>> {
-        let parentID: KeyPath<BlogPost, Int?> = \BlogPost.author
-        return parent(parentID)
+        return parent(\.author)
     }
 }
 

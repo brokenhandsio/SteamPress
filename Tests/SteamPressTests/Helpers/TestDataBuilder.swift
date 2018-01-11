@@ -14,8 +14,8 @@ struct TestDataBuilder {
         return BlogUser<DB>(name: name, username: username, password: "password", profilePicture: "https://static.brokenhands.io/steampress/images/authors/luke.png", twitterHandle: "luke", biography: "The last Jedi", tagline: "Who is my father")
     }
 
-    static func anyPost(author: BlogUser<DB>, title: String = "An Exciting Post!", contents: String = "This is a blog post", slugUrl: String = "some-exciting-title", creationDate: Date = Date(), published: Bool = true)  -> BlogPost<DB> {
-        return BlogPost<DB>(title: title, contents: contents, author: author, creationDate: creationDate, slugUrl: slugUrl, published: published)
+    static func anyPost(author: BlogUser<DB>, title: String = "An Exciting Post!", contents: String = "This is a blog post", slugUrl: String = "some-exciting-title", creationDate: Date = Date(), published: Bool = true)  throws -> BlogPost<DB> {
+        return try BlogPost<DB>(title: title, contents: contents, author: author, creationDate: creationDate, slugUrl: slugUrl, published: published)
     }
 
 //    static func anyPostWithImage(author: BlogUser) -> BlogPost {
@@ -75,8 +75,7 @@ struct TestDataBuilder {
 
         var services = Services.default()
         var databaseConfig = DatabaseConfig()
-//        let testDatabase = SQLiteDatabase(storage: .memory)
-        let testDatabase = SQLiteDatabase(storage: .file(path: "/tmp/db.sqlite"))
+        let testDatabase = try SQLiteDatabase(storage: .memory)
         databaseConfig.add(database: testDatabase, as: DatabaseIdentifier<SQLiteDatabase>.sqlite)
         services.register(databaseConfig)
         services.register(SQLiteConfig())

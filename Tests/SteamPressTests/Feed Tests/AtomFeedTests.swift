@@ -244,7 +244,7 @@ class AtomFeedTests: XCTestCase {
     private func createPost(for db: DatabaseConnectable, tags: [String]? = nil, createDate: Date? = nil) throws -> TestData {
         let author = TestDataBuilder.anyUser()
         try author.save(on: db).blockingAwait()
-        let post = TestDataBuilder.anyPost(author: author, creationDate: createDate ?? Date())
+        let post = try TestDataBuilder.anyPost(author: author, creationDate: createDate ?? Date())
         try post.save(on: db).blockingAwait()
 
 //        if let tags = tags {
