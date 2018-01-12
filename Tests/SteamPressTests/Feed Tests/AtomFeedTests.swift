@@ -20,16 +20,15 @@ class AtomFeedTests: XCTestCase {
         ("testThatFeedIsCorrectForOnePost", testThatFeedIsCorrectForOnePost),
         ("testThatFeedCorrectForTwoPosts", testThatFeedCorrectForTwoPosts),
         ("testThatDraftsDontAppearInFeed", testThatDraftsDontAppearInFeed),
-//        ("testThatEditedPostsHaveUpdatedTimes", testThatEditedPostsHaveUpdatedTimes),
-//        ("testThatTagsAppearWhenPostHasThem", testThatTagsAppearWhenPostHasThem),
-//        ("testThatFullLinksWorksForPosts", testThatFullLinksWorksForPosts),
-//        ("testThatHTTPSLinksWorkForPostsBehindReverseProxy", testThatHTTPSLinksWorkForPostsBehindReverseProxy),
-//        ("testCorrectHeaderSetForAtomFeed", testCorrectHeaderSetForAtomFeed),
-//        ("testThatDateFormatterIsCorrect", testThatDateFormatterIsCorrect),
+        ("testThatEditedPostsHaveUpdatedTimes", testThatEditedPostsHaveUpdatedTimes),
+        ("testThatTagsAppearWhenPostHasThem", testThatTagsAppearWhenPostHasThem),
+        ("testThatFullLinksWorksForPosts", testThatFullLinksWorksForPosts),
+        ("testThatHTTPSLinksWorkForPostsBehindReverseProxy", testThatHTTPSLinksWorkForPostsBehindReverseProxy),
+        ("testCorrectHeaderSetForAtomFeed", testCorrectHeaderSetForAtomFeed),
+        ("testThatDateFormatterIsCorrect", testThatDateFormatterIsCorrect),
         ]
 
 //    // MARK: - Properties
-//    private var database: Database!
     private var app: Application!
     private let atomRequest = HTTPRequest(method: .get, uri: "/atom.xml")
     private let dateFormatter = DateFormatter()
@@ -178,7 +177,7 @@ class AtomFeedTests: XCTestCase {
 
         _ = try app.withConnection(to: .sqlite) { conn in
             return Future(post2.save(on: conn))
-            }.blockingAwait()
+        }.blockingAwait()
 
         let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: Date()))</updated>\n<entry>\n<id>/posts-id/1/</id>\n<title>\(post.title)</title>\n<updated>\(dateFormatter.string(from: post.created))</updated>\n<published>\(dateFormatter.string(from: post.created))</published>\n<author>\n<name>\(author.name)</name>\n<uri>/authors/\(author.username)/</uri>\n</author>\n<summary>\(try post.description())</summary>\n<link rel=\"alternate\" href=\"/posts/\(post.slugUrl)/\" />\n</entry>\n</feed>"
 
@@ -186,83 +185,117 @@ class AtomFeedTests: XCTestCase {
         XCTAssertEqual(actualXmlResponse.body.string, expectedXML)
     }
 
-//    func testThatEditedPostsHaveUpdatedTimes() throws {
-//        drop = try TestDataBuilder.setupSteamPressDrop()
-//        let firstPostDate = Date().addingTimeInterval(-3600)
-//        let (post, author) = try createPost(createDate: firstPostDate)
-//        let secondTitle = "Another Post"
-//        let secondPostDate = Date().addingTimeInterval(-60)
-//        let newEditDate = Date()
-//        let post2 = BlogPost(title: secondTitle, contents: "#Some Interesting Post\nThis contains a load of contents...", author: author, creationDate: secondPostDate, slugUrl: "another-post", published: true)
-//        post2.lastEdited = newEditDate
-//        try post2.save()
-//        let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: newEditDate))</updated>\n<entry>\n<id>/posts-id/2/</id>\n<title>\(secondTitle)</title>\n<updated>\(dateFormatter.string(from: newEditDate))</updated>\n<published>\(dateFormatter.string(from: secondPostDate))</published>\n<author>\n<name>\(author.name)</name>\n<uri>/authors/\(author.username)/</uri>\n</author>\n<summary>\(try post2.description())</summary>\n<link rel=\"alternate\" href=\"/posts/\(post2.slugUrl)/\" />\n</entry>\n<entry>\n<id>/posts-id/1/</id>\n<title>\(post.title)</title>\n<updated>\(dateFormatter.string(from: firstPostDate))</updated>\n<published>\(dateFormatter.string(from: firstPostDate))</published>\n<author>\n<name>\(author.name)</name>\n<uri>/authors/\(author.username)/</uri>\n</author>\n<summary>\(try post.description())</summary>\n<link rel=\"alternate\" href=\"/posts/\(post.slugUrl)/\" />\n</entry>\n</feed>"
-//
-//        let actualXmlResponse = try drop.respond(to: atomRequest)
-//
-//        XCTAssertEqual(actualXmlResponse.body.bytes?.makeString(), expectedXML)
-//    }
-//    
-//    func testThatTagsAppearWhenPostHasThem() throws {
-//        drop = try TestDataBuilder.setupSteamPressDrop()
-//        let tag1 = "Vapor 2"
-//        let tag2 = "Engineering"
-//        let (post, author) = try createPost(tags: [tag1, tag2])
-//        let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: Date()))</updated>\n<entry>\n<id>/posts-id/1/</id>\n<title>\(post.title)</title>\n<updated>\(dateFormatter.string(from: post.created))</updated>\n<published>\(dateFormatter.string(from: post.created))</published>\n<author>\n<name>\(author.name)</name>\n<uri>/authors/\(author.username)/</uri>\n</author>\n<summary>\(try post.description())</summary>\n<link rel=\"alternate\" href=\"/posts/\(post.slugUrl)/\" />\n<category term=\"\(tag1)\"/>\n<category term=\"\(tag2)\"/>\n</entry>\n</feed>"
-//
-//        let actualXmlResponse = try drop.respond(to: atomRequest)
-//
-//        XCTAssertEqual(actualXmlResponse.body.bytes?.makeString(), expectedXML)
-//    }
-//    
-//    func testThatFullLinksWorksForPosts() throws {
-//        drop = try TestDataBuilder.setupSteamPressDrop(path: "blog")
-//        let (post, author) = try createPost()
-//        let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>https://geeks.brokenhands.io/blog/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"https://geeks.brokenhands.io/blog/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"https://geeks.brokenhands.io/blog/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: Date()))</updated>\n<entry>\n<id>https://geeks.brokenhands.io/blog/posts-id/1/</id>\n<title>\(post.title)</title>\n<updated>\(dateFormatter.string(from: post.created))</updated>\n<published>\(dateFormatter.string(from: post.created))</published>\n<author>\n<name>\(author.name)</name>\n<uri>https://geeks.brokenhands.io/blog/authors/\(author.username)/</uri>\n</author>\n<summary>\(try post.description())</summary>\n<link rel=\"alternate\" href=\"https://geeks.brokenhands.io/blog/posts/\(post.slugUrl)/\" />\n</entry>\n</feed>"
-//
-//        let request = Request(method: .get, uri: "https://geeks.brokenhands.io/blog/atom.xml")
-//        let actualXmlResponse = try drop.respond(to: request)
-//
-//        XCTAssertEqual(actualXmlResponse.body.bytes?.makeString(), expectedXML)
-//    }
-//    
-//    func testThatHTTPSLinksWorkForPostsBehindReverseProxy() throws {
-//        drop = try TestDataBuilder.setupSteamPressDrop(path: "blog")
-//        let (post, author) = try createPost()
-//        let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>https://geeks.brokenhands.io/blog/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"https://geeks.brokenhands.io/blog/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"https://geeks.brokenhands.io/blog/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: Date()))</updated>\n<entry>\n<id>https://geeks.brokenhands.io/blog/posts-id/1/</id>\n<title>\(post.title)</title>\n<updated>\(dateFormatter.string(from: post.created))</updated>\n<published>\(dateFormatter.string(from: post.created))</published>\n<author>\n<name>\(author.name)</name>\n<uri>https://geeks.brokenhands.io/blog/authors/\(author.username)/</uri>\n</author>\n<summary>\(try post.description())</summary>\n<link rel=\"alternate\" href=\"https://geeks.brokenhands.io/blog/posts/\(post.slugUrl)/\" />\n</entry>\n</feed>"
-//
-//        let request = Request(method: .get, uri: "http://geeks.brokenhands.io/blog/atom.xml")
-//        request.headers["X-Forwarded-Proto"] = "https"
-//
-//        let actualXmlResponse = try drop.respond(to: request)
-//
-//        XCTAssertEqual(actualXmlResponse.body.bytes?.makeString(), expectedXML)
-//    }
-//
-//    func testCorrectHeaderSetForAtomFeed() throws {
-//        drop = try TestDataBuilder.setupSteamPressDrop()
-//        let actualXmlResponse = try drop.respond(to: atomRequest)
-//
-//        XCTAssertEqual(actualXmlResponse.headers[.contentType], "application/atom+xml")
-//    }
-//    
-//    func testThatDateFormatterIsCorrect() throws {
-//        drop = try TestDataBuilder.setupSteamPressDrop()
-//        let createDate = Date(timeIntervalSince1970: 1505867108)
-//        let (post, author) = try createPost(createDate: createDate)
-//        let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>2017-09-20T00:25:08Z</updated>\n<entry>\n<id>/posts-id/1/</id>\n<title>\(post.title)</title>\n<updated>2017-09-20T00:25:08Z</updated>\n<published>2017-09-20T00:25:08Z</published>\n<author>\n<name>\(author.name)</name>\n<uri>/authors/\(author.username)/</uri>\n</author>\n<summary>\(try post.description())</summary>\n<link rel=\"alternate\" href=\"/posts/\(post.slugUrl)/\" />\n</entry>\n</feed>"
-//        
-//        let actualXmlResponse = try drop.respond(to: atomRequest)
-//        
-//        XCTAssertEqual(actualXmlResponse.body.bytes?.makeString(), expectedXML)
-//    }
+    func testThatEditedPostsHaveUpdatedTimes() throws {
+        app = try TestDataBuilder.getSteamPressApp()
+
+        let firstPostDate = Date().addingTimeInterval(-3600)
+        let testData = try app.withConnection(to: .sqlite) { (conn) -> Future<TestData> in
+            return try Future(self.createPost(for: conn, createdDate: firstPostDate))
+            }.blockingAwait()
+
+        let post = testData.post
+        let author = testData.author
+
+        let secondTitle = "Another Post"
+        let secondPostDate = Date().addingTimeInterval(-60)
+        let newEditDate = Date()
+        let post2 = try BlogPost(title: secondTitle, contents: "#Some Interesting Post\nThis contains a load of contents...", author: author, creationDate: secondPostDate, slugUrl: "another-post", published: true)
+        post2.lastEdited = newEditDate
+
+        _ = try app.withConnection(to: .sqlite) { conn in
+            return Future(post2.save(on: conn))
+        }.blockingAwait()
+
+        let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: newEditDate))</updated>\n<entry>\n<id>/posts-id/2/</id>\n<title>\(secondTitle)</title>\n<updated>\(dateFormatter.string(from: newEditDate))</updated>\n<published>\(dateFormatter.string(from: secondPostDate))</published>\n<author>\n<name>\(author.name)</name>\n<uri>/authors/\(author.username)/</uri>\n</author>\n<summary>\(try post2.description())</summary>\n<link rel=\"alternate\" href=\"/posts/\(post2.slugUrl)/\" />\n</entry>\n<entry>\n<id>/posts-id/1/</id>\n<title>\(post.title)</title>\n<updated>\(dateFormatter.string(from: firstPostDate))</updated>\n<published>\(dateFormatter.string(from: firstPostDate))</published>\n<author>\n<name>\(author.name)</name>\n<uri>/authors/\(author.username)/</uri>\n</author>\n<summary>\(try post.description())</summary>\n<link rel=\"alternate\" href=\"/posts/\(post.slugUrl)/\" />\n</entry>\n</feed>"
+
+        let actualXmlResponse = try TestDataBuilder.getResponse(to: atomRequest, using: app)
+        XCTAssertEqual(actualXmlResponse.body.string, expectedXML)
+    }
+
+    func testThatTagsAppearWhenPostHasThem() throws {
+        app = try TestDataBuilder.getSteamPressApp()
+        let tag1 = "Vapor 2"
+        let tag2 = "Engineering"
+
+        let testData = try app.withConnection(to: .sqlite) { (conn) -> Future<TestData> in
+            return try Future(self.createPost(for: conn, tags: [tag1, tag2]))
+            }.blockingAwait()
+
+        let post = testData.post
+        let author = testData.author
+
+        let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: Date()))</updated>\n<entry>\n<id>/posts-id/1/</id>\n<title>\(post.title)</title>\n<updated>\(dateFormatter.string(from: post.created))</updated>\n<published>\(dateFormatter.string(from: post.created))</published>\n<author>\n<name>\(author.name)</name>\n<uri>/authors/\(author.username)/</uri>\n</author>\n<summary>\(try post.description())</summary>\n<link rel=\"alternate\" href=\"/posts/\(post.slugUrl)/\" />\n<category term=\"\(tag1)\"/>\n<category term=\"\(tag2)\"/>\n</entry>\n</feed>"
+
+        let actualXmlResponse = try TestDataBuilder.getResponse(to: atomRequest, using: app)
+        XCTAssertEqual(actualXmlResponse.body.string, expectedXML)
+    }
+
+    func testThatFullLinksWorksForPosts() throws {
+        app = try TestDataBuilder.getSteamPressApp(path: "blog")
+
+        let testData = try app.withConnection(to: .sqlite) { (conn) -> Future<TestData> in
+            return try Future(self.createPost(for: conn))
+            }.blockingAwait()
+
+        let post = testData.post
+        let author = testData.author
+
+        let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>https://geeks.brokenhands.io/blog/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"https://geeks.brokenhands.io/blog/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"https://geeks.brokenhands.io/blog/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: Date()))</updated>\n<entry>\n<id>https://geeks.brokenhands.io/blog/posts-id/1/</id>\n<title>\(post.title)</title>\n<updated>\(dateFormatter.string(from: post.created))</updated>\n<published>\(dateFormatter.string(from: post.created))</published>\n<author>\n<name>\(author.name)</name>\n<uri>https://geeks.brokenhands.io/blog/authors/\(author.username)/</uri>\n</author>\n<summary>\(try post.description())</summary>\n<link rel=\"alternate\" href=\"https://geeks.brokenhands.io/blog/posts/\(post.slugUrl)/\" />\n</entry>\n</feed>"
+
+        let request = HTTPRequest(method: .get, uri: "https://geeks.brokenhands.io/blog/atom.xml")
+
+        let actualXmlResponse = try TestDataBuilder.getResponse(to: request, using: app)
+        XCTAssertEqual(actualXmlResponse.body.string, expectedXML)
+    }
+
+    func testThatHTTPSLinksWorkForPostsBehindReverseProxy() throws {
+        app = try TestDataBuilder.getSteamPressApp(path: "blog")
+
+        let testData = try app.withConnection(to: .sqlite) { (conn) -> Future<TestData> in
+            return try Future(self.createPost(for: conn))
+            }.blockingAwait()
+
+        let post = testData.post
+        let author = testData.author
+
+        let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>https://geeks.brokenhands.io/blog/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"https://geeks.brokenhands.io/blog/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"https://geeks.brokenhands.io/blog/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: Date()))</updated>\n<entry>\n<id>https://geeks.brokenhands.io/blog/posts-id/1/</id>\n<title>\(post.title)</title>\n<updated>\(dateFormatter.string(from: post.created))</updated>\n<published>\(dateFormatter.string(from: post.created))</published>\n<author>\n<name>\(author.name)</name>\n<uri>https://geeks.brokenhands.io/blog/authors/\(author.username)/</uri>\n</author>\n<summary>\(try post.description())</summary>\n<link rel=\"alternate\" href=\"https://geeks.brokenhands.io/blog/posts/\(post.slugUrl)/\" />\n</entry>\n</feed>"
+
+        var request = HTTPRequest(method: .get, uri: "http://geeks.brokenhands.io/blog/atom.xml")
+        request.headers["X-Forwarded-Proto"] = "https"
+
+        let actualXmlResponse = try TestDataBuilder.getResponse(to: request, using: app)
+        XCTAssertEqual(actualXmlResponse.body.string, expectedXML)
+    }
+
+    func testCorrectHeaderSetForAtomFeed() throws {
+        app = try TestDataBuilder.getSteamPressApp()
+        let actualXmlResponse = try TestDataBuilder.getResponse(to: atomRequest, using: app)
+        XCTAssertEqual(actualXmlResponse.headers[.contentType], "application/atom+xml")
+    }
+
+    func testThatDateFormatterIsCorrect() throws {
+        app = try TestDataBuilder.getSteamPressApp()
+        let createDate = Date(timeIntervalSince1970: 1505867108)
+
+        let testData = try app.withConnection(to: .sqlite) { (conn) -> Future<TestData> in
+            return try Future(self.createPost(for: conn, createdDate: createDate))
+        }.blockingAwait()
+
+        let post = testData.post
+        let author = testData.author
+
+        let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>2017-09-20T00:25:08Z</updated>\n<entry>\n<id>/posts-id/1/</id>\n<title>\(post.title)</title>\n<updated>2017-09-20T00:25:08Z</updated>\n<published>2017-09-20T00:25:08Z</published>\n<author>\n<name>\(author.name)</name>\n<uri>/authors/\(author.username)/</uri>\n</author>\n<summary>\(try post.description())</summary>\n<link rel=\"alternate\" href=\"/posts/\(post.slugUrl)/\" />\n</entry>\n</feed>"
+
+        let actualXmlResponse = try TestDataBuilder.getResponse(to: atomRequest, using: app)
+        XCTAssertEqual(actualXmlResponse.body.string, expectedXML)
+    }
 
     // MARK: - Private functions
 
-    private func createPost(for db: DatabaseConnectable, tags: [String]? = nil, createDate: Date? = nil) throws -> TestData {
+    private func createPost(for db: DatabaseConnectable, tags: [String]? = nil, createdDate: Date? = nil) throws -> TestData {
         let author = TestDataBuilder.anyUser()
         try author.save(on: db).blockingAwait()
-        let post = try TestDataBuilder.anyPost(author: author, creationDate: createDate ?? Date())
+        let post = try TestDataBuilder.anyPost(author: author, creationDate: createdDate ?? Date())
         try post.save(on: db).blockingAwait()
 
 //        if let tags = tags {
