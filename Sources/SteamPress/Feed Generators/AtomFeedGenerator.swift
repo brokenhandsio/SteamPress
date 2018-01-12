@@ -33,8 +33,7 @@ struct AtomFeedGenerator<DatabaseType> where DatabaseType: QuerySupporting, Data
         
         var feed = try getFeedStart(for: request)
 
-//        return BlogPost.query(on: request).filter(\BlogPost.published == true).sort(\BlogPost.created, .descending).all().flatMap(to: HTTPResponse.self) { posts in
-        return BlogPost<DatabaseType>.query(on: request).sort(\BlogPost<DatabaseType>.created, .descending).all().flatMap(to: HTTPResponse.self) { posts in
+        return BlogPost<DatabaseType>.query(on: request).filter(\.published == true).sort(\.created, .descending).all().flatMap(to: HTTPResponse.self) { posts in
 
             if !posts.isEmpty {
                 let postDate = posts[0].lastEdited ?? posts[0].created

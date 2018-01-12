@@ -99,14 +99,4 @@ struct TestDataBuilder {
         let wrappedRequest = Request(http: request, using: app)
         return try responder.respond(to: wrappedRequest).blockingAwait()
     }
-
-    static func getResponse(to request: HTTPRequest, using app: Application, beforeRequest: ((Request) -> Void)) throws -> Response {
-        let responder = try app.make(Responder.self)
-        let wrappedRequest = Request(http: request, using: app)
-
-        beforeRequest(wrappedRequest)
-
-        return try responder.respond(to: wrappedRequest).blockingAwait()
-    }
-
 }
