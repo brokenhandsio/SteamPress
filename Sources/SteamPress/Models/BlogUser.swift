@@ -6,7 +6,7 @@ import Fluent
 
 // MARK: - Model
 
-public final class BlogUser<DatabaseType>: Model where DatabaseType: QuerySupporting, DatabaseType: SchemaSupporting {
+public final class BlogUser<DatabaseType>: Model where DatabaseType: QuerySupporting & SchemaSupporting & JoinSupporting {
 
     // TODO
 //    public struct Properties {

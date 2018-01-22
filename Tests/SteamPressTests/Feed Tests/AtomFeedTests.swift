@@ -294,9 +294,9 @@ class AtomFeedTests: XCTestCase {
 
     private func createPost(for db: DatabaseConnectable, tags: [String]? = nil, createdDate: Date? = nil) throws -> TestData {
         let author = TestDataBuilder.anyUser()
-        try author.save(on: db).blockingAwait()
+        _ = try author.save(on: db).blockingAwait()
         let post = try TestDataBuilder.anyPost(author: author, creationDate: createdDate ?? Date())
-        try post.save(on: db).blockingAwait()
+        _ = try post.save(on: db).blockingAwait()
 
 //        if let tags = tags {
 //            for tag in tags {
@@ -316,10 +316,7 @@ struct TestData {
 // TODO Move
 extension HTTPBody {
     var string: String? {
-        guard let data = self.data else {
-            return nil
-        }
-
+        let data = try! self.makeData(max: 1000).blockingAwait()
         return String(data: data, encoding: .utf8)
     }
 }

@@ -2,7 +2,7 @@ import Vapor
 import Foundation
 import Fluent
 
-struct BlogFeedController<DatabaseType>: RouteCollection where DatabaseType: QuerySupporting, DatabaseType: SchemaSupporting {
+struct BlogFeedController<DatabaseType>: RouteCollection where DatabaseType: QuerySupporting & SchemaSupporting & JoinSupporting {
 
     // MARK: - Properties
     fileprivate let pathCreator: BlogPathCreator
@@ -30,16 +30,10 @@ struct BlogFeedController<DatabaseType>: RouteCollection where DatabaseType: Que
     }
 
     // MARK: - Route Collection
-//    func addRoutes() {
-//        drop.group(pathCreator.blogPath ?? "") { index in
-//            index.get("rss.xml", handler: rssGenerator.feedHandler)
-//            index.get("atom.xml", handler: atomGenerator.feedHandler)
-//        }
-//    }
-
     func boot(router: Router) throws {
         router.group(PathComponent(stringLiteral: "\(pathCreator.blogPath ?? "")"), use: { index in
             index.get("atom.xml", use: atomGenerator.feedHandler)
+//            index.get("rss.xml", handler: rssGenerator.feedHandler)
         })
     }
 }

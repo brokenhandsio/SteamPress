@@ -1,11 +1,10 @@
 import Foundation
 import Vapor
 import Fluent
-import FluentSQLite
 
 // MARK: - Model
 
-public final class BlogPost<DatabaseType>: Model where DatabaseType: QuerySupporting, DatabaseType: SchemaSupporting {
+public final class BlogPost<DatabaseType>: Model where DatabaseType: QuerySupporting & SchemaSupporting & JoinSupporting {
 
 //    public struct Properties {
 //        public static let blogPostID = "id"
@@ -202,16 +201,11 @@ extension BlogPost {
     var postAuthor: Parent<BlogPost, BlogUser<DatabaseType>> {
         return parent(\.author)
     }
+
+    var tags: Siblings<BlogPost, BlogTag<DatabaseType>, BlogPostTagPivot<DatabaseType>> {
+        return siblings()
+    }
 }
-
-//    var creator: Parent<Acronym, User> {
-//        return parent(\.creatorID)
-//    }
-
-//    var tags: Siblings<BlogPost, BlogTag, Pivot<BlogPost, BlogTag>> {
-//        return siblings()
-//    }
-//}
 
 //// MARK: - Pagination
 //

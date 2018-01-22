@@ -2,7 +2,7 @@ import Vapor
 import Foundation
 import Fluent
 
-struct AtomFeedGenerator<DatabaseType> where DatabaseType: QuerySupporting, DatabaseType: SchemaSupporting {
+struct AtomFeedGenerator<DatabaseType> where DatabaseType: QuerySupporting, DatabaseType: SchemaSupporting, DatabaseType: JoinSupporting {
     
     // MARK: - Properties
     let title: String
@@ -57,9 +57,9 @@ struct AtomFeedGenerator<DatabaseType> where DatabaseType: QuerySupporting, Data
                 let author = try post.postAuthor.get(on: request).await(on: request)
                 feed += try "<entry>\n<id>\(blogPath)posts-id/\(post.requireID())/</id>\n<title>\(post.title)</title>\n<updated>\(self.iso8601Formatter.string(from: updatedTime))</updated>\n<published>\(self.iso8601Formatter.string(from: post.created))</published>\n<author>\n<name>\(author.name)</name>\n<uri>\(blogPath)authors/\(author.username)/</uri>\n</author>\n<summary>\(try post.description())</summary>\n<link rel=\"alternate\" href=\"\(blogPath)posts/\(post.slugUrl)/\" />\n"
 
-//                for tag in try post.tags.all() {
-//                    feed += "<category term=\"\(tag.name)\"/>\n"
-//                }
+                for tag in try post.tags.query(on: request).all().await(on: request) {
+                    feed += "<category term=\"\(tag.name)\"/>\n"
+                }
 
                 feed += "</entry>\n"
             }

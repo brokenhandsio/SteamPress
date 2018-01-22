@@ -8,7 +8,7 @@ import Fluent
 //import Foundation
 //
 
-public struct Provider<DatabaseType>: Vapor.Provider where DatabaseType: QuerySupporting, DatabaseType: SchemaSupporting {
+public struct Provider<DatabaseType>: Vapor.Provider where DatabaseType: QuerySupporting & SchemaSupporting & JoinSupporting {
 
     public static var repositoryName: String {
         return "steampress"
@@ -67,6 +67,8 @@ public struct Provider<DatabaseType>: Vapor.Provider where DatabaseType: QuerySu
         var migrationConfig = MigrationConfig()
         migrationConfig.add(model: BlogPost<DatabaseType>.self, database: databaseIdentifier)
         migrationConfig.add(model: BlogUser<DatabaseType>.self, database: databaseIdentifier)
+        migrationConfig.add(model: BlogTag<DatabaseType>.self, database: databaseIdentifier)
+        migrationConfig.add(model: BlogPostTagPivot<DatabaseType>.self, database: databaseIdentifier)
         services.register(migrationConfig)
     }
 

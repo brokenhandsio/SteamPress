@@ -1,11 +1,11 @@
 //import Foundation
-//import Vapor
-//import Fluent
-//
-//// MARK: - Model
-//
-//public final class BlogTag: Model {
-//
+import Vapor
+import Fluent
+
+// MARK: - Model
+
+public final class BlogTag<DatabaseType>: Model where DatabaseType: QuerySupporting & SchemaSupporting & JoinSupporting {
+
 //    public struct Properties {
 //        public static let tagID = "id"
 //        public static let name = "name"
@@ -15,21 +15,23 @@
 //
 //    public let storage = Storage()
 //
-//    var name: String
-//
-//    public init(name: String) {
-//        self.name = name    }
-//
-//    required public init(row: Row) throws {
-//        name = try row.get(Properties.name)
-//    }
-//
-//    public func makeRow() throws -> Row {
-//        var row = Row()
-//        try row.set(Properties.name, name)
-//        return row
-//    }
-//}
+    // TODO change to UUID
+    public typealias ID = Int
+    public static var idKey: ReferenceWritableKeyPath<BlogTag<DatabaseType>, Int?> {
+        return \BlogTag.tagID
+    }
+    public typealias Database = DatabaseType
+
+    var tagID: Int?
+    var name: String
+
+    public init(name: String) {
+        self.name = name
+    }
+}
+
+extension BlogTag: Migration {}
+
 //
 //extension BlogTag: Parameterizable {}
 //
@@ -66,10 +68,10 @@
 //    }
 //}
 //
-//// MARK: - Relations
-//
-//public extension BlogTag {
-//
+// MARK: - Relations
+
+public extension BlogTag {
+
 //    public var posts: Siblings<BlogTag, BlogPost, Pivot<BlogTag, BlogPost>> {
 //        return siblings()
 //    }
@@ -81,8 +83,8 @@
 //    func deletePivot(for post: BlogPost) throws {
 //        try posts.remove(post)
 //    }
-//
-//    static func addTag(_ name: String, to post: BlogPost) throws {
+
+    static func addTag(_ name: String, to post: BlogPost<Database>) throws {
 //        var pivotTag: BlogTag
 //        let foundTag = try BlogTag.makeQuery().filter(Properties.name, name).first()
 //
@@ -93,6 +95,6 @@
 //            try pivotTag.save()
 //        }
 //        try pivotTag.posts.add(post)
-//    }
-//}
+    }
+}
 
