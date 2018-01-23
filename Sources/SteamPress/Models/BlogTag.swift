@@ -72,9 +72,9 @@ extension BlogTag: Migration {}
 
 public extension BlogTag {
 
-//    public var posts: Siblings<BlogTag, BlogPost, Pivot<BlogTag, BlogPost>> {
-//        return siblings()
-//    }
+    public var posts: Siblings<BlogTag, BlogPost<Database>, BlogPostTagPivot<DatabaseType>> {
+        return siblings()
+    }
 //
 //    public func sortedPosts() throws -> Query<BlogPost> {
 //        return try posts.filter(BlogPost.Properties.published, true).sort(BlogPost.Properties.created, .descending)
@@ -84,17 +84,18 @@ public extension BlogTag {
 //        try posts.remove(post)
 //    }
 
-    static func addTag(_ name: String, to post: BlogPost<Database>) throws {
-//        var pivotTag: BlogTag
-//        let foundTag = try BlogTag.makeQuery().filter(Properties.name, name).first()
-//
-//        if let existingTag = foundTag {
-//            pivotTag = existingTag
-//        } else {
-//            pivotTag = BlogTag(name: name)
-//            try pivotTag.save()
-//        }
-//        try pivotTag.posts.add(post)
+    static func addTag(_ name: String, to post: BlogPost<Database>, on conn: DatabaseConnectable) throws -> Future<Void> {
+        return BlogTag.query(on: conn).filter(\.name == name).first().flatMap(to: Void.self) { foundTag in
+            var pivotTag: BlogTag
+            if let exisitingTag = foundTag {
+                pivotTag = exisitingTag
+            } else {
+                pivotTag = BlogTag(name: name)
+            }
+            return pivotTag.posts.attach(post, on: conn).map(to: Void.self) { _ in
+
+            }
+        }
     }
 }
 

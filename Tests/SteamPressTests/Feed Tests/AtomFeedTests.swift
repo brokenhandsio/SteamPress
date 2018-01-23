@@ -298,11 +298,11 @@ class AtomFeedTests: XCTestCase {
         let post = try TestDataBuilder.anyPost(author: author, creationDate: createdDate ?? Date())
         _ = try post.save(on: db).blockingAwait()
 
-//        if let tags = tags {
-//            for tag in tags {
-//                try BlogTag.addTag(tag, to: post)
-//            }
-//        }
+        if let tags = tags {
+            for tag in tags {
+                try BlogTag.addTag(tag, to: post, on: db).blockingAwait()
+            }
+        }
 
         return TestData(post: post, author: author)
     }
