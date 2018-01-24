@@ -99,4 +99,19 @@ struct TestDataBuilder {
         let wrappedRequest = Request(http: request, using: app)
         return try responder.respond(to: wrappedRequest).blockingAwait()
     }
+
+    static func createPost(for db: DatabaseConnectable, tags: [String]? = nil, createdDate: Date? = nil) throws -> TestData {
+        let author = TestDataBuilder.anyUser()
+        _ = try author.save(on: db).blockingAwait()
+        let post = try TestDataBuilder.anyPost(author: author, creationDate: createdDate ?? Date())
+        _ = try post.save(on: db).blockingAwait()
+
+        if let tags = tags {
+            for tag in tags {
+                try BlogTag.addTag(tag, to: post, on: db).blockingAwait()
+            }
+        }
+
+        return TestData(post: post, author: author)
+    }
 }

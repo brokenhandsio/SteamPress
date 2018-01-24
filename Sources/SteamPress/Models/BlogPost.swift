@@ -1,6 +1,8 @@
 import Foundation
 import Vapor
 import Fluent
+import SwiftSoup
+import SwiftMarkdown
 
 // MARK: - Model
 
@@ -50,7 +52,7 @@ public final class BlogPost<DatabaseType>: Model where DatabaseType: QuerySuppor
         self.author = try author.requireID()
         self.created = creationDate
 //        self.slugUrl = BlogPost.generateUniqueSlugUrl(from: slugUrl, logger: logger)
-        self.slugUrl = title
+        self.slugUrl = slugUrl
         self.lastEdited = nil
         self.published = published
     }
@@ -144,31 +146,35 @@ extension BlogPost: Migration {}
 //    }
 //}
 //
-//// MARK: - BlogPost Utilities
-//
-//extension BlogPost {
-//
-//    public func shortSnippet() -> String {
-//        return getLines(characterLimit: 150)
-//    }
-//
-//    public func longSnippet() -> String {
-//        return getLines(characterLimit: 900)
-//    }
-//
-//    private func getLines(characterLimit: Int) -> String {
-//        contents = contents.replacingOccurrences(of: "\r\n", with: "\n", options: .regularExpression)
-//        let lines = contents.components(separatedBy: "\n")
-//        var snippet = ""
-//        for line in lines {
-//            snippet += "\(line)\n"
-//            if snippet.count > characterLimit {
-//                return snippet
-//            }
-//        }
-//        return snippet
-//    }
-//
+// MARK: - BlogPost Utilities
+
+extension BlogPost {
+
+    public func shortSnippet() -> String {
+        return getLines(characterLimit: 150)
+    }
+
+    public func longSnippet() -> String {
+        return getLines(characterLimit: 900)
+    }
+
+    func description() throws -> String {
+        return try SwiftSoup.parse(markdownToHTML(shortSnippet())).text()
+    }
+
+    private func getLines(characterLimit: Int) -> String {
+        contents = contents.replacingOccurrences(of: "\r\n", with: "\n", options: .regularExpression)
+        let lines = contents.components(separatedBy: "\n")
+        var snippet = ""
+        for line in lines {
+            snippet += "\(line)\n"
+            if snippet.count > characterLimit {
+                return snippet
+            }
+        }
+        return snippet
+    }
+
 //    static func generateUniqueSlugUrl(from title: String, logger: LogProtocol?) -> String {
 //        let alphanumericsWithHyphenAndSpace = CharacterSet(charactersIn: " -0123456789abcdefghijklmnopqrstuvwxyz")
 //
@@ -193,7 +199,7 @@ extension BlogPost: Migration {}
 //
 //        return newSlugUrl
 //    }
-//}
+}
 
 // MARK: - Relations
 

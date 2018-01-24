@@ -11,14 +11,14 @@ class RSSFeedTests: XCTestCase {
     static var allTests = [
         ("testLinuxTestSuiteIncludesAllTests", testLinuxTestSuiteIncludesAllTests),
         ("testNoPostsReturnsCorrectRSSFeed", testNoPostsReturnsCorrectRSSFeed),
-//        ("testOnePostReturnsCorrectRSSFeed", testOnePostReturnsCorrectRSSFeed),
-//        ("testMultiplePostsReturnsCorrectRSSFeed", testMultiplePostsReturnsCorrectRSSFeed),
-//        ("testDraftsAreNotIncludedInFeed", testDraftsAreNotIncludedInFeed),
-//        ("testBlogTitleCanBeConfigured", testBlogTitleCanBeConfigured),
-//        ("testBlogDescriptionCanBeConfigured", testBlogDescriptionCanBeConfigured),
-//        ("testRSSFeedEndpointAddedToCorrectEndpointWhenBlogInSubPath", testRSSFeedEndpointAddedToCorrectEndpointWhenBlogInSubPath),
-//        ("testPostLinkWhenBlogIsPlacedAtSubPath", testPostLinkWhenBlogIsPlacedAtSubPath),
-//        ("testCopyrightCanBeAddedToRSS", testCopyrightCanBeAddedToRSS),
+        ("testOnePostReturnsCorrectRSSFeed", testOnePostReturnsCorrectRSSFeed),
+        ("testMultiplePostsReturnsCorrectRSSFeed", testMultiplePostsReturnsCorrectRSSFeed),
+        ("testDraftsAreNotIncludedInFeed", testDraftsAreNotIncludedInFeed),
+        ("testBlogTitleCanBeConfigured", testBlogTitleCanBeConfigured),
+        ("testBlogDescriptionCanBeConfigured", testBlogDescriptionCanBeConfigured),
+        ("testRSSFeedEndpointAddedToCorrectEndpointWhenBlogInSubPath", testRSSFeedEndpointAddedToCorrectEndpointWhenBlogInSubPath),
+        ("testPostLinkWhenBlogIsPlacedAtSubPath", testPostLinkWhenBlogIsPlacedAtSubPath),
+        ("testCopyrightCanBeAddedToRSS", testCopyrightCanBeAddedToRSS),
 //        ("testThatTagsAreAddedToPostCorrectly", testThatTagsAreAddedToPostCorrectly),
 //        ("testThatLinksComesFromRequestCorrectly", testThatLinksComesFromRequestCorrectly),
 //        ("testThatLinksSpecifyHTTPSWhenComingFromReverseProxy", testThatLinksSpecifyHTTPSWhenComingFromReverseProxy),
@@ -63,29 +63,43 @@ class RSSFeedTests: XCTestCase {
         XCTAssertEqual(actualXmlResponse.body.string, expectedXML)
     }
 
-//    func testOnePostReturnsCorrectRSSFeed() throws {
-//        let (post, _) = try createPost()
-//        let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n<textinput>\n<description>Search SteamPress Blog</description>\n<title>Search</title>\n<link>/search?</link>\n<name>term</name>\n</textinput>\n<item>\n<title>\n\(post.title)\n</title>\n<description>\n\(try post.description())\n</description>\n<link>\n/posts/\(post.slugUrl)/\n</link>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n</item>\n</channel>\n\n</rss>"
-//
-//        let actualXmlResponse = try drop.respond(to: rssRequest)
-//
-//        XCTAssertEqual(actualXmlResponse.body.bytes?.makeString(), expectedXML)
-//    }
-//
-//    func testMultiplePostsReturnsCorrectRSSFeed() throws {
-//        let (post, author) = try createPost()
-//        let anotherTitle = "Another Title"
-//        let contents = "This is some short contents"
-//        let post2 = BlogPost(title: anotherTitle, contents: contents, author: author, creationDate: Date(), slugUrl: "another-title", published: true)
-//        try post2.save()
-//        let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<pubDate>\(dateFormatter.string(from: post2.created))</pubDate>\n<textinput>\n<description>Search SteamPress Blog</description>\n<title>Search</title>\n<link>/search?</link>\n<name>term</name>\n</textinput>\n<item>\n<title>\n\(anotherTitle)\n</title>\n<description>\n\(contents)\n</description>\n<link>\n/posts/another-title/\n</link>\n<pubDate>\(dateFormatter.string(from: post2.created))</pubDate>\n</item>\n<item>\n<title>\n\(post.title)\n</title>\n<description>\n\(try post.description())\n</description>\n<link>\n/posts/\(post.slugUrl)/\n</link>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n</item>\n</channel>\n\n</rss>"
-//
-//        let actualXmlResponse = try drop.respond(to: rssRequest)
-//
-//        XCTAssertEqual(actualXmlResponse.body.bytes?.makeString(), expectedXML)
-//    }
-//
-//    func testDraftsAreNotIncludedInFeed() throws {
+    func testOnePostReturnsCorrectRSSFeed() throws {
+        app = try TestDataBuilder.getSteamPressApp()
+        let post = try app.withConnection(to: .sqlite) { (conn) -> Future<TestData> in
+            return try Future(TestDataBuilder.createPost(for: conn))
+            }.blockingAwait().post
+
+        let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n<textinput>\n<description>Search SteamPress Blog</description>\n<title>Search</title>\n<link>/search?</link>\n<name>term</name>\n</textinput>\n<item>\n<title>\n\(post.title)\n</title>\n<description>\n\(try post.description())\n</description>\n<link>\n/posts/\(post.slugUrl)/\n</link>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n</item>\n</channel>\n\n</rss>"
+
+        let actualXmlResponse = try TestDataBuilder.getResponse(to: rssRequest, using: app)
+
+        XCTAssertEqual(actualXmlResponse.body.string, expectedXML)
+    }
+
+    func testMultiplePostsReturnsCorrectRSSFeed() throws {
+        app = try TestDataBuilder.getSteamPressApp()
+        let testData = try app.withConnection(to: .sqlite) { (conn) -> Future<TestData> in
+            return try Future(TestDataBuilder.createPost(for: conn))
+            }.blockingAwait()
+        let post = testData.post
+        let author = testData.author
+
+        let anotherTitle = "Another Title"
+        let contents = "This is some short contents"
+        let post2 = try BlogPost(title: anotherTitle, contents: contents, author: author, creationDate: Date(), slugUrl: "another-title", published: true)
+
+        _ = try app.withConnection(to: .sqlite) { conn throws -> Future<BlogPost<SQLiteDatabase>> in
+            return post2.save(on: conn)
+            }.blockingAwait()
+
+        let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<pubDate>\(dateFormatter.string(from: post2.created))</pubDate>\n<textinput>\n<description>Search SteamPress Blog</description>\n<title>Search</title>\n<link>/search?</link>\n<name>term</name>\n</textinput>\n<item>\n<title>\n\(anotherTitle)\n</title>\n<description>\n\(contents)\n</description>\n<link>\n/posts/another-title/\n</link>\n<pubDate>\(dateFormatter.string(from: post2.created))</pubDate>\n</item>\n<item>\n<title>\n\(post.title)\n</title>\n<description>\n\(try post.description())\n</description>\n<link>\n/posts/\(post.slugUrl)/\n</link>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n</item>\n</channel>\n\n</rss>"
+
+        let actualXmlResponse = try TestDataBuilder.getResponse(to: rssRequest, using: app)
+
+        XCTAssertEqual(actualXmlResponse.body.string, expectedXML)
+    }
+
+    func testDraftsAreNotIncludedInFeed() throws {
 //        let (post, author) = try createPost()
 //        let anotherTitle = "Another Title"
 //        let contents = "This is some short contents"
@@ -96,33 +110,39 @@ class RSSFeedTests: XCTestCase {
 //        let actualXmlResponse = try drop.respond(to: rssRequest)
 //
 //        XCTAssertEqual(actualXmlResponse.body.bytes?.makeString(), expectedXML)
-//    }
-//
-//    func testBlogTitleCanBeConfigured() throws {
-//        let title = "SteamPress - The Open Source Blog"
-//        drop = try TestDataBuilder.setupSteamPressDrop(title: title)
-//
-//        let (post, _) = try createPost()
-//        let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>\(title)</title>\n<link>/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n<textinput>\n<description>Search \(title)</description>\n<title>Search</title>\n<link>/search?</link>\n<name>term</name>\n</textinput>\n<item>\n<title>\n\(post.title)\n</title>\n<description>\n\(try post.description())\n</description>\n<link>\n/posts/\(post.slugUrl)/\n</link>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n</item>\n</channel>\n\n</rss>"
-//
-//        let actualXmlResponse = try drop.respond(to: rssRequest)
-//
-//        XCTAssertEqual(actualXmlResponse.body.bytes?.makeString(), expectedXML)
-//    }
-//
-//    func testBlogDescriptionCanBeConfigured() throws {
-//        let description = "Our fancy new RSS-feed blog"
-//        drop = try TestDataBuilder.setupSteamPressDrop(description: description)
-//
-//        let (post, _) = try createPost()
-//        let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/</link>\n<description>\(description)</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n<textinput>\n<description>Search SteamPress Blog</description>\n<title>Search</title>\n<link>/search?</link>\n<name>term</name>\n</textinput>\n<item>\n<title>\n\(post.title)\n</title>\n<description>\n\(try post.description())\n</description>\n<link>\n/posts/\(post.slugUrl)/\n</link>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n</item>\n</channel>\n\n</rss>"
-//
-//        let actualXmlResponse = try drop.respond(to: rssRequest)
-//
-//        XCTAssertEqual(actualXmlResponse.body.bytes?.makeString(), expectedXML)
-//    }
-//
-//    func testRSSFeedEndpointAddedToCorrectEndpointWhenBlogInSubPath() throws {
+    }
+
+    func testBlogTitleCanBeConfigured() throws {
+        let title = "SteamPress - The Open Source Blog"
+        app = try TestDataBuilder.getSteamPressApp(title: title)
+
+        let post = try app.withConnection(to: .sqlite) { (conn) -> Future<TestData> in
+            return try Future(TestDataBuilder.createPost(for: conn))
+            }.blockingAwait().post
+
+        let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>\(title)</title>\n<link>/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n<textinput>\n<description>Search \(title)</description>\n<title>Search</title>\n<link>/search?</link>\n<name>term</name>\n</textinput>\n<item>\n<title>\n\(post.title)\n</title>\n<description>\n\(try post.description())\n</description>\n<link>\n/posts/\(post.slugUrl)/\n</link>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n</item>\n</channel>\n\n</rss>"
+
+        let actualXmlResponse = try TestDataBuilder.getResponse(to: rssRequest, using: app)
+
+        XCTAssertEqual(actualXmlResponse.body.string, expectedXML)
+    }
+
+    func testBlogDescriptionCanBeConfigured() throws {
+        let description = "Our fancy new RSS-feed blog"
+        app = try TestDataBuilder.getSteamPressApp(description: description)
+
+        let post = try app.withConnection(to: .sqlite) { (conn) -> Future<TestData> in
+            return try Future(TestDataBuilder.createPost(for: conn))
+            }.blockingAwait().post
+
+        let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/</link>\n<description>\(description)</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n<textinput>\n<description>Search SteamPress Blog</description>\n<title>Search</title>\n<link>/search?</link>\n<name>term</name>\n</textinput>\n<item>\n<title>\n\(post.title)\n</title>\n<description>\n\(try post.description())\n</description>\n<link>\n/posts/\(post.slugUrl)/\n</link>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n</item>\n</channel>\n\n</rss>"
+
+        let actualXmlResponse = try TestDataBuilder.getResponse(to: rssRequest, using: app)
+
+        XCTAssertEqual(actualXmlResponse.body.string, expectedXML)
+    }
+
+    func testRSSFeedEndpointAddedToCorrectEndpointWhenBlogInSubPath() throws {
 //        drop = try TestDataBuilder.setupSteamPressDrop(path: "blog-path")
 //
 //        let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/blog-path/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<textinput>\n<description>Search SteamPress Blog</description>\n<title>Search</title>\n<link>/blog-path/search?</link>\n<name>term</name>\n</textinput>\n</channel>\n\n</rss>"
@@ -131,9 +151,9 @@ class RSSFeedTests: XCTestCase {
 //        let actualXmlResponse = try drop.respond(to: request)
 //
 //        XCTAssertEqual(actualXmlResponse.body.bytes?.makeString(), expectedXML)
-//    }
-//
-//    func testPostLinkWhenBlogIsPlacedAtSubPath() throws {
+    }
+
+    func testPostLinkWhenBlogIsPlacedAtSubPath() throws {
 //        drop = try TestDataBuilder.setupSteamPressDrop(path: "blog-path")
 //        let (post, _) = try createPost()
 //        let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/blog-path/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n<textinput>\n<description>Search SteamPress Blog</description>\n<title>Search</title>\n<link>/blog-path/search?</link>\n<name>term</name>\n</textinput>\n<item>\n<title>\n\(post.title)\n</title>\n<description>\n\(try post.description())\n</description>\n<link>\n/blog-path/posts/\(post.slugUrl)/\n</link>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n</item>\n</channel>\n\n</rss>"
@@ -142,19 +162,19 @@ class RSSFeedTests: XCTestCase {
 //        let actualXmlResponse = try drop.respond(to: request)
 //
 //        XCTAssertEqual(actualXmlResponse.body.bytes?.makeString(), expectedXML)
-//    }
-//
-//    func testCopyrightCanBeAddedToRSS() throws {
-//        let copyright = "Copyright ©️ 2017 SteamPress"
-//        drop = try TestDataBuilder.setupSteamPressDrop(copyright: copyright)
-//
-//        let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<copyright>\(copyright)</copyright>\n<textinput>\n<description>Search SteamPress Blog</description>\n<title>Search</title>\n<link>/search?</link>\n<name>term</name>\n</textinput>\n</channel>\n\n</rss>"
-//
-//        let actualXmlResponse = try drop.respond(to: rssRequest)
-//
-//        XCTAssertEqual(actualXmlResponse.body.bytes?.makeString(), expectedXML)
-//    }
-//
+    }
+
+    func testCopyrightCanBeAddedToRSS() throws {
+        let copyright = "Copyright ©️ 2017 SteamPress"
+        app = try TestDataBuilder.getSteamPressApp(copyright: copyright)
+
+        let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<copyright>\(copyright)</copyright>\n<textinput>\n<description>Search SteamPress Blog</description>\n<title>Search</title>\n<link>/search?</link>\n<name>term</name>\n</textinput>\n</channel>\n\n</rss>"
+
+        let actualXmlResponse = try TestDataBuilder.getResponse(to: rssRequest, using: app)
+
+        XCTAssertEqual(actualXmlResponse.body.string, expectedXML)
+    }
+
 //    func testThatTagsAreAddedToPostCorrectly() throws {
 //        let (post, _) = try createPost(tags: ["Vapor 2", "Engineering"])
 //        let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n<textinput>\n<description>Search SteamPress Blog</description>\n<title>Search</title>\n<link>/search?</link>\n<name>term</name>\n</textinput>\n<item>\n<title>\n\(post.title)\n</title>\n<description>\n\(try post.description())\n</description>\n<link>\n/posts/\(post.slugUrl)/\n</link>\n<category>Vapor 2</category>\n<category>Engineering</category>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n</item>\n</channel>\n\n</rss>"

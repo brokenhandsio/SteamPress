@@ -127,7 +127,7 @@ class AtomFeedTests: XCTestCase {
         app = try TestDataBuilder.getSteamPressApp()
 
         let testData = try app.withConnection(to: .sqlite) { (conn) -> Future<TestData> in
-            return try Future(self.createPost(for: conn))
+            return try Future(TestDataBuilder.createPost(for: conn))
         }.blockingAwait()
 
         let post = testData.post
@@ -143,7 +143,7 @@ class AtomFeedTests: XCTestCase {
         app = try TestDataBuilder.getSteamPressApp()
 
         let testData = try app.withConnection(to: .sqlite) { (conn) -> Future<TestData> in
-            return try Future(self.createPost(for: conn))
+            return try Future(TestDataBuilder.createPost(for: conn))
         }.blockingAwait()
 
         let post = testData.post
@@ -167,7 +167,7 @@ class AtomFeedTests: XCTestCase {
         app = try TestDataBuilder.getSteamPressApp()
 
         let testData = try app.withConnection(to: .sqlite) { (conn) -> Future<TestData> in
-            return try Future(self.createPost(for: conn))
+            return try Future(TestDataBuilder.createPost(for: conn))
             }.blockingAwait()
 
         let post = testData.post
@@ -190,7 +190,7 @@ class AtomFeedTests: XCTestCase {
 
         let firstPostDate = Date().addingTimeInterval(-3600)
         let testData = try app.withConnection(to: .sqlite) { (conn) -> Future<TestData> in
-            return try Future(self.createPost(for: conn, createdDate: firstPostDate))
+            return try Future(TestDataBuilder.createPost(for: conn, createdDate: firstPostDate))
             }.blockingAwait()
 
         let post = testData.post
@@ -218,7 +218,7 @@ class AtomFeedTests: XCTestCase {
         let tag2 = "Engineering"
 
         let testData = try app.withConnection(to: .sqlite) { (conn) -> Future<TestData> in
-            return try Future(self.createPost(for: conn, tags: [tag1, tag2]))
+            return try Future(TestDataBuilder.createPost(for: conn, tags: [tag1, tag2]))
             }.blockingAwait()
 
         let post = testData.post
@@ -234,7 +234,7 @@ class AtomFeedTests: XCTestCase {
         app = try TestDataBuilder.getSteamPressApp(path: "blog")
 
         let testData = try app.withConnection(to: .sqlite) { (conn) -> Future<TestData> in
-            return try Future(self.createPost(for: conn))
+            return try Future(TestDataBuilder.createPost(for: conn))
             }.blockingAwait()
 
         let post = testData.post
@@ -252,7 +252,7 @@ class AtomFeedTests: XCTestCase {
         app = try TestDataBuilder.getSteamPressApp(path: "blog")
 
         let testData = try app.withConnection(to: .sqlite) { (conn) -> Future<TestData> in
-            return try Future(self.createPost(for: conn))
+            return try Future(TestDataBuilder.createPost(for: conn))
             }.blockingAwait()
 
         let post = testData.post
@@ -278,7 +278,7 @@ class AtomFeedTests: XCTestCase {
         let createDate = Date(timeIntervalSince1970: 1505867108)
 
         let testData = try app.withConnection(to: .sqlite) { (conn) -> Future<TestData> in
-            return try Future(self.createPost(for: conn, createdDate: createDate))
+            return try Future(TestDataBuilder.createPost(for: conn, createdDate: createDate))
         }.blockingAwait()
 
         let post = testData.post
@@ -288,23 +288,6 @@ class AtomFeedTests: XCTestCase {
 
         let actualXmlResponse = try TestDataBuilder.getResponse(to: atomRequest, using: app)
         XCTAssertEqual(actualXmlResponse.body.string, expectedXML)
-    }
-
-    // MARK: - Private functions
-
-    private func createPost(for db: DatabaseConnectable, tags: [String]? = nil, createdDate: Date? = nil) throws -> TestData {
-        let author = TestDataBuilder.anyUser()
-        _ = try author.save(on: db).blockingAwait()
-        let post = try TestDataBuilder.anyPost(author: author, creationDate: createdDate ?? Date())
-        _ = try post.save(on: db).blockingAwait()
-
-        if let tags = tags {
-            for tag in tags {
-                try BlogTag.addTag(tag, to: post, on: db).blockingAwait()
-            }
-        }
-
-        return TestData(post: post, author: author)
     }
 }
 

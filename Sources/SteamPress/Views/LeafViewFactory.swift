@@ -1,8 +1,6 @@
 import Vapor
 ////import URI
 //import HTTP
-import SwiftMarkdown
-import SwiftSoup
 //import Foundation
 //import Fluent
 //
@@ -365,13 +363,6 @@ extension URI {
                 return self.description.replacingFirstOccurrence(of: ":80", with: "")
             }
         }
-    }
-}
-
-public extension BlogPost {
-    func description() throws -> String {
-//        return try SwiftSoup.parse(markdownToHTML(shortSnippet())).text()
-        return ""
     }
 }
 
