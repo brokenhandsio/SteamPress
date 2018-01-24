@@ -43,17 +43,13 @@ struct RSSFeedGenerator<DatabaseType> where DatabaseType: QuerySupporting, Datab
             xmlFeed += "<textinput>\n<description>Search \(self.title)</description>\n<title>Search</title>\n<link>\(self.getRootPath(for: request))/search?</link>\n<name>term</name>\n</textinput>\n"
 
             for post in posts {
-                xmlFeed += try post.getPostRSSFeed(rootPath: self.getRootPath(for: request), dateFormatter: self.rfc822DateFormatter)
+                xmlFeed += try post.getPostRSSFeed(rootPath: self.getRootPath(for: request), dateFormatter: self.rfc822DateFormatter, for: request)
             }
 
             xmlFeed += self.xmlEnd
 
-            return try Future(HTTPResponse(status: .ok, body: xmlFeed.makeBody()))
+            return try Future(HTTPResponse(status: .ok, headers: [.contentType: "application/rss+xml"], body: xmlFeed.makeBody()))
         }
-
-//
-//
-//        return Response(status: .ok, headers: [.contentType: "application/rss+xml"], body: xmlFeed.makeBytes())
     }
 
     // MARK: - Private functions
@@ -81,13 +77,14 @@ struct RSSFeedGenerator<DatabaseType> where DatabaseType: QuerySupporting, Datab
 }
 
 extension BlogPost {
-    func getPostRSSFeed(rootPath: String, dateFormatter: DateFormatter) throws -> String {
+    func getPostRSSFeed(rootPath: String, dateFormatter: DateFormatter, for request: Request) throws -> String {
         let link = rootPath + "/posts/\(slugUrl)/"
         var postEntry = "<item>\n<title>\n\(title)\n</title>\n<description>\n\(try description())\n</description>\n<link>\n\(link)\n</link>\n"
 
-//        for tag in try tags.all() {
-//            postEntry += "<category>\(tag.name)</category>\n"
-//        }
+        // TODO remove await
+        for tag in try tags.query(on: request).all().await(on: request) {
+            postEntry += "<category>\(tag.name)</category>\n"
+        }
 
         postEntry += "<pubDate>\(dateFormatter.string(from: lastEdited ?? created))</pubDate>\n</item>\n"
 

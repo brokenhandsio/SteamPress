@@ -57,6 +57,7 @@ struct AtomFeedGenerator<DatabaseType> where DatabaseType: QuerySupporting, Data
                 let author = try post.postAuthor.get(on: request).await(on: request)
                 feed += try "<entry>\n<id>\(blogPath)posts-id/\(post.requireID())/</id>\n<title>\(post.title)</title>\n<updated>\(self.iso8601Formatter.string(from: updatedTime))</updated>\n<published>\(self.iso8601Formatter.string(from: post.created))</published>\n<author>\n<name>\(author.name)</name>\n<uri>\(blogPath)authors/\(author.username)/</uri>\n</author>\n<summary>\(try post.description())</summary>\n<link rel=\"alternate\" href=\"\(blogPath)posts/\(post.slugUrl)/\" />\n"
 
+                // TODO remove await
                 for tag in try post.tags.query(on: request).all().await(on: request) {
                     feed += "<category term=\"\(tag.name)\"/>\n"
                 }
