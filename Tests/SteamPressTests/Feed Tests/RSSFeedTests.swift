@@ -1,15 +1,16 @@
-//@testable import SteamPress
-//import XCTest
-//import Vapor
-//import Fluent
-//
-//class RSSFeedTests: XCTestCase {
-//
-//    // MARK: - allTests
-//
-//    static var allTests = [
-//        ("testLinuxTestSuiteIncludesAllTests", testLinuxTestSuiteIncludesAllTests),
-//        ("testNoPostsReturnsCorrectRSSFeed", testNoPostsReturnsCorrectRSSFeed),
+@testable import SteamPress
+import XCTest
+import Vapor
+import Fluent
+import FluentSQLite
+
+class RSSFeedTests: XCTestCase {
+
+    // MARK: - allTests
+
+    static var allTests = [
+        ("testLinuxTestSuiteIncludesAllTests", testLinuxTestSuiteIncludesAllTests),
+        ("testNoPostsReturnsCorrectRSSFeed", testNoPostsReturnsCorrectRSSFeed),
 //        ("testOnePostReturnsCorrectRSSFeed", testOnePostReturnsCorrectRSSFeed),
 //        ("testMultiplePostsReturnsCorrectRSSFeed", testMultiplePostsReturnsCorrectRSSFeed),
 //        ("testDraftsAreNotIncludedInFeed", testDraftsAreNotIncludedInFeed),
@@ -25,44 +26,43 @@
 //        ("testCorrectHeaderSetForRSSFeed", testCorrectHeaderSetForRSSFeed),
 //        ("testThatDateFormatterIsCorrect", testThatDateFormatterIsCorrect),
 //        ("testThatDescriptionContainsOnlyText", testThatDescriptionContainsOnlyText),
-//        ]
-//
-//    // MARK: - Properties
-//    private var database: Database!
-//    private var drop: Droplet!
-//    private let rssRequest = Request(method: .get, uri: "/rss.xml")
-//    private let dateFormatter = DateFormatter()
-//
-//    // MARK: - Overrides
-//
-//    override func setUp() {
-//        drop = try! TestDataBuilder.setupSteamPressDrop()
-//        dateFormatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ss z"
-//        dateFormatter.locale = Locale(identifier: "en_US_POSIX")
-//        dateFormatter.timeZone = TimeZone(secondsFromGMT: 0)
-//    }
-//
-//    // MARK: - Tests
-//
-//    func testLinuxTestSuiteIncludesAllTests() {
-//        #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
-//            let thisClass = type(of: self)
-//            let linuxCount = thisClass.allTests.count
-//            let darwinCount = Int(thisClass
-//                .defaultTestSuite.testCaseCount)
-//            XCTAssertEqual(linuxCount, darwinCount,
-//                           "\(darwinCount - linuxCount) tests are missing from allTests")
-//        #endif
-//    }
-//
-//    func testNoPostsReturnsCorrectRSSFeed() throws {
-//        let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<textinput>\n<description>Search SteamPress Blog</description>\n<title>Search</title>\n<link>/search?</link>\n<name>term</name>\n</textinput>\n</channel>\n\n</rss>"
-//
-//        let actualXmlResponse = try drop.respond(to: rssRequest)
-//
-//        XCTAssertEqual(actualXmlResponse.body.bytes?.makeString(), expectedXML)
-//    }
-//
+        ]
+
+    // MARK: - Properties
+    private var app: Application!
+    private let rssRequest = HTTPRequest(method: .get, uri: "/rss.xml")
+    private let dateFormatter = DateFormatter()
+
+    // MARK: - Overrides
+
+    override func setUp() {
+        dateFormatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ss z"
+        dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+        dateFormatter.timeZone = TimeZone(secondsFromGMT: 0)
+    }
+
+    // MARK: - Tests
+
+    func testLinuxTestSuiteIncludesAllTests() {
+        #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
+            let thisClass = type(of: self)
+            let linuxCount = thisClass.allTests.count
+            let darwinCount = Int(thisClass
+                .defaultTestSuite.testCaseCount)
+            XCTAssertEqual(linuxCount, darwinCount,
+                           "\(darwinCount - linuxCount) tests are missing from allTests")
+        #endif
+    }
+
+    func testNoPostsReturnsCorrectRSSFeed() throws {
+        app = try TestDataBuilder.getSteamPressApp()
+        let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<textinput>\n<description>Search SteamPress Blog</description>\n<title>Search</title>\n<link>/search?</link>\n<name>term</name>\n</textinput>\n</channel>\n\n</rss>"
+
+        let actualXmlResponse = try TestDataBuilder.getResponse(to: rssRequest, using: app)
+
+        XCTAssertEqual(actualXmlResponse.body.string, expectedXML)
+    }
+
 //    func testOnePostReturnsCorrectRSSFeed() throws {
 //        let (post, _) = try createPost()
 //        let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n<textinput>\n<description>Search SteamPress Blog</description>\n<title>Search</title>\n<link>/search?</link>\n<name>term</name>\n</textinput>\n<item>\n<title>\n\(post.title)\n</title>\n<description>\n\(try post.description())\n</description>\n<link>\n/posts/\(post.slugUrl)/\n</link>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n</item>\n</channel>\n\n</rss>"
@@ -226,9 +226,9 @@
 //
 //        XCTAssertEqual(actualXmlResponse.body.bytes?.makeString(), expectedXML)
 //    }
-//
-//    // MARK: - Private functions
-//
+
+    // MARK: - Private functions
+
 //    private func createPost(tags: [String]? = nil, createDate: Date? = nil, contents: String? = nil) throws -> (BlogPost, BlogUser) {
 //        let author = TestDataBuilder.anyUser()
 //        try author.save()
@@ -248,5 +248,5 @@
 //
 //        return (post, author)
 //    }
-//}
+}
 
