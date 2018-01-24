@@ -82,8 +82,8 @@ struct RSSFeedGenerator<DatabaseType> where DatabaseType: QuerySupporting, Datab
     }
 }
 
-extension BlogPost {
-    func getPostRSSFeed(rootPath: String, dateFormatter: DateFormatter, for request: Request) throws -> Future<String> {
+fileprivate extension BlogPost {
+    fileprivate func getPostRSSFeed(rootPath: String, dateFormatter: DateFormatter, for request: Request) throws -> Future<String> {
         let link = rootPath + "/posts/\(slugUrl)/"
         var postEntry = "<item>\n<title>\n\(title)\n</title>\n<description>\n\(try description())\n</description>\n<link>\n\(link)\n</link>\n"
 
