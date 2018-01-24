@@ -86,16 +86,21 @@ public extension BlogTag {
 
     static func addTag(_ name: String, to post: BlogPost<Database>, on conn: DatabaseConnectable) throws -> Future<Void> {
         return BlogTag.query(on: conn).filter(\.name == name).first().flatMap(to: Void.self) { foundTag in
-            var pivotTag: BlogTag
             if let exisitingTag = foundTag {
-                pivotTag = exisitingTag
+                return exisitingTag.posts.attach(post, on: conn).transform(to: Future.void)
             } else {
-                pivotTag = BlogTag(name: name)
-            }
-            return pivotTag.posts.attach(post, on: conn).map(to: Void.self) { _ in
-
+                return BlogTag(name: name).save(on: conn).flatMap(to: Void.self) { tag in
+                    return tag.posts.attach(post, on: conn).transform(to: Future.void)
+                }
             }
         }
+    }
+}
+
+extension Future where T == Void {
+    /// Pre-completed void future.
+    public static var void: Void {
+        return {}()
     }
 }
 
