@@ -42,13 +42,19 @@ struct RSSFeedGenerator<DatabaseType> where DatabaseType: QuerySupporting, Datab
 
             xmlFeed += "<textinput>\n<description>Search \(self.title)</description>\n<title>Search</title>\n<link>\(self.getRootPath(for: request))/search?</link>\n<name>term</name>\n</textinput>\n"
 
+            var postData: [Future<String>] = []
+
             for post in posts {
-                xmlFeed += try post.getPostRSSFeed(rootPath: self.getRootPath(for: request), dateFormatter: self.rfc822DateFormatter, for: request)
+                postData.append(try post.getPostRSSFeed(rootPath: self.getRootPath(for: request), dateFormatter: self.rfc822DateFormatter, for: request))
             }
 
-            xmlFeed += self.xmlEnd
-
-            return try Future(HTTPResponse(status: .ok, headers: [.contentType: "application/rss+xml"], body: xmlFeed.makeBody()))
+            return postData.map(to: HTTPResponse.self) { postInformation in
+                for post in postInformation {
+                    xmlFeed += post
+                }
+                xmlFeed += self.xmlEnd
+                return try HTTPResponse(status: .ok, headers: [.contentType: "application/rss+xml"], body: xmlFeed.makeBody())
+            }
         }
     }
 
@@ -77,18 +83,19 @@ struct RSSFeedGenerator<DatabaseType> where DatabaseType: QuerySupporting, Datab
 }
 
 extension BlogPost {
-    func getPostRSSFeed(rootPath: String, dateFormatter: DateFormatter, for request: Request) throws -> String {
+    func getPostRSSFeed(rootPath: String, dateFormatter: DateFormatter, for request: Request) throws -> Future<String> {
         let link = rootPath + "/posts/\(slugUrl)/"
         var postEntry = "<item>\n<title>\n\(title)\n</title>\n<description>\n\(try description())\n</description>\n<link>\n\(link)\n</link>\n"
 
-        // TODO remove await
-        for tag in try tags.query(on: request).all().await(on: request) {
-            postEntry += "<category>\(tag.name)</category>\n"
+        return try tags.query(on: request).all().map(to: String.self) { tags in
+            for tag in tags {
+                postEntry += "<category>\(tag.name)</category>\n"
+            }
+
+            postEntry += "<pubDate>\(dateFormatter.string(from: self.lastEdited ?? self.created))</pubDate>\n</item>\n"
+
+            return postEntry
         }
-
-        postEntry += "<pubDate>\(dateFormatter.string(from: lastEdited ?? created))</pubDate>\n</item>\n"
-
-        return postEntry
     }
 }
 
