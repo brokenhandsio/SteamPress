@@ -35,7 +35,6 @@
 //        ("testAuthorPageGetsOnlyPublishedPostsInDescendingOrder", testAuthorPageGetsOnlyPublishedPostsInDescendingOrder),
 //        ("testDisabledBlogAuthorsPath", testDisabledBlogAuthorsPath),
 //        ("testDisabledBlogTagsPath", testDisabledBlogTagsPath),
-//        ("testTagAPIEndpointReportsArrayOfTagsAsJson", testTagAPIEndpointReportsArrayOfTagsAsJson),
 //        ("testBlogPassedToSearchPageCorrectly", testBlogPassedToSearchPageCorrectly),
 //        ("testThatFlagSetIfEmptySearch", testThatFlagSetIfEmptySearch),
 //        ("testThatFlagSetIfNoSearchTerm", testThatFlagSetIfNoSearchTerm),
@@ -380,38 +379,6 @@
 //
 //        XCTAssertEqual(404, tagResponse.status.statusCode)
 //        XCTAssertEqual(404, allTagsResponse.status.statusCode)
-//    }
-//
-//    func testTagAPIEndpointReportsArrayOfTagsAsJson() throws {
-//        let tag1 = BlogTag(name: "The first tag")
-//        let tag2 = BlogTag(name: "The second tag")
-//
-//        let pathCreator = BlogPathCreator(blogPath: nil)
-//        // TODO change to Stub
-//        let viewFactory = CapturingViewFactory()
-//
-//        try setupDrop(setupData: false)
-//        let blogController = BlogController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, enableAuthorsPages: true, enableTagsPages: true)
-//        blogController.addRoutes()
-//
-//        try tag1.save()
-//        try tag2.save()
-//
-//        let tagApiRequest = Request(method: .get, uri: "/api/tags/")
-//        let response = try drop.respond(to: tagApiRequest)
-//
-//        let tagsJson = try JSON(bytes: response.body.bytes!)
-//
-//        XCTAssertNotNil(tagsJson.array)
-//        XCTAssertEqual(tagsJson.array?.count, 2)
-//
-//        guard let nodeArray = tagsJson.array else {
-//            XCTFail()
-//            return
-//        }
-//
-//        XCTAssertEqual(nodeArray[0]["name"]?.string, "The first tag")
-//        XCTAssertEqual(nodeArray[1]["name"]?.string, "The second tag")
 //    }
 //
 //    func testBlogPassedToSearchPageCorrectly() throws {

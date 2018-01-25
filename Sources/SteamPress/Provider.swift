@@ -76,9 +76,11 @@ public struct Provider<DatabaseType>: Vapor.Provider where DatabaseType: QuerySu
         let router = try worker.make(Router.self, for: Container.self)
 
 
-        let feedController = BlogFeedController<DatabaseType>(pathCreator: pathCreator, title: title, description: description, copyright: copyright, imageURL: imageURL)
-        try router.register(collection: feedController)
+        let feedController = FeedController<DatabaseType>(pathCreator: pathCreator, title: title, description: description, copyright: copyright, imageURL: imageURL)
+        let apiController = APIController<DatabaseType>()
 
+        try router.register(collection: feedController)
+        try router.register(collection: apiController)
     }
 
 

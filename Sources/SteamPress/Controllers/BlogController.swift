@@ -139,6 +139,8 @@ import Vapor
 //    }
 //}
 
+// TOOD move
+
 extension Request {
     func getURIWithHTTPSIfReverseProxy() -> URI {
         if self.headers["X-Forwarded-Proto"] == "https" {

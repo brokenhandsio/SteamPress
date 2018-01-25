@@ -2,7 +2,7 @@ import Vapor
 import Foundation
 import Fluent
 
-struct BlogFeedController<DatabaseType>: RouteCollection where DatabaseType: QuerySupporting & SchemaSupporting & JoinSupporting {
+struct FeedController<DatabaseType>: RouteCollection where DatabaseType: QuerySupporting & SchemaSupporting & JoinSupporting {
 
     // MARK: - Properties
     fileprivate let pathCreator: BlogPathCreator
@@ -20,8 +20,8 @@ struct BlogFeedController<DatabaseType>: RouteCollection where DatabaseType: Que
          imageURL: String?) {
         self.pathCreator = pathCreator
 
-        let feedTitle = title ?? BlogFeedController.defaultTitle
-        let feedDescription = description ?? BlogFeedController.defaultDescription
+        let feedTitle = title ?? FeedController.defaultTitle
+        let feedDescription = description ?? FeedController.defaultDescription
 
         atomGenerator = AtomFeedGenerator(title: feedTitle, description: feedDescription,
                                           copyright: copyright, imageURL: imageURL)
