@@ -60,7 +60,7 @@ class RSSFeedTests: XCTestCase {
 
         let actualXmlResponse = try TestDataBuilder.getResponse(to: rssRequest, using: app)
 
-        XCTAssertEqual(actualXmlResponse.body.string, expectedXML)
+        XCTAssertEqual(actualXmlResponse.string, expectedXML)
     }
 
     func testOnePostReturnsCorrectRSSFeed() throws {
@@ -73,7 +73,7 @@ class RSSFeedTests: XCTestCase {
 
         let actualXmlResponse = try TestDataBuilder.getResponse(to: rssRequest, using: app)
 
-        XCTAssertEqual(actualXmlResponse.body.string, expectedXML)
+        XCTAssertEqual(actualXmlResponse.string, expectedXML)
     }
 
     func testMultiplePostsReturnsCorrectRSSFeed() throws {
@@ -96,7 +96,7 @@ class RSSFeedTests: XCTestCase {
 
         let actualXmlResponse = try TestDataBuilder.getResponse(to: rssRequest, using: app)
 
-        XCTAssertEqual(actualXmlResponse.body.string, expectedXML)
+        XCTAssertEqual(actualXmlResponse.string, expectedXML)
     }
 
     func testDraftsAreNotIncludedInFeed() throws {
@@ -119,7 +119,7 @@ class RSSFeedTests: XCTestCase {
 
         let actualXmlResponse = try TestDataBuilder.getResponse(to: rssRequest, using: app)
 
-        XCTAssertEqual(actualXmlResponse.body.string, expectedXML)
+        XCTAssertEqual(actualXmlResponse.string, expectedXML)
     }
 
     func testBlogTitleCanBeConfigured() throws {
@@ -134,7 +134,7 @@ class RSSFeedTests: XCTestCase {
 
         let actualXmlResponse = try TestDataBuilder.getResponse(to: rssRequest, using: app)
 
-        XCTAssertEqual(actualXmlResponse.body.string, expectedXML)
+        XCTAssertEqual(actualXmlResponse.string, expectedXML)
     }
 
     func testBlogDescriptionCanBeConfigured() throws {
@@ -149,7 +149,7 @@ class RSSFeedTests: XCTestCase {
 
         let actualXmlResponse = try TestDataBuilder.getResponse(to: rssRequest, using: app)
 
-        XCTAssertEqual(actualXmlResponse.body.string, expectedXML)
+        XCTAssertEqual(actualXmlResponse.string, expectedXML)
     }
 
     func testRSSFeedEndpointAddedToCorrectEndpointWhenBlogInSubPath() throws {
@@ -159,7 +159,7 @@ class RSSFeedTests: XCTestCase {
 
         let request = HTTPRequest(method: .get, uri: "/blog-path/rss.xml")
         let actualXmlResponse = try TestDataBuilder.getResponse(to: request, using: app)
-        XCTAssertEqual(actualXmlResponse.body.string, expectedXML)
+        XCTAssertEqual(actualXmlResponse.string, expectedXML)
     }
 
     func testPostLinkWhenBlogIsPlacedAtSubPath() throws {
@@ -173,7 +173,7 @@ class RSSFeedTests: XCTestCase {
 
         let request = HTTPRequest(method: .get, uri: "/blog-path/rss.xml")
         let actualXmlResponse = try TestDataBuilder.getResponse(to: request, using: app)
-        XCTAssertEqual(actualXmlResponse.body.string, expectedXML)
+        XCTAssertEqual(actualXmlResponse.string, expectedXML)
     }
 
     func testCopyrightCanBeAddedToRSS() throws {
@@ -184,7 +184,7 @@ class RSSFeedTests: XCTestCase {
 
         let actualXmlResponse = try TestDataBuilder.getResponse(to: rssRequest, using: app)
 
-        XCTAssertEqual(actualXmlResponse.body.string, expectedXML)
+        XCTAssertEqual(actualXmlResponse.string, expectedXML)
     }
 
     func testThatTagsAreAddedToPostCorrectly() throws {
@@ -197,7 +197,7 @@ class RSSFeedTests: XCTestCase {
 
         let actualXmlResponse = try TestDataBuilder.getResponse(to: rssRequest, using: app)
 
-        XCTAssertEqual(actualXmlResponse.body.string, expectedXML)
+        XCTAssertEqual(actualXmlResponse.string, expectedXML)
     }
 
     func testThatLinksComesFromRequestCorrectly() throws {
@@ -212,7 +212,7 @@ class RSSFeedTests: XCTestCase {
 
         let actualXmlResponse = try TestDataBuilder.getResponse(to: httpRequest, using: app)
 
-        XCTAssertEqual(actualXmlResponse.body.string, expectedXML)
+        XCTAssertEqual(actualXmlResponse.string, expectedXML)
     }
 
     func testThatLinksSpecifyHTTPSWhenComingFromReverseProxy() throws {
@@ -228,7 +228,7 @@ class RSSFeedTests: XCTestCase {
 
         let actualXmlResponse = try TestDataBuilder.getResponse(to: httpsReverseProxyRequest, using: app)
 
-        XCTAssertEqual(actualXmlResponse.body.string, expectedXML)
+        XCTAssertEqual(actualXmlResponse.string, expectedXML)
     }
 
     func testImageIsProvidedIfSupplied() throws {
@@ -240,14 +240,14 @@ class RSSFeedTests: XCTestCase {
         let httpsRequest = HTTPRequest(method: .get, uri: "https://geeks.brokenhands.io/rss.xml")
         let actualXmlResponse = try TestDataBuilder.getResponse(to: httpsRequest, using: app)
 
-        XCTAssertEqual(actualXmlResponse.body.string, expectedXML)
+        XCTAssertEqual(actualXmlResponse.string, expectedXML)
     }
 
     func testCorrectHeaderSetForRSSFeed() throws {
         app = try TestDataBuilder.getSteamPressApp()
         let actualXmlResponse = try TestDataBuilder.getResponse(to: rssRequest, using: app)
 
-        XCTAssertEqual(actualXmlResponse.headers[.contentType], "application/rss+xml")
+        XCTAssertEqual(actualXmlResponse.http.headers[.contentType], "application/rss+xml")
     }
 
     func testThatDateFormatterIsCorrect() throws {
@@ -262,7 +262,7 @@ class RSSFeedTests: XCTestCase {
 
         let actualXmlResponse = try TestDataBuilder.getResponse(to: rssRequest, using: app)
 
-        XCTAssertEqual(actualXmlResponse.body.string, expectedXML)
+        XCTAssertEqual(actualXmlResponse.string, expectedXML)
     }
 
     func testThatDescriptionContainsOnlyText() throws {
@@ -276,7 +276,7 @@ class RSSFeedTests: XCTestCase {
 
         let actualXmlResponse = try TestDataBuilder.getResponse(to: rssRequest, using: app)
 
-        XCTAssertEqual(actualXmlResponse.body.string, expectedXML)
+        XCTAssertEqual(actualXmlResponse.string, expectedXML)
     }
 
 }

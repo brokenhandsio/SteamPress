@@ -17,7 +17,7 @@ public final class BlogTag<DatabaseType>: Model where DatabaseType: QuerySupport
 //
     // TODO change to UUID
     public typealias ID = Int
-    public static var idKey: ReferenceWritableKeyPath<BlogTag<DatabaseType>, Int?> {
+    public static var idKey: IDKey {
         return \BlogTag.tagID
     }
     public typealias Database = DatabaseType
@@ -31,6 +31,7 @@ public final class BlogTag<DatabaseType>: Model where DatabaseType: QuerySupport
 }
 
 extension BlogTag: Migration {}
+extension BlogTag: Content {}
 
 //
 //extension BlogTag: Parameterizable {}

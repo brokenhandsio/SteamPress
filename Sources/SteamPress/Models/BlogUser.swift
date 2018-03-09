@@ -23,7 +23,7 @@ public final class BlogUser<DatabaseType>: Model where DatabaseType: QuerySuppor
 //    }
 
     public typealias ID = Int
-    public static var idKey: ReferenceWritableKeyPath<BlogUser<DatabaseType>, Int?> {
+    public static var idKey: IDKey {
         return \BlogUser.userID
     }
     public typealias Database = DatabaseType

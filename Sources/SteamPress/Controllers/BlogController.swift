@@ -143,12 +143,12 @@ import Vapor
 
 extension Request {
     func getURIWithHTTPSIfReverseProxy() -> URI {
-        if self.headers["X-Forwarded-Proto"] == "https" {
-            let uri = URI(scheme: "https", userInfo: self.uri.userInfo, hostname: self.uri.hostname, port: nil, path: self.uri.path, query: self.uri.query, fragment: self.uri.fragment)
+        if self.http.headers["X-Forwarded-Proto"] == "https" {
+            let uri = URI(scheme: "https", userInfo: self.http.uri.userInfo, hostname: self.http.uri.hostname, port: nil, path: self.http.uri.path, query: self.http.uri.query, fragment: self.http.uri.fragment)
             return uri
         }
 
-        return self.uri
+        return self.http.uri
     }
 }
 

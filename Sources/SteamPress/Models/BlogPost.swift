@@ -31,7 +31,7 @@ public final class BlogPost<DatabaseType>: Model where DatabaseType: QuerySuppor
 
     // TODO convert to UUID?
     public typealias ID = Int
-    public static var idKey: ReferenceWritableKeyPath<BlogPost<DatabaseType>, Int?> {
+    public static var idKey: IDKey {
         return \BlogPost.blogID
     }
     public typealias Database = DatabaseType

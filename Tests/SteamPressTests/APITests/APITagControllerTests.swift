@@ -43,9 +43,6 @@ class APITagControllerTests: XCTestCase {
             }.blockingAwait()
 
         let response = try TestDataBuilder.getResponse(to: HTTPRequest(method: .get, uri: "/api/tags"), using: app)
-
-        print("Response is \(response.body.string!)")
-
         let data = try response.content.decode([BlogTagJSON].self).blockingAwait()
 
         XCTAssertEqual(data[0].name, "Vapor 2")

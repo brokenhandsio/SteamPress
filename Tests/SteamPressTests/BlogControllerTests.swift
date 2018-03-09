@@ -158,16 +158,6 @@
 //        XCTAssertEqual(response.headers[HeaderKey.location], "/")
 //    }
 //
-//    func testAuthorView() throws {
-//        try setupDrop()
-//        _ = try drop.respond(to: authorRequest)
-//
-//        XCTAssertEqual(viewFactory.author?.username, user.username)
-//        XCTAssertEqual(viewFactory.authorPosts?.total, 1)
-//        XCTAssertEqual(viewFactory.authorPosts?.data[0].title, post.title)
-//        XCTAssertEqual(viewFactory.authorPosts?.data[0].contents, post.contents)
-//    }
-//
 //    func testTagView() throws {
 //        try setupDrop()
 //        _ = try drop.respond(to: tagRequest)
@@ -273,25 +263,6 @@
 //        XCTAssertEqual("https://geeks.brokenhands.io/tags/tatooine/", viewFactory.tagURI?.descriptionWithoutPort)
 //    }
 //
-//    func testAllAuthorsPageGetsUri() throws {
-//        try setupDrop()
-//
-//        _ = try drop.respond(to: allAuthorsRequest)
-//
-//        XCTAssertEqual(allAuthorsPath, viewFactory.allAuthorsURI?.description)
-//    }
-//
-//    func testAllAuthorsPageGetsHTTPSUriFromReverseProxy() throws {
-//        try setupDrop()
-//
-//        let httpsReverseProxyRequest = Request(method: .get, uri: "http://geeks.brokenhands.io\(allAuthorsPath)")
-//        httpsReverseProxyRequest.headers["X-Forwarded-Proto"] = "https"
-//
-//        _ = try drop.respond(to: httpsReverseProxyRequest)
-//
-//        XCTAssertEqual("https://geeks.brokenhands.io/authors/", viewFactory.allAuthorsURI?.descriptionWithoutPort)
-//    }
-//
 //    func testAllTagsPageGetsUri() throws {
 //        try setupDrop()
 //
@@ -319,14 +290,6 @@
 //        XCTAssertEqual("tatooine", viewFactory.allTagsPageTags?.first?.name)
 //    }
 //
-//    func testAllAuthorsPageGetAllAuthors() throws {
-//        try setupDrop()
-//        _ = try drop.respond(to: allAuthorsRequest)
-//
-//        XCTAssertEqual(1, viewFactory.allAuthorsPageAuthors?.count)
-//        XCTAssertEqual("Luke", viewFactory.allAuthorsPageAuthors?.first?.name)
-//    }
-//
 //    func testTagPageGetsOnlyPublishedPostsInDescendingOrder() throws {
 //        try setupDrop()
 //        let post2 = TestDataBuilder.anyPost(author: self.user, title: "A later post")
@@ -339,32 +302,6 @@
 //
 //        XCTAssertEqual(2, viewFactory.tagPosts?.total)
 //        XCTAssertEqual(post2.title, viewFactory.tagPosts?.data.first?.title)
-//    }
-//
-//    func testAuthorPageGetsOnlyPublishedPostsInDescendingOrder() throws {
-//        try setupDrop()
-//        let post2 = TestDataBuilder.anyPost(author: self.user, title: "A later post")
-//        try post2.save()
-//        let draftPost = TestDataBuilder.anyPost(author: self.user, published: false)
-//        try draftPost.save()
-//        _ = try drop.respond(to: authorRequest)
-//
-//        XCTAssertEqual(2, viewFactory.authorPosts?.total)
-//        XCTAssertEqual(post2.title, viewFactory.authorPosts?.data[0].title)
-//    }
-//
-//    func testDisabledBlogAuthorsPath() throws {
-//        let config = Config(try Node(node: [
-//            "enableAuthorsPages": false
-//        ]))
-//
-//        try setupDrop(config: config)
-//
-//        let authorResponse = try drop.respond(to: authorRequest)
-//        let allAuthorsResponse = try drop.respond(to: allAuthorsRequest)
-//
-//        XCTAssertEqual(404, authorResponse.status.statusCode)
-//        XCTAssertEqual(404, allAuthorsResponse.status.statusCode)
 //    }
 //
 //    func testDisabledBlogTagsPath() throws {

@@ -31,7 +31,7 @@ struct FeedController<DatabaseType>: RouteCollection where DatabaseType: QuerySu
 
     // MARK: - Route Collection
     func boot(router: Router) throws {
-        router.group(PathComponent(stringLiteral: "\(pathCreator.blogPath ?? "")"), use: { index in
+        router.group(PathComponent(stringLiteral: "\(pathCreator.blogPath ?? "")"), configure: { index in
             index.get("atom.xml", use: atomGenerator.feedHandler)
             index.get("rss.xml", use: rssGenerator.feedHandler)
         })

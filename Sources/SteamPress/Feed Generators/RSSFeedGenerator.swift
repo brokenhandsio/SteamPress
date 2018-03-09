@@ -1,6 +1,6 @@
 import Vapor
 import Foundation
-import FluentSQLite
+import Fluent
 
 struct RSSFeedGenerator<DatabaseType> where DatabaseType: QuerySupporting, DatabaseType: SchemaSupporting, DatabaseType: JoinSupporting {
 

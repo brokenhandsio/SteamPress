@@ -11,4 +11,5 @@ XCTMain([
     testCase(RSSFeedTests.allTests),
     testCase(AtomFeedTests.allTests),
     testCase(APITagControllerTests.allTests),
+    testCase(AuthorTests.allTests),
 ])
