@@ -39,6 +39,8 @@ class AuthorTests: XCTestCase {
     }
 
     func testAllAuthorsPageGetsUri() throws {
+        app = try TestDataBuilder.getSteamPressApp(authorPresenter: capturingAuthorPresenter)
+
 //        try setupDrop()
 //
 //        _ = try drop.respond(to: allAuthorsRequest)

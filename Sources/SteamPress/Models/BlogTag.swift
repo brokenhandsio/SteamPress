@@ -86,7 +86,7 @@ public extension BlogTag {
 //    }
 
     static func addTag(_ name: String, to post: BlogPost<Database>, on conn: DatabaseConnectable) throws -> Future<Void> {
-        return BlogTag.query(on: conn).filter(\.name == name).first().flatMap(to: Void.self) { foundTag in
+        return try BlogTag.query(on: conn).filter(\.name == name).first().flatMap(to: Void.self) { foundTag in
             if let exisitingTag = foundTag {
                 return exisitingTag.posts.attach(post, on: conn).transform(to: Future.void)
             } else {

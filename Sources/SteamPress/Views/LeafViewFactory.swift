@@ -349,9 +349,11 @@ import Vapor
 
 // TODO Move all of this
 
-extension URI {
-    func getRootUri() -> URI {
-        return URI(scheme: self.scheme, userInfo: nil, hostname: self.hostname, port: self.port, path: "", query: nil, fragment: nil)
+extension URL {
+    func getRootUri() -> URL {
+        return self
+        // TODO
+        //        return URL(scheme: self.scheme, userInfo: nil, hostname: self.hostname, port: self.port, path: "", query: nil, fragment: nil)
     }
 
     var descriptionWithoutPort: String {

@@ -69,7 +69,8 @@ struct TestDataBuilder {
                                  title: String? = nil,
                                  description: String? = nil,
                                  copyright: String? = nil,
-                                 imageURL: String? = nil) throws -> Application {
+                                 imageURL: String? = nil,
+                                 authorPresenter: AuthorPresenter? = nil) throws -> Application {
 
         // TODO work out new config?
 

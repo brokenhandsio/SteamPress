@@ -29,11 +29,11 @@ struct RSSFeedGenerator<DatabaseType> where DatabaseType: QuerySupporting, Datab
 
     // MARK: - Route Handler
 
-    func feedHandler(_ request: Request) throws -> Future<HTTPResponse> {
+    func feedHandler(_ request: Request) throws -> Future<Response> {
 
         var xmlFeed = try getXMLStart(for: request)
 
-        return BlogPost<DatabaseType>.query(on: request).filter(\.published == true).sort(\.created, .descending).all().flatMap(to: HTTPResponse.self) { posts in
+        return try BlogPost<DatabaseType>.query(on: request).filter(\.published == true).sort(\.created, .descending).all().flatMap(to: Response.self) { posts in
 
             if !posts.isEmpty {
                 let postDate = posts[0].lastEdited ?? posts[0].created
@@ -48,12 +48,12 @@ struct RSSFeedGenerator<DatabaseType> where DatabaseType: QuerySupporting, Datab
                 postData.append(try post.getPostRSSFeed(rootPath: self.getRootPath(for: request), dateFormatter: self.rfc822DateFormatter, for: request))
             }
 
-            return postData.map(to: HTTPResponse.self) { postInformation in
+            return postData.map(to: Response.self) { postInformation in
                 for post in postInformation {
                     xmlFeed += post
                 }
                 xmlFeed += self.xmlEnd
-                return try HTTPResponse(status: .ok, headers: [.contentType: "application/rss+xml"], body: xmlFeed.makeBody())
+                return try Response(http: HTTPResponse(status: .ok, headers: [.contentType: "application/rss+xml"], body: xmlFeed.makeBody(), using: request))
             }
         }
     }

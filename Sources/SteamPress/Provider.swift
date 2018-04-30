@@ -21,6 +21,7 @@ public struct Provider<DatabaseType>: Vapor.Provider where DatabaseType: QuerySu
     let copyright: String?
     let imageURL: String?
     let pathCreator: BlogPathCreator
+    let authorPresenter: AuthorPresenter?
 
     // TODO update
     /**
@@ -48,7 +49,8 @@ public struct Provider<DatabaseType>: Vapor.Provider where DatabaseType: QuerySu
                 postsPerPage: Int,
                 useBootstrap4: Bool = true,
                 enableAuthorsPages: Bool = true,
-                enableTagsPages: Bool = true) {
+                enableTagsPages: Bool = true,
+                authorPresenter: AuthorPresenter? = nil) {
 //        self.postsPerPage = postsPerPage
         self.databaseIdentifier = databaseIdentifier
         self.blogPath = blogPath
@@ -58,6 +60,9 @@ public struct Provider<DatabaseType>: Vapor.Provider where DatabaseType: QuerySu
         self.imageURL = imageURL
 
         self.pathCreator = BlogPathCreator(blogPath: self.blogPath)
+        self.authorPresenter = authorPresenter
+
+
 //        self.useBootstrap4 = useBootstrap4
 //        self.enableAuthorsPages = enableAuthorsPages
 //        self.enableTagsPages = enableTagsPages
@@ -73,14 +78,17 @@ public struct Provider<DatabaseType>: Vapor.Provider where DatabaseType: QuerySu
     }
 
     public func boot(_ worker: Container) throws {
-        let router = try worker.make(Router.self, for: Container.self)
-
+        let router = try worker.make(Router.self)
 
         let feedController = FeedController<DatabaseType>(pathCreator: pathCreator, title: title, description: description, copyright: copyright, imageURL: imageURL)
         let apiController = APIController<DatabaseType>()
 
         try router.register(collection: feedController)
         try router.register(collection: apiController)
+    }
+
+    public func didBoot(_ container: Container) throws -> EventLoopFuture<Void> {
+        return Future.map(on: container) {}
     }
 
 

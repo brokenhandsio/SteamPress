@@ -29,11 +29,11 @@ struct AtomFeedGenerator<DatabaseType> where DatabaseType: QuerySupporting, Data
     
     // MARK: - Route Handler
     
-    func feedHandler(_ request: Request) throws -> Future<HTTPResponse> {
+    func feedHandler(_ request: Request) throws -> Future<Response> {
         
         var feed = try getFeedStart(for: request)
 
-        return BlogPost<DatabaseType>.query(on: request).filter(\.published == true).sort(\.created, .descending).all().flatMap(to: HTTPResponse.self) { posts in
+        return try BlogPost<DatabaseType>.query(on: request).filter(\.published == true).sort(\.created, .descending).all().flatMap(to: Response.self) { posts in
 
             if !posts.isEmpty {
                 let postDate = posts[0].lastEdited ?? posts[0].created
@@ -57,12 +57,13 @@ struct AtomFeedGenerator<DatabaseType> where DatabaseType: QuerySupporting, Data
                 try postData.append(post.getPostAtomFeed(blogPath: blogPath, dateFormatter: self.iso8601Formatter, for: request))
             }
 
-            return postData.map(to: HTTPResponse.self) { postInformation in
+            return postData.map(to: Response.self) { postInformation in
                 for post in postInformation {
                     feed += post
                 }
                 feed += self.feedEnd
-                return try HTTPResponse(status: .ok, headers: [.contentType: "application/atom+xml"], body: feed.makeBody())
+                let httpResponse = try HTTPResponse(status: .ok, headers: [.contentType: "application/atom+xml"], body: feed.makeBody())
+                return Response(http: httpResponse, using: request)
             }
         }
 
@@ -84,7 +85,7 @@ struct AtomFeedGenerator<DatabaseType> where DatabaseType: QuerySupporting, Data
 fileprivate extension BlogPost {
     fileprivate func getPostAtomFeed(blogPath: String, dateFormatter: DateFormatter, for request: Request) throws -> Future<String> {
         let updatedTime = lastEdited ?? created
-        return postAuthor.get(on: request).flatMap(to: String.self) { author in
+        return try postAuthor.get(on: request).flatMap(to: String.self) { author in
 
             var postEntry = try "<entry>\n<id>\(blogPath)posts-id/\(self.requireID())/</id>\n<title>\(self.title)</title>\n<updated>\(dateFormatter.string(from: updatedTime))</updated>\n<published>\(dateFormatter.string(from: self.created))</published>\n<author>\n<name>\(author.name)</name>\n<uri>\(blogPath)authors/\(author.username)/</uri>\n</author>\n<summary>\(try self.description())</summary>\n<link rel=\"alternate\" href=\"\(blogPath)posts/\(self.slugUrl)/\" />\n"
 
