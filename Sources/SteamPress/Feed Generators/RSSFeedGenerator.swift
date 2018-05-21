@@ -48,12 +48,14 @@ struct RSSFeedGenerator<DatabaseType> where DatabaseType: QuerySupporting, Datab
                 postData.append(try post.getPostRSSFeed(rootPath: self.getRootPath(for: request), dateFormatter: self.rfc822DateFormatter, for: request))
             }
 
-            return postData.map(to: Response.self) { postInformation in
+            return postData.flatten(on: request).map(to: Response.self) { postInformation in
                 for post in postInformation {
                     xmlFeed += post
                 }
                 xmlFeed += self.xmlEnd
-                return try Response(http: HTTPResponse(status: .ok, headers: [.contentType: "application/rss+xml"], body: xmlFeed.makeBody(), using: request))
+                var httpResponse = HTTPResponse(status: .ok, body: xmlFeed)
+                httpResponse.headers.add(name: .contentType, value: "application/rss+xml")
+                return Response(http: httpResponse, using: request)
             }
         }
     }

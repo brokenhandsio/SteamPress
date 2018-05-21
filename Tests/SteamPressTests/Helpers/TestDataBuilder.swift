@@ -75,11 +75,11 @@ struct TestDataBuilder {
         // TODO work out new config?
 
         var services = Services.default()
-        var databaseConfig = DatabaseConfig()
+        try services.register(FluentSQLiteProvider())
+        var databaseConfig = DatabasesConfig()
         let testDatabase = try SQLiteDatabase(storage: .memory)
         databaseConfig.add(database: testDatabase, as: DatabaseIdentifier<SQLiteDatabase>.sqlite)
         services.register(databaseConfig)
-        services.register(SQLiteConfig())
 
         let steampress = SteamPress.Provider(databaseIdentifier: DatabaseIdentifier<SQLiteDatabase>.sqlite,
                                              blogPath: path,
@@ -98,23 +98,23 @@ struct TestDataBuilder {
     static func getResponse(to request: HTTPRequest, using app: Application) throws -> Response {
         let responder = try app.make(Responder.self)
         let wrappedRequest = Request(http: request, using: app)
-        return try responder.respond(to: wrappedRequest).blockingAwait()
+        return try responder.respond(to: wrappedRequest).wait()
     }
 
     static func createPost(for db: DatabaseConnectable, tags: [String]? = nil, createdDate: Date? = nil, contents: String? = nil) throws -> TestData {
         let author = TestDataBuilder.anyUser()
-        _ = try author.save(on: db).blockingAwait()
+        _ = try author.save(on: db).wait()
         let post: BlogPost<SQLiteDatabase>
         if let contents = contents {
             post = try TestDataBuilder.anyPost(author: author, contents: contents, creationDate: createdDate ?? Date())
         } else {
             post = try TestDataBuilder.anyPost(author: author, creationDate: createdDate ?? Date())
         }
-        _ = try post.save(on: db).blockingAwait()
+        _ = try post.save(on: db).wait()
 
         if let tags = tags {
             for tag in tags {
-                try BlogTag.addTag(tag, to: post, on: db).blockingAwait()
+                try BlogTag.addTag(tag, to: post, on: db).wait()
             }
         }
 

@@ -34,16 +34,15 @@ class APITagControllerTests: XCTestCase {
 
     func testThatAllTagsAreReturnedFromAPI() throws {
         let app = try TestDataBuilder.getSteamPressApp()
+        let conn = try app.newConnection(to: .sqlite).wait()
 
         let tag1 = "Vapor 2"
         let tag2 = "Engineering"
 
-        _ = try app.withConnection(to: .sqlite) { (conn) -> Future<TestData> in
-            return try Future(TestDataBuilder.createPost(for: conn, tags: [tag1, tag2]))
-            }.blockingAwait()
+        _ = try TestDataBuilder.createPost(for: conn, tags: [tag1, tag2])
 
-        let response = try TestDataBuilder.getResponse(to: HTTPRequest(method: .get, uri: "/api/tags"), using: app)
-        let data = try response.content.decode([BlogTagJSON].self).blockingAwait()
+        let response = try TestDataBuilder.getResponse(to: HTTPRequest(method: .GET, url: "/api/tags"), using: app)
+        let data = try response.content.syncDecode([BlogTagJSON].self)
 
         XCTAssertEqual(data[0].name, "Vapor 2")
         XCTAssertEqual(data[1].name, "Engineering")

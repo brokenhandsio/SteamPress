@@ -57,12 +57,13 @@ struct AtomFeedGenerator<DatabaseType> where DatabaseType: QuerySupporting, Data
                 try postData.append(post.getPostAtomFeed(blogPath: blogPath, dateFormatter: self.iso8601Formatter, for: request))
             }
 
-            return postData.map(to: Response.self) { postInformation in
+            return postData.flatten(on: request).map(to: Response.self) { postInformation in
                 for post in postInformation {
                     feed += post
                 }
                 feed += self.feedEnd
-                let httpResponse = try HTTPResponse(status: .ok, headers: [.contentType: "application/atom+xml"], body: feed.makeBody())
+                var httpResponse = HTTPResponse(status: .ok, body: feed)
+                httpResponse.headers.add(name: .contentType, value: "application/atom+xml")
                 return Response(http: httpResponse, using: request)
             }
         }
