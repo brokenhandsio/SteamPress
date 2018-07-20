@@ -1,5 +1,4 @@
 import Vapor
-import Fluent
 //import MarkdownProvider
 //import Leaf
 ////import AuthProvider
@@ -8,13 +7,12 @@ import Fluent
 //import Foundation
 //
 
-public struct Provider<DatabaseType>: Vapor.Provider where DatabaseType: QuerySupporting & SchemaSupporting & JoinSupporting {
+public struct Provider: Vapor.Provider {
 
     public static var repositoryName: String {
         return "steampress"
     }
 
-    let databaseIdentifier: DatabaseIdentifier<DatabaseType>
     let blogPath: String?
     let title: String?
     let description: String?
@@ -40,7 +38,7 @@ public struct Provider<DatabaseType>: Vapor.Provider where DatabaseType: QuerySu
      - Parameter enableTagsPages: Flag used to determine whether to publicy expose the tags endpoints or not.
      Defaults to true
      */
-    public init(databaseIdentifier: DatabaseIdentifier<DatabaseType>,
+    public init(
                 blogPath: String? = nil,
                 title: String? = nil,
                 description: String? = nil,
@@ -52,7 +50,7 @@ public struct Provider<DatabaseType>: Vapor.Provider where DatabaseType: QuerySu
                 enableTagsPages: Bool = true,
                 authorPresenter: AuthorPresenter? = nil) {
 //        self.postsPerPage = postsPerPage
-        self.databaseIdentifier = databaseIdentifier
+//        self.databaseIdentifier = databaseIdentifier
         self.blogPath = blogPath
         self.title = title
         self.description = description
@@ -69,19 +67,19 @@ public struct Provider<DatabaseType>: Vapor.Provider where DatabaseType: QuerySu
     }
 
     public func register(_ services: inout Services) throws {
-        var migrationConfig = MigrationConfig()
-        migrationConfig.add(model: BlogPost<DatabaseType>.self, database: databaseIdentifier)
-        migrationConfig.add(model: BlogUser<DatabaseType>.self, database: databaseIdentifier)
-        migrationConfig.add(model: BlogTag<DatabaseType>.self, database: databaseIdentifier)
-        migrationConfig.add(model: BlogPostTagPivot<DatabaseType>.self, database: databaseIdentifier)
-        services.register(migrationConfig)
+//        var migrationConfig = MigrationConfig()
+//        migrationConfig.add(model: BlogPost.self, database: databaseIdentifier)
+//        migrationConfig.add(model: BlogUser.self, database: databaseIdentifier)
+//        migrationConfig.add(model: BlogTag.self, database: databaseIdentifier)
+//        migrationConfig.add(model: BlogPostTagPivot.self, database: databaseIdentifier)
+//        services.register(migrationConfig)
     }
 
     public func boot(_ worker: Container) throws {
         let router = try worker.make(Router.self)
 
-        let feedController = FeedController<DatabaseType>(pathCreator: pathCreator, title: title, description: description, copyright: copyright, imageURL: imageURL)
-        let apiController = APIController<DatabaseType>()
+        let feedController = FeedController(pathCreator: pathCreator, title: title, description: description, copyright: copyright, imageURL: imageURL)
+        let apiController = APIController()
 
         try router.register(collection: feedController)
         try router.register(collection: apiController)

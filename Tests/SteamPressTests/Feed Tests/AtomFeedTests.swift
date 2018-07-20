@@ -1,8 +1,6 @@
 @testable import SteamPress
 import XCTest
 import Vapor
-import Fluent
-import FluentSQLite
 
 class AtomFeedTests: XCTestCase {
 
@@ -125,8 +123,8 @@ class AtomFeedTests: XCTestCase {
 
     func testThatFeedIsCorrectForOnePost() throws {
         app = try TestDataBuilder.getSteamPressApp()
-        let conn = try app.newConnection(to: .sqlite).wait()
-        let testData = try TestDataBuilder.createPost(for: conn)
+//        let conn = try app.newConnection(to: .sqlite).wait()
+        let testData = try TestDataBuilder.createPost()
 
         let post = testData.post
         let author = testData.author
@@ -139,8 +137,8 @@ class AtomFeedTests: XCTestCase {
 
     func testThatFeedCorrectForTwoPosts() throws {
         app = try TestDataBuilder.getSteamPressApp()
-        let conn = try app.newConnection(to: .sqlite).wait()
-        let testData = try TestDataBuilder.createPost(for: conn)
+//        let conn = try app.newConnection(to: .sqlite).wait()
+        let testData = try TestDataBuilder.createPost()
 
         let post = testData.post
         let author = testData.author
@@ -149,8 +147,8 @@ class AtomFeedTests: XCTestCase {
         let secondPostDate = Date()
         let post2 = try BlogPost(title: secondTitle, contents: "#Some Interesting Post\nThis contains a load of contents...", author: author, creationDate: secondPostDate, slugUrl: "another-post", published: true)
 
-        _ = try post2.save(on: conn).wait()
-        
+//        _ = try post2.save(on: conn).wait()
+
         let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: Date()))</updated>\n<entry>\n<id>/posts-id/2/</id>\n<title>\(secondTitle)</title>\n<updated>\(dateFormatter.string(from: secondPostDate))</updated>\n<published>\(dateFormatter.string(from: secondPostDate))</published>\n<author>\n<name>\(author.name)</name>\n<uri>/authors/\(author.username)/</uri>\n</author>\n<summary>\(try post2.description())</summary>\n<link rel=\"alternate\" href=\"/posts/\(post2.slugUrl)/\" />\n</entry>\n<entry>\n<id>/posts-id/1/</id>\n<title>\(post.title)</title>\n<updated>\(dateFormatter.string(from: post.created))</updated>\n<published>\(dateFormatter.string(from: post.created))</published>\n<author>\n<name>\(author.name)</name>\n<uri>/authors/\(author.username)/</uri>\n</author>\n<summary>\(try post.description())</summary>\n<link rel=\"alternate\" href=\"/posts/\(post.slugUrl)/\" />\n</entry>\n</feed>"
 
         let actualXmlResponse = try TestDataBuilder.getResponse(to: atomRequest, using: app)
@@ -159,15 +157,15 @@ class AtomFeedTests: XCTestCase {
 
     func testThatDraftsDontAppearInFeed() throws {
         app = try TestDataBuilder.getSteamPressApp()
-        let conn = try app.newConnection(to: .sqlite).wait()
-        let testData = try TestDataBuilder.createPost(for: conn)
+//        let conn = try app.newConnection(to: .sqlite).wait()
+        let testData = try TestDataBuilder.createPost()
 
         let post = testData.post
         let author = testData.author
 
         let post2 = try BlogPost(title: "Another Post", contents: "#Some Interesting Post\nThis contains a load of contents...", author: author, creationDate: Date(), slugUrl: "another-post", published: false)
 
-        _ = try post2.save(on: conn).wait()
+//        _ = try post2.save().wait()
 
         let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: Date()))</updated>\n<entry>\n<id>/posts-id/1/</id>\n<title>\(post.title)</title>\n<updated>\(dateFormatter.string(from: post.created))</updated>\n<published>\(dateFormatter.string(from: post.created))</published>\n<author>\n<name>\(author.name)</name>\n<uri>/authors/\(author.username)/</uri>\n</author>\n<summary>\(try post.description())</summary>\n<link rel=\"alternate\" href=\"/posts/\(post.slugUrl)/\" />\n</entry>\n</feed>"
 
@@ -177,10 +175,10 @@ class AtomFeedTests: XCTestCase {
 
     func testThatEditedPostsHaveUpdatedTimes() throws {
         app = try TestDataBuilder.getSteamPressApp()
-        let conn = try app.newConnection(to: .sqlite).wait()
+//        let conn = try app.newConnection(to: .sqlite).wait()
 
         let firstPostDate = Date().addingTimeInterval(-3600)
-        let testData = try TestDataBuilder.createPost(for: conn, createdDate: firstPostDate)
+        let testData = try TestDataBuilder.createPost(createdDate: firstPostDate)
 
         let post = testData.post
         let author = testData.author
@@ -191,7 +189,7 @@ class AtomFeedTests: XCTestCase {
         let post2 = try BlogPost(title: secondTitle, contents: "#Some Interesting Post\nThis contains a load of contents...", author: author, creationDate: secondPostDate, slugUrl: "another-post", published: true)
         post2.lastEdited = newEditDate
 
-        _ = try post2.save(on: conn).wait()
+//        _ = try post2.save(on: conn).wait()
 
         let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: newEditDate))</updated>\n<entry>\n<id>/posts-id/2/</id>\n<title>\(secondTitle)</title>\n<updated>\(dateFormatter.string(from: newEditDate))</updated>\n<published>\(dateFormatter.string(from: secondPostDate))</published>\n<author>\n<name>\(author.name)</name>\n<uri>/authors/\(author.username)/</uri>\n</author>\n<summary>\(try post2.description())</summary>\n<link rel=\"alternate\" href=\"/posts/\(post2.slugUrl)/\" />\n</entry>\n<entry>\n<id>/posts-id/1/</id>\n<title>\(post.title)</title>\n<updated>\(dateFormatter.string(from: firstPostDate))</updated>\n<published>\(dateFormatter.string(from: firstPostDate))</published>\n<author>\n<name>\(author.name)</name>\n<uri>/authors/\(author.username)/</uri>\n</author>\n<summary>\(try post.description())</summary>\n<link rel=\"alternate\" href=\"/posts/\(post.slugUrl)/\" />\n</entry>\n</feed>"
 
@@ -201,11 +199,11 @@ class AtomFeedTests: XCTestCase {
 
     func testThatTagsAppearWhenPostHasThem() throws {
         app = try TestDataBuilder.getSteamPressApp()
-        let conn = try app.newConnection(to: .sqlite).wait()
+//        let conn = try app.newConnection(to: .sqlite).wait()
         let tag1 = "Vapor 2"
         let tag2 = "Engineering"
 
-        let testData = try TestDataBuilder.createPost(for: conn, tags: [tag1, tag2])
+        let testData = try TestDataBuilder.createPost(tags: [tag1, tag2])
 
         let post = testData.post
         let author = testData.author
@@ -218,9 +216,9 @@ class AtomFeedTests: XCTestCase {
 
     func testThatFullLinksWorksForPosts() throws {
         app = try TestDataBuilder.getSteamPressApp(path: "blog")
-        let conn = try app.newConnection(to: .sqlite).wait()
+//        let conn = try app.newConnection(to: .sqlite).wait()
 
-        let testData = try TestDataBuilder.createPost(for: conn)
+        let testData = try TestDataBuilder.createPost()
 
         let post = testData.post
         let author = testData.author
@@ -235,9 +233,9 @@ class AtomFeedTests: XCTestCase {
 
     func testThatHTTPSLinksWorkForPostsBehindReverseProxy() throws {
         app = try TestDataBuilder.getSteamPressApp(path: "blog")
-        let conn = try app.newConnection(to: .sqlite).wait()
+//        let conn = try app.newConnection(to: .sqlite).wait()
 
-        let testData = try TestDataBuilder.createPost(for: conn)
+        let testData = try TestDataBuilder.createPost()
 
         let post = testData.post
         let author = testData.author
@@ -259,10 +257,10 @@ class AtomFeedTests: XCTestCase {
 
     func testThatDateFormatterIsCorrect() throws {
         app = try TestDataBuilder.getSteamPressApp()
-        let conn = try app.newConnection(to: .sqlite).wait()
+//        let conn = try app.newConnection(to: .sqlite).wait()
         let createDate = Date(timeIntervalSince1970: 1505867108)
 
-        let testData = try TestDataBuilder.createPost(for: conn, createdDate: createDate)
+        let testData = try TestDataBuilder.createPost(createdDate: createDate)
 
         let post = testData.post
         let author = testData.author
@@ -275,8 +273,8 @@ class AtomFeedTests: XCTestCase {
 }
 
 struct TestData {
-    let post: BlogPost<SQLiteDatabase>
-    let author: BlogUser<SQLiteDatabase>
+    let post: BlogPost
+    let author: BlogUser
 }
 
 // TODO Move

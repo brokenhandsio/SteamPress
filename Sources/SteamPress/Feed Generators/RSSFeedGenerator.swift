@@ -1,8 +1,7 @@
 import Vapor
 import Foundation
-import Fluent
 
-struct RSSFeedGenerator<DatabaseType> where DatabaseType: QuerySupporting, DatabaseType: SchemaSupporting, DatabaseType: JoinSupporting {
+struct RSSFeedGenerator {
 
     // MARK: - Properties
 
@@ -31,33 +30,34 @@ struct RSSFeedGenerator<DatabaseType> where DatabaseType: QuerySupporting, Datab
 
     func feedHandler(_ request: Request) throws -> Future<Response> {
 
-        var xmlFeed = try getXMLStart(for: request)
-
-        return try BlogPost<DatabaseType>.query(on: request).filter(\.published == true).sort(\.created, .descending).all().flatMap(to: Response.self) { posts in
-
-            if !posts.isEmpty {
-                let postDate = posts[0].lastEdited ?? posts[0].created
-                xmlFeed += "<pubDate>\(self.rfc822DateFormatter.string(from: postDate))</pubDate>\n"
-            }
-
-            xmlFeed += "<textinput>\n<description>Search \(self.title)</description>\n<title>Search</title>\n<link>\(self.getRootPath(for: request))/search?</link>\n<name>term</name>\n</textinput>\n"
-
-            var postData: [Future<String>] = []
-
-            for post in posts {
-                postData.append(try post.getPostRSSFeed(rootPath: self.getRootPath(for: request), dateFormatter: self.rfc822DateFormatter, for: request))
-            }
-
-            return postData.flatten(on: request).map(to: Response.self) { postInformation in
-                for post in postInformation {
-                    xmlFeed += post
-                }
-                xmlFeed += self.xmlEnd
-                var httpResponse = HTTPResponse(status: .ok, body: xmlFeed)
-                httpResponse.headers.add(name: .contentType, value: "application/rss+xml")
-                return Response(http: httpResponse, using: request)
-            }
-        }
+      return request.future(request.makeResponse())
+//        var xmlFeed = try getXMLStart(for: request)
+//
+//        return try BlogPost<DatabaseType>.query(on: request).filter(\.published == true).sort(\.created, .descending).all().flatMap(to: Response.self) { posts in
+//
+//            if !posts.isEmpty {
+//                let postDate = posts[0].lastEdited ?? posts[0].created
+//                xmlFeed += "<pubDate>\(self.rfc822DateFormatter.string(from: postDate))</pubDate>\n"
+//            }
+//
+//            xmlFeed += "<textinput>\n<description>Search \(self.title)</description>\n<title>Search</title>\n<link>\(self.getRootPath(for: request))/search?</link>\n<name>term</name>\n</textinput>\n"
+//
+//            var postData: [Future<String>] = []
+//
+//            for post in posts {
+//                postData.append(try post.getPostRSSFeed(rootPath: self.getRootPath(for: request), dateFormatter: self.rfc822DateFormatter, for: request))
+//            }
+//
+//            return postData.flatten(on: request).map(to: Response.self) { postInformation in
+//                for post in postInformation {
+//                    xmlFeed += post
+//                }
+//                xmlFeed += self.xmlEnd
+//                var httpResponse = HTTPResponse(status: .ok, body: xmlFeed)
+//                httpResponse.headers.add(name: .contentType, value: "application/rss+xml")
+//                return Response(http: httpResponse, using: request)
+//            }
+//        }
     }
 
     // MARK: - Private functions
@@ -86,18 +86,19 @@ struct RSSFeedGenerator<DatabaseType> where DatabaseType: QuerySupporting, Datab
 
 fileprivate extension BlogPost {
     fileprivate func getPostRSSFeed(rootPath: String, dateFormatter: DateFormatter, for request: Request) throws -> Future<String> {
-        let link = rootPath + "/posts/\(slugUrl)/"
-        var postEntry = "<item>\n<title>\n\(title)\n</title>\n<description>\n\(try description())\n</description>\n<link>\n\(link)\n</link>\n"
-
-        return try tags.query(on: request).all().map(to: String.self) { tags in
-            for tag in tags {
-                postEntry += "<category>\(tag.name)</category>\n"
-            }
-
-            postEntry += "<pubDate>\(dateFormatter.string(from: self.lastEdited ?? self.created))</pubDate>\n</item>\n"
-
-            return postEntry
-        }
+//        let link = rootPath + "/posts/\(slugUrl)/"
+//        var postEntry = "<item>\n<title>\n\(title)\n</title>\n<description>\n\(try description())\n</description>\n<link>\n\(link)\n</link>\n"
+//
+//        return try tags.query(on: request).all().map(to: String.self) { tags in
+//            for tag in tags {
+//                postEntry += "<category>\(tag.name)</category>\n"
+//            }
+//
+//            postEntry += "<pubDate>\(dateFormatter.string(from: self.lastEdited ?? self.created))</pubDate>\n</item>\n"
+//
+//            return postEntry
+//        }
+      return request.future("")
     }
 }
 

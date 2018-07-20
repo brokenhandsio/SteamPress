@@ -1,8 +1,6 @@
 //@testable import SteamPress
 //import XCTest
 //import Vapor
-//import Fluent
-//import FluentSQLite
 //
 //class RSSFeedTests: XCTestCase {
 //

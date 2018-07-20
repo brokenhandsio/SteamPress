@@ -34,12 +34,12 @@ class APITagControllerTests: XCTestCase {
 
     func testThatAllTagsAreReturnedFromAPI() throws {
         let app = try TestDataBuilder.getSteamPressApp()
-        let conn = try app.newConnection(to: .sqlite).wait()
+//        let conn = try app.newConnection(to: .sqlite).wait()
 
         let tag1 = "Vapor 2"
         let tag2 = "Engineering"
 
-        _ = try TestDataBuilder.createPost(for: conn, tags: [tag1, tag2])
+//        _ = try TestDataBuilder.createPost(for: conn, tags: [tag1, tag2])
 
         let response = try TestDataBuilder.getResponse(to: HTTPRequest(method: .GET, url: "/api/tags"), using: app)
         let data = try response.content.syncDecode([BlogTagJSON].self)

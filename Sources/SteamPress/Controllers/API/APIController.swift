@@ -1,11 +1,10 @@
 import Vapor
-import Fluent
 
-struct APIController<DatabaseType>: RouteCollection where DatabaseType: QuerySupporting & SchemaSupporting & JoinSupporting {
+struct APIController: RouteCollection {
     func boot(router: Router) throws {
         let apiRoutes = router.grouped("api")
 
-        let apiTagController = APITagController<DatabaseType>()
+        let apiTagController = APITagController()
         try apiRoutes.register(collection: apiTagController)
     }
 }

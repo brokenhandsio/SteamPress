@@ -1,6 +1,5 @@
 import XCTest
 @testable import SteamPress
-import Fluent
 import Vapor
 
 class BlogTagTests: XCTestCase {

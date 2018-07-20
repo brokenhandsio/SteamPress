@@ -1,13 +1,12 @@
 import Vapor
 import Foundation
-import Fluent
 
-struct FeedController<DatabaseType>: RouteCollection where DatabaseType: QuerySupporting & SchemaSupporting & JoinSupporting {
+struct FeedController: RouteCollection {
 
     // MARK: - Properties
     fileprivate let pathCreator: BlogPathCreator
-    fileprivate let atomGenerator: AtomFeedGenerator<DatabaseType>
-    fileprivate let rssGenerator: RSSFeedGenerator<DatabaseType>
+    fileprivate let atomGenerator: AtomFeedGenerator
+    fileprivate let rssGenerator: RSSFeedGenerator
     static var defaultTitle: String {
         return "SteamPress Blog"
     }

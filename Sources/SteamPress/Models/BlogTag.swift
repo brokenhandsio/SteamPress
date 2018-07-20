@@ -1,10 +1,9 @@
 //import Foundation
 import Vapor
-import Fluent
 
 // MARK: - Model
 
-public final class BlogTag<DatabaseType>: Model where DatabaseType: QuerySupporting & SchemaSupporting & JoinSupporting {
+public final class BlogTag: Codable {
 
 //    public struct Properties {
 //        public static let tagID = "id"
@@ -16,11 +15,11 @@ public final class BlogTag<DatabaseType>: Model where DatabaseType: QuerySupport
 //    public let storage = Storage()
 //
     // TODO change to UUID
-    public typealias ID = Int
-    public static var idKey: IDKey {
-        return \BlogTag.tagID
-    }
-    public typealias Database = DatabaseType
+//    public typealias ID = Int
+//    public static var idKey: IDKey {
+//        return \BlogTag.tagID
+//    }
+//    public typealias Database = DatabaseType
 
     var tagID: Int?
     var name: String
@@ -30,7 +29,7 @@ public final class BlogTag<DatabaseType>: Model where DatabaseType: QuerySupport
     }
 }
 
-extension BlogTag: Migration {}
+//extension BlogTag: Migration {}
 extension BlogTag: Content {}
 
 //
@@ -73,9 +72,9 @@ extension BlogTag: Content {}
 
 public extension BlogTag {
 
-    public var posts: Siblings<BlogTag, BlogPost<Database>, BlogPostTagPivot<DatabaseType>> {
-        return siblings()
-    }
+//    public var posts: Siblings<BlogTag, BlogPost<Database>, BlogPostTagPivot<DatabaseType>> {
+//        return siblings()
+//    }
 //
 //    public func sortedPosts() throws -> Query<BlogPost> {
 //        return try posts.filter(BlogPost.Properties.published, true).sort(BlogPost.Properties.created, .descending)
@@ -85,23 +84,17 @@ public extension BlogTag {
 //        try posts.remove(post)
 //    }
 
-    static func addTag(_ name: String, to post: BlogPost<Database>, on conn: DatabaseConnectable) throws -> Future<Void> {
-        return try BlogTag.query(on: conn).filter(\.name == name).first().flatMap(to: Void.self) { foundTag in
-            if let exisitingTag = foundTag {
-                return exisitingTag.posts.attach(post, on: conn).transform(to: Future.void)
-            } else {
-                return BlogTag(name: name).save(on: conn).flatMap(to: Void.self) { tag in
-                    return tag.posts.attach(post, on: conn).transform(to: Future.void)
-                }
-            }
-        }
-    }
+//    static func addTag(_ name: String, to post: BlogPost<Database>, on conn: DatabaseConnectable) throws -> Future<Void> {
+//        return try BlogTag.query(on: conn).filter(\.name == name).first().flatMap(to: Void.self) { foundTag in
+//            if let exisitingTag = foundTag {
+//                return exisitingTag.posts.attach(post, on: conn).transform(to: Future.void)
+//            } else {
+//                return BlogTag(name: name).save(on: conn).flatMap(to: Void.self) { tag in
+//                    return tag.posts.attach(post, on: conn).transform(to: Future.void)
+//                }
+//            }
+//        }
+//    }
 }
 
-extension Future where T == Void {
-    /// Pre-completed void future.
-    public static var void: Void {
-        return {}()
-    }
-}
 

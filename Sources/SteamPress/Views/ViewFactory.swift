@@ -1,6 +1,5 @@
 import Vapor
 //import URI
-import Fluent
 import Foundation
 
 protocol ViewFactory {

@@ -1,12 +1,11 @@
 import Vapor
-import Fluent
 ////import AuthProvider
 ////import BCrypt
 //import Foundation
 
 // MARK: - Model
 
-public final class BlogUser<DatabaseType>: Model where DatabaseType: QuerySupporting & SchemaSupporting & JoinSupporting {
+public final class BlogUser: Codable {
 
     // TODO
 //    public struct Properties {
@@ -21,12 +20,6 @@ public final class BlogUser<DatabaseType>: Model where DatabaseType: QuerySuppor
 //        public static let tagline = "tagline"
 //        public static let postCount = "post_count"
 //    }
-
-    public typealias ID = Int
-    public static var idKey: IDKey {
-        return \BlogUser.userID
-    }
-    public typealias Database = DatabaseType
 
     public var userID: Int?
     public var name: String
@@ -50,7 +43,7 @@ public final class BlogUser<DatabaseType>: Model where DatabaseType: QuerySuppor
 
 }
 
-extension BlogUser: Migration {}
+//extension BlogUser: Migration {}
 
 
 //extension BlogUser: Parameterizable {}

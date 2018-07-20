@@ -1,12 +1,11 @@
 import Foundation
 import Vapor
-import Fluent
 import SwiftSoup
 import SwiftMarkdown
 
 // MARK: - Model
 
-public final class BlogPost<DatabaseType>: Model where DatabaseType: QuerySupporting & SchemaSupporting & JoinSupporting {
+public final class BlogPost: Codable {
 
 //    public struct Properties {
 //        public static let blogPostID = "id"
@@ -30,26 +29,29 @@ public final class BlogPost<DatabaseType>: Model where DatabaseType: QuerySuppor
 //    static var postsPerPage = 10
 
     // TODO convert to UUID?
-    public typealias ID = Int
-    public static var idKey: IDKey {
-        return \BlogPost.blogID
-    }
-    public typealias Database = DatabaseType
+//    public typealias ID = Int
+//    public static var idKey: IDKey {
+//        return \BlogPost.blogID
+//    }
+//    public typealias Database = DatabaseType
 
     public var blogID: Int?
     public var title: String
     public var contents: String
-    public var author: BlogUser<DatabaseType>.ID
+    public var author: Int
     public var created: Date
     public var lastEdited: Date?
     public var slugUrl: String
     public var published: Bool
 
-    public init(title: String, contents: String, author: BlogUser<DatabaseType>, creationDate: Date, slugUrl: String,
+    public init(title: String, contents: String, author: BlogUser, creationDate: Date, slugUrl: String,
          published: Bool/*, logger: LogProtocol? = nil*/) throws {
         self.title = title
         self.contents = contents
-        self.author = try author.requireID()
+        guard let authorID = author.userID else {
+            throw SteamPressError(identifier: "ID-required", "Author ID not set")
+        }
+        self.author = authorID
         self.created = creationDate
 //        self.slugUrl = BlogPost.generateUniqueSlugUrl(from: slugUrl, logger: logger)
         self.slugUrl = slugUrl
@@ -58,7 +60,7 @@ public final class BlogPost<DatabaseType>: Model where DatabaseType: QuerySuppor
     }
 }
 
-extension BlogPost: Migration {}
+//extension BlogPost: Migration {}
 
 //
 //extension BlogPost: Parameterizable {}
@@ -203,15 +205,15 @@ extension BlogPost {
 
 // MARK: - Relations
 
-extension BlogPost {
-    var postAuthor: Parent<BlogPost, BlogUser<DatabaseType>> {
-        return parent(\.author)
-    }
-
-    var tags: Siblings<BlogPost, BlogTag<DatabaseType>, BlogPostTagPivot<DatabaseType>> {
-        return siblings()
-    }
-}
+//extension BlogPost {
+//    var postAuthor: Parent<BlogPost, BlogUser<DatabaseType>> {
+//        return parent(\.author)
+//    }
+//
+//    var tags: Siblings<BlogPost, BlogTag<DatabaseType>, BlogPostTagPivot<DatabaseType>> {
+//        return siblings()
+//    }
+//}
 
 //// MARK: - Pagination
 //
