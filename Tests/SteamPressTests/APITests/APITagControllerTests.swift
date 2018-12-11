@@ -11,14 +11,6 @@ class APITagControllerTests: XCTestCase {
         ("testThatAllTagsAreReturnedFromAPI", testThatAllTagsAreReturnedFromAPI),
         ]
     
-    //    // MARK: - Properties
-    private var app: Application!
-    
-    // MARK: - Overrides
-    
-    override func setUp() {
-    }
-    
     // MARK: - Tests
     
     func testLinuxTestSuiteIncludesAllTests() {
@@ -33,8 +25,6 @@ class APITagControllerTests: XCTestCase {
     }
     
     func testThatAllTagsAreReturnedFromAPI() throws {
-        //        let app = try TestDataBuilder.getSteamPressApp()
-        //        let conn = try app.newConnection(to: .sqlite).wait()
         let testWorld = try TestWorld.create()
         
         let tag1 = "Vapor 3"
@@ -52,56 +42,4 @@ class APITagControllerTests: XCTestCase {
 
 struct BlogTagJSON: Content {
     let name: String
-}
-
-
-struct TestWorld {
-    
-    static func create() throws -> TestWorld {
-        let repository = InMemoryRepository()
-        let application = try TestDataBuilder.getSteamPressApp(tagRepository: repository)
-        let context = Context(app: application, repository: repository)
-        return TestWorld(context: context)
-    }
-
-    let context: Context
-    
-    init(context: Context) {
-        self.context = context
-    }
-    
-    struct Context {
-        let app: Application
-        let repository: InMemoryRepository
-    }
-}
-
-extension TestWorld {
-    func getResponse<T>(to path: String, method: HTTPMethod = .GET, decodeTo type: T.Type) throws -> T where T: Content {
-        let responder = try context.app.make(Responder.self)
-        let request = HTTPRequest(method: method, url: URL(string: path)!)
-        let wrappedRequest = Request(http: request, using: context.app)
-        let response = try responder.respond(to: wrappedRequest).wait()
-        return try response.content.decode(type).wait()
-    }
-}
-
-class InMemoryRepository: TagRepository, Service {
-    
-    private var tags: [BlogTag]
-    
-    init() {
-        tags = []
-    }
-    
-    func getAllTags(on req: Request) -> Future<[BlogTag]> {
-        return req.future(tags)
-    }
-    
-    func addTag(name: String) {
-        let newTag = BlogTag(id: tags.count + 1, name: name)
-        tags.append(newTag)
-    }
-    
-    
 }
