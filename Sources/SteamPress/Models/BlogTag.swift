@@ -24,7 +24,8 @@ public final class BlogTag: Codable {
     var tagID: Int?
     var name: String
 
-    public init(name: String) {
+    public init(id: Int? = nil, name: String) {
+        self.tagID = id
         self.name = name
     }
 }

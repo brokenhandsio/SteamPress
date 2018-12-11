@@ -75,18 +75,19 @@ public struct Provider: Vapor.Provider {
 //        services.register(migrationConfig)
     }
 
-    public func boot(_ worker: Container) throws {
-        let router = try worker.make(Router.self)
+    public func willBoot(_ container: Container) throws -> Future<Void> {
+        let router = try container.make(Router.self)
 
         let feedController = FeedController(pathCreator: pathCreator, title: title, description: description, copyright: copyright, imageURL: imageURL)
         let apiController = APIController()
 
         try router.register(collection: feedController)
         try router.register(collection: apiController)
+        return .done(on: container)
     }
 
-    public func didBoot(_ container: Container) throws -> EventLoopFuture<Void> {
-        return Future.map(on: container) {}
+    public func didBoot(_ container: Container) throws -> Future<Void> {
+        return .done(on: container)
     }
 
 

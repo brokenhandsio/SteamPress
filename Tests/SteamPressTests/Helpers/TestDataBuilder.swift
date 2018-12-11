@@ -61,7 +61,9 @@ struct TestDataBuilder {
 //        return drop
 //    }
 
-    static func getSteamPressApp(path: String? = nil,
+    #warning("make InMemoryRepository non optional")
+    static func getSteamPressApp(tagRepository: InMemoryRepository? = nil,
+                                 path: String? = nil,
                                  title: String? = nil,
                                  description: String? = nil,
                                  copyright: String? = nil,
@@ -71,6 +73,7 @@ struct TestDataBuilder {
         // TODO work out new config?
 
         var services = Services.default()
+        var config = Config.default()
 //        try services.register(FluentSQLiteProvider())
 //        var databaseConfig = DatabasesConfig()
 //        let testDatabase = try SQLiteDatabase(storage: .memory)
@@ -87,6 +90,12 @@ struct TestDataBuilder {
         try services.register(steampress)
 
 //        try services.register(FluentProvider())
+        if let tagRepository = tagRepository {
+            services.register(TagRepository.self, factory: { _ in
+                return tagRepository
+            })
+//            config.prefer(tagRepo.self, for: TagRepository.self)
+        }
 
         return try Application(services: services)
     }
