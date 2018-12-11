@@ -30,10 +30,12 @@ struct FeedController: RouteCollection {
 
     // MARK: - Route Collection
     func boot(router: Router) throws {
-        router.group(PathComponent(stringLiteral: "\(pathCreator.blogPath ?? "")"), configure: { index in
-            index.get("atom.xml", use: atomGenerator.feedHandler)
-            index.get("rss.xml", use: rssGenerator.feedHandler)
-        })
+//        router.group(PathComponent(stringLiteral: "\(pathCreator.blogPath ?? "")"), configure: { index in
+//            index.get("atom.xml", use: atomGenerator.feedHandler)
+//            index.get("rss.xml", use: rssGenerator.feedHandler)
+//        })
+        router.get("atom.xml", use: atomGenerator.feedHandler)
+        router.get("rss.xml", use: rssGenerator.feedHandler)
     }
 }
 

@@ -28,10 +28,15 @@ struct AtomFeedGenerator {
     
     // MARK: - Route Handler
     
-    func feedHandler(_ request: Request) throws -> Future<Response> {
+    func feedHandler(_ request: Request) throws -> Future<HTTPResponse> {
 
-        return request.future(request.makeResponse())
-//        var feed = try getFeedStart(for: request)
+//        return request.future(request.makeResponse())
+        var feed = getFeedStart(for: request)
+        feed += "<updated>\(self.iso8601Formatter.string(from: Date()))</updated>\n"
+        feed += feedEnd
+        var httpResponse = HTTPResponse(body: feed)
+        httpResponse.headers.add(name: .contentType, value: "application/atom+xml")
+        return request.future(httpResponse)
 
 //        return try BlogPost<DatabaseType>.query(on: request).filter(\.published == true).sort(\.created, .descending).all().flatMap(to: Response.self) { posts in
 //
@@ -72,7 +77,7 @@ struct AtomFeedGenerator {
     
     // MARK: - Private functions
     
-    private func getFeedStart(for request: Request) throws -> String {
+    private func getFeedStart(for request: Request) -> String {
         let blogLink = getRootPath(for: request) + "/"
         let feedLink = blogLink + "atom.xml"
         return "\(xmlDeclaration)\n\(feedStart)\n\n<title>\(title)</title>\n<subtitle>\(description)</subtitle>\n<id>\(blogLink)</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"\(blogLink)\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"\(feedLink)\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n"

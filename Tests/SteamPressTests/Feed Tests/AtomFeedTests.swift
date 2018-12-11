@@ -28,6 +28,7 @@ class AtomFeedTests: XCTestCase {
 
 //    // MARK: - Properties
     private var app: Application!
+    private let atomPath = "/atom.xml"
     private let atomRequest = HTTPRequest(method: .GET, url: "/atom.xml")
     private let dateFormatter = DateFormatter()
 
@@ -53,13 +54,13 @@ class AtomFeedTests: XCTestCase {
     }
 
     func testNoPostsReturnsCorrectAtomFeed() throws {
-        app = try TestDataBuilder.getSteamPressApp()
+        let testWorld = try TestWorld.create()
 
         let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: Date()))</updated>\n</feed>"
 
-        let actualXmlResponse = try TestDataBuilder.getResponse(to: atomRequest, using: app)
+        let actualXmlResponse = try testWorld.getResponseString(to: atomPath)
 
-        XCTAssertEqual(actualXmlResponse.string, expectedXML)
+        XCTAssertEqual(actualXmlResponse, expectedXML)
     }
 
     func testThatFeedTitleCanBeConfigured() throws {
@@ -83,7 +84,7 @@ class AtomFeedTests: XCTestCase {
     }
 
     func testThatRightsCanBeConifgured() throws {
-        let copyright = "Copyright ©️ 2017 SteamPress"
+        let copyright = "Copyright ©️ 2019 SteamPress"
         app = try TestDataBuilder.getSteamPressApp(copyright: copyright)
 
         let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: Date()))</updated>\n<rights>\(copyright)</rights>\n</feed>"

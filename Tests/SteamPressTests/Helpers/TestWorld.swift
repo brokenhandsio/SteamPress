@@ -24,10 +24,19 @@ struct TestWorld {
 
 extension TestWorld {
     func getResponse<T>(to path: String, method: HTTPMethod = .GET, decodeTo type: T.Type) throws -> T where T: Content {
+        let response = try getResponse(to: path, method: method)
+        return try response.content.decode(type).wait()
+    }
+    
+    func getResponse(to path: String, method: HTTPMethod = .GET) throws -> Response {
         let responder = try context.app.make(Responder.self)
         let request = HTTPRequest(method: method, url: URL(string: path)!)
         let wrappedRequest = Request(http: request, using: context.app)
-        let response = try responder.respond(to: wrappedRequest).wait()
-        return try response.content.decode(type).wait()
+        return try responder.respond(to: wrappedRequest).wait()
+    }
+    
+    func getResponseString(to path: String) throws -> String {
+        let data = try getResponse(to: path).http.body.convertToHTTPBody().data
+        return String(data: data!, encoding: .utf8)!
     }
 }
