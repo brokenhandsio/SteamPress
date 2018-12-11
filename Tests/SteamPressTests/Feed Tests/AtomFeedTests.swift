@@ -27,7 +27,9 @@ class AtomFeedTests: XCTestCase {
         ]
 
 //    // MARK: - Properties
+    #warning("Remove app and atom request")
     private var app: Application!
+    private var testWorld: TestWorld!
     private let atomPath = "/atom.xml"
     private let atomRequest = HTTPRequest(method: .GET, url: "/atom.xml")
     private let dateFormatter = DateFormatter()
@@ -54,7 +56,7 @@ class AtomFeedTests: XCTestCase {
     }
 
     func testNoPostsReturnsCorrectAtomFeed() throws {
-        let testWorld = try TestWorld.create()
+        testWorld = try TestWorld.create()
 
         let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: Date()))</updated>\n</feed>"
 
@@ -65,32 +67,32 @@ class AtomFeedTests: XCTestCase {
 
     func testThatFeedTitleCanBeConfigured() throws {
         let title = "My Awesome Blog"
-        app = try TestDataBuilder.getSteamPressApp(title: title)
+        testWorld = try TestWorld.create(title: title)
 
         let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>\(title)</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: Date()))</updated>\n</feed>"
 
-        let actualXmlResponse = try TestDataBuilder.getResponse(to: atomRequest, using: app)
-        XCTAssertEqual(actualXmlResponse.string, expectedXML)
+        let actualXmlResponse = try testWorld.getResponseString(to: atomPath)
+        XCTAssertEqual(actualXmlResponse, expectedXML)
     }
 
     func testThatFeedSubtitleCanBeConfigured() throws {
         let description = "This is a test for my blog"
-        app = try TestDataBuilder.getSteamPressApp(description: description)
+        testWorld = try TestWorld.create(description: description)
 
         let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>\(description)</subtitle>\n<id>/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: Date()))</updated>\n</feed>"
 
-        let actualXmlResponse = try TestDataBuilder.getResponse(to: atomRequest, using: app)
-        XCTAssertEqual(actualXmlResponse.string, expectedXML)
+        let actualXmlResponse = try testWorld.getResponseString(to: atomPath)
+        XCTAssertEqual(actualXmlResponse, expectedXML)
     }
 
     func testThatRightsCanBeConifgured() throws {
         let copyright = "Copyright ©️ 2019 SteamPress"
-        app = try TestDataBuilder.getSteamPressApp(copyright: copyright)
+        testWorld = try TestWorld.create(copyright: copyright)
 
         let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: Date()))</updated>\n<rights>\(copyright)</rights>\n</feed>"
 
-        let actualXmlResponse = try TestDataBuilder.getResponse(to: atomRequest, using: app)
-        XCTAssertEqual(actualXmlResponse.string, expectedXML)
+        let actualXmlResponse = try testWorld.getResponseString(to: atomPath)
+        XCTAssertEqual(actualXmlResponse, expectedXML)
     }
 
     func testThatLinksAreCorrectForFullURI() throws {
@@ -278,7 +280,7 @@ struct TestData {
     let author: BlogUser
 }
 
-// TODO Move
+#warning("Remove")
 extension Response {
     var string: String? {
         let data = self.http.body.convertToHTTPBody().data

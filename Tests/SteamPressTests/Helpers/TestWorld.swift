@@ -3,9 +3,9 @@ import Vapor
 
 struct TestWorld {
     
-    static func create() throws -> TestWorld {
+    static func create(title: String? = nil, description: String? = nil, copyright: String? = nil) throws -> TestWorld {
         let repository = InMemoryRepository()
-        let application = try TestDataBuilder.getSteamPressApp(tagRepository: repository)
+        let application = try TestDataBuilder.getSteamPressApp(tagRepository: repository, title: title, description: description, copyright: copyright)
         let context = Context(app: application, repository: repository)
         return TestWorld(context: context)
     }

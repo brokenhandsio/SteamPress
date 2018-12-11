@@ -33,6 +33,11 @@ struct AtomFeedGenerator {
 //        return request.future(request.makeResponse())
         var feed = getFeedStart(for: request)
         feed += "<updated>\(self.iso8601Formatter.string(from: Date()))</updated>\n"
+        
+        if let copyright = self.copyright {
+            feed += "<rights>\(copyright)</rights>\n"
+        }
+        
         feed += feedEnd
         var httpResponse = HTTPResponse(body: feed)
         httpResponse.headers.add(name: .contentType, value: "application/atom+xml")
