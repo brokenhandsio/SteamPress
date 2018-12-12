@@ -62,7 +62,7 @@ struct TestDataBuilder {
 //    }
 
     #warning("make InMemoryRepository non optional")
-    static func getSteamPressApp(tagRepository: InMemoryRepository? = nil,
+    static func getSteamPressApp(repository: InMemoryRepository? = nil,
                                  path: String? = nil,
                                  title: String? = nil,
                                  description: String? = nil,
@@ -89,12 +89,10 @@ struct TestDataBuilder {
                                              postsPerPage: 10)
         try services.register(steampress)
 
-//        try services.register(FluentProvider())
-        if let tagRepository = tagRepository {
-            services.register(TagRepository.self, factory: { _ in
-                return tagRepository
+        if let repository = repository {
+            services.register([TagRepository.self, BlogPostRepository.self, BlogUserRepository.self], factory: { _ in
+                return repository
             })
-//            config.prefer(tagRepo.self, for: TagRepository.self)
         }
 
         return try Application(services: services)
@@ -106,15 +104,18 @@ struct TestDataBuilder {
         return try responder.respond(to: wrappedRequest).wait()
     }
 
-    static func createPost(tags: [String]? = nil, createdDate: Date? = nil, contents: String? = nil) throws -> TestData {
+    #warning("BlogPostRepository should not be optional")
+    static func createPost(on repository: InMemoryRepository? = nil, tags: [String]? = nil, createdDate: Date? = nil, contents: String? = nil) throws -> TestData {
         let author = TestDataBuilder.anyUser()
-//        _ = try author.save(on: db).wait()
+        repository?.addUser(author)
         let post: BlogPost
         if let contents = contents {
             post = try TestDataBuilder.anyPost(author: author, contents: contents, creationDate: createdDate ?? Date())
         } else {
             post = try TestDataBuilder.anyPost(author: author, creationDate: createdDate ?? Date())
         }
+        
+        repository?.addPost(post)
 //        _ = try post.save(on: db).wait()
 
 //        if let tags = tags {

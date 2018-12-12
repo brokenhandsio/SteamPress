@@ -30,18 +30,36 @@ struct AtomFeedGenerator {
     
     func feedHandler(_ request: Request) throws -> Future<HTTPResponse> {
 
-//        return request.future(request.makeResponse())
-        var feed = getFeedStart(for: request)
-        feed += "<updated>\(self.iso8601Formatter.string(from: Date()))</updated>\n"
-        
-        if let copyright = self.copyright {
-            feed += "<rights>\(copyright)</rights>\n"
+        let blogRepository = try request.make(BlogPostRepository.self)
+        return blogRepository.getAllPosts(on: request).flatMap { posts in
+            var feed = self.getFeedStart(for: request)
+            feed += "<updated>\(self.iso8601Formatter.string(from: Date()))</updated>\n"
+            
+            if let copyright = self.copyright {
+                feed += "<rights>\(copyright)</rights>\n"
+            }
+            
+            if let imageURL = self.imageURL {
+                feed += "<logo>\(imageURL)</logo>\n"
+            }
+            
+            var postData: [Future<String>] = []
+            for post in posts {
+                try postData.append(post.getPostAtomFeed(blogPath: "/", dateFormatter: self.iso8601Formatter, for: request))
+            }
+            
+            return postData.flatten(on: request).map { postsInformation in
+                for postInformation in postsInformation {
+                    feed += postInformation
+                }
+                
+                feed += self.feedEnd
+                var httpResponse = HTTPResponse(body: feed)
+                httpResponse.headers.add(name: .contentType, value: "application/atom+xml")
+                return httpResponse
+            }
         }
         
-        feed += feedEnd
-        var httpResponse = HTTPResponse(body: feed)
-        httpResponse.headers.add(name: .contentType, value: "application/atom+xml")
-        return request.future(httpResponse)
 
 //        return try BlogPost<DatabaseType>.query(on: request).filter(\.published == true).sort(\.created, .descending).all().flatMap(to: Response.self) { posts in
 //
@@ -50,14 +68,6 @@ struct AtomFeedGenerator {
 //                    feed += "<updated>\(self.iso8601Formatter.string(from: postDate))</updated>\n"
 //                } else {
 //                feed += "<updated>\(self.iso8601Formatter.string(from: Date()))</updated>\n"
-//            }
-//
-//            if let copyright = self.copyright {
-//                feed += "<rights>\(copyright)</rights>\n"
-//            }
-//
-//            if let imageURL = self.imageURL {
-//                feed += "<logo>\(imageURL)</logo>\n"
 //            }
 //
 //            let blogPath = self.getRootPath(for: request) + "/"
@@ -95,7 +105,20 @@ struct AtomFeedGenerator {
 
 fileprivate extension BlogPost {
     fileprivate func getPostAtomFeed(blogPath: String, dateFormatter: DateFormatter, for request: Request) throws -> Future<String> {
-//        let updatedTime = lastEdited ?? created
+        let updatedTime = lastEdited ?? created
+        let authorRepository = try request.make(BlogUserRepository.self)
+        return authorRepository.getUser(author, on: request).map { user in
+            guard let user = user else {
+                throw SteamPressError(identifier: "Invalid-relationship", "Blog user with ID \(self.author) not found")
+            }
+            guard let postID = self.blogID else {
+                throw SteamPressError(identifier: "ID-required", "Blog Post has no ID")
+            }
+            var postEntry = "<entry>\n<id>\(blogPath)posts-id/\(postID)/</id>\n<title>\(self.title)</title>\n<updated>\(dateFormatter.string(from: updatedTime))</updated>\n<published>\(dateFormatter.string(from: self.created))</published>\n<author>\n<name>\(user.name)</name>\n<uri>\(blogPath)authors/\(user.username)/</uri>\n</author>\n<summary>\(try self.description())</summary>\n<link rel=\"alternate\" href=\"\(blogPath)posts/\(self.slugUrl)/\" />\n"
+            postEntry += "</entry>\n"
+            return postEntry
+        }
+        
 //        return try postAuthor.get(on: request).flatMap(to: String.self) { author in
 //
 //            var postEntry = try "<entry>\n<id>\(blogPath)posts-id/\(self.requireID())/</id>\n<title>\(self.title)</title>\n<updated>\(dateFormatter.string(from: updatedTime))</updated>\n<published>\(dateFormatter.string(from: self.created))</published>\n<author>\n<name>\(author.name)</name>\n<uri>\(blogPath)authors/\(author.username)/</uri>\n</author>\n<summary>\(try self.description())</summary>\n<link rel=\"alternate\" href=\"\(blogPath)posts/\(self.slugUrl)/\" />\n"
