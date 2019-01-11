@@ -31,7 +31,7 @@ struct AtomFeedGenerator {
     func feedHandler(_ request: Request) throws -> Future<HTTPResponse> {
 
         let blogRepository = try request.make(BlogPostRepository.self)
-        return blogRepository.getAllPostsSortedByPublishDate(on: request).flatMap { posts in
+        return blogRepository.getAllPostsSortedByPublishDate(on: request, includeDrafts: false).flatMap { posts in
             var feed = self.getFeedStart(for: request)
             feed += "<updated>\(self.iso8601Formatter.string(from: Date()))</updated>\n"
             

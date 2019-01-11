@@ -6,7 +6,7 @@ public protocol TagRepository {
 
 public protocol BlogPostRepository {
     func getAllPosts(on req: Request) -> Future<[BlogPost]>
-    func getAllPostsSortedByPublishDate(on req: Request) -> Future<[BlogPost]>
+    func getAllPostsSortedByPublishDate(on req: Request, includeDrafts: Bool) -> Future<[BlogPost]>
 }
 
 public protocol BlogUserRepository {

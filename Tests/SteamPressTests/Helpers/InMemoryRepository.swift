@@ -26,8 +26,11 @@ class InMemoryRepository: TagRepository, BlogPostRepository, BlogUserRepository,
         return req.future(posts)
     }
     
-    func getAllPostsSortedByPublishDate(on req: Request) -> EventLoopFuture<[BlogPost]> {
-        let sortedPosts = posts.sorted { $0.created > $1.created }
+    func getAllPostsSortedByPublishDate(on req: Request, includeDrafts: Bool) -> EventLoopFuture<[BlogPost]> {
+        var sortedPosts = posts.sorted { $0.created > $1.created }
+        if !includeDrafts {
+            sortedPosts = sortedPosts.filter { $0.published }
+        }
         return req.future(sortedPosts)
     }
     
