@@ -33,7 +33,13 @@ struct AtomFeedGenerator {
         let blogRepository = try request.make(BlogPostRepository.self)
         return blogRepository.getAllPostsSortedByPublishDate(on: request, includeDrafts: false).flatMap { posts in
             var feed = self.getFeedStart(for: request)
-            feed += "<updated>\(self.iso8601Formatter.string(from: Date()))</updated>\n"
+            
+            if !posts.isEmpty {
+                let postDate = posts[0].lastEdited ?? posts[0].created
+                feed += "<updated>\(self.iso8601Formatter.string(from: postDate))</updated>\n"
+            } else {
+                feed += "<updated>\(self.iso8601Formatter.string(from: Date()))</updated>\n"
+            }
             
             if let copyright = self.copyright {
                 feed += "<rights>\(copyright)</rights>\n"

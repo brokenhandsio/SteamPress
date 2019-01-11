@@ -169,11 +169,9 @@ class AtomFeedTests: XCTestCase {
     }
 
     func testThatEditedPostsHaveUpdatedTimes() throws {
-        app = try TestDataBuilder.getSteamPressApp()
-//        let conn = try app.newConnection(to: .sqlite).wait()
-
+        testWorld = try TestWorld.create()
         let firstPostDate = Date().addingTimeInterval(-3600)
-        let testData = try TestDataBuilder.createPost(createdDate: firstPostDate)
+        let testData = try TestDataBuilder.createPost(on: testWorld.context.repository, createdDate: firstPostDate)
 
         let post = testData.post
         let author = testData.author
@@ -181,15 +179,13 @@ class AtomFeedTests: XCTestCase {
         let secondTitle = "Another Post"
         let secondPostDate = Date().addingTimeInterval(-60)
         let newEditDate = Date()
-        let post2 = try BlogPost(title: secondTitle, contents: "#Some Interesting Post\nThis contains a load of contents...", author: author, creationDate: secondPostDate, slugUrl: "another-post", published: true)
+        let post2 = try TestDataBuilder.createPost(on: testWorld.context.repository, createdDate: secondPostDate, title: secondTitle, author: author).post
         post2.lastEdited = newEditDate
-
-//        _ = try post2.save(on: conn).wait()
 
         let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: newEditDate))</updated>\n<entry>\n<id>/posts-id/2/</id>\n<title>\(secondTitle)</title>\n<updated>\(dateFormatter.string(from: newEditDate))</updated>\n<published>\(dateFormatter.string(from: secondPostDate))</published>\n<author>\n<name>\(author.name)</name>\n<uri>/authors/\(author.username)/</uri>\n</author>\n<summary>\(try post2.description())</summary>\n<link rel=\"alternate\" href=\"/posts/\(post2.slugUrl)/\" />\n</entry>\n<entry>\n<id>/posts-id/1/</id>\n<title>\(post.title)</title>\n<updated>\(dateFormatter.string(from: firstPostDate))</updated>\n<published>\(dateFormatter.string(from: firstPostDate))</published>\n<author>\n<name>\(author.name)</name>\n<uri>/authors/\(author.username)/</uri>\n</author>\n<summary>\(try post.description())</summary>\n<link rel=\"alternate\" href=\"/posts/\(post.slugUrl)/\" />\n</entry>\n</feed>"
 
-        let actualXmlResponse = try TestDataBuilder.getResponse(to: atomRequest, using: app)
-        XCTAssertEqual(actualXmlResponse.string, expectedXML)
+        let actualXmlResponse = try testWorld.getResponseString(to: atomPath)
+        XCTAssertEqual(actualXmlResponse, expectedXML)
     }
 
     func testThatTagsAppearWhenPostHasThem() throws {
@@ -245,25 +241,24 @@ class AtomFeedTests: XCTestCase {
     }
 
     func testCorrectHeaderSetForAtomFeed() throws {
-        app = try TestDataBuilder.getSteamPressApp()
-        let actualXmlResponse = try TestDataBuilder.getResponse(to: atomRequest, using: app)
+        testWorld = try TestWorld.create()
+        let actualXmlResponse = try testWorld.getResponse(to: atomPath)
         XCTAssertEqual(actualXmlResponse.http.headers.firstValue(name: .contentType), "application/atom+xml")
     }
 
     func testThatDateFormatterIsCorrect() throws {
-        app = try TestDataBuilder.getSteamPressApp()
-//        let conn = try app.newConnection(to: .sqlite).wait()
+        testWorld = try TestWorld.create()
+        
         let createDate = Date(timeIntervalSince1970: 1505867108)
-
-        let testData = try TestDataBuilder.createPost(createdDate: createDate)
+        let testData = try TestDataBuilder.createPost(on: testWorld.context.repository, createdDate: createDate)
 
         let post = testData.post
         let author = testData.author
 
         let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>2017-09-20T00:25:08Z</updated>\n<entry>\n<id>/posts-id/1/</id>\n<title>\(post.title)</title>\n<updated>2017-09-20T00:25:08Z</updated>\n<published>2017-09-20T00:25:08Z</published>\n<author>\n<name>\(author.name)</name>\n<uri>/authors/\(author.username)/</uri>\n</author>\n<summary>\(try post.description())</summary>\n<link rel=\"alternate\" href=\"/posts/\(post.slugUrl)/\" />\n</entry>\n</feed>"
 
-        let actualXmlResponse = try TestDataBuilder.getResponse(to: atomRequest, using: app)
-        XCTAssertEqual(actualXmlResponse.string, expectedXML)
+        let actualXmlResponse = try testWorld.getResponseString(to: atomPath)
+        XCTAssertEqual(actualXmlResponse, expectedXML)
     }
 }
 
