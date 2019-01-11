@@ -26,6 +26,11 @@ class InMemoryRepository: TagRepository, BlogPostRepository, BlogUserRepository,
         return req.future(posts)
     }
     
+    func getAllPostsSortedByPublishDate(on req: Request) -> EventLoopFuture<[BlogPost]> {
+        let sortedPosts = posts.sorted { $0.created > $1.created }
+        return req.future(sortedPosts)
+    }
+    
     func addPost(_ post: BlogPost) {
         post.blogID = posts.count + 1
         posts.append(post)
