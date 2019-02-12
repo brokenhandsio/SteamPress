@@ -110,7 +110,6 @@ class AtomFeedTests: XCTestCase {
 
         let fullPath = "http://geeks.brokenhands.io/atom.xml"
         let actualXmlResponse = try testWorld.getResponseString(to: fullPath, headers: ["X-Forwarded-Proto": "https"])
-
         XCTAssertEqual(actualXmlResponse, expectedXML)
     }
 
@@ -201,8 +200,8 @@ class AtomFeedTests: XCTestCase {
 
         let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: Date()))</updated>\n<entry>\n<id>/posts-id/1/</id>\n<title>\(post.title)</title>\n<updated>\(dateFormatter.string(from: post.created))</updated>\n<published>\(dateFormatter.string(from: post.created))</published>\n<author>\n<name>\(author.name)</name>\n<uri>/authors/\(author.username)/</uri>\n</author>\n<summary>\(try post.description())</summary>\n<link rel=\"alternate\" href=\"/posts/\(post.slugUrl)/\" />\n<category term=\"\(tag1)\"/>\n<category term=\"\(tag2)\"/>\n</entry>\n</feed>"
 
-        let actualXmlResponse = try TestDataBuilder.getResponse(to: atomRequest, using: app)
-        XCTAssertEqual(actualXmlResponse.string, expectedXML)
+        let actualXmlResponse = try testWorld.getResponseString(to: atomPath)
+        XCTAssertEqual(actualXmlResponse, expectedXML)
     }
 
     func testThatFullLinksWorksForPosts() throws {
