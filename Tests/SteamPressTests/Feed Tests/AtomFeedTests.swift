@@ -26,12 +26,9 @@ class AtomFeedTests: XCTestCase {
         ("testThatDateFormatterIsCorrect", testThatDateFormatterIsCorrect),
         ]
 
-//    // MARK: - Properties
-    #warning("Remove app and atom request")
-    private var app: Application!
+    // MARK: - Properties
     private var testWorld: TestWorld!
     private let atomPath = "/atom.xml"
-    private let atomRequest = HTTPRequest(method: .GET, url: "/atom.xml")
     private let dateFormatter = DateFormatter()
 
     // MARK: - Overrides
@@ -96,12 +93,12 @@ class AtomFeedTests: XCTestCase {
     }
 
     func testThatLinksAreCorrectForFullURI() throws {
-        app = try TestDataBuilder.getSteamPressApp(path: "blog")
+        testWorld = try TestWorld.create(path: "blog")
         let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>https://geeks.brokenhands.io/blog/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"https://geeks.brokenhands.io/blog/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"https://geeks.brokenhands.io/blog/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: Date()))</updated>\n</feed>"
 
-        let request = HTTPRequest(method: .GET, url: "https://geeks.brokenhands.io/blog/atom.xml")
-        let actualXmlResponse = try TestDataBuilder.getResponse(to: request, using: app)
-        XCTAssertEqual(actualXmlResponse.string, expectedXML)
+        let fullPath = "https://geeks.brokenhands.io/blog/atom.xml"
+        let actualXmlResponse = try testWorld.getResponseString(to: fullPath)
+        XCTAssertEqual(actualXmlResponse, expectedXML)
     }
 
     func testThatHTTPSLinksWorkWhenBehindReverseProxy() throws {
@@ -188,12 +185,11 @@ class AtomFeedTests: XCTestCase {
     }
 
     func testThatTagsAppearWhenPostHasThem() throws {
-        app = try TestDataBuilder.getSteamPressApp()
-//        let conn = try app.newConnection(to: .sqlite).wait()
+        testWorld = try TestWorld.create()
         let tag1 = "Vapor 2"
         let tag2 = "Engineering"
 
-        let testData = try TestDataBuilder.createPost(tags: [tag1, tag2])
+        let testData = try TestDataBuilder.createPost(on: testWorld.context.repository, tags: [tag1, tag2])
 
         let post = testData.post
         let author = testData.author
@@ -205,38 +201,34 @@ class AtomFeedTests: XCTestCase {
     }
 
     func testThatFullLinksWorksForPosts() throws {
-        app = try TestDataBuilder.getSteamPressApp(path: "blog")
-//        let conn = try app.newConnection(to: .sqlite).wait()
+        testWorld = try TestWorld.create(path: "blog")
 
-        let testData = try TestDataBuilder.createPost()
+        let testData = try TestDataBuilder.createPost(on: testWorld.context.repository)
 
         let post = testData.post
         let author = testData.author
 
         let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>https://geeks.brokenhands.io/blog/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"https://geeks.brokenhands.io/blog/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"https://geeks.brokenhands.io/blog/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: Date()))</updated>\n<entry>\n<id>https://geeks.brokenhands.io/blog/posts-id/1/</id>\n<title>\(post.title)</title>\n<updated>\(dateFormatter.string(from: post.created))</updated>\n<published>\(dateFormatter.string(from: post.created))</published>\n<author>\n<name>\(author.name)</name>\n<uri>https://geeks.brokenhands.io/blog/authors/\(author.username)/</uri>\n</author>\n<summary>\(try post.description())</summary>\n<link rel=\"alternate\" href=\"https://geeks.brokenhands.io/blog/posts/\(post.slugUrl)/\" />\n</entry>\n</feed>"
 
-        let request = HTTPRequest(method: .GET, url: "https://geeks.brokenhands.io/blog/atom.xml")
-
-        let actualXmlResponse = try TestDataBuilder.getResponse(to: request, using: app)
-        XCTAssertEqual(actualXmlResponse.string, expectedXML)
+        let fullPath = "http://geeks.brokenhands.io/atom.xml"
+        let actualXmlResponse = try testWorld.getResponseString(to: fullPath)
+        XCTAssertEqual(actualXmlResponse, expectedXML)
     }
 
     func testThatHTTPSLinksWorkForPostsBehindReverseProxy() throws {
-        app = try TestDataBuilder.getSteamPressApp(path: "blog")
-//        let conn = try app.newConnection(to: .sqlite).wait()
+        testWorld = try TestWorld.create(path: "blog")
 
-        let testData = try TestDataBuilder.createPost()
+        let testData = try TestDataBuilder.createPost(on: testWorld.context.repository)
 
         let post = testData.post
         let author = testData.author
 
         let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>https://geeks.brokenhands.io/blog/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"https://geeks.brokenhands.io/blog/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"https://geeks.brokenhands.io/blog/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: Date()))</updated>\n<entry>\n<id>https://geeks.brokenhands.io/blog/posts-id/1/</id>\n<title>\(post.title)</title>\n<updated>\(dateFormatter.string(from: post.created))</updated>\n<published>\(dateFormatter.string(from: post.created))</published>\n<author>\n<name>\(author.name)</name>\n<uri>https://geeks.brokenhands.io/blog/authors/\(author.username)/</uri>\n</author>\n<summary>\(try post.description())</summary>\n<link rel=\"alternate\" href=\"https://geeks.brokenhands.io/blog/posts/\(post.slugUrl)/\" />\n</entry>\n</feed>"
 
-        var request = HTTPRequest(method: .GET, url: "http://geeks.brokenhands.io/blog/atom.xml")
-        request.headers.add(name: .init("X-Forwarded-Proto"), value: "https")
-
-        let actualXmlResponse = try TestDataBuilder.getResponse(to: request, using: app)
-        XCTAssertEqual(actualXmlResponse.string, expectedXML)
+        
+        let fullPath = "http://geeks.brokenhands.io/blog/atom.xml"
+        let actualXmlResponse = try testWorld.getResponseString(to: fullPath, headers: ["X-Forwarded-Proto": "https"])
+        XCTAssertEqual(actualXmlResponse, expectedXML)
     }
 
     func testCorrectHeaderSetForAtomFeed() throws {
@@ -265,12 +257,3 @@ struct TestData {
     let post: BlogPost
     let author: BlogUser
 }
-
-#warning("Remove")
-extension Response {
-    var string: String? {
-        let data = self.http.body.convertToHTTPBody().data
-        return String(data: data!, encoding: .utf8)
-    }
-}
-
