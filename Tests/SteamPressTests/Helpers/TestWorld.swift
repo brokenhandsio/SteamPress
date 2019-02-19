@@ -5,7 +5,7 @@ struct TestWorld {
     
     static func create(path: String? = nil, title: String? = nil, description: String? = nil, copyright: String? = nil, imageURL: String? = nil) throws -> TestWorld {
         let repository = InMemoryRepository()
-        let application = try TestDataBuilder.getSteamPressApp(repository: repository, title: title, description: description, copyright: copyright, imageURL: imageURL)
+        let application = try TestDataBuilder.getSteamPressApp(repository: repository, path: path, title: title, description: description, copyright: copyright, imageURL: imageURL)
         let context = Context(app: application, repository: repository)
         return TestWorld(context: context)
     }

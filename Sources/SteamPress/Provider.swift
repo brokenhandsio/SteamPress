@@ -81,8 +81,14 @@ public struct Provider: Vapor.Provider {
         let feedController = FeedController(pathCreator: pathCreator, title: title, description: description, copyright: copyright, imageURL: imageURL)
         let apiController = APIController()
 
-        try router.register(collection: feedController)
-        try router.register(collection: apiController)
+        let blogRoutes: Router
+        if let blogPath = blogPath {
+            blogRoutes = router.grouped(blogPath)
+        } else {
+            blogRoutes = router.grouped("")
+        }
+        try blogRoutes.register(collection: feedController)
+        try blogRoutes.register(collection: apiController)
         return .done(on: container)
     }
 
