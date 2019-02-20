@@ -30,17 +30,17 @@ struct RSSFeedGenerator {
 
     func feedHandler(_ request: Request) throws -> Future<HTTPResponse> {
 
-        var xmlFeed = try getXMLStart(for: request)
-//
-//        return try BlogPost<DatabaseType>.query(on: request).filter(\.published == true).sort(\.created, .descending).all().flatMap(to: Response.self) { posts in
-//
-//            if !posts.isEmpty {
-//                let postDate = posts[0].lastEdited ?? posts[0].created
-//                xmlFeed += "<pubDate>\(self.rfc822DateFormatter.string(from: postDate))</pubDate>\n"
-//            }
-//
-//            xmlFeed += "<textinput>\n<description>Search \(self.title)</description>\n<title>Search</title>\n<link>\(self.getRootPath(for: request))/search?</link>\n<name>term</name>\n</textinput>\n"
-//
+        let blogRepository = try request.make(BlogPostRepository.self)
+        return blogRepository.getAllPostsSortedByPublishDate(on: request, includeDrafts: false).flatMap { posts in
+            var xmlFeed = try self.getXMLStart(for: request)
+            
+            if !posts.isEmpty {
+                let postDate = posts[0].lastEdited ?? posts[0].created
+                xmlFeed += "<pubDate>\(self.rfc822DateFormatter.string(from: postDate))</pubDate>\n"
+            }
+            
+            xmlFeed += "<textinput>\n<description>Search \(self.title)</description>\n<title>Search</title>\n<link>\(self.getRootPath(for: request))/search?</link>\n<name>term</name>\n</textinput>\n"
+
 //            var postData: [Future<String>] = []
 //
 //            for post in posts {
@@ -52,11 +52,11 @@ struct RSSFeedGenerator {
 //                    xmlFeed += post
 //                }
                 xmlFeed += self.xmlEnd
-        var httpResponse = HTTPResponse(body: xmlFeed)
-        httpResponse.headers.add(name: .contentType, value: "application/rss+xml")
-        return request.future(httpResponse)
+            var httpResponse = HTTPResponse(body: xmlFeed)
+            httpResponse.headers.add(name: .contentType, value: "application/rss+xml")
+            return request.future(httpResponse)
 //            }
-//        }
+        }
     }
 
     // MARK: - Private functions
