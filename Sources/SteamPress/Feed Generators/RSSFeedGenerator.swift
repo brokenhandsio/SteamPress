@@ -28,10 +28,9 @@ struct RSSFeedGenerator {
 
     // MARK: - Route Handler
 
-    func feedHandler(_ request: Request) throws -> Future<Response> {
+    func feedHandler(_ request: Request) throws -> Future<HTTPResponse> {
 
-      return request.future(request.makeResponse())
-//        var xmlFeed = try getXMLStart(for: request)
+        var xmlFeed = try getXMLStart(for: request)
 //
 //        return try BlogPost<DatabaseType>.query(on: request).filter(\.published == true).sort(\.created, .descending).all().flatMap(to: Response.self) { posts in
 //
@@ -52,10 +51,10 @@ struct RSSFeedGenerator {
 //                for post in postInformation {
 //                    xmlFeed += post
 //                }
-//                xmlFeed += self.xmlEnd
-//                var httpResponse = HTTPResponse(status: .ok, body: xmlFeed)
-//                httpResponse.headers.add(name: .contentType, value: "application/rss+xml")
-//                return Response(http: httpResponse, using: request)
+                xmlFeed += self.xmlEnd
+        var httpResponse = HTTPResponse(body: xmlFeed)
+        httpResponse.headers.add(name: .contentType, value: "application/rss+xml")
+        return request.future(httpResponse)
 //            }
 //        }
     }
