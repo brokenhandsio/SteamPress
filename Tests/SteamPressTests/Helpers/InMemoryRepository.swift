@@ -1,25 +1,51 @@
 import Vapor
 import SteamPress
 
-class InMemoryRepository: TagRepository, BlogPostRepository, BlogUserRepository, Service {
+class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserRepository, Service {
     
     private var tags: [BlogTag]
     private var posts: [BlogPost]
     private var users: [BlogUser]
+    private var postTagLinks: [BlogPostTagLink]
     
     init() {
         tags = []
         posts = []
         users = []
+        postTagLinks = []
     }
     
     func getAllTags(on req: Request) -> Future<[BlogTag]> {
         return req.future(tags)
     }
     
+    func getTagsFor(post: BlogPost, on req: Request) -> EventLoopFuture<[BlogTag]> {
+        var results = [BlogTag]()
+        guard let postID = post.blogID else {
+            fatalError("Post doesn't exist when it should")
+        }
+        for link in postTagLinks where link.postID == postID {
+            let foundTag = tags.first { $0.tagID == link.tagID }
+            guard let tag =  foundTag else {
+                fatalError("Tag doesn't exist when it should")
+            }
+            results.append(tag)
+        }
+        return req.future(results)
+    }
+    
     func addTag(name: String) {
         let newTag = BlogTag(id: tags.count + 1, name: name)
         tags.append(newTag)
+    }
+    
+    func addTag(name: String, for post: BlogPost) {
+        addTag(name: name)
+        guard let postID = post.blogID else {
+            fatalError("Blog doesn't exist when it should")
+        }
+        let newLink = BlogPostTagLink(postID: postID, tagID: tags.count)
+        postTagLinks.append(newLink)
     }
     
     func getAllPosts(on req: Request) -> EventLoopFuture<[BlogPost]> {
@@ -48,4 +74,9 @@ class InMemoryRepository: TagRepository, BlogPostRepository, BlogUserRepository,
         return req.future(users.first { $0.userID == id })
     }
     
+}
+
+private struct BlogPostTagLink: Codable {
+    let postID: Int
+    let tagID: Int
 }

@@ -1,7 +1,8 @@
 import Vapor
 
-public protocol TagRepository {
+public protocol BlogTagRepository {
     func getAllTags(on req: Request) -> Future<[BlogTag]>
+    func getTagsFor(post: BlogPost, on req: Request) -> Future<[BlogTag]>
 }
 
 public protocol BlogPostRepository {

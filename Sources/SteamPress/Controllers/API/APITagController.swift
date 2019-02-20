@@ -7,7 +7,7 @@ struct APITagController: RouteCollection {
     }
 
     func allTagsHandler(_ req: Request) throws -> Future<[BlogTag]> {
-        let repository = try req.make(TagRepository.self)
+        let repository = try req.make(BlogTagRepository.self)
         return repository.getAllTags(on: req)
     }
 }

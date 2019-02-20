@@ -90,7 +90,7 @@ struct TestDataBuilder {
         try services.register(steampress)
 
         if let repository = repository {
-            services.register([TagRepository.self, BlogPostRepository.self, BlogUserRepository.self], factory: { _ in
+            services.register([BlogTagRepository.self, BlogPostRepository.self, BlogUserRepository.self], factory: { _ in
                 return repository
             })
         }
@@ -118,13 +118,12 @@ struct TestDataBuilder {
         post = try TestDataBuilder.anyPost(author: postAuthor, title: title, contents: contents, creationDate: createdDate ?? Date(), published: published)
         
         repository?.addPost(post)
-//        _ = try post.save(on: db).wait()
 
-//        if let tags = tags {
-//            for tag in tags {
-//                try BlogTag.addTag(tag, to: post).wait()
-//            }
-//        }
+        if let tags = tags {
+            for tag in tags {
+                repository?.addTag(name: tag, for: post)
+            }
+        }
 
         return TestData(post: post, author: postAuthor)
     }

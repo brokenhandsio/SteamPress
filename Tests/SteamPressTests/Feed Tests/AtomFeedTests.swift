@@ -16,6 +16,7 @@ class AtomFeedTests: XCTestCase {
         ("testThatHTTPSLinksWorkWhenBehindReverseProxy", testThatHTTPSLinksWorkWhenBehindReverseProxy),
         ("testThatLogoCanBeConfigured", testThatLogoCanBeConfigured),
         ("testThatFeedIsCorrectForOnePost", testThatFeedIsCorrectForOnePost),
+        ("testThatFeedIsCorrectForOnePostUnderPath", testThatFeedIsCorrectForOnePostUnderPath),
         ("testThatFeedCorrectForTwoPosts", testThatFeedCorrectForTwoPosts),
         ("testThatDraftsDontAppearInFeed", testThatDraftsDontAppearInFeed),
         ("testThatEditedPostsHaveUpdatedTimes", testThatEditedPostsHaveUpdatedTimes),
@@ -29,6 +30,7 @@ class AtomFeedTests: XCTestCase {
     // MARK: - Properties
     private var testWorld: TestWorld!
     private let atomPath = "/atom.xml"
+    private let blogAtomPath = "/blog/atom.xml"
     private let dateFormatter = DateFormatter()
 
     // MARK: - Overrides
@@ -131,6 +133,19 @@ class AtomFeedTests: XCTestCase {
         let actualXmlResponse = try testWorld.getResponseString(to: atomPath)
         XCTAssertEqual(actualXmlResponse, expectedXML)
     }
+    
+    func testThatFeedIsCorrectForOnePostUnderPath() throws {
+        testWorld = try TestWorld.create(path: "blog")
+        let testData = try TestDataBuilder.createPost(on: testWorld.context.repository)
+        
+        let post = testData.post
+        let author = testData.author
+        
+        let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>/blog/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"/blog/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"/blog/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(self.dateFormatter.string(from: Date()))</updated>\n<entry>\n<id>/posts-id/1/</id>\n<title>\(post.title)</title>\n<updated>\(self.dateFormatter.string(from: post.created))</updated>\n<published>\(self.dateFormatter.string(from: post.created))</published>\n<author>\n<name>\(author.name)</name>\n<uri>/authors/\(author.username)/</uri>\n</author>\n<summary>\(try post.description())</summary>\n<link rel=\"alternate\" href=\"/posts/\(post.slugUrl)/\" />\n</entry>\n</feed>"
+        
+        let actualXmlResponse = try testWorld.getResponseString(to: blogAtomPath)
+        XCTAssertEqual(actualXmlResponse, expectedXML)
+    }
 
     func testThatFeedCorrectForTwoPosts() throws {
         testWorld = try TestWorld.create()
@@ -210,7 +225,7 @@ class AtomFeedTests: XCTestCase {
 
         let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>https://geeks.brokenhands.io/blog/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"https://geeks.brokenhands.io/blog/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"https://geeks.brokenhands.io/blog/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: Date()))</updated>\n<entry>\n<id>https://geeks.brokenhands.io/blog/posts-id/1/</id>\n<title>\(post.title)</title>\n<updated>\(dateFormatter.string(from: post.created))</updated>\n<published>\(dateFormatter.string(from: post.created))</published>\n<author>\n<name>\(author.name)</name>\n<uri>https://geeks.brokenhands.io/blog/authors/\(author.username)/</uri>\n</author>\n<summary>\(try post.description())</summary>\n<link rel=\"alternate\" href=\"https://geeks.brokenhands.io/blog/posts/\(post.slugUrl)/\" />\n</entry>\n</feed>"
 
-        let fullPath = "http://geeks.brokenhands.io/atom.xml"
+        let fullPath = "http://geeks.brokenhands.io/blog/atom.xml"
         let actualXmlResponse = try testWorld.getResponseString(to: fullPath)
         XCTAssertEqual(actualXmlResponse, expectedXML)
     }
