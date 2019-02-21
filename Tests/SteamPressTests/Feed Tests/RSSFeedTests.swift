@@ -211,6 +211,7 @@ class RSSFeedTests: XCTestCase {
 
     func testThatDateFormatterIsCorrect() throws {
         let createDate = Date(timeIntervalSince1970: 1505867108)
+        testWorld = try TestWorld.create()
         let testData = try TestDataBuilder.createPost(on: testWorld.context.repository, createdDate: createDate)
         let post = testData.post
 
