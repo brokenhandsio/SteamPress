@@ -43,8 +43,7 @@ struct RSSFeedGenerator {
 
             var postData: [Future<String>] = []
             for post in posts {
-                #warning("sort out blog path")
-                try postData.append(post.getPostRSSFeed(rootPath: "/", dateFormatter: self.rfc822DateFormatter, for: request))
+                try postData.append(post.getPostRSSFeed(rootPath: self.getRootPath(for: request), dateFormatter: self.rfc822DateFormatter, for: request))
             }
             
             return postData.flatten(on: request).map { postInformation in
@@ -86,7 +85,7 @@ struct RSSFeedGenerator {
 
 fileprivate extension BlogPost {
     fileprivate func getPostRSSFeed(rootPath: String, dateFormatter: DateFormatter, for request: Request) throws -> Future<String> {
-        let link = rootPath + "posts/\(slugUrl)/"
+        let link = rootPath + "/posts/\(slugUrl)/"
         var postEntry = "<item>\n<title>\n\(title)\n</title>\n<description>\n\(try description())\n</description>\n<link>\n\(link)\n</link>\n"
         
         let tagRepository = try request.make(BlogTagRepository.self)
