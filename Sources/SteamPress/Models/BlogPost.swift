@@ -44,6 +44,7 @@ public final class BlogPost: Codable {
     public var slugUrl: String
     public var published: Bool
 
+    #warning("Slug URL should be auto generated?")
     public init(title: String, contents: String, author: BlogUser, creationDate: Date, slugUrl: String,
          published: Bool/*, logger: LogProtocol? = nil*/) throws {
         self.title = title

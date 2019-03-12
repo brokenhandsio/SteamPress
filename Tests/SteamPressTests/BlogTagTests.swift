@@ -24,6 +24,7 @@ class BlogTagTests: XCTestCase {
 //        let tag = BlogTag(name: "Luke's Tatooine")
 //        let node = try tag.makeNode(in: nil)
 //        XCTAssertEqual(node["url_encoded_name"], "Luke's%20Tatooine")
+        XCTFail("implement")
     }
 
 }

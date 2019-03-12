@@ -46,6 +46,7 @@ class AuthorTests: XCTestCase {
 //        _ = try drop.respond(to: allAuthorsRequest)
 //
 //        XCTAssertEqual(allAuthorsPath, viewFactory.allAuthorsURI?.description)
+        XCTFail("Implement")
     }
 
     func testAllAuthorsPageGetsHTTPSUriFromReverseProxy() throws {
@@ -57,6 +58,7 @@ class AuthorTests: XCTestCase {
 //        _ = try drop.respond(to: httpsReverseProxyRequest)
 //
 //        XCTAssertEqual("https://geeks.brokenhands.io/authors/", viewFactory.allAuthorsURI?.descriptionWithoutPort)
+        XCTFail("Implement")
     }
 
     func testAllAuthorsPageGetAllAuthors() throws {
@@ -65,6 +67,7 @@ class AuthorTests: XCTestCase {
 //
 //        XCTAssertEqual(1, viewFactory.allAuthorsPageAuthors?.count)
 //        XCTAssertEqual("Luke", viewFactory.allAuthorsPageAuthors?.first?.name)
+        XCTFail("Implement")
     }
 
     func testAuthorPageGetsOnlyPublishedPostsInDescendingOrder() throws {
@@ -77,6 +80,7 @@ class AuthorTests: XCTestCase {
 //
 //        XCTAssertEqual(2, viewFactory.authorPosts?.total)
 //        XCTAssertEqual(post2.title, viewFactory.authorPosts?.data[0].title)
+        XCTFail("Implement")
     }
 
     func testDisabledBlogAuthorsPath() throws {
@@ -91,6 +95,7 @@ class AuthorTests: XCTestCase {
 //
 //        XCTAssertEqual(404, authorResponse.status.statusCode)
 //        XCTAssertEqual(404, allAuthorsResponse.status.statusCode)
+        XCTFail("Implement")
     }
 
     func testAuthorView() throws {
@@ -101,6 +106,7 @@ class AuthorTests: XCTestCase {
 //        XCTAssertEqual(viewFactory.authorPosts?.total, 1)
 //        XCTAssertEqual(viewFactory.authorPosts?.data[0].title, post.title)
 //        XCTAssertEqual(viewFactory.authorPosts?.data[0].contents, post.contents)
+        XCTFail("Implement")
     }
 
     // MARK: - Private
