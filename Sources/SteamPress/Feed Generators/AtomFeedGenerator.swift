@@ -51,8 +51,7 @@ struct AtomFeedGenerator {
             
             var postData: [Future<String>] = []
             for post in posts {
-                #warning("Blog path should be correct")
-                try postData.append(post.getPostAtomFeed(blogPath: "/", dateFormatter: self.iso8601Formatter, for: request))
+                try postData.append(post.getPostAtomFeed(blogPath: self.getRootPath(for: request), dateFormatter: self.iso8601Formatter, for: request))
             }
             
             return postData.flatten(on: request).map { postsInformation in
@@ -92,7 +91,7 @@ fileprivate extension BlogPost {
             guard let postID = self.blogID else {
                 throw SteamPressError(identifier: "ID-required", "Blog Post has no ID")
             }
-            var postEntry = "<entry>\n<id>\(blogPath)posts-id/\(postID)/</id>\n<title>\(self.title)</title>\n<updated>\(dateFormatter.string(from: updatedTime))</updated>\n<published>\(dateFormatter.string(from: self.created))</published>\n<author>\n<name>\(user.name)</name>\n<uri>\(blogPath)authors/\(user.username)/</uri>\n</author>\n<summary>\(try self.description())</summary>\n<link rel=\"alternate\" href=\"\(blogPath)posts/\(self.slugUrl)/\" />\n"
+            var postEntry = "<entry>\n<id>\(blogPath)/posts-id/\(postID)/</id>\n<title>\(self.title)</title>\n<updated>\(dateFormatter.string(from: updatedTime))</updated>\n<published>\(dateFormatter.string(from: self.created))</published>\n<author>\n<name>\(user.name)</name>\n<uri>\(blogPath)/authors/\(user.username)/</uri>\n</author>\n<summary>\(try self.description())</summary>\n<link rel=\"alternate\" href=\"\(blogPath)/posts/\(self.slugUrl)/\" />\n"
             
             let tagRepository = try request.make(BlogTagRepository.self)
             return tagRepository.getTagsFor(post: self, on: request).map { tags in
