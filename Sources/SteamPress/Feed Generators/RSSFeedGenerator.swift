@@ -41,21 +41,22 @@ struct RSSFeedGenerator {
             
             xmlFeed += "<textinput>\n<description>Search \(self.title)</description>\n<title>Search</title>\n<link>\(self.getRootPath(for: request))/search?</link>\n<name>term</name>\n</textinput>\n"
 
-//            var postData: [Future<String>] = []
-//
-//            for post in posts {
-//                postData.append(try post.getPostRSSFeed(rootPath: self.getRootPath(for: request), dateFormatter: self.rfc822DateFormatter, for: request))
-//            }
-//
-//            return postData.flatten(on: request).map(to: Response.self) { postInformation in
-//                for post in postInformation {
-//                    xmlFeed += post
-//                }
+            var postData: [Future<String>] = []
+            for post in posts {
+                #warning("sort out blog path")
+                try postData.append(post.getPostRSSFeed(rootPath: "/", dateFormatter: self.rfc822DateFormatter, for: request))
+            }
+            
+            return postData.flatten(on: request).map { postInformation in
+                for post in postInformation {
+                    xmlFeed += post
+                }
+                
                 xmlFeed += self.xmlEnd
-            var httpResponse = HTTPResponse(body: xmlFeed)
-            httpResponse.headers.add(name: .contentType, value: "application/rss+xml")
-            return request.future(httpResponse)
-//            }
+                var httpResponse = HTTPResponse(body: xmlFeed)
+                httpResponse.headers.add(name: .contentType, value: "application/rss+xml")
+                return httpResponse
+            }
         }
     }
 
@@ -85,19 +86,17 @@ struct RSSFeedGenerator {
 
 fileprivate extension BlogPost {
     fileprivate func getPostRSSFeed(rootPath: String, dateFormatter: DateFormatter, for request: Request) throws -> Future<String> {
-//        let link = rootPath + "/posts/\(slugUrl)/"
-//        var postEntry = "<item>\n<title>\n\(title)\n</title>\n<description>\n\(try description())\n</description>\n<link>\n\(link)\n</link>\n"
-//
-//        return try tags.query(on: request).all().map(to: String.self) { tags in
-//            for tag in tags {
-//                postEntry += "<category>\(tag.name)</category>\n"
-//            }
-//
-//            postEntry += "<pubDate>\(dateFormatter.string(from: self.lastEdited ?? self.created))</pubDate>\n</item>\n"
-//
-//            return postEntry
-//        }
-      return request.future("")
+        let link = rootPath + "posts/\(slugUrl)/"
+        var postEntry = "<item>\n<title>\n\(title)\n</title>\n<description>\n\(try description())\n</description>\n<link>\n\(link)\n</link>\n"
+        
+        let tagRepository = try request.make(BlogTagRepository.self)
+        return tagRepository.getTagsFor(post: self, on: request).map { tags in
+            for tag in tags {
+                postEntry += "<category>\(tag.name)</category>\n"
+            }
+            postEntry += "<pubDate>\(dateFormatter.string(from: self.lastEdited ?? self.created))</pubDate>\n</item>\n"
+            return postEntry
+        }
     }
 }
 

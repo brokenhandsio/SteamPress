@@ -51,6 +51,7 @@ struct AtomFeedGenerator {
             
             var postData: [Future<String>] = []
             for post in posts {
+                #warning("Blog path should be correct")
                 try postData.append(post.getPostAtomFeed(blogPath: "/", dateFormatter: self.iso8601Formatter, for: request))
             }
             
