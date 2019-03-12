@@ -196,7 +196,7 @@ class RSSFeedTests: XCTestCase {
         let image = "https://static.brokenhands.io/images/brokenhands.png"
         testWorld = try TestWorld.create(imageURL: image)
 
-        let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>https://geeks.brokenhands.io/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<image>\n<url>\(image)</url>\n<title>SteamPress Blog</title>\n<link>https://geeks.brokenhands.io/</link>\n</image>\n<textinput>\n<description>Search SteamPress Blog</description>\n<title>Search</title>\n<link>https://geeks.brokenhands.io/search?</link>\n<name>term</name>\n</textinput>\n</channel>\n\n</rss>"
+        let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<image>\n<url>\(image)</url>\n<title>SteamPress Blog</title>\n<link>/</link>\n</image>\n<textinput>\n<description>Search SteamPress Blog</description>\n<title>Search</title>\n<link>/search?</link>\n<name>term</name>\n</textinput>\n</channel>\n\n</rss>"
 
         let actualXmlResponse = try testWorld.getResponseString(to: rssPath)
         XCTAssertEqual(actualXmlResponse, expectedXML)
