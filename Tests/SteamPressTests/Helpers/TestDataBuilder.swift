@@ -62,9 +62,9 @@ struct TestDataBuilder {
 //    }
 
     static func getSteamPressApp(repository: InMemoryRepository,
-                                 path: String? = nil,
-                                 feedInformation: FeedInformation = FeedInformation(),
-                                 blogPresenter: CapturingBlogPresenter? = nil,
+                                 path: String?,
+                                 feedInformation: FeedInformation,
+                                 blogPresenter: CapturingBlogPresenter,
                                  enableAuthorPages: Bool) throws -> Application {
 
         // TODO work out new config?
@@ -89,12 +89,10 @@ struct TestDataBuilder {
             return repository
         })
         
-        if let presenter = blogPresenter {
-            services.register([BlogPresenter.self], factory: { _ in
-                return presenter
-            })
-        }
-
+        services.register([BlogPresenter.self], factory: { _ in
+            return blogPresenter
+        })
+        
         return try Application(services: services)
     }
 
