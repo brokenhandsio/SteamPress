@@ -74,6 +74,10 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         return req.future(users.first { $0.userID == id })
     }
     
+    func getAllUsers(on req: Request) -> EventLoopFuture<[BlogUser]> {
+        return req.future(users)
+    }
+    
 }
 
 private struct BlogPostTagLink: Codable {

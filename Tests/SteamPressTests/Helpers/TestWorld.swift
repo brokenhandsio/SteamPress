@@ -5,8 +5,9 @@ struct TestWorld {
     
     static func create(path: String? = nil, title: String? = nil, description: String? = nil, copyright: String? = nil, imageURL: String? = nil) throws -> TestWorld {
         let repository = InMemoryRepository()
-        let application = try TestDataBuilder.getSteamPressApp(repository: repository, path: path, title: title, description: description, copyright: copyright, imageURL: imageURL)
-        let context = Context(app: application, repository: repository)
+        let blogPresenter = CapturingBlogPresenter()
+        let application = try TestDataBuilder.getSteamPressApp(repository: repository, path: path, title: title, description: description, copyright: copyright, imageURL: imageURL, blogPresenter: blogPresenter)
+        let context = Context(app: application, repository: repository, blogPresenter: blogPresenter)
         return TestWorld(context: context)
     }
     
@@ -19,6 +20,7 @@ struct TestWorld {
     struct Context {
         let app: Application
         let repository: InMemoryRepository
+        let blogPresenter: CapturingBlogPresenter
     }
 }
 

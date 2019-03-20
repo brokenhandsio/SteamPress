@@ -11,5 +11,6 @@ public protocol BlogPostRepository {
 }
 
 public protocol BlogUserRepository {
+    func getAllUsers(on req: Request) -> Future<[BlogUser]>
     func getUser(_ id: Int, on req: Request) -> Future<BlogUser?>
 }

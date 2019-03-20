@@ -68,7 +68,7 @@ struct TestDataBuilder {
                                  description: String? = nil,
                                  copyright: String? = nil,
                                  imageURL: String? = nil,
-                                 authorPresenter: AuthorPresenter? = nil) throws -> Application {
+                                 blogPresenter: CapturingBlogPresenter? = nil) throws -> Application {
 
         // TODO work out new config?
 
@@ -86,12 +86,19 @@ struct TestDataBuilder {
                                              description: description,
                                              copyright: copyright,
                                              imageURL: imageURL,
-                                             postsPerPage: 10)
+                                             postsPerPage: 10,
+                                             blogPresenter: blogPresenter)
         try services.register(steampress)
 
         if let repository = repository {
             services.register([BlogTagRepository.self, BlogPostRepository.self, BlogUserRepository.self], factory: { _ in
                 return repository
+            })
+        }
+        
+        if let presenter = blogPresenter {
+            services.register([BlogPresenter.self], factory: { _ in
+                return presenter
             })
         }
 
@@ -126,5 +133,11 @@ struct TestDataBuilder {
         }
 
         return TestData(post: post, author: postAuthor)
+    }
+    
+    static func createUser(on repository: InMemoryRepository) -> BlogUser {
+        let user = TestDataBuilder.anyUser()
+        repository.addUser(user)
+        return user
     }
 }

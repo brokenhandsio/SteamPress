@@ -19,7 +19,7 @@ public struct Provider: Vapor.Provider {
     let copyright: String?
     let imageURL: String?
     let pathCreator: BlogPathCreator
-    let authorPresenter: AuthorPresenter?
+    let blogPresenter: BlogPresenter
 
     // TODO update
     /**
@@ -48,7 +48,7 @@ public struct Provider: Vapor.Provider {
                 useBootstrap4: Bool = true,
                 enableAuthorsPages: Bool = true,
                 enableTagsPages: Bool = true,
-                authorPresenter: AuthorPresenter? = nil) {
+                blogPresenter: BlogPresenter? = nil) {
 //        self.postsPerPage = postsPerPage
 //        self.databaseIdentifier = databaseIdentifier
         self.blogPath = blogPath
@@ -58,7 +58,8 @@ public struct Provider: Vapor.Provider {
         self.imageURL = imageURL
 
         self.pathCreator = BlogPathCreator(blogPath: self.blogPath)
-        self.authorPresenter = authorPresenter
+        #warning("Default to sensible one")
+        self.blogPresenter = blogPresenter!
 
 
 //        self.useBootstrap4 = useBootstrap4
@@ -73,6 +74,14 @@ public struct Provider: Vapor.Provider {
 //        migrationConfig.add(model: BlogTag.self, database: databaseIdentifier)
 //        migrationConfig.add(model: BlogPostTagPivot.self, database: databaseIdentifier)
 //        services.register(migrationConfig)
+//        services.register(blogPresenter, as: [BlogPresenter.self])
+//        let factory = BasicServiceFactory(BlogPresenter.self, supports: interfaces) { container in
+//            return instance
+//        }
+        #warning("sort out with generics")
+//        services.register([BlogPresenter.self], factory: { _ in
+//            return blogPresenter
+//        })
     }
 
     public func willBoot(_ container: Container) throws -> Future<Void> {
@@ -80,6 +89,7 @@ public struct Provider: Vapor.Provider {
 
         let feedController = FeedController(pathCreator: pathCreator, title: title, description: description, copyright: copyright, imageURL: imageURL)
         let apiController = APIController()
+        let blogController = BlogController()
 
         let blogRoutes: Router
         if let blogPath = blogPath {
@@ -89,6 +99,7 @@ public struct Provider: Vapor.Provider {
         }
         try blogRoutes.register(collection: feedController)
         try blogRoutes.register(collection: apiController)
+        try blogRoutes.register(collection: blogController)
         return .done(on: container)
     }
 

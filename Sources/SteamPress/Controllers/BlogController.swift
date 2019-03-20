@@ -3,21 +3,24 @@ import Vapor
 //import Routing
 //import MarkdownProvider
 //
-//struct BlogController {
-//
-//    // MARK: - Properties
-//    fileprivate let blogPostsPath = "posts"
-//    fileprivate let tagsPath = "tags"
-//    fileprivate let authorsPath = "authors"
-//    fileprivate let apiPath = "api"
-//    fileprivate let searchPath = "search"
+struct BlogController: RouteCollection {
+
+    // MARK: - Properties
+    fileprivate let blogPostsPath = "posts"
+    fileprivate let tagsPath = "tags"
+    fileprivate let authorsPath = "authors"
+    fileprivate let apiPath = "api"
+    fileprivate let searchPath = "search"
 //    fileprivate let drop: Droplet
 //    fileprivate let pathCreator: BlogPathCreator
 //    fileprivate let viewFactory: ViewFactory
 //    fileprivate let enableAuthorsPages: Bool
 //    fileprivate let enableTagsPages: Bool
-//
-//    // MARK: - Initialiser
+
+    // MARK: - Initialiser
+    init() {
+        
+    }
 //    init(drop: Droplet, pathCreator: BlogPathCreator, viewFactory: ViewFactory, enableAuthorsPages: Bool, enableTagsPages: Bool) {
 //        self.drop = drop
 //        self.pathCreator = pathCreator
@@ -26,7 +29,10 @@ import Vapor
 //        self.enableTagsPages = enableTagsPages
 //    }
 //
-//    // MARK: - Add routes
+    // MARK: - Add routes
+    func boot(router: Router) throws {
+        router.get(authorsPath, use: allAuthorsViewHandler)
+    }
 //    func addRoutes() {
 //        drop.group(pathCreator.blogPath ?? "") { index in
 //            index.get(handler: indexHandler)
@@ -46,9 +52,9 @@ import Vapor
 //            }
 //        }
 //    }
-//
-//    // MARK: - Route Handlers
-//
+
+    // MARK: - Route Handlers
+
 //    func indexHandler(request: Request) throws -> ResponseRepresentable {
 //        let tags = try BlogTag.all()
 //        let authors = try BlogUser.all()
@@ -105,11 +111,16 @@ import Vapor
 //    func allTagsViewHandler(request: Request) throws -> ResponseRepresentable {
 //        return try viewFactory.allTagsView(uri: request.getURIWithHTTPSIfReverseProxy(), allTags: BlogTag.all(), user: getLoggedInUser(in: request))
 //    }
-//
-//    func allAuthorsViewHandler(request: Request) throws -> ResponseRepresentable {
+
+    func allAuthorsViewHandler(_ req: Request) throws -> Future<View> {
 //        return try viewFactory.allAuthorsView(uri: request.getURIWithHTTPSIfReverseProxy(), allAuthors: BlogUser.all(), user: getLoggedInUser(in: request))
-//    }
-//
+        let viewFactory = try req.make(BlogPresenter.self)
+        let authorRepository = try req.make(BlogUserRepository.self)
+        return authorRepository.getAllUsers(on: req).flatMap { allUsers in
+            return viewFactory.allAuthorsView(on: req, authors: allUsers)
+        }
+    }
+
 //    func tagApiHandler(request: Request) throws -> ResponseRepresentable {
 //        return try JSON(node: BlogTag.all().makeNode(in: nil))
 //    }
@@ -137,10 +148,9 @@ import Vapor
 //
 //        return loggedInUser
 //    }
-//}
+}
 
-// TOOD move
-
+#warning("Move")
 import Foundation
 
 extension Request {

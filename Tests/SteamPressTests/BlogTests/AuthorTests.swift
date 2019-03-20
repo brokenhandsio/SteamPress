@@ -17,12 +17,14 @@ class AuthorTests: XCTestCase {
 
     // MARK: - Properties
     private var app: Application!
-    private var capturingAuthorPresenter: CapturingAuthorPresenter!
+    private var testWorld: TestWorld!
+    private let authorsRequestPath = "/authors"
 
     // MARK: - Overrides
 
     override func setUp() {
-        capturingAuthorPresenter = CapturingAuthorPresenter()
+        testWorld = try! TestWorld.create()
+        
     }
 
     // MARK: - Tests
@@ -39,13 +41,8 @@ class AuthorTests: XCTestCase {
     }
 
     func testAllAuthorsPageGetsUri() throws {
-        app = try TestDataBuilder.getSteamPressApp(authorPresenter: capturingAuthorPresenter)
-
-//        try setupDrop()
-//
-//        _ = try drop.respond(to: allAuthorsRequest)
-//
-//        XCTAssertEqual(allAuthorsPath, viewFactory.allAuthorsURI?.description)
+//        _ = try testWorld.getResponse(to: authorsRequestPath)
+//        XCTAssertEqual("allAuthors", testWorld.context.authorPresenter.allAuthorsURI?.description)
         XCTFail("Implement")
     }
 
@@ -62,12 +59,10 @@ class AuthorTests: XCTestCase {
     }
 
     func testAllAuthorsPageGetAllAuthors() throws {
-//        try setupDrop()
-//        _ = try drop.respond(to: allAuthorsRequest)
-//
-//        XCTAssertEqual(1, viewFactory.allAuthorsPageAuthors?.count)
-//        XCTAssertEqual("Luke", viewFactory.allAuthorsPageAuthors?.first?.name)
-        XCTFail("Implement")
+        let user = TestDataBuilder.createUser(on: testWorld.context.repository)
+        _ = try testWorld.getResponse(to: authorsRequestPath)
+        XCTAssertEqual(1, testWorld.context.blogPresenter.allAuthors?.count)
+        XCTAssertEqual(user.name, testWorld.context.blogPresenter.allAuthors?.first?.name)
     }
 
     func testAuthorPageGetsOnlyPublishedPostsInDescendingOrder() throws {
