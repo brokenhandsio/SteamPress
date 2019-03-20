@@ -77,19 +77,14 @@ class AuthorTests: XCTestCase {
     }
 
     func testDisabledBlogAuthorsPath() throws {
-        testWorld = try TestWorld.create()
-//        let config = Config(try Node(node: [
-//            "enableAuthorsPages": false
-//        ]))
-//
-//        try setupDrop(config: config)
-//
-//        let authorResponse = try drop.respond(to: authorRequest)
-//        let allAuthorsResponse = try drop.respond(to: allAuthorsRequest)
-//
-//        XCTAssertEqual(404, authorResponse.status.statusCode)
-//        XCTAssertEqual(404, allAuthorsResponse.status.statusCode)
-        XCTFail("Implement")
+        testWorld = try TestWorld.create(enableAuthorPages: false)
+        let user = TestDataBuilder.createUser(on: testWorld.context.repository)
+        
+        let authorResponse = try testWorld.getResponse(to: "/authors/\(user.name)")
+        let allAuthorsResponse = try testWorld.getResponse(to: "/authors")
+
+        XCTAssertEqual(.notFound, authorResponse.http.status)
+        XCTAssertEqual(.notFound, allAuthorsResponse.http.status)
     }
 
     func testAuthorView() throws {

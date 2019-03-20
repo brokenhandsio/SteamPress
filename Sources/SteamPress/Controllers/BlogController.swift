@@ -14,12 +14,12 @@ struct BlogController: RouteCollection {
 //    fileprivate let drop: Droplet
 //    fileprivate let pathCreator: BlogPathCreator
 //    fileprivate let viewFactory: ViewFactory
-//    fileprivate let enableAuthorsPages: Bool
+    fileprivate let enableAuthorPages: Bool
 //    fileprivate let enableTagsPages: Bool
 
     // MARK: - Initialiser
-    init() {
-        
+    init(enableAuthorPages: Bool) {
+        self.enableAuthorPages = enableAuthorPages
     }
 //    init(drop: Droplet, pathCreator: BlogPathCreator, viewFactory: ViewFactory, enableAuthorsPages: Bool, enableTagsPages: Bool) {
 //        self.drop = drop
@@ -31,8 +31,10 @@ struct BlogController: RouteCollection {
 //
     // MARK: - Add routes
     func boot(router: Router) throws {
-        router.get(authorsPath, use: allAuthorsViewHandler)
-        router.get(authorsPath, String.parameter, use: authorViewHandler)
+        if enableAuthorPages {
+            router.get(authorsPath, use: allAuthorsViewHandler)
+            router.get(authorsPath, String.parameter, use: authorViewHandler)
+        }
     }
 //    func addRoutes() {
 //        drop.group(pathCreator.blogPath ?? "") { index in

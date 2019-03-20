@@ -17,6 +17,7 @@ public struct Provider: Vapor.Provider {
     let pathCreator: BlogPathCreator
     let blogPresenter: BlogPresenter
     let feedInformation: FeedInformation
+    let enableAuthorPages: Bool
 
     // TODO update
     /**
@@ -40,8 +41,8 @@ public struct Provider: Vapor.Provider {
                 feedInformation: FeedInformation = FeedInformation(),
                 postsPerPage: Int,
                 useBootstrap4: Bool = true,
-                enableAuthorsPages: Bool = true,
-                enableTagsPages: Bool = true,
+                enableAuthorPages: Bool = true,
+                enableTagPages: Bool = true,
                 blogPresenter: BlogPresenter? = nil) {
 //        self.postsPerPage = postsPerPage
 //        self.databaseIdentifier = databaseIdentifier
@@ -51,6 +52,7 @@ public struct Provider: Vapor.Provider {
         self.pathCreator = BlogPathCreator(blogPath: self.blogPath)
         #warning("Default to sensible one")
         self.blogPresenter = blogPresenter!
+        self.enableAuthorPages = enableAuthorPages
 
 
 //        self.useBootstrap4 = useBootstrap4
@@ -80,7 +82,7 @@ public struct Provider: Vapor.Provider {
 
         let feedController = FeedController(pathCreator: pathCreator, feedInformation: feedInformation)
         let apiController = APIController()
-        let blogController = BlogController()
+        let blogController = BlogController(enableAuthorPages: enableAuthorPages)
 
         let blogRoutes: Router
         if let blogPath = blogPath {

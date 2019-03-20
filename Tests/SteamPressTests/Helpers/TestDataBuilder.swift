@@ -65,7 +65,8 @@ struct TestDataBuilder {
     static func getSteamPressApp(repository: InMemoryRepository? = nil,
                                  path: String? = nil,
                                  feedInformation: FeedInformation = FeedInformation(),
-                                 blogPresenter: CapturingBlogPresenter? = nil) throws -> Application {
+                                 blogPresenter: CapturingBlogPresenter? = nil,
+                                 enableAuthorPages: Bool) throws -> Application {
 
         // TODO work out new config?
 
@@ -81,6 +82,7 @@ struct TestDataBuilder {
                                              blogPath: path,
                                              feedInformation: feedInformation,
                                              postsPerPage: 10,
+                                             enableAuthorPages: enableAuthorPages,
                                              blogPresenter: blogPresenter)
         try services.register(steampress)
 
