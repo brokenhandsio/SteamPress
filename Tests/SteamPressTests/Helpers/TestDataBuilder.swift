@@ -61,8 +61,7 @@ struct TestDataBuilder {
 //        return drop
 //    }
 
-    #warning("make InMemoryRepository non optional")
-    static func getSteamPressApp(repository: InMemoryRepository? = nil,
+    static func getSteamPressApp(repository: InMemoryRepository,
                                  path: String? = nil,
                                  feedInformation: FeedInformation = FeedInformation(),
                                  blogPresenter: CapturingBlogPresenter? = nil,
@@ -86,11 +85,9 @@ struct TestDataBuilder {
                                              blogPresenter: blogPresenter)
         try services.register(steampress)
 
-        if let repository = repository {
-            services.register([BlogTagRepository.self, BlogPostRepository.self, BlogUserRepository.self], factory: { _ in
-                return repository
-            })
-        }
+        services.register([BlogTagRepository.self, BlogPostRepository.self, BlogUserRepository.self], factory: { _ in
+            return repository
+        })
         
         if let presenter = blogPresenter {
             services.register([BlogPresenter.self], factory: { _ in
