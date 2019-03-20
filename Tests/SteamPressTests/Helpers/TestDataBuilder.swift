@@ -111,24 +111,23 @@ struct TestDataBuilder {
         return try responder.respond(to: wrappedRequest).wait()
     }
 
-    #warning("BlogPostRepository should not be optional")
-    static func createPost(on repository: InMemoryRepository? = nil, tags: [String]? = nil, createdDate: Date? = nil, title: String = "An Exciting Post!", contents: String = "This is a blog post", slugUrl: String = "an-exciting-post", author: BlogUser? = nil, published: Bool = true) throws -> TestData {
+    static func createPost(on repository: InMemoryRepository, tags: [String]? = nil, createdDate: Date? = nil, title: String = "An Exciting Post!", contents: String = "This is a blog post", slugUrl: String = "an-exciting-post", author: BlogUser? = nil, published: Bool = true) throws -> TestData {
         let postAuthor: BlogUser
         if let author = author {
             postAuthor = author
         } else {
             postAuthor = TestDataBuilder.anyUser()
-            repository?.addUser(postAuthor)
+            repository.addUser(postAuthor)
         }
         
         let post: BlogPost
         post = try TestDataBuilder.anyPost(author: postAuthor, title: title, contents: contents, slugUrl: slugUrl, creationDate: createdDate ?? Date(), published: published)
         
-        repository?.addPost(post)
+        repository.addPost(post)
 
         if let tags = tags {
             for tag in tags {
-                try repository?.addTag(name: tag, for: post)
+                try repository.addTag(name: tag, for: post)
             }
         }
 

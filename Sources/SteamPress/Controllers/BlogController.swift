@@ -32,6 +32,7 @@ struct BlogController: RouteCollection {
     // MARK: - Add routes
     func boot(router: Router) throws {
         router.get(authorsPath, use: allAuthorsViewHandler)
+        router.get(authorsPath, String.parameter, use: authorViewHandler)
     }
 //    func addRoutes() {
 //        drop.group(pathCreator.blogPath ?? "") { index in
@@ -95,29 +96,34 @@ struct BlogController: RouteCollection {
 //
 //        return try viewFactory.tagView(uri: request.getURIWithHTTPSIfReverseProxy(), tag: tag, paginatedPosts: paginatedBlogPosts, user: getLoggedInUser(in: request))
 //    }
-//
-//    func authorViewHandler(request: Request) throws -> ResponseRepresentable {
-//        let authorUsername: String = try request.parameters.next()
-//
-//        guard let author = try BlogUser.makeQuery().filter(BlogUser.Properties.username, authorUsername).first() else {
-//            throw Abort.notFound
-//        }
-//
-//        let posts = try author.sortedPosts().paginate(for: request)
-//
-//        return try viewFactory.profileView(uri: request.getURIWithHTTPSIfReverseProxy(), author: author, paginatedPosts: posts, loggedInUser: getLoggedInUser(in: request))
-//    }
-//
+
+    func authorViewHandler(_ req: Request) throws -> Future<View> {
+        let authorUsername = try req.parameters.next(String.self)
+        let userRepository = try req.make(BlogUserRepository.self)
+        
+        return userRepository.getUser(authorUsername, on: req).flatMap { user in
+            guard let author = user else {
+                throw Abort(.notFound)
+            }
+            
+            let postRepository = try req.make(BlogPostRepository.self)
+            return postRepository.getAllPostsSortedByPublishDate(on: req, for: author, includeDrafts: false).flatMap { posts in
+                let presenter = try req.make(BlogPresenter.self)
+                return presenter.authorView(on: req, author: author, posts: posts)
+            }
+        }
+    }
+
 //    func allTagsViewHandler(request: Request) throws -> ResponseRepresentable {
 //        return try viewFactory.allTagsView(uri: request.getURIWithHTTPSIfReverseProxy(), allTags: BlogTag.all(), user: getLoggedInUser(in: request))
 //    }
 
     func allAuthorsViewHandler(_ req: Request) throws -> Future<View> {
 //        return try viewFactory.allAuthorsView(uri: request.getURIWithHTTPSIfReverseProxy(), allAuthors: BlogUser.all(), user: getLoggedInUser(in: request))
-        let viewFactory = try req.make(BlogPresenter.self)
+        let presenter = try req.make(BlogPresenter.self)
         let authorRepository = try req.make(BlogUserRepository.self)
         return authorRepository.getAllUsers(on: req).flatMap { allUsers in
-            return viewFactory.allAuthorsView(on: req, authors: allUsers)
+            return presenter.allAuthorsView(on: req, authors: allUsers)
         }
     }
 

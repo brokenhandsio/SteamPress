@@ -66,16 +66,14 @@ class AuthorTests: XCTestCase {
     }
 
     func testAuthorPageGetsOnlyPublishedPostsInDescendingOrder() throws {
-//        try setupDrop()
-//        let post2 = TestDataBuilder.anyPost(author: self.user, title: "A later post")
-//        try post2.save()
-//        let draftPost = TestDataBuilder.anyPost(author: self.user, published: false)
-//        try draftPost.save()
-//        _ = try drop.respond(to: authorRequest)
-//
-//        XCTAssertEqual(2, viewFactory.authorPosts?.total)
-//        XCTAssertEqual(post2.title, viewFactory.authorPosts?.data[0].title)
-        XCTFail("Implement")
+        let firstPostData = try TestDataBuilder.createPost(on: testWorld.context.repository)
+        let secondPostData = try TestDataBuilder.createPost(on: testWorld.context.repository, title: "A later post", author: firstPostData.author)
+        _ = try TestDataBuilder.createPost(on: testWorld.context.repository, author: firstPostData.author, published: false)
+        
+        _ = try testWorld.getResponse(to: "/authors/\(firstPostData.author.name)")
+
+        XCTAssertEqual(2, testWorld.context.blogPresenter.authorPosts?.count)
+        XCTAssertEqual(secondPostData.post.title, testWorld.context.blogPresenter.authorPosts?.first?.title)
     }
 
     func testDisabledBlogAuthorsPath() throws {
@@ -106,31 +104,31 @@ class AuthorTests: XCTestCase {
 
     // MARK: - Private
 
-    func setupApp(config: Config? = nil, setupData: Bool = true) throws {
-        app = try TestDataBuilder.getSteamPressApp()
-//        drop = try Droplet()
-//
-//        viewFactory = CapturingViewFactory()
-//        let pathCreator = BlogPathCreator(blogPath: nil)
-//        let configToUse = config ?? drop.config
-//
-//        let enableAuthorsPages = configToUse["enableAuthorsPages"]?.bool ?? true
-//        let enableTagsPages = configToUse["enableTagsPages"]?.bool ?? true
-//
-//        let blogController = BlogController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, enableAuthorsPages: enableAuthorsPages, enableTagsPages: enableTagsPages)
-//        blogController.addRoutes()
-//
-//        let blogAdminController = BlogAdminController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory)
-//        blogAdminController.addRoutes()
-//
-//        if setupData {
-//            user = TestDataBuilder.anyUser()
-//            try user.save()
-//            post = BlogPost(title: "Test Path", contents: "A long time ago", author: user, creationDate: Date(), slugUrl: "test-path", published: true)
-//            try post.save()
-//
-//            try BlogTag.addTag("tatooine", to: post)
-//        }
-    }
+//    func setupApp(config: Config? = nil, setupData: Bool = true) throws {
+//        app = try TestDataBuilder.getSteamPressApp()
+////        drop = try Droplet()
+////
+////        viewFactory = CapturingViewFactory()
+////        let pathCreator = BlogPathCreator(blogPath: nil)
+////        let configToUse = config ?? drop.config
+////
+////        let enableAuthorsPages = configToUse["enableAuthorsPages"]?.bool ?? true
+////        let enableTagsPages = configToUse["enableTagsPages"]?.bool ?? true
+////
+////        let blogController = BlogController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, enableAuthorsPages: enableAuthorsPages, enableTagsPages: enableTagsPages)
+////        blogController.addRoutes()
+////
+////        let blogAdminController = BlogAdminController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory)
+////        blogAdminController.addRoutes()
+////
+////        if setupData {
+////            user = TestDataBuilder.anyUser()
+////            try user.save()
+////            post = BlogPost(title: "Test Path", contents: "A long time ago", author: user, creationDate: Date(), slugUrl: "test-path", published: true)
+////            try post.save()
+////
+////            try BlogTag.addTag("tatooine", to: post)
+////        }
+//    }
 
 }

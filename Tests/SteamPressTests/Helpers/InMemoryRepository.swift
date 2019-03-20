@@ -60,6 +60,15 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         return req.future(sortedPosts)
     }
     
+    func getAllPostsSortedByPublishDate(on req: Request, for user: BlogUser, includeDrafts: Bool) -> EventLoopFuture<[BlogPost]> {
+        let authorsPosts = posts.filter { $0.author == user.userID }
+        var sortedPosts = authorsPosts.sorted { $0.created > $1.created }
+        if !includeDrafts {
+            sortedPosts = sortedPosts.filter { $0.published }
+        }
+        return req.future(sortedPosts)
+    }
+    
     func addPost(_ post: BlogPost) {
         post.blogID = posts.count + 1
         posts.append(post)
@@ -72,6 +81,10 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
     
     func getUser(_ id: Int, on req: Request) -> EventLoopFuture<BlogUser?> {
         return req.future(users.first { $0.userID == id })
+    }
+    
+    func getUser(_ name: String, on req: Request) -> EventLoopFuture<BlogUser?> {
+        return req.future(users.first { $0.name == name })
     }
     
     func getAllUsers(on req: Request) -> EventLoopFuture<[BlogUser]> {
