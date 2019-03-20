@@ -88,43 +88,14 @@ class AuthorTests: XCTestCase {
     }
 
     func testAuthorView() throws {
-//        try setupDrop()
-//        _ = try drop.respond(to: authorRequest)
-//
-//        XCTAssertEqual(viewFactory.author?.username, user.username)
-//        XCTAssertEqual(viewFactory.authorPosts?.total, 1)
-//        XCTAssertEqual(viewFactory.authorPosts?.data[0].title, post.title)
-//        XCTAssertEqual(viewFactory.authorPosts?.data[0].contents, post.contents)
-        XCTFail("Implement")
+        let data = try TestDataBuilder.createPost(on: testWorld.context.repository)
+        
+        _ = try testWorld.getResponse(to: "/authors/\(data.author.name)")
+
+        XCTAssertEqual(testWorld.context.blogPresenter.author?.username, data.author.username)
+        XCTAssertEqual(testWorld.context.blogPresenter.authorPosts?.count, 1)
+        XCTAssertEqual(testWorld.context.blogPresenter.authorPosts?.first?.title, data.post.title)
+        XCTAssertEqual(testWorld.context.blogPresenter.authorPosts?.first?.contents, data.post.contents)
     }
-
-    // MARK: - Private
-
-//    func setupApp(config: Config? = nil, setupData: Bool = true) throws {
-//        app = try TestDataBuilder.getSteamPressApp()
-////        drop = try Droplet()
-////
-////        viewFactory = CapturingViewFactory()
-////        let pathCreator = BlogPathCreator(blogPath: nil)
-////        let configToUse = config ?? drop.config
-////
-////        let enableAuthorsPages = configToUse["enableAuthorsPages"]?.bool ?? true
-////        let enableTagsPages = configToUse["enableTagsPages"]?.bool ?? true
-////
-////        let blogController = BlogController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory, enableAuthorsPages: enableAuthorsPages, enableTagsPages: enableTagsPages)
-////        blogController.addRoutes()
-////
-////        let blogAdminController = BlogAdminController(drop: drop, pathCreator: pathCreator, viewFactory: viewFactory)
-////        blogAdminController.addRoutes()
-////
-////        if setupData {
-////            user = TestDataBuilder.anyUser()
-////            try user.save()
-////            post = BlogPost(title: "Test Path", contents: "A long time ago", author: user, creationDate: Date(), slugUrl: "test-path", published: true)
-////            try post.save()
-////
-////            try BlogTag.addTag("tatooine", to: post)
-////        }
-//    }
 
 }

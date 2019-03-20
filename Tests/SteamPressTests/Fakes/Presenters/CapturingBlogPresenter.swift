@@ -12,8 +12,10 @@ class CapturingBlogPresenter: BlogPresenter {
         return createFutureView(on: req)
     }
     
+    private(set) var author: BlogUser?
     private(set) var authorPosts: [BlogPost]?
     func authorView(on req: Request, author: BlogUser, posts: [BlogPost]) -> Future<View> {
+        self.author = author
         self.authorPosts = posts
         return createFutureView(on: req)
     }
