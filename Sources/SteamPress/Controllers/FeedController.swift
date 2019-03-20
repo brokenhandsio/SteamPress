@@ -15,17 +15,16 @@ struct FeedController: RouteCollection {
     }
 
     // MARK: - Initialiser
-    init(pathCreator: BlogPathCreator, title: String?, description: String?, copyright: String?,
-         imageURL: String?) {
+    init(pathCreator: BlogPathCreator, feedInformation: FeedInformation) {
         self.pathCreator = pathCreator
 
-        let feedTitle = title ?? FeedController.defaultTitle
-        let feedDescription = description ?? FeedController.defaultDescription
+        let feedTitle = feedInformation.title ?? FeedController.defaultTitle
+        let feedDescription = feedInformation.description ?? FeedController.defaultDescription
 
         atomGenerator = AtomFeedGenerator(title: feedTitle, description: feedDescription,
-                                          copyright: copyright, imageURL: imageURL)
+                                          copyright: feedInformation.copyright, imageURL: feedInformation.imageURL)
         rssGenerator = RSSFeedGenerator(title: feedTitle, description: feedDescription,
-                                        copyright: copyright, imageURL: imageURL)
+                                        copyright: feedInformation.copyright, imageURL: feedInformation.imageURL)
     }
 
     // MARK: - Route Collection

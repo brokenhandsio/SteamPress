@@ -103,7 +103,8 @@ class RSSFeedTests: XCTestCase {
 
     func testBlogTitleCanBeConfigured() throws {
         let title = "SteamPress - The Open Source Blog"
-        testWorld = try TestWorld.create(title: title)
+        let feedInformation = FeedInformation(title: title)
+        testWorld = try TestWorld.create(feedInformation: feedInformation)
 
         let testData = try TestDataBuilder.createPost(on: testWorld.context.repository)
         let post = testData.post
@@ -116,7 +117,8 @@ class RSSFeedTests: XCTestCase {
 
     func testBlogDescriptionCanBeConfigured() throws {
         let description = "Our fancy new RSS-feed blog"
-        testWorld = try TestWorld.create(description: description)
+        let feedInformation = FeedInformation(description: description)
+        testWorld = try TestWorld.create(feedInformation: feedInformation)
 
         let testData = try TestDataBuilder.createPost(on: testWorld.context.repository)
         let post = testData.post
@@ -149,7 +151,8 @@ class RSSFeedTests: XCTestCase {
 
     func testCopyrightCanBeAddedToRSS() throws {
         let copyright = "Copyright ©️ 2017 SteamPress"
-        testWorld = try TestWorld.create(copyright: copyright)
+        let feedInformation = FeedInformation(copyright: copyright)
+        testWorld = try TestWorld.create(feedInformation: feedInformation)
 
         let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<copyright>\(copyright)</copyright>\n<textinput>\n<description>Search SteamPress Blog</description>\n<title>Search</title>\n<link>/search?</link>\n<name>term</name>\n</textinput>\n</channel>\n\n</rss>"
 
@@ -194,7 +197,8 @@ class RSSFeedTests: XCTestCase {
 
     func testImageIsProvidedIfSupplied() throws {
         let image = "https://static.brokenhands.io/images/brokenhands.png"
-        testWorld = try TestWorld.create(imageURL: image)
+        let feedInformation = FeedInformation(imageURL: image)
+        testWorld = try TestWorld.create(feedInformation: feedInformation)
 
         let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<image>\n<url>\(image)</url>\n<title>SteamPress Blog</title>\n<link>/</link>\n</image>\n<textinput>\n<description>Search SteamPress Blog</description>\n<title>Search</title>\n<link>/search?</link>\n<name>term</name>\n</textinput>\n</channel>\n\n</rss>"
 

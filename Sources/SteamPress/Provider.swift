@@ -14,12 +14,9 @@ public struct Provider: Vapor.Provider {
     }
 
     let blogPath: String?
-    let title: String?
-    let description: String?
-    let copyright: String?
-    let imageURL: String?
     let pathCreator: BlogPathCreator
     let blogPresenter: BlogPresenter
+    let feedInformation: FeedInformation
 
     // TODO update
     /**
@@ -40,10 +37,7 @@ public struct Provider: Vapor.Provider {
      */
     public init(
                 blogPath: String? = nil,
-                title: String? = nil,
-                description: String? = nil,
-                copyright: String? = nil,
-                imageURL: String? = nil,
+                feedInformation: FeedInformation = FeedInformation(),
                 postsPerPage: Int,
                 useBootstrap4: Bool = true,
                 enableAuthorsPages: Bool = true,
@@ -52,10 +46,7 @@ public struct Provider: Vapor.Provider {
 //        self.postsPerPage = postsPerPage
 //        self.databaseIdentifier = databaseIdentifier
         self.blogPath = blogPath
-        self.title = title
-        self.description = description
-        self.copyright = copyright
-        self.imageURL = imageURL
+        self.feedInformation = feedInformation
 
         self.pathCreator = BlogPathCreator(blogPath: self.blogPath)
         #warning("Default to sensible one")
@@ -87,7 +78,7 @@ public struct Provider: Vapor.Provider {
     public func willBoot(_ container: Container) throws -> Future<Void> {
         let router = try container.make(Router.self)
 
-        let feedController = FeedController(pathCreator: pathCreator, title: title, description: description, copyright: copyright, imageURL: imageURL)
+        let feedController = FeedController(pathCreator: pathCreator, feedInformation: feedInformation)
         let apiController = APIController()
         let blogController = BlogController()
 
@@ -229,3 +220,17 @@ public struct Provider: Vapor.Provider {
 //    public func beforeRun(_: Vapor.Droplet) {}
 //
 //}
+
+public struct FeedInformation {
+    let title: String?
+    let description: String?
+    let copyright: String?
+    let imageURL: String?
+    
+    public init(title: String? = nil, description: String? = nil, copyright: String? = nil, imageURL: String? = nil) {
+        self.title = title
+        self.description = description
+        self.copyright = copyright
+        self.imageURL = imageURL
+    }
+}

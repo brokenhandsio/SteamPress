@@ -64,10 +64,7 @@ struct TestDataBuilder {
     #warning("make InMemoryRepository non optional")
     static func getSteamPressApp(repository: InMemoryRepository? = nil,
                                  path: String? = nil,
-                                 title: String? = nil,
-                                 description: String? = nil,
-                                 copyright: String? = nil,
-                                 imageURL: String? = nil,
+                                 feedInformation: FeedInformation = FeedInformation(),
                                  blogPresenter: CapturingBlogPresenter? = nil) throws -> Application {
 
         // TODO work out new config?
@@ -82,10 +79,7 @@ struct TestDataBuilder {
 
         let steampress = SteamPress.Provider(
                                              blogPath: path,
-                                             title: title,
-                                             description: description,
-                                             copyright: copyright,
-                                             imageURL: imageURL,
+                                             feedInformation: feedInformation,
                                              postsPerPage: 10,
                                              blogPresenter: blogPresenter)
         try services.register(steampress)

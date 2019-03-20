@@ -66,7 +66,8 @@ class AtomFeedTests: XCTestCase {
 
     func testThatFeedTitleCanBeConfigured() throws {
         let title = "My Awesome Blog"
-        testWorld = try TestWorld.create(title: title)
+        let feedInformation = FeedInformation(title: title)
+        testWorld = try TestWorld.create(feedInformation: feedInformation)
 
         let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>\(title)</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: Date()))</updated>\n</feed>"
 
@@ -76,7 +77,8 @@ class AtomFeedTests: XCTestCase {
 
     func testThatFeedSubtitleCanBeConfigured() throws {
         let description = "This is a test for my blog"
-        testWorld = try TestWorld.create(description: description)
+        let feedInformation = FeedInformation(description: description)
+        testWorld = try TestWorld.create(feedInformation: feedInformation)
 
         let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>\(description)</subtitle>\n<id>/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: Date()))</updated>\n</feed>"
 
@@ -86,7 +88,8 @@ class AtomFeedTests: XCTestCase {
 
     func testThatRightsCanBeConifgured() throws {
         let copyright = "Copyright ©️ 2019 SteamPress"
-        testWorld = try TestWorld.create(copyright: copyright)
+        let feedInformation = FeedInformation(copyright: copyright)
+        testWorld = try TestWorld.create(feedInformation: feedInformation)
 
         let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: Date()))</updated>\n<rights>\(copyright)</rights>\n</feed>"
 
@@ -114,7 +117,8 @@ class AtomFeedTests: XCTestCase {
 
     func testThatLogoCanBeConfigured() throws {
         let imageURL = "https://static.brokenhands.io/images/feeds/atom.png"
-        testWorld = try TestWorld.create(imageURL: imageURL)
+        let feedInformation = FeedInformation(imageURL: imageURL)
+        testWorld = try TestWorld.create(feedInformation: feedInformation)
         let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: Date()))</updated>\n<logo>\(imageURL)</logo>\n</feed>"
 
         let actualXmlResponse = try testWorld.getResponseString(to: atomPath)

@@ -3,10 +3,10 @@ import Vapor
 
 struct TestWorld {
     
-    static func create(path: String? = nil, title: String? = nil, description: String? = nil, copyright: String? = nil, imageURL: String? = nil) throws -> TestWorld {
+    static func create(path: String? = nil, feedInformation: FeedInformation = FeedInformation()) throws -> TestWorld {
         let repository = InMemoryRepository()
         let blogPresenter = CapturingBlogPresenter()
-        let application = try TestDataBuilder.getSteamPressApp(repository: repository, path: path, title: title, description: description, copyright: copyright, imageURL: imageURL, blogPresenter: blogPresenter)
+        let application = try TestDataBuilder.getSteamPressApp(repository: repository, path: path, feedInformation: feedInformation, blogPresenter: blogPresenter)
         let context = Context(app: application, repository: repository, blogPresenter: blogPresenter)
         return TestWorld(context: context)
     }

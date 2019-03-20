@@ -77,6 +77,7 @@ class AuthorTests: XCTestCase {
     }
 
     func testDisabledBlogAuthorsPath() throws {
+        testWorld = try TestWorld.create()
 //        let config = Config(try Node(node: [
 //            "enableAuthorsPages": false
 //        ]))
