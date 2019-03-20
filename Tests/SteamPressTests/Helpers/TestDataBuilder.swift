@@ -121,7 +121,7 @@ struct TestDataBuilder {
 
         if let tags = tags {
             for tag in tags {
-                repository?.addTag(name: tag, for: post)
+                try repository?.addTag(name: tag, for: post)
             }
         }
 

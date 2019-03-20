@@ -34,13 +34,13 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         return req.future(results)
     }
     
-    func addTag(name: String) {
-        let newTag = BlogTag(id: tags.count + 1, name: name)
+    func addTag(name: String) throws {
+        let newTag = try BlogTag(id: tags.count + 1, name: name)
         tags.append(newTag)
     }
     
-    func addTag(name: String, for post: BlogPost) {
-        addTag(name: name)
+    func addTag(name: String, for post: BlogPost) throws {
+        try addTag(name: name)
         guard let postID = post.blogID else {
             fatalError("Blog doesn't exist when it should")
         }

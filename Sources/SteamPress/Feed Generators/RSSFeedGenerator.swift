@@ -91,7 +91,9 @@ fileprivate extension BlogPost {
         let tagRepository = try request.make(BlogTagRepository.self)
         return tagRepository.getTagsFor(post: self, on: request).map { tags in
             for tag in tags {
-                postEntry += "<category>\(tag.name)</category>\n"
+                if let percentDecodedTag = tag.name.removingPercentEncoding {
+                    postEntry += "<category>\(percentDecodedTag)</category>\n"
+                }
             }
             postEntry += "<pubDate>\(dateFormatter.string(from: self.lastEdited ?? self.created))</pubDate>\n</item>\n"
             return postEntry

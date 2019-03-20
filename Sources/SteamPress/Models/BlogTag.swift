@@ -24,9 +24,12 @@ public final class BlogTag: Codable {
     public var tagID: Int?
     public var name: String
 
-    public init(id: Int? = nil, name: String) {
+    public init(id: Int? = nil, name: String) throws {
         self.tagID = id
-        self.name = name
+        guard let percentEncodedName = name.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) else {
+            throw SteamPressError(identifier: "BlogTag", "Unable to create tag from name \(name)")
+        }
+        self.name = percentEncodedName
     }
 }
 

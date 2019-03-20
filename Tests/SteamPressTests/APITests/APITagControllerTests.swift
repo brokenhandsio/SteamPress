@@ -27,11 +27,11 @@ class APITagControllerTests: XCTestCase {
     func testThatAllTagsAreReturnedFromAPI() throws {
         let testWorld = try TestWorld.create()
         
-        let tag1 = "Vapor 3"
+        let tag1 = "Vapor3"
         let tag2 = "Engineering"
         
-        testWorld.context.repository.addTag(name: tag1)
-        testWorld.context.repository.addTag(name: tag2)
+        try testWorld.context.repository.addTag(name: tag1)
+        try testWorld.context.repository.addTag(name: tag2)
         
         let tags = try testWorld.getResponse(to: "/api/tags", decodeTo: [BlogTagJSON].self)
         
