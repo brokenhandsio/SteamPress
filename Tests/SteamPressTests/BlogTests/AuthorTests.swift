@@ -59,7 +59,7 @@ class AuthorTests: XCTestCase {
     }
 
     func testAllAuthorsPageGetAllAuthors() throws {
-        let user = TestDataBuilder.createUser(on: testWorld.context.repository)
+        let user = testWorld.createUser()
         _ = try testWorld.getResponse(to: authorsRequestPath)
         XCTAssertEqual(1, testWorld.context.blogPresenter.allAuthors?.count)
         XCTAssertEqual(user.name, testWorld.context.blogPresenter.allAuthors?.first?.name)
@@ -67,8 +67,8 @@ class AuthorTests: XCTestCase {
 
     func testAuthorPageGetsOnlyPublishedPostsInDescendingOrder() throws {
         let firstPostData = try TestDataBuilder.createPost(on: testWorld.context.repository)
-        let secondPostData = try TestDataBuilder.createPost(on: testWorld.context.repository, title: "A later post", author: firstPostData.author)
-        _ = try TestDataBuilder.createPost(on: testWorld.context.repository, author: firstPostData.author, published: false)
+        let secondPostData = try testWorld.createPost(title: "A later post", author: firstPostData.author)
+        _ = try testWorld.createPost(author: firstPostData.author, published: false)
         
         _ = try testWorld.getResponse(to: "/authors/\(firstPostData.author.name)")
 
@@ -78,7 +78,7 @@ class AuthorTests: XCTestCase {
 
     func testDisabledBlogAuthorsPath() throws {
         testWorld = try TestWorld.create(enableAuthorPages: false)
-        let user = TestDataBuilder.createUser(on: testWorld.context.repository)
+        let user = testWorld.createUser()
         
         let authorResponse = try testWorld.getResponse(to: "/authors/\(user.name)")
         let allAuthorsResponse = try testWorld.getResponse(to: "/authors")

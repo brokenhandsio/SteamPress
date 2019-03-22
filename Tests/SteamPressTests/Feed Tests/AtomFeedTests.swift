@@ -127,7 +127,7 @@ class AtomFeedTests: XCTestCase {
 
     func testThatFeedIsCorrectForOnePost() throws {
         testWorld = try TestWorld.create()
-        let testData = try TestDataBuilder.createPost(on: testWorld.context.repository)
+        let testData = try testWorld.createPost()
 
         let post = testData.post
         let author = testData.author
@@ -140,7 +140,7 @@ class AtomFeedTests: XCTestCase {
     
     func testThatFeedIsCorrectForOnePostUnderPath() throws {
         testWorld = try TestWorld.create(path: "blog")
-        let testData = try TestDataBuilder.createPost(on: testWorld.context.repository)
+        let testData = try testWorld.createPost()
         
         let post = testData.post
         let author = testData.author
@@ -153,14 +153,14 @@ class AtomFeedTests: XCTestCase {
 
     func testThatFeedCorrectForTwoPosts() throws {
         testWorld = try TestWorld.create()
-        let testData = try TestDataBuilder.createPost(on: testWorld.context.repository)
+        let testData = try testWorld.createPost()
         
         let post = testData.post
         let author = testData.author
 
         let secondTitle = "Another Post"
         let secondPostDate = Date()
-        let post2 = try TestDataBuilder.createPost(on: testWorld.context.repository, createdDate: secondPostDate, title: secondTitle, author: author).post
+        let post2 = try testWorld.createPost(createdDate: secondPostDate, title: secondTitle, author: author).post
 
         let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: Date()))</updated>\n<entry>\n<id>/posts-id/2/</id>\n<title>\(secondTitle)</title>\n<updated>\(dateFormatter.string(from: secondPostDate))</updated>\n<published>\(dateFormatter.string(from: secondPostDate))</published>\n<author>\n<name>\(author.name)</name>\n<uri>/authors/\(author.username)/</uri>\n</author>\n<summary>\(try post2.description())</summary>\n<link rel=\"alternate\" href=\"/posts/\(post2.slugUrl)/\" />\n</entry>\n<entry>\n<id>/posts-id/1/</id>\n<title>\(post.title)</title>\n<updated>\(dateFormatter.string(from: post.created))</updated>\n<published>\(dateFormatter.string(from: post.created))</published>\n<author>\n<name>\(author.name)</name>\n<uri>/authors/\(author.username)/</uri>\n</author>\n<summary>\(try post.description())</summary>\n<link rel=\"alternate\" href=\"/posts/\(post.slugUrl)/\" />\n</entry>\n</feed>"
 
@@ -170,12 +170,12 @@ class AtomFeedTests: XCTestCase {
 
     func testThatDraftsDontAppearInFeed() throws {
         testWorld = try TestWorld.create()
-        let testData = try TestDataBuilder.createPost(on: testWorld.context.repository)
+        let testData = try testWorld.createPost()
         
         let post = testData.post
         let author = testData.author
         
-        _ = try TestDataBuilder.createPost(on: testWorld.context.repository, title: "A Draft Post", published: false)
+        _ = try testWorld.createPost(title: "A Draft Post", published: false)
 
         let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: Date()))</updated>\n<entry>\n<id>/posts-id/1/</id>\n<title>\(post.title)</title>\n<updated>\(dateFormatter.string(from: post.created))</updated>\n<published>\(dateFormatter.string(from: post.created))</published>\n<author>\n<name>\(author.name)</name>\n<uri>/authors/\(author.username)/</uri>\n</author>\n<summary>\(try post.description())</summary>\n<link rel=\"alternate\" href=\"/posts/\(post.slugUrl)/\" />\n</entry>\n</feed>"
 
@@ -186,7 +186,7 @@ class AtomFeedTests: XCTestCase {
     func testThatEditedPostsHaveUpdatedTimes() throws {
         testWorld = try TestWorld.create()
         let firstPostDate = Date().addingTimeInterval(-3600)
-        let testData = try TestDataBuilder.createPost(on: testWorld.context.repository, createdDate: firstPostDate)
+        let testData = try testWorld.createPost(createdDate: firstPostDate)
 
         let post = testData.post
         let author = testData.author
@@ -194,7 +194,7 @@ class AtomFeedTests: XCTestCase {
         let secondTitle = "Another Post"
         let secondPostDate = Date().addingTimeInterval(-60)
         let newEditDate = Date()
-        let post2 = try TestDataBuilder.createPost(on: testWorld.context.repository, createdDate: secondPostDate, title: secondTitle, author: author).post
+        let post2 = try testWorld.createPost(createdDate: secondPostDate, title: secondTitle, author: author).post
         post2.lastEdited = newEditDate
 
         let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: newEditDate))</updated>\n<entry>\n<id>/posts-id/2/</id>\n<title>\(secondTitle)</title>\n<updated>\(dateFormatter.string(from: newEditDate))</updated>\n<published>\(dateFormatter.string(from: secondPostDate))</published>\n<author>\n<name>\(author.name)</name>\n<uri>/authors/\(author.username)/</uri>\n</author>\n<summary>\(try post2.description())</summary>\n<link rel=\"alternate\" href=\"/posts/\(post2.slugUrl)/\" />\n</entry>\n<entry>\n<id>/posts-id/1/</id>\n<title>\(post.title)</title>\n<updated>\(dateFormatter.string(from: firstPostDate))</updated>\n<published>\(dateFormatter.string(from: firstPostDate))</published>\n<author>\n<name>\(author.name)</name>\n<uri>/authors/\(author.username)/</uri>\n</author>\n<summary>\(try post.description())</summary>\n<link rel=\"alternate\" href=\"/posts/\(post.slugUrl)/\" />\n</entry>\n</feed>"
@@ -208,7 +208,7 @@ class AtomFeedTests: XCTestCase {
         let tag1 = "Vapor 2"
         let tag2 = "Engineering"
 
-        let testData = try TestDataBuilder.createPost(on: testWorld.context.repository, tags: [tag1, tag2])
+        let testData = try testWorld.createPost(tags: [tag1, tag2])
 
         let post = testData.post
         let author = testData.author
@@ -260,7 +260,7 @@ class AtomFeedTests: XCTestCase {
         testWorld = try TestWorld.create()
         
         let createDate = Date(timeIntervalSince1970: 1505867108)
-        let testData = try TestDataBuilder.createPost(on: testWorld.context.repository, createdDate: createDate)
+        let testData = try testWorld.createPost(createdDate: createDate)
 
         let post = testData.post
         let author = testData.author

@@ -1,14 +1,18 @@
-//import XCTest
+import XCTest
 //@testable import SteamPress
-//import Vapor
+import SteamPress
+import Vapor
 //import Fluent
 //import HTTP
-//import Foundation
-//
-//class BlogControllerTests: XCTestCase {
-//    static var allTests = [
-//        ("testLinuxTestSuiteIncludesAllTests", testLinuxTestSuiteIncludesAllTests),
-//        ("testBlogIndexGetsPostsInReverseOrder", testBlogIndexGetsPostsInReverseOrder),
+import Foundation
+
+class BlogControllerTests: XCTestCase {
+  
+  
+    // MARK: - all tests
+    static var allTests = [
+        ("testLinuxTestSuiteIncludesAllTests", testLinuxTestSuiteIncludesAllTests),
+        ("testBlogIndexGetsPostsInReverseOrder", testBlogIndexGetsPostsInReverseOrder),
 //        ("testBlogIndexGetsAllTags", testBlogIndexGetsAllTags),
 //        ("testBlogIndexGetsAllAuthors", testBlogIndexGetsAllAuthors),
 //        ("testBlogPostRetrievedCorrectlyFromSlugUrl", testBlogPostRetrievedCorrectlyFromSlugUrl),
@@ -38,41 +42,35 @@
 //        ("testBlogPassedToSearchPageCorrectly", testBlogPassedToSearchPageCorrectly),
 //        ("testThatFlagSetIfEmptySearch", testThatFlagSetIfEmptySearch),
 //        ("testThatFlagSetIfNoSearchTerm", testThatFlagSetIfNoSearchTerm),
-//    ]
-//
-//    private var drop: Droplet!
-//    private var database: Database!
-//    private var viewFactory: CapturingViewFactory!
-//    private var post: BlogPost!
-//    private var user: BlogUser!
-//    private let blogIndexPath = "/"
-//    private let blogPostPath = "/posts/test-path/"
+    ]
+
+    // MARK: - Properties
+    var testWorld: TestWorld!
+    var firstData: TestData!
+    private let blogIndexPath = "/"
+    private let blogPostPath = "/posts/test-path/"
 //    private let tagPath = "/tags/tatooine/"
 //    private let authorPath = "/authors/luke/"
 //    private let allAuthorsPath = "/authors/"
 //    private let allTagsPath = "/tags/"
-//    private var blogPostRequest: Request!
-//    private var authorRequest: Request!
-//    private var tagRequest: Request!
-//    private var blogIndexRequest: Request!
-//    private var allTagsRequest: Request!
-//    private var allAuthorsRequest: Request!
-//
-//    override func setUp() {
-//        blogPostRequest = Request(method: .get, uri: blogPostPath)
-//        authorRequest = Request(method: .get, uri: authorPath)
-//        tagRequest = Request(method: .get, uri: tagPath)
-//        blogIndexRequest = Request(method: .get, uri: blogIndexPath)
-//        allTagsRequest = Request(method: .get, uri: allTagsPath)
-//        allAuthorsRequest = Request(method: .get, uri: allAuthorsPath)
-//        database = try! Database(MemoryDriver())
-//        try! Droplet.prepare(database: database)
-//    }
-//
-//    override func tearDown() {
+    
+    var presenter: CapturingBlogPresenter {
+        return testWorld.context.blogPresenter
+    }
+
+    // MARK: - Overrides
+    
+    override func setUp() {
+        testWorld = try! TestWorld.create()
+        firstData = try! testWorld.createPost(title: "Test Path", slugUrl: "test-path")
+    }
+
+    override func tearDown() {
 //        try! Droplet.teardown(database: database)
-//    }
-//
+    }
+    
+    //
+
 //    func setupDrop(config: Config? = nil, setupData: Bool = true) throws {
 //        drop = try Droplet()
 //
@@ -98,58 +96,57 @@
 //            try BlogTag.addTag("tatooine", to: post)
 //        }
 //    }
-//
-//    func testLinuxTestSuiteIncludesAllTests() {
-//        #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
-//            let thisClass = type(of: self)
-//            let linuxCount = thisClass.allTests.count
-//            let darwinCount = Int(thisClass
-//                .defaultTestSuite.testCaseCount)
-//            XCTAssertEqual(linuxCount, darwinCount,
-//                           "\(darwinCount - linuxCount) tests are missing from allTests")
-//        #endif
-//    }
-//
-//    func testBlogIndexGetsPostsInReverseOrder() throws {
-//        try setupDrop()
-//
-//        let post2 = BlogPost(title: "A New Path", contents: "In a galaxy far, far, away", author: user, creationDate: Date(), slugUrl: "a-new-path", published: true)
-//        try post2.save()
-//
-//        _ = try drop.respond(to: blogIndexRequest)
-//
-//        XCTAssertEqual(viewFactory.paginatedPosts?.total, 2)
-//        XCTAssertEqual(viewFactory.paginatedPosts?.data[0].title, "A New Path")
-//        XCTAssertEqual(viewFactory.paginatedPosts?.data[1].title, "Test Path")
-//
-//    }
-//
-//    func testBlogIndexGetsAllTags() throws {
-//        try setupDrop()
-//        _ = try drop.respond(to: blogIndexRequest)
-//
-//        XCTAssertEqual(viewFactory.blogIndexTags?.count, 1)
-//        XCTAssertEqual(viewFactory.blogIndexTags?.first?.name, "tatooine")
-//    }
-//
-//    func testBlogIndexGetsAllAuthors() throws {
-//        try setupDrop()
-//        _ = try drop.respond(to: blogIndexRequest)
-//
-//        XCTAssertEqual(viewFactory.blogIndexAuthors?.count, 1)
-//        XCTAssertEqual(viewFactory.blogIndexAuthors?.first?.name, "Luke")
-//    }
-//
-//    func testBlogPostRetrievedCorrectlyFromSlugUrl() throws {
-//        try setupDrop()
-//        _ = try drop.respond(to: blogPostRequest)
-//
-//        XCTAssertEqual(viewFactory.blogPost?.title, post.title)
-//        XCTAssertEqual(viewFactory.blogPost?.contents, post.contents)
-//        XCTAssertEqual(viewFactory.blogPostAuthor?.name, user.name)
-//        XCTAssertEqual(viewFactory.blogPostAuthor?.username, user.username)
-//    }
-//
+    
+    // MARK: - Tests
+
+    func testLinuxTestSuiteIncludesAllTests() {
+        #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
+            let thisClass = type(of: self)
+            let linuxCount = thisClass.allTests.count
+            let darwinCount = Int(thisClass
+                .defaultTestSuite.testCaseCount)
+            XCTAssertEqual(linuxCount, darwinCount,
+                           "\(darwinCount - linuxCount) tests are missing from allTests")
+        #endif
+    }
+
+    func testBlogIndexGetsPostsInReverseOrder() throws {
+        let secondData = try testWorld.createPost(title: "A New Post")
+
+        _ = try testWorld.getResponse(to: blogIndexPath)
+
+        XCTAssertEqual(presenter.indexPosts?.count, 2)
+        XCTAssertEqual(presenter.indexPosts?[0].title, secondData.post.title)
+        XCTAssertEqual(presenter.indexPosts?[1].title, firstData.post.title)
+
+    }
+
+    func testBlogIndexGetsAllTags() throws {
+        let tagName = "tatooine"
+        try testWorld.context.repository.addTag(name: tagName)
+        
+        _ = try testWorld.getResponse(to: blogIndexPath)
+
+        XCTAssertEqual(presenter.indexTags?.count, 1)
+        XCTAssertEqual(presenter.indexTags?.first?.name, tagName)
+    }
+
+    func testBlogIndexGetsAllAuthors() throws {
+        _ = try testWorld.getResponse(to: blogIndexPath)
+
+        XCTAssertEqual(presenter.indexAuthors?.count, 1)
+        XCTAssertEqual(presenter.indexAuthors?.first?.name, firstData.author.name)
+    }
+
+    func testBlogPostRetrievedCorrectlyFromSlugUrl() throws {
+        _ = try testWorld.getResponse(to: blogPostPath)
+
+        XCTAssertEqual(presenter.post?.title, firstData.post.title)
+        XCTAssertEqual(presenter.post?.contents, firstData.post.contents)
+        XCTAssertEqual(presenter.postAuthor?.name, firstData.author.name)
+        XCTAssertEqual(presenter.postAuthor?.username, firstData.author.username)
+    }
+
 //    func testThatAccessingPathsRouteRedirectsToBlogIndex() throws {
 //        try setupDrop()
 //        let request = Request(method: .get, uri: "/posts/")
@@ -348,4 +345,4 @@
 //        XCTAssertNil(viewFactory.searchPosts)
 //        XCTAssertTrue(viewFactory.emptySearch ?? false)
 //    }
-//}
+}

@@ -80,7 +80,7 @@ class RSSFeedTests: XCTestCase {
 
         let anotherTitle = "Another Title"
         let contents = "This is some short contents"
-        let post2 = try TestDataBuilder.createPost(on: testWorld.context.repository, title: anotherTitle, contents: contents, slugUrl: "another-title", author: author).post
+        let post2 = try testWorld.createPost(title: anotherTitle, contents: contents, slugUrl: "another-title", author: author).post
 
         let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<pubDate>\(dateFormatter.string(from: post2.created))</pubDate>\n<textinput>\n<description>Search SteamPress Blog</description>\n<title>Search</title>\n<link>/search?</link>\n<name>term</name>\n</textinput>\n<item>\n<title>\n\(anotherTitle)\n</title>\n<description>\n\(contents)\n</description>\n<link>\n/posts/another-title/\n</link>\n<pubDate>\(dateFormatter.string(from: post2.created))</pubDate>\n</item>\n<item>\n<title>\n\(post.title)\n</title>\n<description>\n\(try post.description())\n</description>\n<link>\n/posts/\(post.slugUrl)/\n</link>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n</item>\n</channel>\n\n</rss>"
 
@@ -93,7 +93,7 @@ class RSSFeedTests: XCTestCase {
         let testData = try TestDataBuilder.createPost(on: testWorld.context.repository)
         let post = testData.post
 
-        _ = try TestDataBuilder.createPost(on: testWorld.context.repository, title: "A Draft Post", published: false)
+        _ = try testWorld.createPost(title: "A Draft Post", published: false)
 
         let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n<textinput>\n<description>Search SteamPress Blog</description>\n<title>Search</title>\n<link>/search?</link>\n<name>term</name>\n</textinput>\n<item>\n<title>\n\(post.title)\n</title>\n<description>\n\(try post.description())\n</description>\n<link>\n/posts/\(post.slugUrl)/\n</link>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n</item>\n</channel>\n\n</rss>"
 
@@ -162,7 +162,7 @@ class RSSFeedTests: XCTestCase {
 
     func testThatTagsAreAddedToPostCorrectly() throws {
         testWorld = try TestWorld.create()
-        let testData = try TestDataBuilder.createPost(on: testWorld.context.repository, tags: ["Vapor 2", "Engineering"])
+        let testData = try testWorld.createPost(tags: ["Vapor 2", "Engineering"])
         let post = testData.post
 
         let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n<textinput>\n<description>Search SteamPress Blog</description>\n<title>Search</title>\n<link>/search?</link>\n<name>term</name>\n</textinput>\n<item>\n<title>\n\(post.title)\n</title>\n<description>\n\(try post.description())\n</description>\n<link>\n/posts/\(post.slugUrl)/\n</link>\n<category>Vapor 2</category>\n<category>Engineering</category>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n</item>\n</channel>\n\n</rss>"
@@ -216,7 +216,7 @@ class RSSFeedTests: XCTestCase {
     func testThatDateFormatterIsCorrect() throws {
         let createDate = Date(timeIntervalSince1970: 1505867108)
         testWorld = try TestWorld.create()
-        let testData = try TestDataBuilder.createPost(on: testWorld.context.repository, createdDate: createDate)
+        let testData = try testWorld.createPost(createdDate: createDate)
         let post = testData.post
 
         let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<pubDate>Wed, 20 Sep 2017 00:25:08 GMT</pubDate>\n<textinput>\n<description>Search SteamPress Blog</description>\n<title>Search</title>\n<link>/search?</link>\n<name>term</name>\n</textinput>\n<item>\n<title>\n\(post.title)\n</title>\n<description>\n\(try post.description())\n</description>\n<link>\n/posts/\(post.slugUrl)/\n</link>\n<pubDate>Wed, 20 Sep 2017 00:25:08 GMT</pubDate>\n</item>\n</channel>\n\n</rss>"
@@ -228,7 +228,7 @@ class RSSFeedTests: XCTestCase {
     func testThatDescriptionContainsOnlyText() throws {
         testWorld = try TestWorld.create()
         let contents = "[This is](https://www.google.com) a post that contains some **text**. \n# Formatting should be removed"
-        let testData = try TestDataBuilder.createPost(on: testWorld.context.repository, contents: contents)
+        let testData = try testWorld.createPost(contents: contents)
         let post = testData.post
 
         let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n<textinput>\n<description>Search SteamPress Blog</description>\n<title>Search</title>\n<link>/search?</link>\n<name>term</name>\n</textinput>\n<item>\n<title>\n\(post.title)\n</title>\n<description>\nThis is a post that contains some text. Formatting should be removed\n</description>\n<link>\n/posts/\(post.slugUrl)/\n</link>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n</item>\n</channel>\n\n</rss>"

@@ -15,6 +15,8 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         postTagLinks = []
     }
     
+    // MARK: - BlogTagRepository
+    
     func getAllTags(on req: Request) -> Future<[BlogTag]> {
         return req.future(tags)
     }
@@ -48,6 +50,8 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         postTagLinks.append(newLink)
     }
     
+    // MARK: - BlogPostRepository
+    
     func getAllPosts(on req: Request) -> EventLoopFuture<[BlogPost]> {
         return req.future(posts)
     }
@@ -69,10 +73,17 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         return req.future(sortedPosts)
     }
     
+    func getPost(on req: Request, slug: String) -> EventLoopFuture<BlogPost?> {
+        let post = posts.filter { $0.slugUrl == slug}.first
+        return req.future(post)
+    }
+    
     func addPost(_ post: BlogPost) {
         post.blogID = posts.count + 1
         posts.append(post)
     }
+    
+    // MARK: - BlogUserRepository
     
     func addUser(_ user: BlogUser) {
         user.userID = users.count + 1

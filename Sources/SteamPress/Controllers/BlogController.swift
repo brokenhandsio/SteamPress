@@ -31,6 +31,8 @@ struct BlogController: RouteCollection {
 //
     // MARK: - Add routes
     func boot(router: Router) throws {
+        router.get(use: indexHandler)
+        router.get(blogPostsPath, String.parameter, use: blogPostHandler)
         if enableAuthorPages {
             router.get(authorsPath, use: allAuthorsViewHandler)
             router.get(authorsPath, String.parameter, use: authorViewHandler)
@@ -58,31 +60,37 @@ struct BlogController: RouteCollection {
 
     // MARK: - Route Handlers
 
-//    func indexHandler(request: Request) throws -> ResponseRepresentable {
-//        let tags = try BlogTag.all()
-//        let authors = try BlogUser.all()
+    func indexHandler(_ req: Request) throws -> Future<View> {
 //        let paginatedBlogPosts = try BlogPost.makeQuery().filter(BlogPost.Properties.published, true).sort(BlogPost.Properties.created, .descending).paginate(for: request)
 //
 //        return try viewFactory.blogIndexView(uri: request.getURIWithHTTPSIfReverseProxy(), paginatedPosts: paginatedBlogPosts, tags: tags, authors: authors, loggedInUser: getLoggedInUser(in: request))
-//    }
-//
+        let postRepository = try req.make(BlogPostRepository.self)
+        let tagRepository = try req.make(BlogTagRepository.self)
+        let userRepository = try req.make(BlogUserRepository.self)
+        return flatMap(postRepository.getAllPostsSortedByPublishDate(on: req, includeDrafts: false),
+                       tagRepository.getAllTags(on: req),
+                       userRepository.getAllUsers(on: req)) { posts, tags, users in
+            let presenter = try req.make(BlogPresenter.self)
+            return presenter.indexView(on: req, posts: posts, tags: tags, authors: users)
+        }
+    }
+
 //    func blogPostIndexRedirectHandler(request: Request) throws -> ResponseRepresentable {
 //        return Response(redirect: pathCreator.createPath(for: pathCreator.blogPath), .permanent)
 //    }
-//
-//    func blogPostHandler(request: Request) throws -> ResponseRepresentable {
-//        let blogSlugUrl: String = try request.parameters.next()
-//        guard let blogPost = try BlogPost.makeQuery().filter(BlogPost.Properties.slugUrl, blogSlugUrl).first() else {
-//            throw Abort.notFound
-//        }
-//
-//        guard let author = try blogPost.postAuthor.get() else {
-//            throw Abort.badRequest
-//        }
-//
-//        return try viewFactory.blogPostView(uri: request.getURIWithHTTPSIfReverseProxy(), post: blogPost, author: author, user: getLoggedInUser(in: request))
-//    }
-//
+
+    func blogPostHandler(_ req: Request) throws -> Future<View> {
+        let blogSlug = try req.parameters.next(String.self)
+        let blogRepository = try req.make(BlogPostRepository.self)
+        return blogRepository.getPost(on: req, slug: blogSlug).unwrap(or: Abort(.notFound)).flatMap { post in
+            let userRepository = try req.make(BlogUserRepository.self)
+            return userRepository.getUser(post.author, on: req).unwrap(or: Abort(.internalServerError)).flatMap { user in
+                let presenter = try req.make(BlogPresenter.self)
+                return presenter.postView(on: req, post: post, author: user)
+            }
+        }
+    }
+
 //    func tagViewHandler(request: Request) throws -> ResponseRepresentable {
 //        let tagName: String = try request.parameters.next()
 //
