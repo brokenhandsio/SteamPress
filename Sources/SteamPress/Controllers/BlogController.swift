@@ -11,31 +11,31 @@ struct BlogController: RouteCollection {
     fileprivate let authorsPath = "authors"
     fileprivate let apiPath = "api"
     fileprivate let searchPath = "search"
-//    fileprivate let drop: Droplet
 //    fileprivate let pathCreator: BlogPathCreator
-//    fileprivate let viewFactory: ViewFactory
     fileprivate let enableAuthorPages: Bool
-//    fileprivate let enableTagsPages: Bool
+    fileprivate let enableTagsPages: Bool
 
     // MARK: - Initialiser
-    init(enableAuthorPages: Bool) {
+    init(enableAuthorPages: Bool, enableTagPages: Bool) {
         self.enableAuthorPages = enableAuthorPages
+        self.enableTagsPages = enableTagPages
     }
 //    init(drop: Droplet, pathCreator: BlogPathCreator, viewFactory: ViewFactory, enableAuthorsPages: Bool, enableTagsPages: Bool) {
-//        self.drop = drop
 //        self.pathCreator = pathCreator
-//        self.viewFactory = viewFactory
-//        self.enableAuthorsPages = enableAuthorsPages
-//        self.enableTagsPages = enableTagsPages
 //    }
 //
     // MARK: - Add routes
     func boot(router: Router) throws {
         router.get(use: indexHandler)
         router.get(blogPostsPath, String.parameter, use: blogPostHandler)
+        router.get(blogPostsPath, use: blogPostIndexRedirectHandler)
         if enableAuthorPages {
             router.get(authorsPath, use: allAuthorsViewHandler)
             router.get(authorsPath, String.parameter, use: authorViewHandler)
+        }
+        if enableTagsPages {
+            router.get(tagsPath, String.parameter, use: tagViewHandler)
+            router.get(tagsPath, use: allTagsViewHandler)
         }
     }
 //    func addRoutes() {
@@ -61,9 +61,9 @@ struct BlogController: RouteCollection {
     // MARK: - Route Handlers
 
     func indexHandler(_ req: Request) throws -> Future<View> {
-//        let paginatedBlogPosts = try BlogPost.makeQuery().filter(BlogPost.Properties.published, true).sort(BlogPost.Properties.created, .descending).paginate(for: request)
-//
-//        return try viewFactory.blogIndexView(uri: request.getURIWithHTTPSIfReverseProxy(), paginatedPosts: paginatedBlogPosts, tags: tags, authors: authors, loggedInUser: getLoggedInUser(in: request))
+        #warning("Pagination")
+        #warning("Logged in users")
+        #warning("URI")
         let postRepository = try req.make(BlogPostRepository.self)
         let tagRepository = try req.make(BlogTagRepository.self)
         let userRepository = try req.make(BlogUserRepository.self)
@@ -75,9 +75,11 @@ struct BlogController: RouteCollection {
         }
     }
 
-//    func blogPostIndexRedirectHandler(request: Request) throws -> ResponseRepresentable {
+    func blogPostIndexRedirectHandler(_ req: Request) throws -> Response {
 //        return Response(redirect: pathCreator.createPath(for: pathCreator.blogPath), .permanent)
-//    }
+        #warning("Check path")
+        return req.redirect(to: "/", type: .permanent)
+    }
 
     func blogPostHandler(_ req: Request) throws -> Future<View> {
         let blogSlug = try req.parameters.next(String.self)
@@ -91,21 +93,25 @@ struct BlogController: RouteCollection {
         }
     }
 
-//    func tagViewHandler(request: Request) throws -> ResponseRepresentable {
-//        let tagName: String = try request.parameters.next()
-//
-//        guard let decodedTagName = tagName.removingPercentEncoding else {
-//            throw Abort.badRequest
-//        }
-//
-//        guard let tag = try BlogTag.makeQuery().filter(BlogTag.Properties.name, decodedTagName).first() else {
-//            throw Abort.notFound
-//        }
-//
-//        let paginatedBlogPosts = try tag.sortedPosts().paginate(for: request)
-//
-//        return try viewFactory.tagView(uri: request.getURIWithHTTPSIfReverseProxy(), tag: tag, paginatedPosts: paginatedBlogPosts, user: getLoggedInUser(in: request))
-//    }
+    func tagViewHandler(_ req: Request) throws -> Future<View> {
+        #warning("Logged In User")
+        #warning("Pagination")
+        #warning("URI")
+        let tagName = try req.parameters.next(String.self)
+
+        guard let decodedTagName = tagName.removingPercentEncoding else {
+            throw Abort(.badRequest)
+        }
+        
+        let tagRepository = try req.make(BlogTagRepository.self)
+        return tagRepository.getTag(decodedTagName, on: req).unwrap(or: Abort(.notFound)).flatMap { tag in
+            let postRepository = try req.make(BlogPostRepository.self)
+            return postRepository.getSortedPublishedPosts(for: tag, on: req).flatMap { posts in
+                let presenter = try req.make(BlogPresenter.self)
+                return presenter.tagView(on: req, tag: tag, posts: posts)
+            }
+        }
+    }
 
     func authorViewHandler(_ req: Request) throws -> Future<View> {
         let authorUsername = try req.parameters.next(String.self)
@@ -124,9 +130,15 @@ struct BlogController: RouteCollection {
         }
     }
 
-//    func allTagsViewHandler(request: Request) throws -> ResponseRepresentable {
-//        return try viewFactory.allTagsView(uri: request.getURIWithHTTPSIfReverseProxy(), allTags: BlogTag.all(), user: getLoggedInUser(in: request))
-//    }
+    func allTagsViewHandler(_ req: Request) throws -> Future<View> {
+        #warning("URI")
+        #warning("Logged in user")
+        let tagRepository = try req.make(BlogTagRepository.self)
+        return tagRepository.getAllTags(on: req).flatMap { tags in
+            let presenter = try req.make(BlogPresenter.self)
+            return presenter.allTagsView(on: req, tags: tags)
+        }
+    }
 
     func allAuthorsViewHandler(_ req: Request) throws -> Future<View> {
 //        return try viewFactory.allAuthorsView(uri: request.getURIWithHTTPSIfReverseProxy(), allAuthors: BlogUser.all(), user: getLoggedInUser(in: request))

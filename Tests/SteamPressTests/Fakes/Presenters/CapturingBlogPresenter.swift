@@ -38,6 +38,20 @@ class CapturingBlogPresenter: BlogPresenter {
         return createFutureView(on: req)
     }
     
+    private(set) var allTagsPageTags: [BlogTag]?
+    func allTagsView(on req: Request, tags: [BlogTag]) -> EventLoopFuture<View> {
+        self.allTagsPageTags = tags
+        return createFutureView(on: req)
+    }
+    
+    private(set) var tag: BlogTag?
+    private(set) var tagPosts: [BlogPost]?
+    func tagView(on req: Request, tag: BlogTag, posts: [BlogPost]) -> Future<View> {
+        self.tag = tag
+        self.tagPosts = posts
+        return createFutureView(on: req)
+    }
+    
     // MARK: - Helpers
 
     func createFutureView(on req: Request) -> Future<View> {

@@ -89,7 +89,7 @@ fileprivate extension BlogPost {
         var postEntry = "<item>\n<title>\n\(title)\n</title>\n<description>\n\(try description())\n</description>\n<link>\n\(link)\n</link>\n"
         
         let tagRepository = try request.make(BlogTagRepository.self)
-        return tagRepository.getTagsFor(post: self, on: request).map { tags in
+        return tagRepository.getTags(for: self, on: request).map { tags in
             for tag in tags {
                 if let percentDecodedTag = tag.name.removingPercentEncoding {
                     postEntry += "<category>\(percentDecodedTag)</category>\n"

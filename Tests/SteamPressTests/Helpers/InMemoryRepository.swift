@@ -21,7 +21,7 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         return req.future(tags)
     }
     
-    func getTagsFor(post: BlogPost, on req: Request) -> EventLoopFuture<[BlogTag]> {
+    func getTags(for post: BlogPost, on req: Request) -> EventLoopFuture<[BlogTag]> {
         var results = [BlogTag]()
         guard let postID = post.blogID else {
             fatalError("Post doesn't exist when it should")
@@ -36,17 +36,37 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         return req.future(results)
     }
     
-    func addTag(name: String) throws {
+    func addTag(name: String) throws -> BlogTag {
         let newTag = try BlogTag(id: tags.count + 1, name: name)
         tags.append(newTag)
+        return newTag
     }
     
-    func addTag(name: String, for post: BlogPost) throws {
-        try addTag(name: name)
+    func addTag(name: String, for post: BlogPost) throws -> BlogTag{
+        let newTag = try addTag(name: name)
         guard let postID = post.blogID else {
             fatalError("Blog doesn't exist when it should")
         }
-        let newLink = BlogPostTagLink(postID: postID, tagID: tags.count)
+        guard let tagID = newTag.tagID else {
+            fatalError("Tag ID hasn't been set")
+        }
+        let newLink = BlogPostTagLink(postID: postID, tagID: tagID)
+        postTagLinks.append(newLink)
+        return newTag
+    }
+    
+    func getTag(_ name: String, on req: Request) -> EventLoopFuture<BlogTag?> {
+        return req.future(tags.first { $0.name == name })
+    }
+    
+    func addTag(_ tag: BlogTag, to post: BlogPost) {
+        guard let postID = post.blogID else {
+            fatalError("Blog doesn't exist when it should")
+        }
+        guard let tagID = tag.tagID else {
+            fatalError("Tag ID hasn't been set")
+        }
+        let newLink = BlogPostTagLink(postID: postID, tagID: tagID)
         postTagLinks.append(newLink)
     }
     
@@ -74,8 +94,23 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
     }
     
     func getPost(on req: Request, slug: String) -> EventLoopFuture<BlogPost?> {
-        let post = posts.filter { $0.slugUrl == slug}.first
-        return req.future(post)
+        return req.future(posts.first { $0.slugUrl == slug })
+    }
+    
+    func getSortedPublishedPosts(for tag: BlogTag, on req: Request) -> EventLoopFuture<[BlogPost]> {
+        var results = [BlogPost]()
+        guard let tagID = tag.tagID else {
+            fatalError("Tag doesn't exist when it should")
+        }
+        for link in postTagLinks where link.tagID == tagID {
+            let foundPost = posts.first { $0.blogID == link.postID }
+            guard let post =  foundPost else {
+                fatalError("Post doesn't exist when it should")
+            }
+            results.append(post)
+        }
+        let sortedPosts = results.sorted { $0.created > $1.created }.filter { $0.published }
+        return req.future(sortedPosts)
     }
     
     func addPost(_ post: BlogPost) {

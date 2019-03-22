@@ -11,4 +11,12 @@ extension TestWorld {
         self.context.repository.addUser(user)
         return user
     }
+    
+    func createTag(_ name: String = "Engineering") throws -> BlogTag {
+        return try self.context.repository.addTag(name: name)
+    }
+    
+    func createTag(_ name: String = "Engineering", on post: BlogPost) throws -> BlogTag {
+        return try self.context.repository.addTag(name: name, for: post)
+    }
 }

@@ -147,23 +147,12 @@ class BlogControllerTests: XCTestCase {
         XCTAssertEqual(presenter.postAuthor?.username, firstData.author.username)
     }
 
-//    func testThatAccessingPathsRouteRedirectsToBlogIndex() throws {
-//        try setupDrop()
-//        let request = Request(method: .get, uri: "/posts/")
-//        let response = try drop.respond(to: request)
-//        XCTAssertEqual(response.status, .movedPermanently)
-//        XCTAssertEqual(response.headers[HeaderKey.location], "/")
-//    }
-//
-//    func testTagView() throws {
-//        try setupDrop()
-//        _ = try drop.respond(to: tagRequest)
-//
-//        XCTAssertEqual(viewFactory.tagPosts?.total, 1)
-//        XCTAssertEqual(viewFactory.tagPosts?.data[0].title, post.title)
-//        XCTAssertEqual(viewFactory.tag?.name, "tatooine")
-//    }
-//
+    func testThatAccessingPathsRouteRedirectsToBlogIndex() throws {
+        let response = try testWorld.getResponse(to: "/posts/")
+        XCTAssertEqual(response.http.status, .movedPermanently)
+        XCTAssertEqual(response.http.headers[.location].first, "/")
+    }
+
 //    func testIndexPageGetsUri() throws {
 //        try setupDrop()
 //
@@ -221,100 +210,7 @@ class BlogControllerTests: XCTestCase {
 //
 //        XCTAssertEqual("https://geeks.brokenhands.io/posts/test-path/", viewFactory.blogPostURI?.descriptionWithoutPort)
 //    }
-//
-//    func testProfilePageGetsUri() throws {
-//        try setupDrop()
-//
-//        _ = try drop.respond(to: authorRequest)
-//
-//        XCTAssertEqual(authorPath, viewFactory.authorURI?.description)
-//    }
-//
-//    func testProfilePageGetsHTTPSUriFromReverseProxy() throws {
-//        try setupDrop()
-//
-//        let httpsReverseProxyRequest = Request(method: .get, uri: "http://geeks.brokenhands.io\(authorPath)")
-//        httpsReverseProxyRequest.headers["X-Forwarded-Proto"] = "https"
-//
-//        _ = try drop.respond(to: httpsReverseProxyRequest)
-//
-//        XCTAssertEqual("https://geeks.brokenhands.io/authors/luke/", viewFactory.authorURI?.descriptionWithoutPort)
-//    }
-//
-//    func testTagPageGetsUri() throws {
-//        try setupDrop()
-//
-//        _ = try drop.respond(to: tagRequest)
-//
-//        XCTAssertEqual(tagPath, viewFactory.tagURI?.description)
-//    }
-//
-//    func testTagPageGetsHTTPSUriFromReverseProxy() throws {
-//        try setupDrop()
-//
-//        let httpsReverseProxyRequest = Request(method: .get, uri: "http://geeks.brokenhands.io\(tagPath)")
-//        httpsReverseProxyRequest.headers["X-Forwarded-Proto"] = "https"
-//
-//        _ = try drop.respond(to: httpsReverseProxyRequest)
-//
-//        XCTAssertEqual("https://geeks.brokenhands.io/tags/tatooine/", viewFactory.tagURI?.descriptionWithoutPort)
-//    }
-//
-//    func testAllTagsPageGetsUri() throws {
-//        try setupDrop()
-//
-//        _ = try drop.respond(to: allTagsRequest)
-//
-//        XCTAssertEqual(allTagsPath, viewFactory.allTagsURI?.description)
-//    }
-//
-//    func testAllTagsPageGetsHTTPSUriFromReverseProxy() throws {
-//        try setupDrop()
-//
-//        let httpsReverseProxyRequest = Request(method: .get, uri: "http://geeks.brokenhands.io\(allTagsPath)")
-//        httpsReverseProxyRequest.headers["X-Forwarded-Proto"] = "https"
-//
-//        _ = try drop.respond(to: httpsReverseProxyRequest)
-//
-//        XCTAssertEqual("https://geeks.brokenhands.io/tags/", viewFactory.allTagsURI?.descriptionWithoutPort)
-//    }
-//
-//    func testAllTagsPageGetsAllTags() throws {
-//        try setupDrop()
-//        _ = try drop.respond(to: allTagsRequest)
-//
-//        XCTAssertEqual(1, viewFactory.allTagsPageTags?.count)
-//        XCTAssertEqual("tatooine", viewFactory.allTagsPageTags?.first?.name)
-//    }
-//
-//    func testTagPageGetsOnlyPublishedPostsInDescendingOrder() throws {
-//        try setupDrop()
-//        let post2 = TestDataBuilder.anyPost(author: self.user, title: "A later post")
-//        try post2.save()
-//        let draftPost = TestDataBuilder.anyPost(author: self.user, published: false)
-//        try draftPost.save()
-//        try BlogTag.addTag("tatooine", to: post2)
-//        try BlogTag.addTag("tatooine", to: draftPost)
-//        _ = try drop.respond(to: tagRequest)
-//
-//        XCTAssertEqual(2, viewFactory.tagPosts?.total)
-//        XCTAssertEqual(post2.title, viewFactory.tagPosts?.data.first?.title)
-//    }
-//
-//    func testDisabledBlogTagsPath() throws {
-//        let config = Config(try Node(node: [
-//            "enableTagsPages": false
-//        ]))
-//
-//        try setupDrop(config: config)
-//
-//        let tagResponse = try drop.respond(to: tagRequest)
-//        let allTagsResponse = try drop.respond(to: allTagsRequest)
-//
-//        XCTAssertEqual(404, tagResponse.status.statusCode)
-//        XCTAssertEqual(404, allTagsResponse.status.statusCode)
-//    }
-//
+    
 //    func testBlogPassedToSearchPageCorrectly() throws {
 //        try setupDrop()
 //        let searchRequest = Request(method: .get, uri: "/search?term=Test")

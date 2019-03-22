@@ -94,7 +94,7 @@ fileprivate extension BlogPost {
             var postEntry = "<entry>\n<id>\(blogPath)/posts-id/\(postID)/</id>\n<title>\(self.title)</title>\n<updated>\(dateFormatter.string(from: updatedTime))</updated>\n<published>\(dateFormatter.string(from: self.created))</published>\n<author>\n<name>\(user.name)</name>\n<uri>\(blogPath)/authors/\(user.username)/</uri>\n</author>\n<summary>\(try self.description())</summary>\n<link rel=\"alternate\" href=\"\(blogPath)/posts/\(self.slugUrl)/\" />\n"
             
             let tagRepository = try request.make(BlogTagRepository.self)
-            return tagRepository.getTagsFor(post: self, on: request).map { tags in
+            return tagRepository.getTags(for: self, on: request).map { tags in
                 for tag in tags {
                     if let percentDecodedTag = tag.name.removingPercentEncoding {
                         postEntry += "<category term=\"\(percentDecodedTag)\"/>\n"

@@ -18,6 +18,7 @@ public struct Provider: Vapor.Provider {
     let blogPresenter: BlogPresenter
     let feedInformation: FeedInformation
     let enableAuthorPages: Bool
+    let enableTagPages: Bool
 
     // TODO update
     /**
@@ -53,11 +54,10 @@ public struct Provider: Vapor.Provider {
         #warning("Default to sensible one")
         self.blogPresenter = blogPresenter!
         self.enableAuthorPages = enableAuthorPages
-
+        self.enableTagPages = enableTagPages
 
 //        self.useBootstrap4 = useBootstrap4
-//        self.enableAuthorsPages = enableAuthorsPages
-//        self.enableTagsPages = enableTagsPages
+        
     }
 
     public func register(_ services: inout Services) throws {
@@ -82,7 +82,7 @@ public struct Provider: Vapor.Provider {
 
         let feedController = FeedController(pathCreator: pathCreator, feedInformation: feedInformation)
         let apiController = APIController()
-        let blogController = BlogController(enableAuthorPages: enableAuthorPages)
+        let blogController = BlogController(enableAuthorPages: enableAuthorPages, enableTagPages: enableTagPages)
 
         let blogRoutes: Router
         if let blogPath = blogPath {

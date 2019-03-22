@@ -65,7 +65,8 @@ struct TestDataBuilder {
                                  path: String?,
                                  feedInformation: FeedInformation,
                                  blogPresenter: CapturingBlogPresenter,
-                                 enableAuthorPages: Bool) throws -> Application {
+                                 enableAuthorPages: Bool,
+                                 enableTagPages: Bool) throws -> Application {
 
         // TODO work out new config?
 
@@ -82,6 +83,7 @@ struct TestDataBuilder {
                                              feedInformation: feedInformation,
                                              postsPerPage: 10,
                                              enableAuthorPages: enableAuthorPages,
+                                             enableTagPages: enableTagPages,
                                              blogPresenter: blogPresenter)
         try services.register(steampress)
 
