@@ -24,42 +24,6 @@ struct TestDataBuilder {
 //        let title = "Introduction To Steampress"
 //        return BlogPost(title: title, contents: longContents, author: author, creationDate: Date(), slugUrl: title, published: true)
 //    }
-//
-//    static func setupSteamPressDrop(title: String? = nil, description: String? = nil, path: String? = nil, copyright: String? = nil, imageURL: String? = nil) throws -> Droplet {
-//        BlogUser.passwordHasher = FakePasswordHasher()
-//
-//        var config = Config([:])
-//
-//        try config.set("steampress.postsPerPage", 5)
-//
-//        if let title = title {
-//            try config.set("steampress.title", title)
-//        }
-//
-//        if let description = description {
-//            try config.set("steampress.description", description)
-//        }
-//
-//        if let path = path {
-//            try config.set("steampress.blogPath", path)
-//        }
-//
-//        if let copyright = copyright {
-//            try config.set("steampress.copyright", copyright)
-//        }
-//
-//        if let image = imageURL {
-//            try config.set("steampress.imageURL", image)
-//        }
-//
-//        try config.set("droplet.middleware", ["error", "steampress-sessions", "blog-persist"])
-//        try config.set("fluent.driver", "memory")
-//        try config.addProvider(SteamPress.Provider.self)
-//        try config.addProvider(FluentProvider.Provider.self)
-//
-//        let drop = try Droplet(config)
-//        return drop
-//    }
 
     static func getSteamPressApp(repository: InMemoryRepository,
                                  path: String?,
@@ -67,17 +31,7 @@ struct TestDataBuilder {
                                  blogPresenter: CapturingBlogPresenter,
                                  enableAuthorPages: Bool,
                                  enableTagPages: Bool) throws -> Application {
-
-        // TODO work out new config?
-
         var services = Services.default()
-        var config = Config.default()
-//        try services.register(FluentSQLiteProvider())
-//        var databaseConfig = DatabasesConfig()
-//        let testDatabase = try SQLiteDatabase(storage: .memory)
-//        databaseConfig.add(database: testDatabase, as: DatabaseIdentifier<SQLiteDatabase>.sqlite)
-//        services.register(databaseConfig)
-
         let steampress = SteamPress.Provider(
                                              blogPath: path,
                                              feedInformation: feedInformation,
@@ -96,12 +50,6 @@ struct TestDataBuilder {
         })
         
         return try Application(services: services)
-    }
-
-    static func getResponse(to request: HTTPRequest, using app: Application) throws -> Response {
-        let responder = try app.make(Responder.self)
-        let wrappedRequest = Request(http: request, using: app)
-        return try responder.respond(to: wrappedRequest).wait()
     }
 
     static func createPost(on repository: InMemoryRepository, tags: [String]? = nil, createdDate: Date? = nil, title: String = "An Exciting Post!", contents: String = "This is a blog post", slugUrl: String = "an-exciting-post", author: BlogUser? = nil, published: Bool = true) throws -> TestData {
