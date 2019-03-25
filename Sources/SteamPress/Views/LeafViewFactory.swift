@@ -1,4 +1,6 @@
 import Vapor
+
+#warning("This should grab the URL and authenticated user")
 ////import URI
 //import HTTP
 //import Foundation

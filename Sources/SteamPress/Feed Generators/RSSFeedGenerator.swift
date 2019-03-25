@@ -79,7 +79,7 @@ struct RSSFeedGenerator {
     }
 
     private func getRootPath(for request: Request) -> String {
-        return request.getURIWithHTTPSIfReverseProxy().descriptionWithoutPort.replacingOccurrences(of: "/rss.xml", with: "")
+        return request.urlWithHTTPSIfReverseProxy().descriptionWithoutPort.replacingOccurrences(of: "/rss.xml", with: "")
     }
 }
 

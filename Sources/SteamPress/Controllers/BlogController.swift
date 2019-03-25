@@ -29,6 +29,7 @@ struct BlogController: RouteCollection {
         router.get(use: indexHandler)
         router.get(blogPostsPath, String.parameter, use: blogPostHandler)
         router.get(blogPostsPath, use: blogPostIndexRedirectHandler)
+        router.get(searchPath, use: searchHandler)
         if enableAuthorPages {
             router.get(authorsPath, use: allAuthorsViewHandler)
             router.get(authorsPath, String.parameter, use: authorViewHandler)
@@ -62,8 +63,6 @@ struct BlogController: RouteCollection {
 
     func indexHandler(_ req: Request) throws -> Future<View> {
         #warning("Pagination")
-        #warning("Logged in users")
-        #warning("URI")
         let postRepository = try req.make(BlogPostRepository.self)
         let tagRepository = try req.make(BlogTagRepository.self)
         let userRepository = try req.make(BlogUserRepository.self)
@@ -94,9 +93,7 @@ struct BlogController: RouteCollection {
     }
 
     func tagViewHandler(_ req: Request) throws -> Future<View> {
-        #warning("Logged In User")
         #warning("Pagination")
-        #warning("URI")
         let tagName = try req.parameters.next(String.self)
 
         guard let decodedTagName = tagName.removingPercentEncoding else {
@@ -117,7 +114,7 @@ struct BlogController: RouteCollection {
         let authorUsername = try req.parameters.next(String.self)
         let userRepository = try req.make(BlogUserRepository.self)
         
-        return userRepository.getUser(authorUsername, on: req).flatMap { user in
+        return userRepository.getUser(username: authorUsername, on: req).flatMap { user in
             guard let author = user else {
                 throw Abort(.notFound)
             }
@@ -131,8 +128,6 @@ struct BlogController: RouteCollection {
     }
 
     func allTagsViewHandler(_ req: Request) throws -> Future<View> {
-        #warning("URI")
-        #warning("Logged in user")
         let tagRepository = try req.make(BlogTagRepository.self)
         return tagRepository.getAllTags(on: req).flatMap { tags in
             let presenter = try req.make(BlogPresenter.self)
@@ -141,7 +136,6 @@ struct BlogController: RouteCollection {
     }
 
     func allAuthorsViewHandler(_ req: Request) throws -> Future<View> {
-//        return try viewFactory.allAuthorsView(uri: request.getURIWithHTTPSIfReverseProxy(), allAuthors: BlogUser.all(), user: getLoggedInUser(in: request))
         let presenter = try req.make(BlogPresenter.self)
         let authorRepository = try req.make(BlogUserRepository.self)
         return authorRepository.getAllUsers(on: req).flatMap { allUsers in
@@ -149,23 +143,33 @@ struct BlogController: RouteCollection {
         }
     }
 
-//    func tagApiHandler(request: Request) throws -> ResponseRepresentable {
-//        return try JSON(node: BlogTag.all().makeNode(in: nil))
-//    }
-//    
-//    func searchHandler(request: Request) throws -> ResponseRepresentable {
-//        guard let searchTerm = request.query?["term"]?.string, searchTerm != "" else {
-//            return try viewFactory.searchView(uri: request.getURIWithHTTPSIfReverseProxy(), searchTerm: nil, foundPosts: nil, emptySearch: true, user: getLoggedInUser(in: request))
-//        }
-//        
-//        let posts = try BlogPost.makeQuery().filter(BlogPost.Properties.published, true).or { orGroup in
-//            try orGroup.filter(BlogPost.Properties.title, .contains, searchTerm)
-//            try orGroup.filter(BlogPost.Properties.contents, .contains, searchTerm)
-//        }
-//        .sort(BlogPost.Properties.created, .descending).paginate(for: request)
-//        
-//        return try viewFactory.searchView(uri: request.uri, searchTerm: searchTerm, foundPosts: posts, emptySearch: false, user: getLoggedInUser(in: request))
-//    }
+    func searchHandler(_ req: Request) throws -> Future<View> {
+        let preseneter = try req.make(BlogPresenter.self)
+        guard let searchTerm = req.query[String.self, at: "term"], !searchTerm.isEmpty else {
+            return preseneter.searchView(on: req, posts: nil, searchTerm: nil)
+        }
+        
+        let postRepository = try req.make(BlogPostRepository.self)
+        return postRepository.findPublishedPostsOrdered(for: searchTerm, on: req).flatMap { posts in
+            return preseneter.searchView(on: req, posts: posts, searchTerm: searchTerm)
+        }
+    }
+
+}
+
+#warning("Move")
+import Foundation
+
+extension Request {
+    func urlWithHTTPSIfReverseProxy() -> URL {
+        if http.headers["X-Forwarded-Proto"].first == "https" {
+//            let uri = URI(scheme: "https", userInfo: self.http.uri.userInfo, hostname: self.http.uri.hostname, port: nil, path: self.http.uri.path, query: self.http.uri.query, fragment: self.http.uri.fragment)
+            //            return uri
+        }
+        return self.http.url
+    }
+}
+
 //
 //    private func getLoggedInUser(in request: Request) -> BlogUser? {
 //        var loggedInUser: BlogUser? = nil
@@ -176,18 +180,3 @@ struct BlogController: RouteCollection {
 //
 //        return loggedInUser
 //    }
-}
-
-#warning("Move")
-import Foundation
-
-extension Request {
-    func getURIWithHTTPSIfReverseProxy() -> URL {
-        if http.headers["X-Forwarded-Proto"].first == "https" {
-//            let uri = URI(scheme: "https", userInfo: self.http.uri.userInfo, hostname: self.http.uri.hostname, port: nil, path: self.http.uri.path, query: self.http.uri.query, fragment: self.http.uri.fragment)
-            //            return uri
-        }
-        return self.http.url
-    }
-}
-

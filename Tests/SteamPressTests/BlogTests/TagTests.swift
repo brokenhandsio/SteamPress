@@ -8,10 +8,6 @@ class TagTests: XCTestCase {
     
     static var allTests = [
         ("testLinuxTestSuiteIncludesAllTests", testLinuxTestSuiteIncludesAllTests),
-        ("testTagPageGetsUri", testTagPageGetsUri),
-        ("testTagPageGetsHTTPSUriFromReverseProxy", testTagPageGetsHTTPSUriFromReverseProxy),
-        ("testAllTagsPageGetsUri", testAllTagsPageGetsUri),
-        ("testAllTagsPageGetsHTTPSUriFromReverseProxy", testAllTagsPageGetsHTTPSUriFromReverseProxy),
         ("testAllTagsPageGetsAllTags", testAllTagsPageGetsAllTags),
         ("testTagPageGetsOnlyPublishedPostsInDescendingOrder", testTagPageGetsOnlyPublishedPostsInDescendingOrder),
         ("testDisabledBlogTagsPath", testDisabledBlogTagsPath),
@@ -50,48 +46,6 @@ class TagTests: XCTestCase {
         XCTAssertEqual(linuxCount, darwinCount,
                        "\(darwinCount - linuxCount) tests are missing from allTests")
         #endif
-    }
-    
-    func testTagPageGetsUri() throws {
-        //            try setupDrop()
-        //
-        //            _ = try drop.respond(to: tagRequest)
-        //
-        //            XCTAssertEqual(tagPath, viewFactory.tagURI?.description)
-        #warning("Implement")
-    }
-    
-    func testTagPageGetsHTTPSUriFromReverseProxy() throws {
-        //            try setupDrop()
-        //
-        //            let httpsReverseProxyRequest = Request(method: .get, uri: "http://geeks.brokenhands.io\(tagPath)")
-        //            httpsReverseProxyRequest.headers["X-Forwarded-Proto"] = "https"
-        //
-        //            _ = try drop.respond(to: httpsReverseProxyRequest)
-        //
-        //            XCTAssertEqual("https://geeks.brokenhands.io/tags/tatooine/", viewFactory.tagURI?.descriptionWithoutPort)
-        #warning("Implement")
-    }
-    
-    func testAllTagsPageGetsUri() throws {
-        //            try setupDrop()
-        //
-        //            _ = try drop.respond(to: allTagsRequest)
-        //
-        //            XCTAssertEqual(allTagsPath, viewFactory.allTagsURI?.description)
-        #warning("Implement")
-    }
-    
-    func testAllTagsPageGetsHTTPSUriFromReverseProxy() throws {
-        //            try setupDrop()
-        //
-        //            let httpsReverseProxyRequest = Request(method: .get, uri: "http://geeks.brokenhands.io\(allTagsPath)")
-        //            httpsReverseProxyRequest.headers["X-Forwarded-Proto"] = "https"
-        //
-        //            _ = try drop.respond(to: httpsReverseProxyRequest)
-        //
-        //            XCTAssertEqual("https://geeks.brokenhands.io/tags/", viewFactory.allTagsURI?.descriptionWithoutPort)
-        #warning("Implement")
     }
     
     func testAllTagsPageGetsAllTags() throws {

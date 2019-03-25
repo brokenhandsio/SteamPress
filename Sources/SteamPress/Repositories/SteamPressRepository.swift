@@ -12,10 +12,12 @@ public protocol BlogPostRepository {
     func getAllPostsSortedByPublishDate(on req: Request, for user: BlogUser, includeDrafts: Bool) -> Future<[BlogPost]>
     func getPost(on req: Request, slug: String) -> Future<BlogPost?>
     func getSortedPublishedPosts(for tag: BlogTag, on req: Request) -> Future<[BlogPost]>
+    func findPublishedPostsOrdered(for searchTerm: String, on req: Request) -> Future<[BlogPost]>
 }
 
 public protocol BlogUserRepository {
     func getAllUsers(on req: Request) -> Future<[BlogUser]>
     func getUser(_ id: Int, on req: Request) -> Future<BlogUser?>
     func getUser(_ name: String, on req: Request) -> Future<BlogUser?>
+    func getUser(username: String, on req: Request) -> Future<BlogUser?>
 }

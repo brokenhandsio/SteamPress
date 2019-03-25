@@ -52,6 +52,14 @@ class CapturingBlogPresenter: BlogPresenter {
         return createFutureView(on: req)
     }
     
+    private(set) var searchPosts: [BlogPost]?
+    private(set) var searchTerm: String?
+    func searchView(on req: Request, posts: [BlogPost]?, searchTerm: String?) -> EventLoopFuture<View> {
+        self.searchPosts = posts
+        self.searchTerm = searchTerm
+        return createFutureView(on: req)
+    }
+    
     // MARK: - Helpers
 
     func createFutureView(on req: Request) -> Future<View> {

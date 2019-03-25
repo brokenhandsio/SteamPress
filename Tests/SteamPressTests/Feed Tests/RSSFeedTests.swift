@@ -64,7 +64,7 @@ class RSSFeedTests: XCTestCase {
 
     func testOnePostReturnsCorrectRSSFeed() throws {
         testWorld = try TestWorld.create()
-        let testData = try TestDataBuilder.createPost(on: testWorld.context.repository)
+        let testData = try testWorld.createPost()
         let post = testData.post
         let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n<textinput>\n<description>Search SteamPress Blog</description>\n<title>Search</title>\n<link>/search?</link>\n<name>term</name>\n</textinput>\n<item>\n<title>\n\(post.title)\n</title>\n<description>\n\(try post.description())\n</description>\n<link>\n/posts/\(post.slugUrl)/\n</link>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n</item>\n</channel>\n\n</rss>"
 
@@ -74,7 +74,7 @@ class RSSFeedTests: XCTestCase {
 
     func testMultiplePostsReturnsCorrectRSSFeed() throws {
         testWorld = try TestWorld.create()
-        let testData = try TestDataBuilder.createPost(on: testWorld.context.repository)
+        let testData = try testWorld.createPost()
         let post = testData.post
         let author = testData.author
 
@@ -90,7 +90,7 @@ class RSSFeedTests: XCTestCase {
 
     func testDraftsAreNotIncludedInFeed() throws {
         testWorld = try TestWorld.create()
-        let testData = try TestDataBuilder.createPost(on: testWorld.context.repository)
+        let testData = try testWorld.createPost()
         let post = testData.post
 
         _ = try testWorld.createPost(title: "A Draft Post", published: false)
@@ -106,7 +106,7 @@ class RSSFeedTests: XCTestCase {
         let feedInformation = FeedInformation(title: title)
         testWorld = try TestWorld.create(feedInformation: feedInformation)
 
-        let testData = try TestDataBuilder.createPost(on: testWorld.context.repository)
+        let testData = try testWorld.createPost()
         let post = testData.post
 
         let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>\(title)</title>\n<link>/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n<textinput>\n<description>Search \(title)</description>\n<title>Search</title>\n<link>/search?</link>\n<name>term</name>\n</textinput>\n<item>\n<title>\n\(post.title)\n</title>\n<description>\n\(try post.description())\n</description>\n<link>\n/posts/\(post.slugUrl)/\n</link>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n</item>\n</channel>\n\n</rss>"
@@ -120,7 +120,7 @@ class RSSFeedTests: XCTestCase {
         let feedInformation = FeedInformation(description: description)
         testWorld = try TestWorld.create(feedInformation: feedInformation)
 
-        let testData = try TestDataBuilder.createPost(on: testWorld.context.repository)
+        let testData = try testWorld.createPost()
         let post = testData.post
 
         let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/</link>\n<description>\(description)</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n<textinput>\n<description>Search SteamPress Blog</description>\n<title>Search</title>\n<link>/search?</link>\n<name>term</name>\n</textinput>\n<item>\n<title>\n\(post.title)\n</title>\n<description>\n\(try post.description())\n</description>\n<link>\n/posts/\(post.slugUrl)/\n</link>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n</item>\n</channel>\n\n</rss>"
@@ -140,7 +140,7 @@ class RSSFeedTests: XCTestCase {
 
     func testPostLinkWhenBlogIsPlacedAtSubPath() throws {
         testWorld = try TestWorld.create(path: "blog-path")
-        let testData = try TestDataBuilder.createPost(on: testWorld.context.repository)
+        let testData = try testWorld.createPost()
         let post = testData.post
 
         let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/blog-path/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n<textinput>\n<description>Search SteamPress Blog</description>\n<title>Search</title>\n<link>/blog-path/search?</link>\n<name>term</name>\n</textinput>\n<item>\n<title>\n\(post.title)\n</title>\n<description>\n\(try post.description())\n</description>\n<link>\n/blog-path/posts/\(post.slugUrl)/\n</link>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n</item>\n</channel>\n\n</rss>"
@@ -173,7 +173,7 @@ class RSSFeedTests: XCTestCase {
 
     func testThatLinksComesFromRequestCorrectly() throws {
         testWorld = try TestWorld.create(path: "blog-path")
-        let testData = try TestDataBuilder.createPost(on: testWorld.context.repository)
+        let testData = try testWorld.createPost()
         let post = testData.post
 
         let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>http://geeks.brokenhands.io/blog-path/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n<textinput>\n<description>Search SteamPress Blog</description>\n<title>Search</title>\n<link>http://geeks.brokenhands.io/blog-path/search?</link>\n<name>term</name>\n</textinput>\n<item>\n<title>\n\(post.title)\n</title>\n<description>\n\(try post.description())\n</description>\n<link>\nhttp://geeks.brokenhands.io/blog-path/posts/\(post.slugUrl)/\n</link>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n</item>\n</channel>\n\n</rss>"
@@ -185,7 +185,7 @@ class RSSFeedTests: XCTestCase {
 
     func testThatLinksSpecifyHTTPSWhenComingFromReverseProxy() throws {
         testWorld = try TestWorld.create(path: "blog-path")
-        let testData = try TestDataBuilder.createPost(on: testWorld.context.repository)
+        let testData = try testWorld.createPost()
         let post = testData.post
 
         let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>https://geeks.brokenhands.io/blog-path/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n<textinput>\n<description>Search SteamPress Blog</description>\n<title>Search</title>\n<link>https://geeks.brokenhands.io/blog-path/search?</link>\n<name>term</name>\n</textinput>\n<item>\n<title>\n\(post.title)\n</title>\n<description>\n\(try post.description())\n</description>\n<link>\nhttps://geeks.brokenhands.io/blog-path/posts/\(post.slugUrl)/\n</link>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n</item>\n</channel>\n\n</rss>"

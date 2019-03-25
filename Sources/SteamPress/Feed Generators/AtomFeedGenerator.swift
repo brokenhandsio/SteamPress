@@ -76,7 +76,7 @@ struct AtomFeedGenerator {
     }
     
     private func getRootPath(for request: Request) -> String {
-        return request.getURIWithHTTPSIfReverseProxy().descriptionWithoutPort.replacingOccurrences(of: "/atom.xml", with: "")
+        return request.urlWithHTTPSIfReverseProxy().descriptionWithoutPort.replacingOccurrences(of: "/atom.xml", with: "")
     }
 }
 

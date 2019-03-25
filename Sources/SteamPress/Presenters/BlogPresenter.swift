@@ -7,4 +7,5 @@ public protocol BlogPresenter: Service {
     func authorView(on req: Request, author: BlogUser, posts: [BlogPost]) -> Future<View>
     func allTagsView(on req: Request, tags: [BlogTag]) -> Future<View>
     func tagView(on req: Request, tag: BlogTag, posts: [BlogPost]) -> Future<View>
+    func searchView(on req: Request, posts: [BlogPost]?, searchTerm: String?) -> Future<View>
 }

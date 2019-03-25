@@ -113,6 +113,12 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         return req.future(sortedPosts)
     }
     
+    func findPublishedPostsOrdered(for searchTerm: String, on req: Request) -> EventLoopFuture<[BlogPost]> {
+        let titleResults = posts.filter { $0.title.contains(searchTerm) }
+        let results = titleResults.sorted { $0.created > $1.created }.filter { $0.published }
+        return req.future(results)
+    }
+    
     func addPost(_ post: BlogPost) {
         post.blogID = posts.count + 1
         posts.append(post)
@@ -135,6 +141,10 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
     
     func getAllUsers(on req: Request) -> EventLoopFuture<[BlogUser]> {
         return req.future(users)
+    }
+    
+    func getUser(username: String, on req: Request) -> EventLoopFuture<BlogUser?> {
+        return req.future(users.first { $0.username == username })
     }
     
 }

@@ -222,7 +222,7 @@ class AtomFeedTests: XCTestCase {
     func testThatFullLinksWorksForPosts() throws {
         testWorld = try TestWorld.create(path: "blog")
 
-        let testData = try TestDataBuilder.createPost(on: testWorld.context.repository)
+        let testData = try testWorld.createPost()
 
         let post = testData.post
         let author = testData.author
@@ -237,7 +237,7 @@ class AtomFeedTests: XCTestCase {
     func testThatHTTPSLinksWorkForPostsBehindReverseProxy() throws {
         testWorld = try TestWorld.create(path: "blog")
 
-        let testData = try TestDataBuilder.createPost(on: testWorld.context.repository)
+        let testData = try testWorld.createPost()
 
         let post = testData.post
         let author = testData.author

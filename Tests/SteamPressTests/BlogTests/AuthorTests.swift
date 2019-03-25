@@ -1,5 +1,6 @@
 import XCTest
 import Vapor
+import SteamPress
 
 class AuthorTests: XCTestCase {
     
@@ -7,24 +8,29 @@ class AuthorTests: XCTestCase {
     
     static var allTests = [
         ("testLinuxTestSuiteIncludesAllTests", testLinuxTestSuiteIncludesAllTests),
-        ("testAllAuthorsPageGetsUri", testAllAuthorsPageGetsUri),
-        ("testAllAuthorsPageGetsHTTPSUriFromReverseProxy", testAllAuthorsPageGetsHTTPSUriFromReverseProxy),
-        ("testAuthorView", testAuthorView),
         ("testAllAuthorsPageGetAllAuthors", testAllAuthorsPageGetAllAuthors),
         ("testAuthorPageGetsOnlyPublishedPostsInDescendingOrder", testAuthorPageGetsOnlyPublishedPostsInDescendingOrder),
         ("testDisabledBlogAuthorsPath", testDisabledBlogAuthorsPath),
-        ]
+        ("testAuthorView", testAuthorView)
+    ]
     
     // MARK: - Properties
     private var app: Application!
     private var testWorld: TestWorld!
-    private let authorsRequestPath = "/authors"
+    private let allAuthorsRequestPath = "/authors"
+    private let authorsRequestPath = "/authors/leia"
+    private var user: BlogUser!
+    private var postData: TestData!
+    private var presenter: CapturingBlogPresenter {
+        return testWorld.context.blogPresenter
+    }
     
     // MARK: - Overrides
     
     override func setUp() {
         testWorld = try! TestWorld.create()
-        #warning("Tidy up and move post creation into setup etc")
+        user = testWorld.createUser(username: "leia")
+        postData = try! testWorld.createPost(author: user)
     }
     
     // MARK: - Tests
@@ -40,83 +46,41 @@ class AuthorTests: XCTestCase {
         #endif
     }
     
-    func testAllAuthorsPageGetsUri() throws {
-        //        _ = try testWorld.getResponse(to: authorsRequestPath)
-        //        XCTAssertEqual("allAuthors", testWorld.context.authorPresenter.allAuthorsURI?.description)
-        XCTFail("Implement")
-    }
-    
-    func testAllAuthorsPageGetsHTTPSUriFromReverseProxy() throws {
-        //        try setupDrop()
-        //
-        //        let httpsReverseProxyRequest = Request(method: .get, uri: "http://geeks.brokenhands.io\(allAuthorsPath)")
-        //        httpsReverseProxyRequest.headers["X-Forwarded-Proto"] = "https"
-        //
-        //        _ = try drop.respond(to: httpsReverseProxyRequest)
-        //
-        //        XCTAssertEqual("https://geeks.brokenhands.io/authors/", viewFactory.allAuthorsURI?.descriptionWithoutPort)
-        XCTFail("Implement")
-    }
-    
     func testAllAuthorsPageGetAllAuthors() throws {
-        let user = testWorld.createUser()
-        _ = try testWorld.getResponse(to: authorsRequestPath)
-        XCTAssertEqual(1, testWorld.context.blogPresenter.allAuthors?.count)
-        XCTAssertEqual(user.name, testWorld.context.blogPresenter.allAuthors?.first?.name)
+        _ = try testWorld.getResponse(to: allAuthorsRequestPath)
+        
+        XCTAssertEqual(testWorld.context.blogPresenter.allAuthors?.count, 1)
+        XCTAssertEqual(presenter.allAuthors?.first?.name, user.name)
     }
     
     func testAuthorPageGetsOnlyPublishedPostsInDescendingOrder() throws {
-        let firstPostData = try TestDataBuilder.createPost(on: testWorld.context.repository)
-        let secondPostData = try testWorld.createPost(title: "A later post", author: firstPostData.author)
-        _ = try testWorld.createPost(author: firstPostData.author, published: false)
+        let secondPostData = try testWorld.createPost(title: "A later post", author: user)
+        _ = try testWorld.createPost(author: user, published: false)
         
-        _ = try testWorld.getResponse(to: "/authors/\(firstPostData.author.name)")
+        _ = try testWorld.getResponse(to: authorsRequestPath)
         
-        XCTAssertEqual(2, testWorld.context.blogPresenter.authorPosts?.count)
-        XCTAssertEqual(secondPostData.post.title, testWorld.context.blogPresenter.authorPosts?.first?.title)
+        XCTAssertEqual(presenter.authorPosts?.count, 2)
+        XCTAssertEqual(presenter.authorPosts?.first?.title, secondPostData.post.title)
     }
     
     func testDisabledBlogAuthorsPath() throws {
         testWorld = try TestWorld.create(enableAuthorPages: false)
-        let user = testWorld.createUser()
+        _ = testWorld.createUser(username: "leia")
         
-        let authorResponse = try testWorld.getResponse(to: "/authors/\(user.name)")
-        let allAuthorsResponse = try testWorld.getResponse(to: "/authors")
+        let authorResponse = try testWorld.getResponse(to: authorsRequestPath)
+        let allAuthorsResponse = try testWorld.getResponse(to: allAuthorsRequestPath)
         
-        XCTAssertEqual(.notFound, authorResponse.http.status)
-        XCTAssertEqual(.notFound, allAuthorsResponse.http.status)
+        XCTAssertEqual(authorResponse.http.status, .notFound)
+        XCTAssertEqual(allAuthorsResponse.http.status, .notFound)
     }
     
     func testAuthorView() throws {
-        let data = try TestDataBuilder.createPost(on: testWorld.context.repository)
+        _ = try testWorld.getResponse(to: authorsRequestPath)
         
-        _ = try testWorld.getResponse(to: "/authors/\(data.author.name)")
-        
-        XCTAssertEqual(testWorld.context.blogPresenter.author?.username, data.author.username)
-        XCTAssertEqual(testWorld.context.blogPresenter.authorPosts?.count, 1)
-        XCTAssertEqual(testWorld.context.blogPresenter.authorPosts?.first?.title, data.post.title)
-        XCTAssertEqual(testWorld.context.blogPresenter.authorPosts?.first?.contents, data.post.contents)
-    }
-    
-    func testProfilePageGetsUri() throws {
-//        try setupDrop()
-//
-//        _ = try drop.respond(to: authorRequest)
-//
-//        XCTAssertEqual(authorPath, viewFactory.authorURI?.description)
-        #warning("Implement")
-    }
-    
-    func testProfilePageGetsHTTPSUriFromReverseProxy() throws {
-//        try setupDrop()
-//
-//        let httpsReverseProxyRequest = Request(method: .get, uri: "http://geeks.brokenhands.io\(authorPath)")
-//        httpsReverseProxyRequest.headers["X-Forwarded-Proto"] = "https"
-//
-//        _ = try drop.respond(to: httpsReverseProxyRequest)
-//
-//        XCTAssertEqual("https://geeks.brokenhands.io/authors/luke/", viewFactory.authorURI?.descriptionWithoutPort)
-        #warning("Implement")
+        XCTAssertEqual(presenter.author?.username, user.username)
+        XCTAssertEqual(presenter.authorPosts?.count, 1)
+        XCTAssertEqual(presenter.authorPosts?.first?.title, postData.post.title)
+        XCTAssertEqual(presenter.authorPosts?.first?.contents, postData.post.contents)
     }
     
 }

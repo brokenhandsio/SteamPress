@@ -6,8 +6,8 @@ extension TestWorld {
         return try TestDataBuilder.createPost(on: self.context.repository, tags: tags, createdDate: createdDate, title: title, contents:contents, slugUrl: slugUrl, author: author, published: published)
     }
     
-    func createUser() -> BlogUser {
-        let user = TestDataBuilder.anyUser()
+    func createUser(username: String = "luke") -> BlogUser {
+        let user = TestDataBuilder.anyUser(username: username)
         self.context.repository.addUser(user)
         return user
     }

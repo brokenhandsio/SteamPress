@@ -798,6 +798,130 @@
 //
 //        XCTAssertEqual(viewRenderer.capturedContext?["searchCount"]?.int, 0)
 //    }
+
+//func testTagPageGetsUri() throws {
+//    _ = try testWorld.getResponse(to: tagRequestPath)
+//    XCTAssertEqual(presenter.tagURL?.description, tagRequestPath)
+//}
+//
+//func testTagPageGetsHTTPSUriFromReverseProxy() throws {
+    //            try setupDrop()
+    //
+    //            let httpsReverseProxyRequest = Request(method: .get, uri: "http://geeks.brokenhands.io\(tagPath)")
+    //            httpsReverseProxyRequest.headers["X-Forwarded-Proto"] = "https"
+    //
+    //            _ = try drop.respond(to: httpsReverseProxyRequest)
+    //
+    //            XCTAssertEqual("https://geeks.brokenhands.io/tags/tatooine/", viewFactory.tagURI?.descriptionWithoutPort)
+//    #warning("Implement")
+//}
+//
+//func testAllTagsPageGetsUri() throws {
+//    _ = try testWorld.getResponse(to: allTagsRequestPath)
+//    XCTAssertEqual(presenter.allTagsURL?.description, allTagsRequestPath)
+//}
+//
+//func testAllTagsPageGetsHTTPSUriFromReverseProxy() throws {
+    //            try setupDrop()
+    //
+    //            let httpsReverseProxyRequest = Request(method: .get, uri: "http://geeks.brokenhands.io\(allTagsPath)")
+    //            httpsReverseProxyRequest.headers["X-Forwarded-Proto"] = "https"
+    //
+    //            _ = try drop.respond(to: httpsReverseProxyRequest)
+    //
+    //            XCTAssertEqual("https://geeks.brokenhands.io/tags/", viewFactory.allTagsURI?.descriptionWithoutPort)
+//    #warning("Implement")
+//}
+//func testAllAuthorsPageGetsUri() throws {
+//    _ = try testWorld.getResponse(to: allAuthorsRequestPath)
+//    XCTAssertEqual(presenter.allAuthorsURL?.description, allAuthorsRequestPath)
+//}
+//
+//func testAllAuthorsPageGetsHTTPSUriFromReverseProxy() throws {
+//    //        try setupDrop()
+//    //
+//    //        let httpsReverseProxyRequest = Request(method: .get, uri: "http://geeks.brokenhands.io\(allAuthorsPath)")
+//    //        httpsReverseProxyRequest.headers["X-Forwarded-Proto"] = "https"
+//    //
+//    //        _ = try drop.respond(to: httpsReverseProxyRequest)
+//    //
+//    //        XCTAssertEqual("https://geeks.brokenhands.io/authors/", viewFactory.allAuthorsURI?.descriptionWithoutPort)
+//    XCTFail("Implement")
+//}
+//func testProfilePageGetsUri() throws {
+//    _ = try testWorld.getResponse(to: authorsRequestPath)
+//
+//    XCTAssertEqual(presenter.authorURL?.description, authorsRequestPath)
+//}
+//
+//func testProfilePageGetsHTTPSUriFromReverseProxy() throws {
+//    //        try setupDrop()
+//    //
+//    //        let httpsReverseProxyRequest = Request(method: .get, uri: "http://geeks.brokenhands.io\(authorPath)")
+//    //        httpsReverseProxyRequest.headers["X-Forwarded-Proto"] = "https"
+//    //
+//    //        _ = try drop.respond(to: httpsReverseProxyRequest)
+//    //
+//    //        XCTAssertEqual("https://geeks.brokenhands.io/authors/luke/", viewFactory.authorURI?.descriptionWithoutPort)
+//    #warning("Implement")
+//}
+//func testIndexPageGetsUri() throws {
+//        try setupDrop()
+//
+//        _ = try drop.respond(to: blogIndexRequest)
+//
+//        XCTAssertEqual(blogIndexPath, viewFactory.blogIndexURI?.description)
+//    }
+//
+//    func testIndexPageGetsHTTPSUriFromReverseProxy() throws {
+//        try setupDrop()
+//
+//        let httpsReverseProxyRequest = Request(method: .get, uri: "http://geeks.brokenhands.io\(blogIndexPath)")
+//        httpsReverseProxyRequest.headers["X-Forwarded-Proto"] = "https"
+//
+//        _ = try drop.respond(to: httpsReverseProxyRequest)
+//
+//        XCTAssertEqual("https://geeks.brokenhands.io/", viewFactory.blogIndexURI?.descriptionWithoutPort)
+//    }
+//
+//    func testBlogPageGetsUri() throws {
+//        try setupDrop()
+//
+//        _ = try drop.respond(to: blogPostRequest)
+//
+//        XCTAssertEqual(blogPostPath, viewFactory.blogPostURI?.description)
+//    }
+//
+//    func testHTTPSPassedThroughToBlogPageURI() throws {
+//        try setupDrop()
+//
+//        let httpsRequest = Request(method: .get, uri: "https://localhost\(blogPostPath)")
+//        _ = try drop.respond(to: httpsRequest)
+//
+//        XCTAssertEqual("https://localhost/posts/test-path/", viewFactory.blogPostURI?.descriptionWithoutPort)
+//    }
+//
+//    func testHTTPSURIPassedThroughAsBlogPageURIIfAccessingViaReverseProxyOverHTTPS() throws {
+//        try setupDrop()
+//
+//        let httpsReverseProxyRequest = Request(method: .get, uri: "http://geeks.brokenhands.io\(blogPostPath)")
+//        httpsReverseProxyRequest.headers["X-Forwarded-Proto"] = "https"
+//
+//        _ = try drop.respond(to: httpsReverseProxyRequest)
+//
+//        XCTAssertEqual("https://geeks.brokenhands.io/posts/test-path/", viewFactory.blogPostURI?.descriptionWithoutPort)
+//    }
+//
+//    func testBlogPostPageGetHTPSURIFromReverseProxyLowerCase() throws {
+//        try setupDrop()
+//
+//        let httpsReverseProxyRequest = Request(method: .get, uri: "http://geeks.brokenhands.io\(blogPostPath)")
+//        httpsReverseProxyRequest.headers["x-forwarded-proto"] = "https"
+//
+//        _ = try drop.respond(to: httpsReverseProxyRequest)
+//
+//        XCTAssertEqual("https://geeks.brokenhands.io/posts/test-path/", viewFactory.blogPostURI?.descriptionWithoutPort)
+//    }
 //
 //    // MARK: - Helpers
 //

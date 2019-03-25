@@ -5,7 +5,7 @@ import SwiftMarkdown
 
 // MARK: - Model
 
-public final class BlogPost: Codable {
+public final class BlogPost: Codable {    
 
 //    public struct Properties {
 //        public static let blogPostID = "id"
