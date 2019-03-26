@@ -83,6 +83,7 @@ public struct Provider: Vapor.Provider {
         let feedController = FeedController(pathCreator: pathCreator, feedInformation: feedInformation)
         let apiController = APIController()
         let blogController = BlogController(enableAuthorPages: enableAuthorPages, enableTagPages: enableTagPages)
+        let blogAdminController = BlogAdminController()
 
         let blogRoutes: Router
         if let blogPath = blogPath {
@@ -93,6 +94,7 @@ public struct Provider: Vapor.Provider {
         try blogRoutes.register(collection: feedController)
         try blogRoutes.register(collection: apiController)
         try blogRoutes.register(collection: blogController)
+        try blogRoutes.register(collection: blogAdminController)
         return .done(on: container)
     }
 

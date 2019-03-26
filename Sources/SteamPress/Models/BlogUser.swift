@@ -1,5 +1,5 @@
 import Vapor
-////import AuthProvider
+import Authentication
 ////import BCrypt
 //import Foundation
 
@@ -94,9 +94,11 @@ public final class BlogUser: Codable {
 //    }
 //
 //}
-//
-//// MARK: - Authentication
-//
+
+// MARK: - Authentication
+
+extension BlogUser: Authenticatable {}
+
 //extension BlogUser: SessionPersistable {}
 //
 //extension Request {

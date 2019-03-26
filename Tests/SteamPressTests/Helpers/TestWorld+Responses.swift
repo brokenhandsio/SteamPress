@@ -17,4 +17,12 @@ extension TestWorld {
         let data = try getResponse(to: path, headers: headers).http.body.convertToHTTPBody().data
         return String(data: data!, encoding: .utf8)!
     }
+    
+    func getResponse<T: Content>(to path: String, method: HTTPMethod = .POST, body: T) throws -> Response {
+        let responder = try context.app.make(Responder.self)
+        let request = HTTPRequest(method: method, url: URL(string: path)!)
+        let wrappedRequest = Request(http: request, using: context.app)
+        try wrappedRequest.content.encode(body)
+        return try responder.respond(to: wrappedRequest).wait()
+    }
 }

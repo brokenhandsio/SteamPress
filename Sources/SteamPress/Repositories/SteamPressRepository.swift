@@ -13,6 +13,7 @@ public protocol BlogPostRepository {
     func getPost(on req: Request, slug: String) -> Future<BlogPost?>
     func getSortedPublishedPosts(for tag: BlogTag, on req: Request) -> Future<[BlogPost]>
     func findPublishedPostsOrdered(for searchTerm: String, on req: Request) -> Future<[BlogPost]>
+    func savePost(_ post: BlogPost, on req: Request) -> Future<BlogPost>
 }
 
 public protocol BlogUserRepository {

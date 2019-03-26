@@ -1,4 +1,5 @@
-//import Vapor
+import Vapor
+import Authentication
 //import HTTP
 //import Routing
 ////import AuthProvider
@@ -7,23 +8,31 @@
 //import Validation
 ////import Cookies
 //
-//struct BlogAdminController {
-//
-//    // MARK: - Properties
+struct BlogAdminController: RouteCollection {
+
+    // MARK: - Properties
 //    fileprivate let drop: Droplet
 //    fileprivate let pathCreator: BlogPathCreator
 //    fileprivate let viewFactory: ViewFactory
 //    fileprivate let log: LogProtocol
 //
-//    // MARK: - Initialiser
+    // MARK: - Initialiser
+    init() {
+        
+    }
 //    init(drop: Droplet, pathCreator: BlogPathCreator, viewFactory: ViewFactory) {
 //        self.drop = drop
 //        self.pathCreator = pathCreator
 //        self.viewFactory = viewFactory
 //        self.log = drop.log
 //    }
-//
-//    // MARK: - Route setup
+
+    // MARK: - Route setup
+    func boot(router: Router) throws {
+        let adminRoutes = router.grouped("admin")
+        
+        adminRoutes.post("createPost", use: createPostPostHandler)
+    }
 //    func addRoutes() {
 //        let router = drop.grouped(pathCreator.blogPath ?? "", "admin")
 //
@@ -47,27 +56,37 @@
 //        routerSecure.get("resetPassword", handler: resetPasswordHandler)
 //        routerSecure.post("resetPassword", handler: resetPasswordPostHandler)
 //    }
-//
-//    // MARK: - Route Handlers
-//
-//    // MARK: - Blog Posts handlers
+
+    // MARK: - Route Handlers
+
+    // MARK: - Blog Posts handlers
 //    func createPostHandler(_ request: Request) throws -> ResponseRepresentable {
 //        return try viewFactory.createBlogPostView(uri: request.getURIWithHTTPSIfReverseProxy(), errors: nil, title: nil, contents: nil, slugUrl: nil, tags: nil, isEditing: false, postToEdit: nil, draft: true, user: try request.user())
 //    }
-//
-//    func createPostPostHandler(_ request: Request) throws -> ResponseRepresentable {
-//        let rawTitle = request.data["inputTitle"]?.string
-//        let rawContents = request.data["inputPostContents"]?.string
-//        let rawTags = request.data["inputTags"]
-//        let rawSlugUrl = request.data["inputSlugUrl"]?.string
-//        let draft = request.data["save-draft"]?.string
-//        let publish = request.data["publish"]?.string
+
+    func createPostPostHandler(_ req: Request) throws -> Future<Response> {
+        struct CreatePostData: Content {
+            let title: String
+            let content: String
+            #warning("Tags")
+            #warning("Drafts")
+            #warning("Slug URL")
+            #warning("Publish flag")
+        }
+        
+        let data = try req.content.syncDecode(CreatePostData.self)
+        let author = try req.requireAuthenticated(BlogUser.self)
+        let newPost = try BlogPost(title: data.title, contents: data.content, author: author, creationDate: Date(), slugUrl: data.title, published: true)
+        
+        let postRepository = try req.make(BlogPostRepository.self)
+        return postRepository.savePost(newPost, on: req).map { post in
+            return req.redirect(to: "/")
+        }
+
 //
 //        if draft == nil && publish == nil {
 //            throw Abort.badRequest
 //        }
-//
-//        let tagsArray = rawTags?.array ?? [rawTags?.string?.makeNode(in: nil) ?? nil]
 //
 //        if let createPostErrors = validatePostCreation(title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl) {
 //            return try viewFactory.createBlogPostView(uri: request.getURIWithHTTPSIfReverseProxy(), errors: createPostErrors, title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl, tags: rawTags?.array, isEditing: false, postToEdit: nil, draft: true, user: try request.user())
@@ -99,8 +118,8 @@
 //        }
 //
 //        return Response(redirect: pathCreator.createPath(for: "posts/\(newPost.slugUrl)"))
-//    }
-//
+    }
+
 //    func deletePostHandler(request: Request) throws -> ResponseRepresentable {
 //
 //        let post = try request.parameters.next(BlogPost.self)
@@ -561,5 +580,5 @@
 //            return false
 //        }
 //    }
-//}
+}
 

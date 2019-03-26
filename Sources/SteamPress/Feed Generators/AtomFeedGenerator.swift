@@ -81,7 +81,7 @@ struct AtomFeedGenerator {
 }
 
 fileprivate extension BlogPost {
-    fileprivate func getPostAtomFeed(blogPath: String, dateFormatter: DateFormatter, for request: Request) throws -> Future<String> {
+    func getPostAtomFeed(blogPath: String, dateFormatter: DateFormatter, for request: Request) throws -> Future<String> {
         let updatedTime = lastEdited ?? created
         let authorRepository = try request.make(BlogUserRepository.self)
         return authorRepository.getUser(author, on: request).flatMap { user in

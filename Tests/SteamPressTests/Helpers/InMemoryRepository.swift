@@ -3,9 +3,9 @@ import SteamPress
 
 class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserRepository, Service {
     
-    private var tags: [BlogTag]
-    private var posts: [BlogPost]
-    private var users: [BlogUser]
+    private(set) var tags: [BlogTag]
+    private(set) var posts: [BlogPost]
+    private(set) var users: [BlogUser]
     private var postTagLinks: [BlogPostTagLink]
     
     init() {
@@ -117,6 +117,10 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         let titleResults = posts.filter { $0.title.contains(searchTerm) }
         let results = titleResults.sorted { $0.created > $1.created }.filter { $0.published }
         return req.future(results)
+    }
+    func savePost(_ post: BlogPost, on req: Request) -> EventLoopFuture<BlogPost> {
+        self.addPost(post)
+        return req.future(post)
     }
     
     func addPost(_ post: BlogPost) {
