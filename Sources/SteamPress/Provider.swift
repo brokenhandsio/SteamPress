@@ -1,4 +1,5 @@
 import Vapor
+import Authentication
 //import MarkdownProvider
 //import Leaf
 ////import AuthProvider
@@ -75,6 +76,7 @@ public struct Provider: Vapor.Provider {
 //        services.register([BlogPresenter.self], factory: { _ in
 //            return blogPresenter
 //        })
+        try services.register(AuthenticationProvider())
     }
 
     public func willBoot(_ container: Container) throws -> Future<Void> {
@@ -83,7 +85,7 @@ public struct Provider: Vapor.Provider {
         let feedController = FeedController(pathCreator: pathCreator, feedInformation: feedInformation)
         let apiController = APIController()
         let blogController = BlogController(enableAuthorPages: enableAuthorPages, enableTagPages: enableTagPages)
-        let blogAdminController = BlogAdminController()
+        let blogAdminController = BlogAdminController(pathCreator: pathCreator)
 
         let blogRoutes: Router
         if let blogPath = blogPath {
@@ -98,6 +100,7 @@ public struct Provider: Vapor.Provider {
         return .done(on: container)
     }
 
+    #warning("Future should become EventLoopFuture")
     public func didBoot(_ container: Container) throws -> Future<Void> {
         return .done(on: container)
     }

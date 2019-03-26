@@ -1,10 +1,20 @@
 //import HTTP
-//import Vapor
-//
-//struct BlogLoginRedirectAuthMiddleware: Middleware {
-//
-//    let pathCreator: BlogPathCreator
-//
+import Vapor
+
+struct BlogLoginRedirectAuthMiddleware: Middleware {
+
+    let pathCreator: BlogPathCreator
+    
+    func respond(to request: Request, chainingTo next: Responder) throws -> EventLoopFuture<Response> {
+        do {
+            let user = try request.requireAuthenticated(BlogUser.self)
+            
+        } catch {
+            return request.future(request.redirect(to: pathCreator.createPath(for: "admin/login", query: "loginRequired")))
+        }
+        return try next.respond(to: request)
+    }
+
 //    public func respond(to request: Request, chainingTo next: Responder) throws -> Response {
 //        do {
 //            let user = try request.user()
@@ -17,5 +27,5 @@
 //        }
 //        return try next.respond(to: request)
 //    }
-//}
+}
 

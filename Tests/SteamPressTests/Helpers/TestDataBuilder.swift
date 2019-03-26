@@ -29,6 +29,7 @@ struct TestDataBuilder {
                                  path: String?,
                                  feedInformation: FeedInformation,
                                  blogPresenter: CapturingBlogPresenter,
+                                 adminPresenter: CapturingAdminPresenter,
                                  enableAuthorPages: Bool,
                                  enableTagPages: Bool) throws -> Application {
         var services = Services.default()
@@ -41,13 +42,17 @@ struct TestDataBuilder {
                                              blogPresenter: blogPresenter)
         try services.register(steampress)
 
-        services.register([BlogTagRepository.self, BlogPostRepository.self, BlogUserRepository.self], factory: { _ in
+        services.register([BlogTagRepository.self, BlogPostRepository.self, BlogUserRepository.self]) { _ in
             return repository
-        })
+        }
         
-        services.register([BlogPresenter.self], factory: { _ in
+        services.register([BlogPresenter.self]) { _ in
             return blogPresenter
-        })
+        }
+        
+        services.register([BlogAdminPresenter.self]) { _ in
+            adminPresenter
+        }
         
         return try Application(services: services)
     }
