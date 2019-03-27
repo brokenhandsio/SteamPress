@@ -271,8 +271,3 @@ class AtomFeedTests: XCTestCase {
         XCTAssertEqual(actualXmlResponse, expectedXML)
     }
 }
-
-struct TestData {
-    let post: BlogPost
-    let author: BlogUser
-}

@@ -5,6 +5,10 @@ class CapturingAdminPresenter: BlogAdminPresenter {
     
     // MARK: - BlogPresenter
     
+    func createIndexView(on req: Request) -> EventLoopFuture<View> {
+        return createFutureView(on: req)
+    }
+    
     func createPostView(on req: Request) -> EventLoopFuture<View> {
         return createFutureView(on: req)
     }

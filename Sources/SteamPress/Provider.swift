@@ -21,6 +21,7 @@ public struct Provider: Vapor.Provider {
     let enableAuthorPages: Bool
     let enableTagPages: Bool
 
+    #warning("Update")
     // TODO update
     /**
      Initialiser for SteamPress' Provider to add a blog to your Vapor App. You can pass it an optional
@@ -93,10 +94,17 @@ public struct Provider: Vapor.Provider {
         } else {
             blogRoutes = router.grouped("")
         }
-        try blogRoutes.register(collection: feedController)
-        try blogRoutes.register(collection: apiController)
-        try blogRoutes.register(collection: blogController)
-        try blogRoutes.register(collection: blogAdminController)
+        let steampressSessionsConfig = SessionsConfig(cookieName: "steampress-session") { value in
+            return HTTPCookieValue(string: value)
+        }
+        let steampressSessions = try SessionsMiddleware(sessions: container.make(), config: steampressSessionsConfig)
+        let steampressAuthSessions = BlogAuthSessionsMiddleware()
+        let sessionedRoutes = blogRoutes.grouped(steampressSessions, steampressAuthSessions)
+        
+        try sessionedRoutes.register(collection: feedController)
+        try sessionedRoutes.register(collection: apiController)
+        try sessionedRoutes.register(collection: blogController)
+        try sessionedRoutes.register(collection: blogAdminController)
         return .done(on: container)
     }
 

@@ -1,13 +1,33 @@
-////import Turnstile
-//import HTTP
-//import Cookies
-//import Foundation
-//import Cache
-////import Auth
-//
-//private let defaultCookieName = "steampress-auth"
-//private let oneMonthTime: TimeInterval = 30 * 24 * 60 * 60
-//
+import Vapor
+
+public final class BlogAuthSessionsMiddleware: Middleware {
+    public func respond(to request: Request, chainingTo next: Responder) throws -> EventLoopFuture<Response> {
+        let future: Future<Void>
+        if let userIDString = try request.session()["_BlogUserSession"], let userID = Int(userIDString) {
+            let userRepository = try request.make(BlogUserRepository.self)
+            future = userRepository.getUser(userID, on: request).flatMap { user in
+                if let user = user {
+                    try request.authenticate(user)
+                }
+                return .done(on: request)
+            }
+        } else {
+            future = .done(on: request)
+        }
+        
+        return future.flatMap {
+            return try next.respond(to: request).map { response in
+                if let user = try request.authenticated(BlogUser.self) {
+                    try user.authenticateSession(on: request)
+                } else {
+                    try request.unauthenticateBlogUserSession()
+                }
+                return response
+            }
+        }
+    }
+}
+
 //public class BlogAuthMiddleware: Middleware {
 //    private let turnstile: Turnstile
 //    private let cookieName: String

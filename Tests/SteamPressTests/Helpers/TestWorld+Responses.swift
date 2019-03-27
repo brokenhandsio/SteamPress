@@ -7,10 +7,9 @@ extension TestWorld {
     }
     
     func getResponse(to path: String, method: HTTPMethod = .GET, headers: HTTPHeaders = .init()) throws -> Response {
-        let responder = try context.app.make(Responder.self)
         let request = HTTPRequest(method: method, url: URL(string: path)!, headers: headers)
         let wrappedRequest = Request(http: request, using: context.app)
-        return try responder.respond(to: wrappedRequest).wait()
+        return try getResponse(to: wrappedRequest)
     }
     
     func getResponseString(to path: String, headers: HTTPHeaders = .init()) throws -> String {
@@ -19,10 +18,14 @@ extension TestWorld {
     }
     
     func getResponse<T: Content>(to path: String, method: HTTPMethod = .POST, body: T) throws -> Response {
-        let responder = try context.app.make(Responder.self)
         let request = HTTPRequest(method: method, url: URL(string: path)!)
         let wrappedRequest = Request(http: request, using: context.app)
         try wrappedRequest.content.encode(body)
-        return try responder.respond(to: wrappedRequest).wait()
+        return try getResponse(to: wrappedRequest)
+    }
+    
+    func getResponse(to request: Request) throws -> Response {
+        let responder = try context.app.make(Responder.self)
+        return try responder.respond(to: request).wait()
     }
 }

@@ -15,19 +15,13 @@ class AdminPostTests: XCTestCase {
     private var app: Application!
     private var testWorld: TestWorld!
     private let createPostPath = "/admin/createPost/"
-    private let authorsRequestPath = "/authors/leia"
     private var user: BlogUser!
-    private var postData: TestData!
-    private var presenter: CapturingBlogPresenter {
-        return testWorld.context.blogPresenter
-    }
     
     // MARK: - Overrides
     
     override func setUp() {
         testWorld = try! TestWorld.create()
-//        user = testWorld.createUser(username: "leia")
-//        postData = try! testWorld.createPost(author: user)
+        user = testWorld.createUser(username: "leia")
     }
     
     // MARK: - Tests

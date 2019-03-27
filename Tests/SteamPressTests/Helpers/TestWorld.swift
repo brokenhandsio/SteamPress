@@ -3,11 +3,11 @@ import Vapor
 
 struct TestWorld {
     
-    static func create(path: String? = nil, feedInformation: FeedInformation = FeedInformation(), enableAuthorPages: Bool = true, enableTagPages: Bool = true) throws -> TestWorld {
+    static func create(path: String? = nil, feedInformation: FeedInformation = FeedInformation(), enableAuthorPages: Bool = true, enableTagPages: Bool = true, useRealPasswordHasher: Bool = false) throws -> TestWorld {
         let repository = InMemoryRepository()
         let blogPresenter = CapturingBlogPresenter()
         let blogAdminPresenter = CapturingAdminPresenter()
-        let application = try TestDataBuilder.getSteamPressApp(repository: repository, path: path, feedInformation: feedInformation, blogPresenter: blogPresenter, adminPresenter: blogAdminPresenter, enableAuthorPages: enableAuthorPages, enableTagPages: enableTagPages)
+        let application = try TestDataBuilder.getSteamPressApp(repository: repository, path: path, feedInformation: feedInformation, blogPresenter: blogPresenter, adminPresenter: blogAdminPresenter, enableAuthorPages: enableAuthorPages, enableTagPages: enableTagPages, useRealPasswordHasher: useRealPasswordHasher)
         let context = Context(app: application, repository: repository, blogPresenter: blogPresenter, blogAdminPresenter: blogAdminPresenter)
         return TestWorld(context: context)
     }

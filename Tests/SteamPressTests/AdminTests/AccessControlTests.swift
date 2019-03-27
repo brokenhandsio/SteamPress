@@ -8,7 +8,7 @@ class AccessControlTests: XCTestCase {
     
     static var allTests = [
         ("testLinuxTestSuiteIncludesAllTests", testLinuxTestSuiteIncludesAllTests),
-        ("testCannotAccessAdminPageWithoutBeingLoggedIn", testCannotAccessAdminPageWithoutBeingLoggedIn),
+//        ("testCannotAccessAdminPageWithoutBeingLoggedIn", testCannotAccessAdminPageWithoutBeingLoggedIn),
         ("testCannotAccessCreateBlogPostPageWithoutBeingLoggedIn", testCannotAccessCreateBlogPostPageWithoutBeingLoggedIn),
         ("testCannotSendCreateBlogPostPageWithoutBeingLoggedIn", testCannotSendCreateBlogPostPageWithoutBeingLoggedIn),
     ]
@@ -38,9 +38,9 @@ class AccessControlTests: XCTestCase {
     
     // MARK: - Access restriction tests
     
-    func testCannotAccessAdminPageWithoutBeingLoggedIn() throws {
-        try assertLoginRequired(method: .GET, path: "")
-    }
+//    func testCannotAccessAdminPageWithoutBeingLoggedIn() throws {
+//        try assertLoginRequired(method: .GET, path: "")
+//    }
     
     func testCannotAccessCreateBlogPostPageWithoutBeingLoggedIn() throws {
         try assertLoginRequired(method: .GET, path: "createPost")
