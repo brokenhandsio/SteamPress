@@ -80,10 +80,5 @@ class LoginTests: XCTestCase {
     func testAdminUserCreatedOnFirstBoot() {
         #warning("Implement")
     }
-    
-    struct LoginData: Content {
-        let username: String
-        let password: String
-    }
 }
 

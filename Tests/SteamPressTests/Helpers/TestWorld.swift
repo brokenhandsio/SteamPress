@@ -8,7 +8,7 @@ struct TestWorld {
         let blogPresenter = CapturingBlogPresenter()
         let blogAdminPresenter = CapturingAdminPresenter()
         let application = try TestDataBuilder.getSteamPressApp(repository: repository, path: path, feedInformation: feedInformation, blogPresenter: blogPresenter, adminPresenter: blogAdminPresenter, enableAuthorPages: enableAuthorPages, enableTagPages: enableTagPages, useRealPasswordHasher: useRealPasswordHasher)
-        let context = Context(app: application, repository: repository, blogPresenter: blogPresenter, blogAdminPresenter: blogAdminPresenter)
+        let context = Context(app: application, repository: repository, blogPresenter: blogPresenter, blogAdminPresenter: blogAdminPresenter, path: path)
         return TestWorld(context: context)
     }
     
@@ -23,5 +23,6 @@ struct TestWorld {
         let repository: InMemoryRepository
         let blogPresenter: CapturingBlogPresenter
         let blogAdminPresenter: CapturingAdminPresenter
+        let path: String?
     }
 }

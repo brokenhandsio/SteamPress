@@ -47,7 +47,7 @@ class AdminPostTests: XCTestCase {
             let publish = true
         }
         let createData = CreatePostData()
-        _ = try testWorld.getResponse(to: createPostPath, body: createData)
+        _ = try testWorld.getResponse(to: createPostPath, body: createData, loggedInUser: user)
         
         XCTAssertEqual(testWorld.context.repository.posts.count, 1)
         XCTAssertEqual(testWorld.context.repository.posts.first?.title, createData.title)
