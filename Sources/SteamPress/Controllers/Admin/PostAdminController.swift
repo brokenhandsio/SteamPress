@@ -22,17 +22,21 @@ struct PostAdminController: RouteCollection {
         let data = try req.content.syncDecode(CreatePostData.self)
         let author = try req.requireAuthenticated(BlogUser.self)
         
+        if data.draft == nil && data.publish == nil {
+            throw Abort(.badRequest)
+        }
+        
         if let createPostErrors = validatePostCreation(data) {
             let presenter = try req.make(BlogAdminPresenter.self)
             let view = presenter.createPostView(on: req, errors: createPostErrors)
             return try view.encode(for: req)
         }
         
-        guard let title = data.title else {
+        guard let title = data.title, let contents = data.contents else {
             throw Abort(.internalServerError)
         }
         
-        let newPost = try BlogPost(title: title, contents: data.content, author: author, creationDate: Date(), slugUrl: title, published: true)
+        let newPost = try BlogPost(title: title, contents: contents, author: author, creationDate: Date(), slugUrl: title, published: data.publish != nil)
         
         let postRepository = try req.make(BlogPostRepository.self)
         return postRepository.savePost(newPost, on: req).map { post in
@@ -85,9 +89,9 @@ struct PostAdminController: RouteCollection {
             createPostErrors.append("You must specify a blog post title")
         }
 
-//        if contents == nil || (contents?.isWhitespace() ?? false) {
-//            createPostErrors.append("You must have some content in your blog post")
-//        }
+        if data.contents.isEmptyOrWhitespace() {
+            createPostErrors.append("You must have some content in your blog post")
+        }
 //
 //        if (slugUrl == nil || (slugUrl?.isWhitespace() ?? false)) && (!(title == nil || (title?.isWhitespace() ?? false))) {
 //            // The user can't manually edit this so if the title wasn't empty, we should never hit here
@@ -196,24 +200,20 @@ struct PostAdminController: RouteCollection {
 
 struct CreatePostData: Content {
     let title: String?
-    let content: String
-    let publish: Bool
+    let contents: String?
+    let publish: Bool?
+    let draft: Bool?
     #warning("Tags")
-    #warning("Drafts")
     #warning("Slug URL")
     #warning("Publish flag")
 }
 
 extension Optional where Wrapped == String {
     func isEmptyOrWhitespace() -> Bool {
-        // Check nil
-        guard let this = self else { return true }
-        
-        // Check empty string
-        if this.isEmpty {
+        guard let string = self else {
             return true
         }
-        // Trim and check empty string
-        return this.trimmingCharacters(in: .whitespaces).isEmpty
+        
+        return string.trimmingCharacters(in: .whitespaces).isEmpty
     }
 }

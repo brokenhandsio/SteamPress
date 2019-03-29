@@ -10,7 +10,9 @@ class AdminPostTests: XCTestCase {
         ("testLinuxTestSuiteIncludesAllTests", testLinuxTestSuiteIncludesAllTests),
         ("testPostCanBeCreated", testPostCanBeCreated),
         ("testPostCannotBeCreatedIfDraftAndPublishNotSet", testPostCannotBeCreatedIfDraftAndPublishNotSet),
-        ("testCreatePostMustIncludeTitle", testCreatePostMustIncludeTitle)
+        ("testCreatePostMustIncludeTitle", testCreatePostMustIncludeTitle),
+        ("testCreatePostMustIncludeContents", testCreatePostMustIncludeContents),
+        ("testCreatePostWithDraftDoesNotPublishPost", testCreatePostWithDraftDoesNotPublishPost),
         ]
     
     // MARK: - Properties
@@ -46,7 +48,7 @@ class AdminPostTests: XCTestCase {
         struct CreatePostData: Content {
             static let defaultContentType = MediaType.urlEncodedForm
             let title = "Post Title"
-            let content = "# Post Title\n\nWe have a post"
+            let contents = "# Post Title\n\nWe have a post"
             let tags = ["First Tag", "Second Tag"]
             let slugURL = "post-title"
             let publish = true
@@ -63,7 +65,7 @@ class AdminPostTests: XCTestCase {
         struct CreatePostData: Content {
             static let defaultContentType = MediaType.urlEncodedForm
             let title = "Post Title"
-            let content = "# Post Title\n\nWe have a post"
+            let contents = "# Post Title\n\nWe have a post"
             let tags = ["First Tag", "Second Tag"]
             let slugURL = "post-title"
         }
@@ -77,7 +79,7 @@ class AdminPostTests: XCTestCase {
     func testCreatePostMustIncludeTitle() throws {
         struct CreatePostData: Content {
             static let defaultContentType = MediaType.urlEncodedForm
-            let content = "# Post Title\n\nWe have a post"
+            let contents = "# Post Title\n\nWe have a post"
             let tags = ["First Tag", "Second Tag"]
             let slugURL = "post-title"
             let publish = true
@@ -87,36 +89,35 @@ class AdminPostTests: XCTestCase {
 
         XCTAssertTrue(presenter.createPostErrors?.contains("You must specify a blog post title") ?? false)
     }
-//
-//    func testCreatePostMustIncludeContents() throws {
-//        let request = try createLoggedInRequest(method: .post, path: "createPost")
-//        var postData = Node([:], in: nil)
-//        try postData.set("inputTitle", "post-title")
-//        try postData.set("inputTags", ["First Tag", "Second Tag"])
-//        try postData.set("inputSlugUrl", "post-title")
-//        try postData.set("publish", "true")
-//        request.formURLEncoded = postData
-//
-//        let _  = try drop.respond(to: request)
-//
-//        XCTAssertTrue(capturingViewFactory.createPostErrors?.contains("You must have some content in your blog post") ?? false)
-//    }
-//
-//    func testCreatePostWithDraftDoesNotPublishPost() throws {
-//        let request = try createLoggedInRequest(method: .post, path: "createPost")
-//        let postTitle = "Post Title"
-//        var postData = Node([:], in: nil)
-//        try postData.set("inputTitle", postTitle)
-//        try postData.set("inputPostContents", "# Post Title\n\nWe have a post")
-//        try postData.set("inputTags", ["First Tag", "Second Tag"])
-//        try postData.set("inputSlugUrl", "post-title")
-//        try postData.set("save-draft", "true")
-//        request.formURLEncoded = postData
-//
-//        let _  = try drop.respond(to: request)
-//
-//        XCTAssertEqual(try BlogPost.count(), 1)
-//        XCTAssertEqual(try BlogPost.all().first?.title, postTitle)
-//        XCTAssertFalse(try BlogPost.all().first?.published ?? true)
-//    }
+
+    func testCreatePostMustIncludeContents() throws {
+        struct CreatePostData: Content {
+            static let defaultContentType = MediaType.urlEncodedForm
+            let title = "Post Title"
+            let tags = ["First Tag", "Second Tag"]
+            let slugURL = "post-title"
+            let publish = true
+        }
+        let createData = CreatePostData()
+        _ = try testWorld.getResponse(to: createPostPath, body: createData, loggedInUser: user)
+
+        XCTAssertTrue(presenter.createPostErrors?.contains("You must have some content in your blog post") ?? false)
+    }
+
+    func testCreatePostWithDraftDoesNotPublishPost() throws {
+        struct CreatePostData: Content {
+            static let defaultContentType = MediaType.urlEncodedForm
+            let title = "Post Title"
+            let contents = "# Post Title\n\nWe have a post"
+            let tags = ["First Tag", "Second Tag"]
+            let slugURL = "post-title"
+            let draft = true
+        }
+        let createData = CreatePostData()
+        _ = try testWorld.getResponse(to: createPostPath, body: createData, loggedInUser: user)
+
+        XCTAssertEqual(testWorld.context.repository.posts.count, 1)
+        XCTAssertEqual(testWorld.context.repository.posts.first?.title, createData.title)
+        XCTAssertFalse(testWorld.context.repository.posts.first?.published ?? true)
+    }
 }
