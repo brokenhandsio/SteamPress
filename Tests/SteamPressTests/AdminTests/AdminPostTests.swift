@@ -9,6 +9,8 @@ class AdminPostTests: XCTestCase {
     static var allTests = [
         ("testLinuxTestSuiteIncludesAllTests", testLinuxTestSuiteIncludesAllTests),
         ("testPostCanBeCreated", testPostCanBeCreated),
+        ("testPostCannotBeCreatedIfDraftAndPublishNotSet", testPostCannotBeCreatedIfDraftAndPublishNotSet),
+        ("testCreatePostMustIncludeTitle", testCreatePostMustIncludeTitle)
         ]
     
     // MARK: - Properties
@@ -16,6 +18,9 @@ class AdminPostTests: XCTestCase {
     private var testWorld: TestWorld!
     private let createPostPath = "/admin/createPost/"
     private var user: BlogUser!
+    private var presenter: CapturingAdminPresenter {
+        return testWorld.context.blogAdminPresenter
+    }
     
     // MARK: - Overrides
     
@@ -54,33 +59,34 @@ class AdminPostTests: XCTestCase {
         XCTAssertTrue(testWorld.context.repository.posts.first?.published ?? false)
     }
     
-//    func testPostCannotBeCreatedIfDraftAndPublishNotSet() throws {
-//        let request = try createLoggedInRequest(method: .post, path: "createPost")
-//        var postData = Node([:], in: nil)
-//        try postData.set("inputTitle", "Post Title")
-//        try postData.set("inputPostContents", "# Post Title\n\nWe have a post")
-//        try postData.set("inputTags", ["First Tag", "Second Tag"])
-//        try postData.set("inputSlugUrl", "post-title")
-//        request.formURLEncoded = postData
-//
-//        let response  = try drop.respond(to: request)
-//
-//        XCTAssertEqual(response.status.statusCode, 400)
-//    }
-//
-//    func testCreatePostMustIncludeTitle() throws {
-//        let request = try createLoggedInRequest(method: .post, path: "createPost")
-//        var postData = Node([:], in: nil)
-//        try postData.set("inputPostContents", "# Post Title\n\nWe have a post")
-//        try postData.set("inputTags", ["First Tag", "Second Tag"])
-//        try postData.set("inputSlugUrl", "post-title")
-//        try postData.set("publish", "true")
-//        request.formURLEncoded = postData
-//
-//        let _  = try drop.respond(to: request)
-//
-//        XCTAssertTrue(capturingViewFactory.createPostErrors?.contains("You must specify a blog post title") ?? false)
-//    }
+    func testPostCannotBeCreatedIfDraftAndPublishNotSet() throws {
+        struct CreatePostData: Content {
+            static let defaultContentType = MediaType.urlEncodedForm
+            let title = "Post Title"
+            let content = "# Post Title\n\nWe have a post"
+            let tags = ["First Tag", "Second Tag"]
+            let slugURL = "post-title"
+        }
+        let createData = CreatePostData()
+        
+        let response = try testWorld.getResponse(to: createPostPath, body: createData, loggedInUser: user)
+
+        XCTAssertEqual(response.http.status, .badRequest)
+    }
+
+    func testCreatePostMustIncludeTitle() throws {
+        struct CreatePostData: Content {
+            static let defaultContentType = MediaType.urlEncodedForm
+            let content = "# Post Title\n\nWe have a post"
+            let tags = ["First Tag", "Second Tag"]
+            let slugURL = "post-title"
+            let publish = true
+        }
+        let createData = CreatePostData()
+        _ = try testWorld.getResponse(to: createPostPath, body: createData, loggedInUser: user)
+
+        XCTAssertTrue(presenter.createPostErrors?.contains("You must specify a blog post title") ?? false)
+    }
 //
 //    func testCreatePostMustIncludeContents() throws {
 //        let request = try createLoggedInRequest(method: .post, path: "createPost")

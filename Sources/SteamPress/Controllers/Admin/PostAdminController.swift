@@ -15,22 +15,24 @@ struct PostAdminController: RouteCollection {
     // MARK: - Route handlers
     func createPostHandler(_ req: Request) throws -> Future<View> {
         let presenter = try req.make(BlogAdminPresenter.self)
-        return presenter.createPostView(on: req)
+        return presenter.createPostView(on: req, errors: nil)
     }
     
     func createPostPostHandler(_ req: Request) throws -> Future<Response> {
-        struct CreatePostData: Content {
-            let title: String
-            let content: String
-            #warning("Tags")
-            #warning("Drafts")
-            #warning("Slug URL")
-            #warning("Publish flag")
-        }
-        
         let data = try req.content.syncDecode(CreatePostData.self)
         let author = try req.requireAuthenticated(BlogUser.self)
-        let newPost = try BlogPost(title: data.title, contents: data.content, author: author, creationDate: Date(), slugUrl: data.title, published: true)
+        
+        if let createPostErrors = validatePostCreation(data) {
+            let presenter = try req.make(BlogAdminPresenter.self)
+            let view = presenter.createPostView(on: req, errors: createPostErrors)
+            return try view.encode(for: req)
+        }
+        
+        guard let title = data.title else {
+            throw Abort(.internalServerError)
+        }
+        
+        let newPost = try BlogPost(title: title, contents: data.content, author: author, creationDate: Date(), slugUrl: title, published: true)
         
         let postRepository = try req.make(BlogPostRepository.self)
         return postRepository.savePost(newPost, on: req).map { post in
@@ -74,6 +76,32 @@ struct PostAdminController: RouteCollection {
         //        return Response(redirect: pathCreator.createPath(for: "posts/\(newPost.slugUrl)"))
     }
     
+    //
+    //    // MARK: - Validators
+    private func validatePostCreation(_ data: CreatePostData) -> [String]? {
+        var createPostErrors: [String] = []
+
+        if data.title.isEmptyOrWhitespace() {
+            createPostErrors.append("You must specify a blog post title")
+        }
+
+//        if contents == nil || (contents?.isWhitespace() ?? false) {
+//            createPostErrors.append("You must have some content in your blog post")
+//        }
+//
+//        if (slugUrl == nil || (slugUrl?.isWhitespace() ?? false)) && (!(title == nil || (title?.isWhitespace() ?? false))) {
+//            // The user can't manually edit this so if the title wasn't empty, we should never hit here
+//            createPostErrors.append("There was an error with your request, please try again")
+//        }
+
+        if createPostErrors.count == 0 {
+            return nil
+        }
+
+        return createPostErrors
+    }
+
+
     //    func deletePostHandler(request: Request) throws -> ResponseRepresentable {
     //
     //        let post = try request.parameters.next(BlogPost.self)
@@ -164,4 +192,28 @@ struct PostAdminController: RouteCollection {
     //        return Response(redirect: pathCreator.createPath(for: "posts/\(post.slugUrl)"))
     //    }
     //
+}
+
+struct CreatePostData: Content {
+    let title: String?
+    let content: String
+    let publish: Bool
+    #warning("Tags")
+    #warning("Drafts")
+    #warning("Slug URL")
+    #warning("Publish flag")
+}
+
+extension Optional where Wrapped == String {
+    func isEmptyOrWhitespace() -> Bool {
+        // Check nil
+        guard let this = self else { return true }
+        
+        // Check empty string
+        if this.isEmpty {
+            return true
+        }
+        // Trim and check empty string
+        return this.trimmingCharacters(in: .whitespaces).isEmpty
+    }
 }

@@ -192,31 +192,6 @@ struct BlogAdminController: RouteCollection {
         return try req.make(BlogAdminPresenter.self).createIndexView(on: req)
     }
 
-//
-//    // MARK: - Validators
-//    private func validatePostCreation(title: String?, contents: String?, slugUrl: String?) -> [String]? {
-//        var createPostErrors: [String] = []
-//
-//        if title == nil || (title?.isWhitespace() ?? false) {
-//            createPostErrors.append("You must specify a blog post title")
-//        }
-//
-//        if contents == nil || (contents?.isWhitespace() ?? false) {
-//            createPostErrors.append("You must have some content in your blog post")
-//        }
-//
-//        if (slugUrl == nil || (slugUrl?.isWhitespace() ?? false)) && (!(title == nil || (title?.isWhitespace() ?? false))) {
-//            // The user can't manually edit this so if the title wasn't empty, we should never hit here
-//            createPostErrors.append("There was an error with your request, please try again")
-//        }
-//
-//        if createPostErrors.count == 0 {
-//            return nil
-//        }
-//
-//        return createPostErrors
-//    }
-//
 //    private func validateUserSaveDataExists(edit: Bool, name: String?, username: String?, password: String?, confirmPassword: String?, profilePicture: String?) -> ([String]?, Bool?, Bool?) {
 //        var userSaveErrors: [String] = []
 //        var passwordError: Bool?
