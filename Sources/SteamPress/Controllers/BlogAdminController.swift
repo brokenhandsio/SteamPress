@@ -28,7 +28,7 @@ struct BlogAdminController: RouteCollection {
         
         let loginController = LoginController(pathCreator: pathCreator)
         try adminRoutes.register(collection: loginController)
-        let postController = PostAdminController()
+        let postController = PostAdminController(pathCreator: pathCreator)
         try adminProtectedRoutes.register(collection: postController)
     }
 //    func addRoutes() {

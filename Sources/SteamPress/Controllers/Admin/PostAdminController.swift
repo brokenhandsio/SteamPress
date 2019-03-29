@@ -3,8 +3,12 @@ import Vapor
 struct PostAdminController: RouteCollection {
     
     // MARK: - Properties
+    private let pathCreator: BlogPathCreator
     
     // MARK: - Initialiser
+    init(pathCreator: BlogPathCreator) {
+        self.pathCreator = pathCreator
+    }
     
     // MARK: - Route setup
     func boot(router: Router) throws {
@@ -32,55 +36,30 @@ struct PostAdminController: RouteCollection {
             return try view.encode(for: req)
         }
         
-        guard let title = data.title, let contents = data.contents else {
+        guard let title = data.title, let contents = data.contents, let slugURL = data.slugURL else {
             throw Abort(.internalServerError)
         }
         
-        let newPost = try BlogPost(title: title, contents: contents, author: author, creationDate: Date(), slugUrl: title, published: data.publish != nil)
+        let newPost = try BlogPost(title: title, contents: contents, author: author, creationDate: Date(), slugUrl: slugURL, published: data.publish != nil)
         
         let postRepository = try req.make(BlogPostRepository.self)
         return postRepository.savePost(newPost, on: req).map { post in
-            return req.redirect(to: "/")
+            return req.redirect(to: self.pathCreator.createPath(for: "posts/\(post.slugUrl)"))
         }
         
-        //
-        //        if draft == nil && publish == nil {
-        //            throw Abort.badRequest
-        //        }
-        //
         //        if let createPostErrors = validatePostCreation(title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl) {
         //            return try viewFactory.createBlogPostView(uri: request.getURIWithHTTPSIfReverseProxy(), errors: createPostErrors, title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl, tags: rawTags?.array, isEditing: false, postToEdit: nil, draft: true, user: try request.user())
         //        }
-        //
-        //        guard let title = rawTitle, let contents = rawContents, var slugUrl = rawSlugUrl else {
-        //            throw Abort.badRequest
-        //        }
-        //
-        //        let creationDate = Date()
-        //
         //        // Make sure slugUrl is unique
         //        slugUrl = BlogPost.generateUniqueSlugUrl(from: slugUrl, logger: log)
-        //
-        //        var published = false
-        //
-        //        if publish != nil {
-        //            published = true
-        //        }
-        //
-        //        let newPost = BlogPost(title: title, contents: contents, author: try request.user(), creationDate: creationDate, slugUrl: slugUrl, published: published, logger: log)
-        //        try newPost.save()
-        //
         //        // Save the tags
         //        for tagNode in tagsArray {
         //            if let tagName = tagNode.string {
         //                try BlogTag.addTag(tagName, to: newPost)
         //            }
         //        }
-        //
-        //        return Response(redirect: pathCreator.createPath(for: "posts/\(newPost.slugUrl)"))
     }
     
-    //
     //    // MARK: - Validators
     private func validatePostCreation(_ data: CreatePostData) -> [String]? {
         var createPostErrors: [String] = []
@@ -203,6 +182,7 @@ struct CreatePostData: Content {
     let contents: String?
     let publish: Bool?
     let draft: Bool?
+    let slugURL: String?
     #warning("Tags")
     #warning("Slug URL")
     #warning("Publish flag")
