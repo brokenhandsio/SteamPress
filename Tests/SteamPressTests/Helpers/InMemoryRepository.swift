@@ -97,6 +97,10 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         return req.future(posts.first { $0.slugUrl == slug })
     }
     
+    func getPost(on req: Request, id: Int) -> EventLoopFuture<BlogPost?> {
+        return req.future(posts.first { $0.blogID == id })
+    }
+    
     func getSortedPublishedPosts(for tag: BlogTag, on req: Request) -> EventLoopFuture<[BlogPost]> {
         var results = [BlogPost]()
         guard let tagID = tag.tagID else {
@@ -124,8 +128,10 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
     }
     
     func addPost(_ post: BlogPost) {
-        post.blogID = posts.count + 1
-        posts.append(post)
+        if (posts.first { $0.blogID == post.blogID } == nil) {
+            post.blogID = posts.count + 1
+            posts.append(post)
+        }
     }
     
     // MARK: - BlogUserRepository

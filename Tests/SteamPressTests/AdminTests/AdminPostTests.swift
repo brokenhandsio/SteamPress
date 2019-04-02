@@ -13,6 +13,7 @@ class AdminPostTests: XCTestCase {
         ("testCreatePostMustIncludeTitle", testCreatePostMustIncludeTitle),
         ("testCreatePostMustIncludeContents", testCreatePostMustIncludeContents),
         ("testCreatePostWithDraftDoesNotPublishPost", testCreatePostWithDraftDoesNotPublishPost),
+        ("testPostCanBeUpdated", testPostCanBeUpdated),
         ]
     
     // MARK: - Properties
@@ -60,7 +61,7 @@ class AdminPostTests: XCTestCase {
         XCTAssertEqual(testWorld.context.repository.posts.first?.title, createData.title)
         XCTAssertTrue(testWorld.context.repository.posts.first?.published ?? false)
         XCTAssertEqual(response.http.status, .seeOther)
-        XCTAssertEqual(response.http.headers[.location].first, "/posts/post-title/  ")
+        XCTAssertEqual(response.http.headers[.location].first, "/posts/post-title/")
     }
     
     func testPostCannotBeCreatedIfDraftAndPublishNotSet() throws {
@@ -122,4 +123,28 @@ class AdminPostTests: XCTestCase {
         XCTAssertEqual(testWorld.context.repository.posts.first?.title, createData.title)
         XCTAssertFalse(testWorld.context.repository.posts.first?.published ?? true)
     }
+    
+    func testPostCanBeUpdated() throws {
+        struct UpdatePostData: Content {
+            static let defaultContentType = MediaType.urlEncodedForm
+            let title = "Post Title"
+            let contents = "# Post Title\n\nWe have a post"
+            let tags = ["First Tag", "Second Tag"]
+            let slugURL = "post-title"
+            let draft = true
+        }
+        
+        let testData = try testWorld.createPost(title: "Initial title", contents: "Some initial contents", slugUrl: "initial-title")
+        let updateData = UpdatePostData()
+        
+        let updatePostPath = "/admin/posts/\(testData.post.blogID!)/edit"
+        _ = try testWorld.getResponse(to: updatePostPath, body: updateData, loggedInUser: user)
+
+        XCTAssertEqual(testWorld.context.repository.posts.count, 1)
+        XCTAssertEqual(testWorld.context.repository.posts.first?.title, updateData.title)
+        XCTAssertEqual(testWorld.context.repository.posts.first?.contents, updateData.contents)
+        XCTAssertEqual(testWorld.context.repository.posts.first?.slugUrl, updateData.slugURL)
+        XCTAssertEqual(testWorld.context.repository.posts.first?.blogID, testData.post.blogID)
+    }
+
 }

@@ -14,6 +14,7 @@ struct PostAdminController: RouteCollection {
     func boot(router: Router) throws {
         router.get("createPost", use: createPostHandler)
         router.post("createPost", use: createPostPostHandler)
+        router.post("posts", Int.parameter, "edit", use: editPostPostHandler)
     }
     
     // MARK: - Route handlers
@@ -111,70 +112,73 @@ struct PostAdminController: RouteCollection {
     //        return try viewFactory.createBlogPostView(uri: request.getURIWithHTTPSIfReverseProxy(), errors: nil, title: post.title, contents: post.contents, slugUrl: post.slugUrl, tags: tagsArray, isEditing: true, postToEdit: post, draft: !post.published, user: try request.user())
     //    }
     //
-    //    func editPostPostHandler(request: Request) throws -> ResponseRepresentable {
-    //        let post = try request.parameters.next(BlogPost.self)
-    //        let rawTitle = request.data["inputTitle"]?.string
-    //        let rawContents = request.data["inputPostContents"]?.string
-    //        let rawTags = request.data["inputTags"]
-    //        let rawSlugUrl = request.data["inputSlugUrl"]?.string
-    //        let publish = request.data["publish"]?.string
-    //
-    //        let tagsArray = rawTags?.array ?? [rawTags?.string?.makeNode(in: nil) ?? nil]
-    //
-    //        if let errors = validatePostCreation(title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl) {
-    //            return try viewFactory.createBlogPostView(uri: request.getURIWithHTTPSIfReverseProxy(), errors: errors, title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl, tags: tagsArray, isEditing: true, postToEdit: post, draft: false, user: try request.user())
-    //        }
-    //
-    //        guard let title = rawTitle, let contents = rawContents, let slugUrl = rawSlugUrl else {
-    //            throw Abort.badRequest
-    //        }
-    //
-    //        post.title = title
-    //        post.contents = contents
-    //        if post.slugUrl != slugUrl {
-    //            post.slugUrl = BlogPost.generateUniqueSlugUrl(from: slugUrl, logger: log)
-    //        }
-    //
-    //        let existing = try post.tags.all()
-    //        let existingStringArray = existing.map { $0.name }
-    //        let newTagsStringArray = tagsArray.map { $0.string ?? "" }.filter { $0 != "" }
-    //
-    //        // Work out new tags and tags to delete
-    //        let existingSet: Set<String> = Set(existingStringArray)
-    //        let newTagSet: Set<String> = Set(newTagsStringArray)
-    //
-    //        let tagsToDelete = existingSet.subtracting(newTagSet)
-    //        let tagsToAdd = newTagSet.subtracting(existingSet)
-    //
-    //        for deleteTag in tagsToDelete {
-    //            let tag = try BlogTag.makeQuery().filter(BlogTag.Properties.name, deleteTag).first()
-    //            guard let tagToCleanUp = tag else {
-    //                throw Abort.badRequest
-    //            }
-    //            try tagToCleanUp.deletePivot(for: post)
-    //            if try tagToCleanUp.posts.all().count == 0 {
-    //                try tagToCleanUp.delete()
-    //            }
-    //        }
-    //
-    //        for newTagString in tagsToAdd {
-    //            try BlogTag.addTag(newTagString, to: post)
-    //        }
-    //
-    //        if post.published {
-    //            post.lastEdited = Date()
-    //        } else {
-    //            post.created = Date()
-    //            if publish != nil {
-    //                post.published = true
-    //            }
-    //        }
-    //
-    //        try post.save()
-    //
-    //        return Response(redirect: pathCreator.createPath(for: "posts/\(post.slugUrl)"))
-    //    }
-    //
+    func editPostPostHandler(_ req: Request) throws -> Future<Response> {
+        let data = try req.content.syncDecode(CreatePostData.self)
+        let postID = try req.parameters.next(Int.self)
+        let postRepository = try req.make(BlogPostRepository.self)
+        
+        return postRepository.getPost(on: req, id: postID).flatMap { post in
+            guard let post = post else {
+                throw Abort(.notFound)
+            }
+            
+            
+            //        if let errors = validatePostCreation(title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl) {
+            //            return try viewFactory.createBlogPostView(uri: request.getURIWithHTTPSIfReverseProxy(), errors: errors, title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl, tags: tagsArray, isEditing: true, postToEdit: post, draft: false, user: try request.user())
+            //        }
+            
+            guard let title = data.title, let contents = data.contents, let slugUrl = data.slugURL else {
+                throw Abort(.internalServerError)
+            }
+            
+            post.title = title
+            post.contents = contents
+            post.slugUrl = slugUrl
+
+//            if post.slugUrl != slugUrl {
+//                post.slugUrl = BlogPost.generateUniqueSlugUrl(from: slugUrl, logger: log)
+//            }
+//
+//            let existing = try post.tags.all()
+//            let existingStringArray = existing.map { $0.name }
+//            let newTagsStringArray = tagsArray.map { $0.string ?? "" }.filter { $0 != "" }
+//
+//            // Work out new tags and tags to delete
+//            let existingSet: Set<String> = Set(existingStringArray)
+//            let newTagSet: Set<String> = Set(newTagsStringArray)
+//
+//            let tagsToDelete = existingSet.subtracting(newTagSet)
+//            let tagsToAdd = newTagSet.subtracting(existingSet)
+//
+//            for deleteTag in tagsToDelete {
+//                let tag = try BlogTag.makeQuery().filter(BlogTag.Properties.name, deleteTag).first()
+//                guard let tagToCleanUp = tag else {
+//                    throw Abort.badRequest
+//                }
+//                try tagToCleanUp.deletePivot(for: post)
+//                if try tagToCleanUp.posts.all().count == 0 {
+//                    try tagToCleanUp.delete()
+//                }
+//            }
+//
+//            for newTagString in tagsToAdd {
+//                try BlogTag.addTag(newTagString, to: post)
+//            }
+//
+//            if post.published {
+//                post.lastEdited = Date()
+//            } else {
+//                post.created = Date()
+//                if publish != nil {
+//                    post.published = true
+//                }
+//            }
+//
+            let redirect = req.redirect(to: self.pathCreator.createPath(for: "posts/\(post.slugUrl)"))
+            return postRepository.savePost(post, on: req).transform(to: redirect)
+        }
+    }
+
 }
 
 struct CreatePostData: Content {

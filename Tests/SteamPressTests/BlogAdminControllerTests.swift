@@ -626,15 +626,7 @@
 //    }
 //    
 //    // MARK: - Helper functions
-//    
-//    private func assertLoginRequired(method: HTTP.Method, path: String) throws {
-//        let request = Request(method: method, uri: "/blog/admin/\(path)/")
-//        let response = try drop.respond(to: request)
-//        
-//        XCTAssertEqual(response.status, .seeOther)
-//        XCTAssertEqual(response.headers[HeaderKey.location], "/blog/admin/login/?loginRequired")
-//    }
-//    
+//
 //    private func createLoggedInRequest(method: HTTP.Method, path: String, for user: BlogUser? = nil) throws -> Request {
 //        let uri = "/blog/admin/\(path)/"
 //        
@@ -654,18 +646,5 @@
 //        return request
 //    }
 //}
-//
-//struct FakePasswordHasher: PasswordHasherVerifier {
-//    func verify(password: Bytes, matches hash: Bytes) throws -> Bool {
-//        return password == hash
-//    }
-//    
-//    func make(_ message: Bytes) throws -> Bytes {
-//        return message
-//    }
-//    
-//    func check(_ message: Bytes, matchesHash: Bytes) throws -> Bool {
-//        return message == matchesHash
-//    }
-//}
+
 

@@ -11,6 +11,7 @@ public protocol BlogPostRepository {
     func getAllPostsSortedByPublishDate(on req: Request, includeDrafts: Bool) -> Future<[BlogPost]>
     func getAllPostsSortedByPublishDate(on req: Request, for user: BlogUser, includeDrafts: Bool) -> Future<[BlogPost]>
     func getPost(on req: Request, slug: String) -> Future<BlogPost?>
+    func getPost(on req: Request, id: Int) -> Future<BlogPost?>
     func getSortedPublishedPosts(for tag: BlogTag, on req: Request) -> Future<[BlogPost]>
     func findPublishedPostsOrdered(for searchTerm: String, on req: Request) -> Future<[BlogPost]>
     func savePost(_ post: BlogPost, on req: Request) -> Future<BlogPost>
