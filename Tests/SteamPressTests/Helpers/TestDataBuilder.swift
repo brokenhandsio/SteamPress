@@ -108,3 +108,4 @@ struct TestData {
     let author: BlogUser
 }
 
+struct EmptyContent: Content {}

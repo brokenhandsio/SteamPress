@@ -260,11 +260,7 @@
 //        XCTAssertEqual(response.status, .seeOther)
 //        XCTAssertEqual(response.headers[HeaderKey.location], "/blog/admin/resetPassword/")
 //    }
-//    
-//    // MARK: - Create Post Tests
-//    
-//    
-//    
+//
 //    // MARK: - Create User Tests
 //    
 //    func testUserCanBeCreatedSuccessfully() throws {
@@ -475,33 +471,6 @@
 //        XCTAssertTrue(capturingViewFactory.createUserErrors?.contains("The username provided is not valid") ?? false)
 //    }
 //    
-//    // MARK: - Edit Post Tests
-//    
-//    func testPostCanBeUpdated() throws {
-//        let author = TestDataBuilder.anyUser()
-//        try author.save()
-//        
-//        let post = TestDataBuilder.anyPost(author: author, title: "Initial title", contents: "Some initial contents", slugUrl: "initial-title")
-//        try post.save()
-//        
-//        let request = try createLoggedInRequest(method: .post, path: "posts/\(post.id!.string!)/edit", for: author)
-//        let newTitle = "New Title"
-//        let newContents = "We have updated the contents"
-//        let newSlug = "new-title"
-//        var postData = Node([:], in: nil)
-//        try postData.set("inputTitle", newTitle)
-//        try postData.set("inputPostContents", newContents)
-//        try postData.set("inputSlugUrl", newSlug)
-//        request.formURLEncoded = postData
-//        
-//        let _  = try drop.respond(to: request)
-//        
-//        XCTAssertEqual(try BlogPost.count(), 1)
-//        XCTAssertEqual(try BlogPost.all().first?.title, newTitle)
-//        XCTAssertEqual(try BlogPost.all().first?.contents, newContents)
-//        XCTAssertEqual(try BlogPost.all().first?.id, post.id)
-//    }
-//    
 //    // MARK: - Edit User Tests
 //    
 //    func testUserCanBeUpdated() throws {
@@ -591,26 +560,6 @@
 //        XCTAssertEqual(capturingViewFactory.createPostURI?.descriptionWithoutPort, "https://geeks.brokenhands.io/blog/admin/createPost/")
 //    }
 //
-//    func testThatEditingPostGetsRedirectToPostPage() throws {
-//        let post = BlogPost(title: "Test Post", contents: "Blah 1", author: user, creationDate: Date(), slugUrl: "test-post", published: true)
-//        try post.save()
-//
-//        let request = try createLoggedInRequest(method: .post, path: "posts/\(post.id!.string!)/edit", for: user)
-//
-//        let requestData = [
-//            "inputTitle": "Test Post".makeNode(in: nil),
-//            "inputPostContents": "Blah 2".makeNode(in: nil),
-//            "inputSlugUrl": "test-post",
-//            "publish": "publish"
-//        ]
-//
-//        request.formURLEncoded = try requestData.makeNode(in: nil)
-//
-//        let response = try drop.respond(to: request)
-//
-//        XCTAssertEqual(response.status, .seeOther)
-//        XCTAssertEqual(response.headers[.location], "/blog/posts/\(post.slugUrl)/")
-//    }
 //    
 //    // MARK: - Helper functions
 //

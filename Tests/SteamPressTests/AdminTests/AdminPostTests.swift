@@ -14,6 +14,8 @@ class AdminPostTests: XCTestCase {
         ("testCreatePostMustIncludeContents", testCreatePostMustIncludeContents),
         ("testCreatePostWithDraftDoesNotPublishPost", testCreatePostWithDraftDoesNotPublishPost),
         ("testPostCanBeUpdated", testPostCanBeUpdated),
+        ("testCanDeleteBlogPost", testCanDeleteBlogPost),
+        ("testThatEditingPostGetsRedirectToPostPage", testThatEditingPostGetsRedirectToPostPage),
         ]
     
     // MARK: - Properties
@@ -155,6 +157,22 @@ class AdminPostTests: XCTestCase {
         XCTAssertEqual(response.http.headers[.location].first, "/admin/")
         XCTAssertEqual(testWorld.context.repository.posts.count, 0)
     }
-}
+    
+    func testThatEditingPostGetsRedirectToPostPage() throws {
+        let testData = try testWorld.createPost()
+        
+        struct UpdateData: Content {
+            let title: String
+            let contents = "Updated contents"
+            let slugURL: String
+            let publish = true
+        }
+        
+        let updateData = UpdateData(title: testData.post.title, slugURL: testData.post.slugUrl)
+        let response = try testWorld.getResponse(to: "/admin/posts/\(testData.post.blogID!)/edit", body: updateData, loggedInUser: user)
 
-struct EmptyContent: Content {}
+        XCTAssertEqual(response.http.status, .seeOther)
+        XCTAssertEqual(response.http.headers[.location].first, "/posts/\(updateData.slugURL)/")
+    }
+
+}
