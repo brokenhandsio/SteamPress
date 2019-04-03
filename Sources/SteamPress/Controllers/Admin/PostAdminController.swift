@@ -15,6 +15,7 @@ struct PostAdminController: RouteCollection {
         router.get("createPost", use: createPostHandler)
         router.post("createPost", use: createPostPostHandler)
         router.post("posts", Int.parameter, "edit", use: editPostPostHandler)
+        router.post("posts", Int.parameter, "delete", use: deletePostHandler)
     }
     
     // MARK: - Route handlers
@@ -60,69 +61,40 @@ struct PostAdminController: RouteCollection {
         //            }
         //        }
     }
-    
-    //    // MARK: - Validators
-    private func validatePostCreation(_ data: CreatePostData) -> [String]? {
-        var createPostErrors: [String] = []
 
-        if data.title.isEmptyOrWhitespace() {
-            createPostErrors.append("You must specify a blog post title")
-        }
-
-        if data.contents.isEmptyOrWhitespace() {
-            createPostErrors.append("You must have some content in your blog post")
-        }
+    func deletePostHandler(_ req: Request) throws -> Future<Response> {
+        let postID = try req.parameters.next(Int.self)
+        let postRepository = try req.make(BlogPostRepository.self)
+        return postRepository.getPost(on: req, id: postID).unwrap(or: Abort(.notFound)).flatMap { post in
+//            let tags = try post.tags.all()
 //
-//        if (slugUrl == nil || (slugUrl?.isWhitespace() ?? false)) && (!(title == nil || (title?.isWhitespace() ?? false))) {
-//            // The user can't manually edit this so if the title wasn't empty, we should never hit here
-//            createPostErrors.append("There was an error with your request, please try again")
-//        }
-
-        if createPostErrors.count == 0 {
-            return nil
+//            // Clean up pivots
+//            for tag in tags {
+//                try tag.deletePivot(for: post)
+//
+//                // See if any of the tags need to be deleted
+//                if try tag.posts.all().count == 0 {
+//                    try tag.delete()
+//                }
+//            }
+            let redirect = req.redirect(to: self.pathCreator.createPath(for: "admin"))
+            return postRepository.deletePost(post, on: req).transform(to: redirect)
         }
-
-        return createPostErrors
     }
 
-
-    //    func deletePostHandler(request: Request) throws -> ResponseRepresentable {
-    //
-    //        let post = try request.parameters.next(BlogPost.self)
-    //        let tags = try post.tags.all()
-    //
-    //        // Clean up pivots
-    //        for tag in tags {
-    //            try tag.deletePivot(for: post)
-    //
-    //            // See if any of the tags need to be deleted
-    //            if try tag.posts.all().count == 0 {
-    //                try tag.delete()
-    //            }
-    //        }
-    //
-    //        try post.delete()
-    //        return Response(redirect: pathCreator.createPath(for: "admin"))
-    //    }
-    //
-    //    func editPostHandler(request: Request) throws -> ResponseRepresentable {
-    //        let post = try request.parameters.next(BlogPost.self)
-    //        let tags = try post.tags.all()
-    //        let tagsArray: [Node] = tags.map { $0.name.makeNode(in: nil) }
-    //        return try viewFactory.createBlogPostView(uri: request.getURIWithHTTPSIfReverseProxy(), errors: nil, title: post.title, contents: post.contents, slugUrl: post.slugUrl, tags: tagsArray, isEditing: true, postToEdit: post, draft: !post.published, user: try request.user())
-    //    }
-    //
+//    func editPostHandler(request: Request) throws -> ResponseRepresentable {
+//        let post = try request.parameters.next(BlogPost.self)
+//        let tags = try post.tags.all()
+//        let tagsArray: [Node] = tags.map { $0.name.makeNode(in: nil) }
+//        return try viewFactory.createBlogPostView(uri: request.getURIWithHTTPSIfReverseProxy(), errors: nil, title: post.title, contents: post.contents, slugUrl: post.slugUrl, tags: tagsArray, isEditing: true, postToEdit: post, draft: !post.published, user: try request.user())
+//    }
+    
     func editPostPostHandler(_ req: Request) throws -> Future<Response> {
         let data = try req.content.syncDecode(CreatePostData.self)
         let postID = try req.parameters.next(Int.self)
         let postRepository = try req.make(BlogPostRepository.self)
         
-        return postRepository.getPost(on: req, id: postID).flatMap { post in
-            guard let post = post else {
-                throw Abort(.notFound)
-            }
-            
-            
+        return postRepository.getPost(on: req, id: postID).unwrap(or: Abort(.notFound)).flatMap { post in
             //        if let errors = validatePostCreation(title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl) {
             //            return try viewFactory.createBlogPostView(uri: request.getURIWithHTTPSIfReverseProxy(), errors: errors, title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl, tags: tagsArray, isEditing: true, postToEdit: post, draft: false, user: try request.user())
             //        }
@@ -177,6 +149,33 @@ struct PostAdminController: RouteCollection {
             let redirect = req.redirect(to: self.pathCreator.createPath(for: "posts/\(post.slugUrl)"))
             return postRepository.savePost(post, on: req).transform(to: redirect)
         }
+    }
+    
+    
+    
+    
+    //    // MARK: - Validators
+    private func validatePostCreation(_ data: CreatePostData) -> [String]? {
+        var createPostErrors: [String] = []
+        
+        if data.title.isEmptyOrWhitespace() {
+            createPostErrors.append("You must specify a blog post title")
+        }
+        
+        if data.contents.isEmptyOrWhitespace() {
+            createPostErrors.append("You must have some content in your blog post")
+        }
+        //
+        //        if (slugUrl == nil || (slugUrl?.isWhitespace() ?? false)) && (!(title == nil || (title?.isWhitespace() ?? false))) {
+        //            // The user can't manually edit this so if the title wasn't empty, we should never hit here
+        //            createPostErrors.append("There was an error with your request, please try again")
+        //        }
+        
+        if createPostErrors.count == 0 {
+            return nil
+        }
+        
+        return createPostErrors
     }
 
 }

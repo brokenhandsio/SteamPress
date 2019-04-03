@@ -147,4 +147,14 @@ class AdminPostTests: XCTestCase {
         XCTAssertEqual(testWorld.context.repository.posts.first?.blogID, testData.post.blogID)
     }
 
+    func testCanDeleteBlogPost() throws {
+        let testData = try testWorld.createPost()
+        let response = try testWorld.getResponse(to: "/admin/posts/\(testData.post.blogID!)/delete", method: .POST, body: EmptyContent(), loggedInUser: user)
+        
+        XCTAssertEqual(response.http.status, .seeOther)
+        XCTAssertEqual(response.http.headers[.location].first, "/admin/")
+        XCTAssertEqual(testWorld.context.repository.posts.count, 0)
+    }
 }
+
+struct EmptyContent: Content {}

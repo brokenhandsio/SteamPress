@@ -130,19 +130,6 @@
 
 //    // MARK: - Delete tests
 //    
-//    func testCanDeleteBlogPost() throws {
-//        let user = TestDataBuilder.anyUser()
-//        try user.save()
-//        let post = TestDataBuilder.anyPost(author: user)
-//        try post.save()
-//        
-//        let request = try createLoggedInRequest(method: .get, path: "posts/\(post.id!.string!)/delete", for: user)
-//        
-//        let response = try drop.respond(to: request)
-//        
-//        XCTAssertEqual(response.status, .seeOther)
-//        XCTAssertEqual(try BlogPost.count(), 0)
-//    }
 //    
 //    func testCanDeleteUser() throws {
 //        let user2 = TestDataBuilder.anyUser(name: "Han", username: "han")

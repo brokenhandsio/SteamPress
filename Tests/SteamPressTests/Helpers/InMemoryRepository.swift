@@ -134,6 +134,11 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         }
     }
     
+    func deletePost(_ post: BlogPost, on req: Request) -> EventLoopFuture<Void> {
+        posts.removeAll { $0.blogID == post.blogID }
+        return req.future()
+    }
+    
     // MARK: - BlogUserRepository
     
     func addUser(_ user: BlogUser) {
