@@ -62,6 +62,7 @@ public struct Provider: Vapor.Provider {
         
     }
 
+    #warning("Update LinuxMain.swift")
     public func register(_ services: inout Services) throws {
 //        var migrationConfig = MigrationConfig()
 //        migrationConfig.add(model: BlogPost.self, database: databaseIdentifier)

@@ -8,76 +8,6 @@
 ////import AuthProvider
 //
 //class BlogAdminControllerTests: XCTestCase {
-//    static var allTests = [
-//        ("testLinuxTestSuiteIncludesAllTests", testLinuxTestSuiteIncludesAllTests),
-//        ("testLogin", testLogin),
-//        ("testUserIsCreatedWhenSettingUpSteamPressFirstTime", testUserIsCreatedWhenSettingUpSteamPressFirstTime),
-//        ("testNoUserCreatedWhenAccessingLoginPageIfOneAlreadyExists", testNoUserCreatedWhenAccessingLoginPageIfOneAlreadyExists),
-//        ("testCannotAccessAdminPageWithoutBeingLoggedIn", testCannotAccessAdminPageWithoutBeingLoggedIn),
-//        ("testCannotAccessCreateBlogPostPageWithoutBeingLoggedIn", testCannotAccessCreateBlogPostPageWithoutBeingLoggedIn),
-//        ("testCannotSendCreateBlogPostPageWithoutBeingLoggedIn", testCannotSendCreateBlogPostPageWithoutBeingLoggedIn),
-//        ("testCannotAccessEditPostPageWithoutLogin", testCannotAccessEditPostPageWithoutLogin),
-//        ("testCannotSendEditPostPageWithoutLogin", testCannotSendEditPostPageWithoutLogin),
-//        ("testCannotAccessCreateUserPageWithoutLogin", testCannotAccessCreateUserPageWithoutLogin),
-//        ("testCannotSendCreateUserPageWithoutLogin", testCannotSendCreateUserPageWithoutLogin),
-//        ("testCannotAccessEditUserPageWithoutLogin", testCannotAccessEditUserPageWithoutLogin),
-//        ("testCannotSendEditUserPageWithoutLogin", testCannotSendEditUserPageWithoutLogin),
-//        ("testCannotDeletePostWithoutLogin", testCannotDeletePostWithoutLogin),
-//        ("testCannotDeleteUserWithoutLogin", testCannotDeleteUserWithoutLogin),
-//        ("testCannotAccessResetPasswordPageWithoutLogin", testCannotAccessResetPasswordPageWithoutLogin),
-//        ("testCannotSendResetPasswordPageWithoutLogin", testCannotSendResetPasswordPageWithoutLogin),
-//        ("testCanAccessAdminPageWhenLoggedIn", testCanAccessAdminPageWhenLoggedIn),
-//        ("testCanAccessCreatePostPageWhenLoggedIn", testCanAccessCreatePostPageWhenLoggedIn),
-//        ("testCanAccessEditPostPageWhenLoggedIn", testCanAccessEditPostPageWhenLoggedIn),
-//        ("testCanAccessCreateUserPageWhenLoggedIn", testCanAccessCreateUserPageWhenLoggedIn),
-//        ("testCanAccessEditUserPageWhenLoggedIn", testCanAccessEditUserPageWhenLoggedIn),
-//        ("testCanAccessResetPasswordPage", testCanAccessResetPasswordPage),
-//        ("testCanDeleteBlogPost", testCanDeleteBlogPost),
-//        ("testCanDeleteUser", testCanDeleteUser),
-//        ("testCannotDeleteSelf", testCannotDeleteSelf),
-//        ("testCannotDeleteLastUser", testCannotDeleteLastUser),
-//        ("testUserCannotResetPasswordWithMismatchingPasswords", testUserCannotResetPasswordWithMismatchingPasswords),
-//        ("testUserCanResetPassword", testUserCanResetPassword),
-//        ("testUserCannotResetPasswordWithoutPassword", testUserCannotResetPasswordWithoutPassword),
-//        ("testUserCannotResetPasswordWithoutConfirmPassword", testUserCannotResetPasswordWithoutConfirmPassword),
-//        ("testUserCannotResetPasswordWithShortPassword", testUserCannotResetPasswordWithShortPassword),
-//        ("testUserIsRedirectedWhenLoggingInAndPasswordResetRequired", testUserIsRedirectedWhenLoggingInAndPasswordResetRequired),
-//        ("testPostCanBeCreated", testPostCanBeCreated),
-//        ("testPostCannotBeCreatedIfDraftAndPublishNotSet", testPostCannotBeCreatedIfDraftAndPublishNotSet),
-//        ("testCreatePostMustIncludeTitle", testCreatePostMustIncludeTitle),
-//        ("testCreatePostMustIncludeContents", testCreatePostMustIncludeContents),
-//        ("testCreatePostWithDraftDoesNotPublishPost", testCreatePostWithDraftDoesNotPublishPost),
-//        ("testUserCanBeCreatedSuccessfully", testUserCanBeCreatedSuccessfully),
-//        ("testUserMustResetPasswordIfSetToWhenCreatingUser", testUserMustResetPasswordIfSetToWhenCreatingUser),
-//        ("testUserCannotBeCreatedWithoutName", testUserCannotBeCreatedWithoutName),
-//        ("testUserCannotBeCreatedWithoutUsername", testUserCannotBeCreatedWithoutUsername),
-//        ("testUserCannotBeCreatedWithoutPassword", testUserCannotBeCreatedWithoutPassword),
-//        ("testUserCannotBeCreatedWithoutSpecifyingAConfirmPassword", testUserCannotBeCreatedWithoutSpecifyingAConfirmPassword),
-//        ("testUserCannotBeCreatedWithPasswordsThatDontMatch", testUserCannotBeCreatedWithPasswordsThatDontMatch),
-//        ("testUserCannotBeCreatedWithSimplePassword", testUserCannotBeCreatedWithSimplePassword),
-//        ("testUserCannotBeCreatedWithEmptyName", testUserCannotBeCreatedWithEmptyName),
-//        ("testUserCannotBeCreatedWithEmptyUsername", testUserCannotBeCreatedWithEmptyUsername),
-//        ("testUserCannotBeCreatedWithInvalidName", testUserCannotBeCreatedWithInvalidName),
-//        ("testUserCannotBeCreatedWithInvalidUsername", testUserCannotBeCreatedWithInvalidUsername),
-//        ("testPostCanBeUpdated", testPostCanBeUpdated),
-//        ("testUserCanBeUpdated", testUserCanBeUpdated),
-//        ("testAdminPageGetsLoggedInUser", testAdminPageGetsLoggedInUser),
-//        ("testCreatePostPageGetsLoggedInUser", testCreatePostPageGetsLoggedInUser),
-//        ("testEditPostPageGetsLoggedInUser", testEditPostPageGetsLoggedInUser),
-//        ("testCreateUserPageGetsLoggedInUser", testCreatePostPageGetsLoggedInUser),
-//        ("testEditUserPageGetsLoggedInUser", testEditPostPageGetsLoggedInUser),
-//        ("testResetPasswordPageGetsLoggedInUser", testResetPasswordPageGetsLoggedInUser),
-//        ("testCreatePostPageGetsURI", testCreatePostPageGetsURI),
-//        ("testCreatePostPageGetsHTTPSURIIfFromReverseProxy", testCreatePostPageGetsHTTPSURIIfFromReverseProxy),
-//        ("testThatEditingPostGetsRedirectToPostPage", testThatEditingPostGetsRedirectToPostPage),
-//    ]
-//    
-//    // MARK: - Properties
-//    
-//    var database: Database!
-//    var drop: Droplet!
-//    var capturingViewFactory: CapturingViewFactory!
-//    var user: BlogUser!
 //    
 //    // MARK: - Overrides
 //    
@@ -115,18 +45,6 @@
 //        user.resetPasswordRequired = false
 //        try! user.save()
 //    }
-//    
-//    // Courtesy of https://oleb.net/blog/2017/03/keeping-xctest-in-sync/
-//    func testLinuxTestSuiteIncludesAllTests() {
-//        #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
-//            let thisClass = type(of: self)
-//            let linuxCount = thisClass.allTests.count
-//            let darwinCount = Int(thisClass.defaultTestSuite.testCaseCount)
-//            XCTAssertEqual(linuxCount, darwinCount, "\(darwinCount - linuxCount) tests are missing from allTests")
-//        #endif
-//    }
-//    
-//    // MARK: - Tests
 
 //    // MARK: - Delete tests
 //    
@@ -262,41 +180,6 @@
 //    }
 //
 //    // MARK: - Create User Tests
-//    
-//    func testUserCanBeCreatedSuccessfully() throws {
-//        BlogUser.passwordHasher = FakePasswordHasher()
-//        let request = try createLoggedInRequest(method: .post, path: "createUser")
-//        let newName = "Leia"
-//        let newUsername = "leia"
-//        let password = "AS3cretPassword"
-//        let profilePicture = "https://static.brokenhands.io/images/cat.png"
-//        let tagline = "The awesome tagline"
-//        let biography = "The biograhy"
-//        let twitterHandle = "brokenhandsio"
-//        var userData = Node([:], in: nil)
-//        try userData.set("inputName", newName)
-//        try userData.set("inputUsername", newUsername)
-//        try userData.set("inputPassword", password)
-//        try userData.set("inputConfirmPassword", password)
-//        try userData.set("inputProfilePicture", profilePicture)
-//        try userData.set("inputTagline", tagline)
-//        try userData.set("inputBiography", biography)
-//        try userData.set("inputTwitterHandle", twitterHandle)
-//        request.formURLEncoded = userData
-//        
-//        let _ = try drop.respond(to: request)
-//        
-//        // We create the first user when setting up the logged in request
-//        XCTAssertEqual(try BlogUser.count(), 3)
-//        let user = try BlogUser.makeQuery().filter("name", newName).all().first
-//        XCTAssertNotNil(user)
-//        XCTAssertEqual(user?.username, newUsername)
-//        XCTAssertEqual(user?.profilePicture, profilePicture)
-//        XCTAssertEqual(user?.tagline, tagline)
-//        XCTAssertEqual(user?.biography, biography)
-//        XCTAssertEqual(user?.twitterHandle, twitterHandle)
-//    }
-//    
 //    func testUserMustResetPasswordIfSetToWhenCreatingUser() throws {
 //        BlogUser.passwordHasher = FakePasswordHasher()
 //        let request = try createLoggedInRequest(method: .post, path: "createUser")
@@ -558,28 +441,6 @@
 //        _ = try drop.respond(to: request)
 //
 //        XCTAssertEqual(capturingViewFactory.createPostURI?.descriptionWithoutPort, "https://geeks.brokenhands.io/blog/admin/createPost/")
-//    }
-//
-//    
-//    // MARK: - Helper functions
-//
-//    private func createLoggedInRequest(method: HTTP.Method, path: String, for user: BlogUser? = nil) throws -> Request {
-//        let uri = "/blog/admin/\(path)/"
-//        
-//        let request = Request(method: method, uri: uri)
-//        
-//        let authAuthenticatedKey = "auth-authenticated"
-//        
-//        if let user = user {
-//            request.storage[authAuthenticatedKey] = user
-//        }
-//        else {
-//            let testUser = TestDataBuilder.anyUser()
-//            try testUser.save()
-//            request.storage[authAuthenticatedKey] = testUser
-//        }
-//        
-//        return request
 //    }
 //}
 

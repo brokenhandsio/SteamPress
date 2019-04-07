@@ -30,6 +30,8 @@ struct BlogAdminController: RouteCollection {
         try adminRoutes.register(collection: loginController)
         let postController = PostAdminController(pathCreator: pathCreator)
         try adminProtectedRoutes.register(collection: postController)
+        let userController = UserAdminController(pathCreator: pathCreator)
+        try adminProtectedRoutes.register(collection: userController)
     }
 //    func addRoutes() {
 //        let router = drop.grouped(pathCreator.blogPath ?? "", "admin")
@@ -64,53 +66,6 @@ struct BlogAdminController: RouteCollection {
 //        return try viewFactory.createUserView(editing: false, errors: nil, name: nil, username: nil, passwordError: nil, confirmPasswordError: nil, resetPasswordRequired: nil, userId: nil, profilePicture: nil, twitterHandle: nil, biography: nil, tagline: nil, loggedInUser: request.user())
 //    }
 //
-//    func createUserPostHandler(_ request: Request) throws -> ResponseRepresentable {
-//
-//        let rawName = request.data["inputName"]?.string
-//        let rawUsername = request.data["inputUsername"]?.string
-//        let rawPassword = request.data["inputPassword"]?.string
-//        let rawConfirmPassword = request.data["inputConfirmPassword"]?.string
-//        let rawPasswordResetRequired = request.data["inputResetPasswordOnLogin"]?.string
-//        let resetPasswordRequired = rawPasswordResetRequired != nil
-//        let profilePicture = request.data["inputProfilePicture"]?.string
-//        let tagline = request.data["inputTagline"]?.string
-//        let biography = request.data["inputBiography"]?.string
-//        let twitterHandle = request.data["inputTwitterHandle"]?.string
-//
-//        let (createUserRawErrors, passwordRawError, confirmPasswordRawError) = validateUserSaveDataExists(edit: false, name: rawName, username: rawUsername, password: rawPassword, confirmPassword: rawConfirmPassword, profilePicture: profilePicture)
-//
-//        // Return if we have any missing fields
-//        if !(createUserRawErrors?.isEmpty ?? true) {
-//            return try viewFactory.createUserView(editing: false, errors: createUserRawErrors, name: rawName, username: rawUsername, passwordError: passwordRawError, confirmPasswordError: confirmPasswordRawError, resetPasswordRequired: resetPasswordRequired, userId: nil, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline, loggedInUser: request.user())
-//        }
-//
-//        guard let name = rawName, let username = rawUsername?.lowercased(), let password = rawPassword, let confirmPassword = rawConfirmPassword else {
-//            throw Abort.badRequest
-//        }
-//
-//        let (createUserErrors, passwordError, confirmPasswordError) = validateUserSaveData(edit: false, name: name, username: username, password: password, confirmPassword: confirmPassword)
-//
-//        if !(createUserErrors?.isEmpty ?? true) {
-//            return try viewFactory.createUserView(editing: false, errors: createUserErrors, name: name, username: username, passwordError: passwordError, confirmPasswordError: confirmPasswordError, resetPasswordRequired: resetPasswordRequired, userId: nil, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline, loggedInUser: request.user())
-//        }
-//
-//        // We now have valid data
-//        let hashedPassword = try BlogUser.passwordHasher.make(password)
-//        let newUser = BlogUser(name: name, username: username.lowercased(), password: hashedPassword, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline)
-//
-//        if resetPasswordRequired {
-//            newUser.resetPasswordRequired = true
-//        }
-//
-//        do {
-//            try newUser.save()
-//        } catch {
-//            return try viewFactory.createUserView(editing: false, errors: ["There was an error creating the user. Please try again"], name: name, username: username, passwordError: passwordError, confirmPasswordError: confirmPasswordError, resetPasswordRequired: resetPasswordRequired, userId: nil, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline, loggedInUser: request.user())
-//        }
-//
-//        return Response(redirect: pathCreator.createPath(for: "admin"))
-//
-//    }
 //
 //    func editUserHandler(request: Request) throws -> ResponseRepresentable {
 //        let user = try request.parameters.next(BlogUser.self)

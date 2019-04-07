@@ -25,4 +25,5 @@ public protocol BlogUserRepository {
     func getUser(_ id: Int, on req: Request) -> Future<BlogUser?>
     func getUser(_ name: String, on req: Request) -> Future<BlogUser?>
     func getUser(username: String, on req: Request) -> Future<BlogUser?>
+    func save(_ user: BlogUser, on req: Request) -> Future<BlogUser>
 }
