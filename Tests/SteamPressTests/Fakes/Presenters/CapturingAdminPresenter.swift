@@ -15,6 +15,12 @@ class CapturingAdminPresenter: BlogAdminPresenter {
         return createFutureView(on: req)
     }
     
+    private(set) var createUserErrors: [String]?
+    func createUserView(on req: Request, errors: [String]?) -> EventLoopFuture<View> {
+        self.createUserErrors = errors
+        return createFutureView(on: req)
+    }
+    
     // MARK: - Helpers
     
     func createFutureView(on req: Request) -> Future<View> {

@@ -20,7 +20,17 @@ struct UserAdminController: RouteCollection {
     func createUserPostHandler(_ req: Request) throws -> Future<Response> {
         let data = try req.content.syncDecode(CreateUserData.self)
         
-        let newUser = BlogUser(name: data.name, username: data.username, password: data.password, profilePicture: nil, twitterHandle: nil, biography: nil, tagline: nil)
+        if let createUserErrors = validateUserCreation(data) {
+            let presenter = try req.make(BlogAdminPresenter.self)
+            let view = presenter.createUserView(on: req, errors: createUserErrors)
+            return try view.encode(for: req)
+        }
+        
+        guard let name = data.name else {
+            throw Abort(.internalServerError)
+        }
+        
+        let newUser = BlogUser(name: name, username: data.username, password: data.password, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline)
         let userRepository = try req.make(BlogUserRepository.self)
         return userRepository.save(newUser, on: req).map { _ in
             return req.redirect(to: "/")
@@ -62,17 +72,32 @@ struct UserAdminController: RouteCollection {
 
     }
     
+    // MARK: - Validators
+    private func validateUserCreation(_ data: CreateUserData) -> [String]? {
+        var createUserErrors = [String]()
+        
+        if data.name.isEmptyOrWhitespace() {
+            createUserErrors.append("You must specify a name")
+        }
+        
+        if createUserErrors.count == 0 {
+            return nil
+        }
+        
+        return createUserErrors
+    }
+    
 }
 
 struct CreateUserData: Content {
-    let name: String
+    let name: String?
     let username: String
     let password: String
     let confirmPassword: String
+    let profilePicture: String?
+    let tagline: String?
+    let biography: String?
+    let twitterHandle: String?
     #warning("resetpassword")
-    #warning("ProfilePicture")
-    #warning("tagline")
-    #warning("biography")
-    #warning("twitterHandler")
     //        let resetPasswordRequired = rawPasswordResetRequired != nil
 }

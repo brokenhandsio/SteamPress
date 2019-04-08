@@ -8,7 +8,8 @@ class AdminUserTests: XCTestCase {
     
     static var allTests = [
         ("testLinuxTestSuiteIncludesAllTests", testLinuxTestSuiteIncludesAllTests),
-        ("testUserCanBeCreatedSuccessfully", testUserCanBeCreatedSuccessfully)
+        ("testUserCanBeCreatedSuccessfully", testUserCanBeCreatedSuccessfully),
+        ("testUserCannotBeCreatedWithoutName", testUserCannotBeCreatedWithoutName)
     ]
     
     // MARK: - Properties
@@ -47,12 +48,11 @@ class AdminUserTests: XCTestCase {
             let username = "lukes"
             let password = "password"
             let confirmPassword = "password"
+            let profilePicture = "https://static.brokenhands.io/images/cat.png"
+            let tagline = "The awesome tagline"
+            let biography = "The biograhy"
+            let twitterHandle = "brokenhandsio"
         }
-        
-//        let profilePicture = "https://static.brokenhands.io/images/cat.png"
-//        let tagline = "The awesome tagline"
-//        let biography = "The biograhy"
-//        let twitterHandle = "brokenhandsio"
 
         let createData = CreateUserData()
         _ = try testWorld.getResponse(to: createUserPath, body: createData, loggedInUser: user)
@@ -62,10 +62,205 @@ class AdminUserTests: XCTestCase {
         XCTAssertNotNil(user)
         XCTAssertEqual(user?.username, createData.username)
         XCTAssertEqual(user?.name, createData.name)
-//        XCTAssertEqual(user?.profilePicture, profilePicture)
-//        XCTAssertEqual(user?.tagline, tagline)
-//        XCTAssertEqual(user?.biography, biography)
-//        XCTAssertEqual(user?.twitterHandle, twitterHandle)
+        XCTAssertEqual(user?.profilePicture, createData.profilePicture)
+        XCTAssertEqual(user?.tagline, createData.tagline)
+        XCTAssertEqual(user?.biography, createData.biography)
+        XCTAssertEqual(user?.twitterHandle, createData.twitterHandle)
     }
+    
+//    func testUserMustResetPasswordIfSetToWhenCreatingUser() throws {
+        //        BlogUser.passwordHasher = FakePasswordHasher()
+        //        let request = try createLoggedInRequest(method: .post, path: "createUser")
+        //        let newName = "Leia"
+        //        let password = "AS3cretPassword"
+        //        var userData = Node([:], in: nil)
+        //        try userData.set("inputName", newName)
+        //        try userData.set("inputUsername", "leia")
+        //        try userData.set("inputPassword", password)
+        //        try userData.set("inputConfirmPassword", password)
+        //        try userData.set("inputResetPasswordOnLogin", "true")
+        //        request.formURLEncoded = userData
+        //
+        //        let _ = try drop.respond(to: request)
+        //
+        //        XCTAssertTrue(try BlogUser.makeQuery().filter("name", newName).all().first?.resetPasswordRequired ?? false)
+        //    }
+        //
+    func testUserCannotBeCreatedWithoutName() throws {
+        struct CreateUserData: Content {
+            static let defaultContentType = MediaType.urlEncodedForm
+            let username = "lukes"
+            let password = "password"
+            let confirmPassword = "password"
+        }
+        
+        let createData = CreateUserData()
+        _ = try testWorld.getResponse(to: createUserPath, body: createData, loggedInUser: user)
+
+        XCTAssertTrue(presenter.createUserErrors?.contains("You must specify a name") ?? false)
+    }
+        //
+        //    func testUserCannotBeCreatedWithoutUsername() throws {
+        //        let request = try createLoggedInRequest(method: .post, path: "createUser")
+        //        let password = "AS3cretPassword"
+        //        var userData = Node([:], in: nil)
+        //        try userData.set("inputName", "Leia")
+        //        try userData.set("inputPassword", password)
+        //        try userData.set("inputConfirmPassword", password)
+        //        try userData.set("inputResetPasswordOnLogin", "true")
+        //        request.formURLEncoded = userData
+        //
+        //        let _ = try drop.respond(to: request)
+        //
+        //        XCTAssertTrue(capturingViewFactory.createUserErrors?.contains("You must specify a username") ?? false)
+        //    }
+        //
+        //    func testUserCannotBeCreatedWithoutPassword() throws {
+        //        let request = try createLoggedInRequest(method: .post, path: "createUser")
+        //        let password = "AS3cretPassword"
+        //        var userData = Node([:], in: nil)
+        //        try userData.set("inputName", "Leia")
+        //        try userData.set("inputUsername", "leia")
+        //        try userData.set("inputConfirmPassword", password)
+        //        try userData.set("inputResetPasswordOnLogin", "true")
+        //        request.formURLEncoded = userData
+        //
+        //        let _ = try drop.respond(to: request)
+        //
+        //        XCTAssertTrue(capturingViewFactory.createUserErrors?.contains("You must specify a password") ?? false)
+        //    }
+        //
+        //    func testUserCannotBeCreatedWithoutSpecifyingAConfirmPassword() throws {
+        //        let request = try createLoggedInRequest(method: .post, path: "createUser")
+        //        let password = "AS3cretPassword"
+        //        var userData = Node([:], in: nil)
+        //        try userData.set("inputName", "Leia")
+        //        try userData.set("inputUsername", "leia")
+        //        try userData.set("inputPassword", password)
+        //        try userData.set("inputResetPasswordOnLogin", "true")
+        //        request.formURLEncoded = userData
+        //
+        //        let _ = try drop.respond(to: request)
+        //
+        //        XCTAssertTrue(capturingViewFactory.createUserErrors?.contains("You must confirm your password") ?? false)
+        //    }
+        //
+        //    func testUserCannotBeCreatedWithPasswordsThatDontMatch() throws {
+        //        let request = try createLoggedInRequest(method: .post, path: "createUser")
+        //        let password = "AS3cretPassword"
+        //        var userData = Node([:], in: nil)
+        //        try userData.set("inputName", "Leia")
+        //        try userData.set("inputUsername", "leia")
+        //        try userData.set("inputPassword", password)
+        //        try userData.set("inputConfirmPassword", "Som£th!ngDifferent")
+        //        try userData.set("inputResetPasswordOnLogin", "true")
+        //        request.formURLEncoded = userData
+        //
+        //        let _ = try drop.respond(to: request)
+        //
+        //        XCTAssertTrue(capturingViewFactory.createUserErrors?.contains("Your passwords must match!") ?? false)
+        //    }
+        //
+        //    func testUserCannotBeCreatedWithSimplePassword() throws {
+        //        let request = try createLoggedInRequest(method: .post, path: "createUser")
+        //        let password = "simple"
+        //        var userData = Node([:], in: nil)
+        //        try userData.set("inputName", "Leia")
+        //        try userData.set("inputUsername", "leia")
+        //        try userData.set("inputPassword", password)
+        //        try userData.set("inputConfirmPassword", password)
+        //        try userData.set("inputResetPasswordOnLogin", "true")
+        //        request.formURLEncoded = userData
+        //
+        //        let _ = try drop.respond(to: request)
+        //
+        //        XCTAssertTrue(capturingViewFactory.createUserErrors?.contains("Your password must contain a lowercase letter, an upperacase letter, a number and a symbol") ?? false)
+        //    }
+        //
+        //    func testUserCannotBeCreatedWithEmptyName() throws {
+        //        let request = try createLoggedInRequest(method: .post, path: "createUser")
+        //        let password = "AComl3xPass!"
+        //        var userData = Node([:], in: nil)
+        //        try userData.set("inputName", "")
+        //        try userData.set("inputUsername", "leia")
+        //        try userData.set("inputPassword", password)
+        //        try userData.set("inputConfirmPassword", password)
+        //        try userData.set("inputResetPasswordOnLogin", "true")
+        //        request.formURLEncoded = userData
+        //
+        //        let _ = try drop.respond(to: request)
+        //
+        //        XCTAssertTrue(capturingViewFactory.createUserErrors?.contains("You must specify a name") ?? false)
+        //    }
+        //
+        //    func testUserCannotBeCreatedWithEmptyUsername() throws {
+        //        let request = try createLoggedInRequest(method: .post, path: "createUser")
+        //        let password = "AComl3xPass!"
+        //        var userData = Node([:], in: nil)
+        //        try userData.set("inputName", "Leia")
+        //        try userData.set("inputUsername", "")
+        //        try userData.set("inputPassword", password)
+        //        try userData.set("inputConfirmPassword", password)
+        //        try userData.set("inputResetPasswordOnLogin", "true")
+        //        request.formURLEncoded = userData
+        //
+        //        let _ = try drop.respond(to: request)
+        //
+        //        XCTAssertTrue(capturingViewFactory.createUserErrors?.contains("You must specify a username") ?? false)
+        //    }
+        //
+        //    func testUserCannotBeCreatedWithInvalidName() throws {
+        //        let request = try createLoggedInRequest(method: .post, path: "createUser")
+        //        let password = "AComl3xPass!"
+        //        var userData = Node([:], in: nil)
+        //        try userData.set("inputName", "An invalid Name!3")
+        //        try userData.set("inputUsername", "leia")
+        //        try userData.set("inputPassword", password)
+        //        try userData.set("inputConfirmPassword", password)
+        //        try userData.set("inputResetPasswordOnLogin", "true")
+        //        request.formURLEncoded = userData
+        //
+        //        let _ = try drop.respond(to: request)
+        //
+        //        XCTAssertTrue(capturingViewFactory.createUserErrors?.contains("The name provided is not valid") ?? false)
+        //    }
+        //
+        //    func testUserCannotBeCreatedWithInvalidUsername() throws {
+        //        let request = try createLoggedInRequest(method: .post, path: "createUser")
+        //        let password = "AComl3xPass!"
+        //        var userData = Node([:], in: nil)
+        //        try userData.set("inputName", "Leia")
+        //        try userData.set("inputUsername", "LEIA!")
+        //        try userData.set("inputPassword", password)
+        //        try userData.set("inputConfirmPassword", password)
+        //        try userData.set("inputResetPasswordOnLogin", "true")
+        //        request.formURLEncoded = userData
+        //
+        //        let _ = try drop.respond(to: request)
+        //
+        //        XCTAssertTrue(capturingViewFactory.createUserErrors?.contains("The username provided is not valid") ?? false)
+        //    }
+        //
+        //    // MARK: - Edit User Tests
+        //
+        //    func testUserCanBeUpdated() throws {
+        //        let author = TestDataBuilder.anyUser(name: "Luke", username: "luke")
+        //        try author.save()
+        //
+        //        let request = try createLoggedInRequest(method: .post, path: "users/\(author.id!.string!)/edit", for: author)
+        //        let newName = "Darth Vader"
+        //        let newUsername = "darth_vader"
+        //        var userData = Node([:], in: nil)
+        //        try userData.set("inputName", newName)
+        //        try userData.set("inputUsername", newUsername)
+        //        request.formURLEncoded = userData
+        //
+        //        let _  = try drop.respond(to: request)
+        //
+        //        XCTAssertEqual(try BlogUser.count(), 2)
+        //        XCTAssertEqual(try BlogUser.all()[1].id, author.id)
+        //        XCTAssertEqual(try BlogUser.all()[1].name, newName)
+        //        XCTAssertEqual(try BlogUser.all()[1].username, newUsername)
+        //    }
     
 }

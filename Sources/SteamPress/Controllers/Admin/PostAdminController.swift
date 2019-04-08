@@ -156,7 +156,7 @@ struct PostAdminController: RouteCollection {
     
     //    // MARK: - Validators
     private func validatePostCreation(_ data: CreatePostData) -> [String]? {
-        var createPostErrors: [String] = []
+        var createPostErrors = [String]()
         
         if data.title.isEmptyOrWhitespace() {
             createPostErrors.append("You must specify a blog post title")
