@@ -26,11 +26,11 @@ struct UserAdminController: RouteCollection {
             return try view.encode(for: req)
         }
         
-        guard let name = data.name else {
+        guard let name = data.name, let username = data.username, let password = data.password else {
             throw Abort(.internalServerError)
         }
         
-        let newUser = BlogUser(name: name, username: data.username, password: data.password, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline)
+        let newUser = BlogUser(name: name, username: username, password: password, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline)
         let userRepository = try req.make(BlogUserRepository.self)
         return userRepository.save(newUser, on: req).map { _ in
             return req.redirect(to: "/")
@@ -80,6 +80,26 @@ struct UserAdminController: RouteCollection {
             createUserErrors.append("You must specify a name")
         }
         
+        if data.username.isEmptyOrWhitespace() {
+            createUserErrors.append("You must specify a username")
+        }
+        
+        if data.password.isEmptyOrWhitespace() {
+            createUserErrors.append("You must specify a password")
+        }
+        
+        if data.confirmPassword.isEmptyOrWhitespace() {
+            createUserErrors.append("You must confirm your password")
+        }
+        
+        if data.password != data.confirmPassword {
+            createUserErrors.append("Your passwords must match")
+        }
+        
+        if data.password?.count ?? 0 < 10 {
+            createUserErrors.append("Your password must be at least 10 characters long")
+        }
+        
         if createUserErrors.count == 0 {
             return nil
         }
@@ -91,9 +111,9 @@ struct UserAdminController: RouteCollection {
 
 struct CreateUserData: Content {
     let name: String?
-    let username: String
-    let password: String
-    let confirmPassword: String
+    let username: String?
+    let password: String?
+    let confirmPassword: String?
     let profilePicture: String?
     let tagline: String?
     let biography: String?
