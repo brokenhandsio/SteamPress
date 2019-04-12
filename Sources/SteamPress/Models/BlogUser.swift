@@ -146,4 +146,3 @@ extension Request {
 //        return try posts.filter(BlogPost.Properties.published, true).sort(BlogPost.Properties.created, .descending)
 //    }
 //}
-

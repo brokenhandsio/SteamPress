@@ -246,14 +246,5 @@ struct BlogAdminController: RouteCollection {
 //        }
 //        return randomString
 //    }
-//
-//    func isWhitespace() -> Bool {
-//        let whitespaceSet = CharacterSet.whitespacesAndNewlines
-//        if isEmpty || self.trimmingCharacters(in: whitespaceSet).isEmpty {
-//            return true
-//        } else {
-//            return false
-//        }
-//    }
 }
 

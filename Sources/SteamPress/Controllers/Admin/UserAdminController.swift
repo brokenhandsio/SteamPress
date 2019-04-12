@@ -35,41 +35,37 @@ struct UserAdminController: RouteCollection {
         return userRepository.save(newUser, on: req).map { _ in
             return req.redirect(to: "/")
         }
-
-//
-//        let (createUserRawErrors, passwordRawError, confirmPasswordRawError) = validateUserSaveDataExists(edit: false, name: rawName, username: rawUsername, password: rawPassword, confirmPassword: rawConfirmPassword, profilePicture: profilePicture)
-//
-//        // Return if we have any missing fields
-//        if !(createUserRawErrors?.isEmpty ?? true) {
-//            return try viewFactory.createUserView(editing: false, errors: createUserRawErrors, name: rawName, username: rawUsername, passwordError: passwordRawError, confirmPasswordError: confirmPasswordRawError, resetPasswordRequired: resetPasswordRequired, userId: nil, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline, loggedInUser: request.user())
-//        }
-//
-//        guard let name = rawName, let username = rawUsername?.lowercased(), let password = rawPassword, let confirmPassword = rawConfirmPassword else {
-//            throw Abort.badRequest
-//        }
-//
-//        let (createUserErrors, passwordError, confirmPasswordError) = validateUserSaveData(edit: false, name: name, username: username, password: password, confirmPassword: confirmPassword)
-//
-//        if !(createUserErrors?.isEmpty ?? true) {
-//            return try viewFactory.createUserView(editing: false, errors: createUserErrors, name: name, username: username, passwordError: passwordError, confirmPasswordError: confirmPasswordError, resetPasswordRequired: resetPasswordRequired, userId: nil, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline, loggedInUser: request.user())
-//        }
-//
-//        // We now have valid data
-//        let hashedPassword = try BlogUser.passwordHasher.make(password)
-//        let newUser = BlogUser(name: name, username: username.lowercased(), password: hashedPassword, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline)
-//
-//        if resetPasswordRequired {
-//            newUser.resetPasswordRequired = true
-//        }
-//
-//        do {
-//            try newUser.save()
-//        } catch {
-//            return try viewFactory.createUserView(editing: false, errors: ["There was an error creating the user. Please try again"], name: name, username: username, passwordError: passwordError, confirmPasswordError: confirmPasswordError, resetPasswordRequired: resetPasswordRequired, userId: nil, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline, loggedInUser: request.user())
-//        }
-//
-//        return Response(redirect: pathCreator.createPath(for: "admin"))
-
+        
+        //
+        //        let (createUserRawErrors, passwordRawError, confirmPasswordRawError) = validateUserSaveDataExists(edit: false, name: rawName, username: rawUsername, password: rawPassword, confirmPassword: rawConfirmPassword, profilePicture: profilePicture)
+        //
+        //        // Return if we have any missing fields
+        //        if !(createUserRawErrors?.isEmpty ?? true) {
+        //            return try viewFactory.createUserView(editing: false, errors: createUserRawErrors, name: rawName, username: rawUsername, passwordError: passwordRawError, confirmPasswordError: confirmPasswordRawError, resetPasswordRequired: resetPasswordRequired, userId: nil, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline, loggedInUser: request.user())
+        //        }
+        //
+        //        let (createUserErrors, passwordError, confirmPasswordError) = validateUserSaveData(edit: false, name: name, username: username, password: password, confirmPassword: confirmPassword)
+        //
+        //        if !(createUserErrors?.isEmpty ?? true) {
+        //            return try viewFactory.createUserView(editing: false, errors: createUserErrors, name: name, username: username, passwordError: passwordError, confirmPasswordError: confirmPasswordError, resetPasswordRequired: resetPasswordRequired, userId: nil, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline, loggedInUser: request.user())
+        //        }
+        //
+        //        // We now have valid data
+        //        let hashedPassword = try BlogUser.passwordHasher.make(password)
+        //        let newUser = BlogUser(name: name, username: username.lowercased(), password: hashedPassword, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline)
+        //
+        //        if resetPasswordRequired {
+        //            newUser.resetPasswordRequired = true
+        //        }
+        //
+        //        do {
+        //            try newUser.save()
+        //        } catch {
+        //            return try viewFactory.createUserView(editing: false, errors: ["There was an error creating the user. Please try again"], name: name, username: username, passwordError: passwordError, confirmPasswordError: confirmPasswordError, resetPasswordRequired: resetPasswordRequired, userId: nil, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline, loggedInUser: request.user())
+        //        }
+        //
+        //        return Response(redirect: pathCreator.createPath(for: "admin"))
+        
     }
     
     // MARK: - Validators
@@ -92,12 +88,18 @@ struct UserAdminController: RouteCollection {
             createUserErrors.append("You must confirm your password")
         }
         
+        if data.password?.count ?? 0 < 10 {
+            createUserErrors.append("Your password must be at least 10 characters long")
+        }
+        
         if data.password != data.confirmPassword {
             createUserErrors.append("Your passwords must match")
         }
         
-        if data.password?.count ?? 0 < 10 {
-            createUserErrors.append("Your password must be at least 10 characters long")
+        do {
+            try data.validate()
+        } catch {
+            createUserErrors.append("The username provided is not valid")
         }
         
         if createUserErrors.count == 0 {
@@ -120,4 +122,12 @@ struct CreateUserData: Content {
     let twitterHandle: String?
     #warning("resetpassword")
     //        let resetPasswordRequired = rawPasswordResetRequired != nil
+}
+
+extension CreateUserData: Validatable , Reflectable{
+    static func validations() throws -> Validations<CreateUserData> {
+        var validations = Validations(CreateUserData.self)
+        try validations.add(\.username, .alphanumeric && .nil)
+        return validations
+    }
 }

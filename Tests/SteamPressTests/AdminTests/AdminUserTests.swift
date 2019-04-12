@@ -17,6 +17,8 @@ class AdminUserTests: XCTestCase {
         ("testUserCannotBeCreatedWithSimplePassword", testUserCannotBeCreatedWithSimplePassword),
         ("testUserCannotBeCreatedWithEmptyName", testUserCannotBeCreatedWithEmptyName),
         ("testUserCannotBeCreatedWithEmptyUsername", testUserCannotBeCreatedWithEmptyUsername),
+        
+        ("testUserCannotBeCreatedWithInvalidUsername", testUserCannotBeCreatedWithInvalidUsername),
     ]
     
     // MARK: - Properties
@@ -153,7 +155,7 @@ class AdminUserTests: XCTestCase {
             static let defaultContentType = MediaType.urlEncodedForm
             let name = "Luke"
             let username = "lukes"
-            let password = "password"
+            let password = "astrongpassword"
             let confirmPassword = "anotherPassword"
         }
         
@@ -223,23 +225,22 @@ class AdminUserTests: XCTestCase {
         //
         //        XCTAssertTrue(capturingViewFactory.createUserErrors?.contains("The name provided is not valid") ?? false)
         //    }
-        //
-        //    func testUserCannotBeCreatedWithInvalidUsername() throws {
-        //        let request = try createLoggedInRequest(method: .post, path: "createUser")
-        //        let password = "AComl3xPass!"
-        //        var userData = Node([:], in: nil)
-        //        try userData.set("inputName", "Leia")
-        //        try userData.set("inputUsername", "LEIA!")
-        //        try userData.set("inputPassword", password)
-        //        try userData.set("inputConfirmPassword", password)
-        //        try userData.set("inputResetPasswordOnLogin", "true")
-        //        request.formURLEncoded = userData
-        //
-        //        let _ = try drop.respond(to: request)
-        //
-        //        XCTAssertTrue(capturingViewFactory.createUserErrors?.contains("The username provided is not valid") ?? false)
-        //    }
-        //
+
+    func testUserCannotBeCreatedWithInvalidUsername() throws {
+        struct CreateUserData: Content {
+            static let defaultContentType = MediaType.urlEncodedForm
+            let name = "Luke"
+            let username = "lukes!"
+            let password = "password"
+            let confirmPassword = "password"
+        }
+        
+        let createData = CreateUserData()
+        _ = try testWorld.getResponse(to: createUserPath, body: createData, loggedInUser: user)
+
+        XCTAssertTrue(presenter.createUserErrors?.contains("The username provided is not valid") ?? false)
+    }
+
         //    // MARK: - Edit User Tests
         //
         //    func testUserCanBeUpdated() throws {
