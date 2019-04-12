@@ -72,59 +72,6 @@ struct BlogAdminController: RouteCollection {
 //        return try viewFactory.createUserView(editing: true, errors: nil, name: user.name, username: user.username, passwordError: nil, confirmPasswordError: nil, resetPasswordRequired: nil, userId: user.id, profilePicture: user.profilePicture, twitterHandle: user.twitterHandle, biography: user.biography, tagline: user.tagline, loggedInUser: request.user())
 //    }
 //
-//    func editUserPostHandler(request: Request) throws -> ResponseRepresentable {
-//        let user = try request.parameters.next(BlogUser.self)
-//        let rawName = request.data["inputName"]?.string
-//        let rawUsername = request.data["inputUsername"]?.string
-//        let rawPassword = request.data["inputPassword"]?.string
-//        let rawConfirmPassword = request.data["inputConfirmPassword"]?.string
-//        let rawPasswordResetRequired = request.data["inputResetPasswordOnLogin"]?.string
-//        let resetPasswordRequired = rawPasswordResetRequired != nil
-//        let profilePicture = request.data["inputProfilePicture"]?.string
-//        let tagline = request.data["inputTagline"]?.string
-//        let biography = request.data["inputBiography"]?.string
-//        let twitterHandle = request.data["inputTwitterHandle"]?.string
-//
-//        let (saveUserRawErrors, passwordRawError, confirmPasswordRawError) = validateUserSaveDataExists(edit: true, name: rawName, username: rawUsername, password: rawPassword, confirmPassword: rawConfirmPassword, profilePicture: profilePicture)
-//
-//        // Return if we have any missing fields
-//        if !(saveUserRawErrors?.isEmpty ?? true) {
-//            return try viewFactory.createUserView(editing: true, errors: saveUserRawErrors, name: rawName, username: rawUsername, passwordError: passwordRawError, confirmPasswordError: confirmPasswordRawError, resetPasswordRequired: resetPasswordRequired, userId: user.id, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline, loggedInUser: request.user())
-//        }
-//
-//        guard let name = rawName, let username = rawUsername else {
-//            throw Abort.badRequest
-//        }
-//
-//        let (saveUserErrors, passwordError, confirmPasswordError) = validateUserSaveData(edit: true, name: name, username: username, password: rawPassword, confirmPassword: rawConfirmPassword, previousUsername: user.username)
-//
-//        if !(saveUserErrors?.isEmpty ?? true) {
-//            return try viewFactory.createUserView(editing: true, errors: saveUserErrors, name: name, username: username, passwordError: passwordError, confirmPasswordError: confirmPasswordError, resetPasswordRequired: resetPasswordRequired, userId: user.id, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline, loggedInUser: request.user())
-//        }
-//
-//        // We now have valid data
-//        guard let userId = user.id, let userToUpdate = try BlogUser.find(userId) else {
-//            throw Abort.badRequest
-//        }
-//        userToUpdate.name = name
-//        userToUpdate.username = username
-//        userToUpdate.profilePicture = profilePicture
-//        userToUpdate.twitterHandle = twitterHandle
-//        userToUpdate.biography = biography
-//        userToUpdate.tagline = tagline
-//
-//        if resetPasswordRequired {
-//            userToUpdate.resetPasswordRequired = true
-//        }
-//
-//        if let password = rawPassword {
-//            userToUpdate.password = try BlogUser.passwordHasher.make(password)
-//        }
-//
-//        try userToUpdate.save()
-//        return Response(redirect: pathCreator.createPath(for: "admin"))
-//    }
-//
 //    func deleteUserPostHandler(request: Request) throws -> ResponseRepresentable {
 //        let user = try request.parameters.next(BlogUser.self)
 //        // Check we have at least one user left

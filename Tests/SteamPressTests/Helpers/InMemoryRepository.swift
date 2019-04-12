@@ -142,8 +142,10 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
     // MARK: - BlogUserRepository
     
     func addUser(_ user: BlogUser) {
-        user.userID = users.count + 1
-        users.append(user)
+        if (users.first { $0.userID == user.userID } == nil) {
+            user.userID = users.count + 1
+            users.append(user)
+        }
     }
     
     func getUser(_ id: Int, on req: Request) -> EventLoopFuture<BlogUser?> {

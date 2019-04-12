@@ -14,6 +14,7 @@ struct UserAdminController: RouteCollection {
     // MARK: - Route setup
     func boot(router: Router) throws {
         router.post("createUser", use: createUserPostHandler)
+        router.post("users", Int.parameter, "edit", use: editUserPostHandler)
     }
     
     // MARK: - Route handlers
@@ -33,7 +34,7 @@ struct UserAdminController: RouteCollection {
         let newUser = BlogUser(name: name, username: username, password: password, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline)
         let userRepository = try req.make(BlogUserRepository.self)
         return userRepository.save(newUser, on: req).map { _ in
-            return req.redirect(to: "/")
+            return req.redirect(to: self.pathCreator.createPath(for: "admin"))
         }
         
         //
@@ -67,6 +68,68 @@ struct UserAdminController: RouteCollection {
         //        return Response(redirect: pathCreator.createPath(for: "admin"))
         
     }
+    
+    func editUserPostHandler(_ req: Request) throws -> Future<Response> {
+        let userID = try req.parameters.next(Int.self)
+        let userRepository = try req.make(BlogUserRepository.self)
+        return userRepository.getUser(userID, on: req).unwrap(or: Abort(.notFound)).flatMap { user in
+            let data = try req.content.syncDecode(CreateUserData.self)
+            
+            guard let name = data.name, let username = data.username else {
+                throw Abort(.internalServerError)
+            }
+            
+            user.name = name
+            user.username = username
+//            user.profilePicture = data.profilePicture
+//            user.twitterHandle = data.twitterHandle
+//            user.biography = data.biography
+//            user.tagline = data.tagline
+            
+            let redirect = req.redirect(to: self.pathCreator.createPath(for: "admin"))
+            return userRepository.save(user, on: req).transform(to: redirect)
+        }
+//
+//        let (saveUserRawErrors, passwordRawError, confirmPasswordRawError) = validateUserSaveDataExists(edit: true, name: rawName, username: rawUsername, password: rawPassword, confirmPassword: rawConfirmPassword, profilePicture: profilePicture)
+//
+//        // Return if we have any missing fields
+//        if !(saveUserRawErrors?.isEmpty ?? true) {
+//            return try viewFactory.createUserView(editing: true, errors: saveUserRawErrors, name: rawName, username: rawUsername, passwordError: passwordRawError, confirmPasswordError: confirmPasswordRawError, resetPasswordRequired: resetPasswordRequired, userId: user.id, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline, loggedInUser: request.user())
+//        }
+//
+//        guard let name = rawName, let username = rawUsername else {
+//            throw Abort.badRequest
+//        }
+//
+//        let (saveUserErrors, passwordError, confirmPasswordError) = validateUserSaveData(edit: true, name: name, username: username, password: rawPassword, confirmPassword: rawConfirmPassword, previousUsername: user.username)
+//
+//        if !(saveUserErrors?.isEmpty ?? true) {
+//            return try viewFactory.createUserView(editing: true, errors: saveUserErrors, name: name, username: username, passwordError: passwordError, confirmPasswordError: confirmPasswordError, resetPasswordRequired: resetPasswordRequired, userId: user.id, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline, loggedInUser: request.user())
+//        }
+//
+//        // We now have valid data
+//        guard let userId = user.id, let userToUpdate = try BlogUser.find(userId) else {
+//            throw Abort.badRequest
+//        }
+//        userToUpdate.name = name
+//        userToUpdate.username = username
+//        userToUpdate.profilePicture = profilePicture
+//        userToUpdate.twitterHandle = twitterHandle
+//        userToUpdate.biography = biography
+//        userToUpdate.tagline = tagline
+//
+//        if resetPasswordRequired {
+//            userToUpdate.resetPasswordRequired = true
+//        }
+//
+//        if let password = rawPassword {
+//            userToUpdate.password = try BlogUser.passwordHasher.make(password)
+//        }
+//
+//        try userToUpdate.save()
+//        return Response(redirect: pathCreator.createPath(for: "admin"))
+    }
+
     
     // MARK: - Validators
     private func validateUserCreation(_ data: CreateUserData) -> [String]? {
@@ -127,7 +190,7 @@ struct CreateUserData: Content {
 extension CreateUserData: Validatable , Reflectable{
     static func validations() throws -> Validations<CreateUserData> {
         var validations = Validations(CreateUserData.self)
-        try validations.add(\.username, .alphanumeric && .nil)
+        try validations.add(\.username, .alphanumeric || .nil)
         return validations
     }
 }

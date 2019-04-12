@@ -17,8 +17,8 @@ class AdminUserTests: XCTestCase {
         ("testUserCannotBeCreatedWithSimplePassword", testUserCannotBeCreatedWithSimplePassword),
         ("testUserCannotBeCreatedWithEmptyName", testUserCannotBeCreatedWithEmptyName),
         ("testUserCannotBeCreatedWithEmptyUsername", testUserCannotBeCreatedWithEmptyUsername),
-        
         ("testUserCannotBeCreatedWithInvalidUsername", testUserCannotBeCreatedWithInvalidUsername),
+        ("testUserCanBeUpdated", testUserCanBeUpdated),
     ]
     
     // MARK: - Properties
@@ -64,7 +64,7 @@ class AdminUserTests: XCTestCase {
         }
 
         let createData = CreateUserData()
-        _ = try testWorld.getResponse(to: createUserPath, body: createData, loggedInUser: user)
+        let response = try testWorld.getResponse(to: createUserPath, body: createData, loggedInUser: user)
         
         XCTAssertEqual(testWorld.context.repository.users.count, 2)
         let user = testWorld.context.repository.users.last
@@ -75,6 +75,8 @@ class AdminUserTests: XCTestCase {
         XCTAssertEqual(user?.tagline, createData.tagline)
         XCTAssertEqual(user?.biography, createData.biography)
         XCTAssertEqual(user?.twitterHandle, createData.twitterHandle)
+        XCTAssertEqual(response.http.status, .seeOther)
+        XCTAssertEqual(response.http.headers[.location].first, "/admin/")
     }
     
 //    func testUserMustResetPasswordIfSetToWhenCreatingUser() throws {
@@ -210,22 +212,6 @@ class AdminUserTests: XCTestCase {
         XCTAssertTrue(presenter.createUserErrors?.contains("You must specify a username") ?? false)
     }
 
-        //    func testUserCannotBeCreatedWithInvalidName() throws {
-        //        let request = try createLoggedInRequest(method: .post, path: "createUser")
-        //        let password = "AComl3xPass!"
-        //        var userData = Node([:], in: nil)
-        //        try userData.set("inputName", "An invalid Name!3")
-        //        try userData.set("inputUsername", "leia")
-        //        try userData.set("inputPassword", password)
-        //        try userData.set("inputConfirmPassword", password)
-        //        try userData.set("inputResetPasswordOnLogin", "true")
-        //        request.formURLEncoded = userData
-        //
-        //        let _ = try drop.respond(to: request)
-        //
-        //        XCTAssertTrue(capturingViewFactory.createUserErrors?.contains("The name provided is not valid") ?? false)
-        //    }
-
     func testUserCannotBeCreatedWithInvalidUsername() throws {
         struct CreateUserData: Content {
             static let defaultContentType = MediaType.urlEncodedForm
@@ -241,26 +227,24 @@ class AdminUserTests: XCTestCase {
         XCTAssertTrue(presenter.createUserErrors?.contains("The username provided is not valid") ?? false)
     }
 
-        //    // MARK: - Edit User Tests
-        //
-        //    func testUserCanBeUpdated() throws {
-        //        let author = TestDataBuilder.anyUser(name: "Luke", username: "luke")
-        //        try author.save()
-        //
-        //        let request = try createLoggedInRequest(method: .post, path: "users/\(author.id!.string!)/edit", for: author)
-        //        let newName = "Darth Vader"
-        //        let newUsername = "darth_vader"
-        //        var userData = Node([:], in: nil)
-        //        try userData.set("inputName", newName)
-        //        try userData.set("inputUsername", newUsername)
-        //        request.formURLEncoded = userData
-        //
-        //        let _  = try drop.respond(to: request)
-        //
-        //        XCTAssertEqual(try BlogUser.count(), 2)
-        //        XCTAssertEqual(try BlogUser.all()[1].id, author.id)
-        //        XCTAssertEqual(try BlogUser.all()[1].name, newName)
-        //        XCTAssertEqual(try BlogUser.all()[1].username, newUsername)
-        //    }
+    func testUserCanBeUpdated() throws {
+        struct EditUserData: Content {
+            static let defaultContentType = MediaType.urlEncodedForm
+            let name = "Darth Vader"
+            let username = "darth_vader"
+        }
+        
+        let editData = EditUserData()
+        let response = try testWorld.getResponse(to: "/admin/users/\(user.userID!)/edit", body: editData, loggedInUser: user)
+        
+        XCTAssertEqual(testWorld.context.repository.users.count, 1)
+        let updatedUser = testWorld.context.repository.users.first
+        XCTAssertNotNil(updatedUser)
+        XCTAssertEqual(updatedUser?.username, editData.username)
+        XCTAssertEqual(updatedUser?.name, editData.name)
+        XCTAssertEqual(updatedUser?.userID, user.userID)
+        XCTAssertEqual(response.http.status, .seeOther)
+        XCTAssertEqual(response.http.headers[.location].first, "/admin/")
+    }
     
 }
