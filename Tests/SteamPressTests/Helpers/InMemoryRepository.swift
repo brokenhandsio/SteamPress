@@ -148,34 +148,34 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         }
     }
     
-    func getUser(_ id: Int, on req: Request) -> EventLoopFuture<BlogUser?> {
-        return req.future(users.first { $0.userID == id })
+    func getUser(_ id: Int, on container: Container) -> EventLoopFuture<BlogUser?> {
+        return container.future(users.first { $0.userID == id })
     }
     
-    func getUser(_ name: String, on req: Request) -> EventLoopFuture<BlogUser?> {
-        return req.future(users.first { $0.name == name })
+    func getUser(_ name: String, on container: Container) -> EventLoopFuture<BlogUser?> {
+        return container.future(users.first { $0.name == name })
     }
     
-    func getAllUsers(on req: Request) -> EventLoopFuture<[BlogUser]> {
-        return req.future(users)
+    func getAllUsers(on container: Container) -> EventLoopFuture<[BlogUser]> {
+        return container.future(users)
     }
     
-    func getUser(username: String, on req: Request) -> EventLoopFuture<BlogUser?> {
-        return req.future(users.first { $0.username == username })
+    func getUser(username: String, on container: Container) -> EventLoopFuture<BlogUser?> {
+        return container.future(users.first { $0.username == username })
     }
     
-    func save(_ user: BlogUser, on req: Request) -> EventLoopFuture<BlogUser> {
+    func save(_ user: BlogUser, on container: Container) -> EventLoopFuture<BlogUser> {
         self.add(user)
-        return req.future(user)
+        return container.future(user)
     }
     
-    func delete(_ user: BlogUser, on req: Request) -> EventLoopFuture<Void> {
+    func delete(_ user: BlogUser, on container: Container) -> EventLoopFuture<Void> {
         users.removeAll { $0.userID == user.userID }
-        return req.future()
+        return container.future()
     }
     
-    func getUsersCount(on req: Request) -> EventLoopFuture<Int> {
-        return req.future(users.count)
+    func getUsersCount(on container: Container) -> EventLoopFuture<Int> {
+        return container.future(users.count)
     }
     
 }

@@ -19,11 +19,23 @@ public protocol BlogPostRepository {
 }
 
 public protocol BlogUserRepository {
-    func getAllUsers(on req: Request) -> Future<[BlogUser]>
-    func getUser(_ id: Int, on req: Request) -> Future<BlogUser?>
-    func getUser(_ name: String, on req: Request) -> Future<BlogUser?>
-    func getUser(username: String, on req: Request) -> Future<BlogUser?>
-    func save(_ user: BlogUser, on req: Request) -> Future<BlogUser>
-    func delete(_ user: BlogUser, on req: Request) -> Future<Void>
-    func getUsersCount(on req: Request) -> Future<Int>
+    func getAllUsers(on container: Container) -> Future<[BlogUser]>
+    func getUser(_ id: Int, on container: Container) -> Future<BlogUser?>
+    func getUser(_ name: String, on container: Container) -> Future<BlogUser?>
+    func getUser(username: String, on container: Container) -> Future<BlogUser?>
+    func save(_ user: BlogUser, on container: Container) -> Future<BlogUser>
+    func delete(_ user: BlogUser, on container: Container) -> Future<Void>
+    func getUsersCount(on container: Container) -> Future<Int>
+}
+
+extension BlogUser: Parameter {
+    public typealias ResolvedParameter = EventLoopFuture<BlogUser>
+    
+    public static func resolveParameter(_ parameter: String, on container: Container) throws -> BlogUser.ResolvedParameter {
+        let userRepository = try container.make(BlogUserRepository.self)
+        guard let userID = Int(parameter) else {
+            throw SteamPressError(identifier: "Invalid-ID-Type", "Unable to convert \(parameter) to an Int")
+        }
+        return userRepository.getUser(userID, on: container).unwrap(or: Abort(.notFound))
+    }
 }

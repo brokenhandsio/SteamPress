@@ -14,8 +14,8 @@ struct UserAdminController: RouteCollection {
     // MARK: - Route setup
     func boot(router: Router) throws {
         router.post("createUser", use: createUserPostHandler)
-        router.post("users", Int.parameter, "edit", use: editUserPostHandler)
-        router.post("users", Int.parameter, "delete", use: deleteUserPostHandler)
+        router.post("users", BlogUser.parameter, "edit", use: editUserPostHandler)
+        router.post("users", BlogUser.parameter, "delete", use: deleteUserPostHandler)
     }
     
     // MARK: - Route handlers
@@ -71,9 +71,7 @@ struct UserAdminController: RouteCollection {
     }
     
     func editUserPostHandler(_ req: Request) throws -> Future<Response> {
-        let userID = try req.parameters.next(Int.self)
-        let userRepository = try req.make(BlogUserRepository.self)
-        return userRepository.getUser(userID, on: req).unwrap(or: Abort(.notFound)).flatMap { user in
+        return try req.parameters.next(BlogUser.self).flatMap { user in
             let data = try req.content.syncDecode(CreateUserData.self)
             
             guard let name = data.name, let username = data.username else {
@@ -88,6 +86,7 @@ struct UserAdminController: RouteCollection {
 //            user.tagline = data.tagline
             
             let redirect = req.redirect(to: self.pathCreator.createPath(for: "admin"))
+            let userRepository = try req.make(BlogUserRepository.self)
             return userRepository.save(user, on: req).transform(to: redirect)
         }
 //
@@ -133,10 +132,8 @@ struct UserAdminController: RouteCollection {
     
 
     func deleteUserPostHandler(_ req: Request) throws -> Future<Response> {
-        #warning("Look at using a parameter override")
-        let userID = try req.parameters.next(Int.self)
         let userRepository = try req.make(BlogUserRepository.self)
-        return flatMap(userRepository.getUser(userID, on: req).unwrap(or: Abort(.notFound)), userRepository.getUsersCount(on: req)) { user, userCount in
+        return try flatMap(req.parameters.next(BlogUser.self), userRepository.getUsersCount(on: req)) { user, userCount in
             guard userCount > 1 else {
                 let presenter = try req.make(BlogAdminPresenter.self)
                 let view = presenter.createIndexView(on: req, errors: ["You cannot delete the last user"])
