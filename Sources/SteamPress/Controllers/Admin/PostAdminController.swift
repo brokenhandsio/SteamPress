@@ -14,8 +14,8 @@ struct PostAdminController: RouteCollection {
     func boot(router: Router) throws {
         router.get("createPost", use: createPostHandler)
         router.post("createPost", use: createPostPostHandler)
-        router.post("posts", Int.parameter, "edit", use: editPostPostHandler)
-        router.post("posts", Int.parameter, "delete", use: deletePostHandler)
+        router.post("posts", BlogPost.parameter, "edit", use: editPostPostHandler)
+        router.post("posts", BlogPost.parameter, "delete", use: deletePostHandler)
     }
     
     // MARK: - Route handlers
@@ -63,9 +63,7 @@ struct PostAdminController: RouteCollection {
     }
 
     func deletePostHandler(_ req: Request) throws -> Future<Response> {
-        let postID = try req.parameters.next(Int.self)
-        let postRepository = try req.make(BlogPostRepository.self)
-        return postRepository.getPost(id: postID, on: req).unwrap(or: Abort(.notFound)).flatMap { post in
+        return try req.parameters.next(BlogPost.self).flatMap { post in
 //            let tags = try post.tags.all()
 //
 //            // Clean up pivots
@@ -78,6 +76,7 @@ struct PostAdminController: RouteCollection {
 //                }
 //            }
             let redirect = req.redirect(to: self.pathCreator.createPath(for: "admin"))
+            let postRepository = try req.make(BlogPostRepository.self)
             return postRepository.delete(post, on: req).transform(to: redirect)
         }
     }
@@ -91,10 +90,7 @@ struct PostAdminController: RouteCollection {
     
     func editPostPostHandler(_ req: Request) throws -> Future<Response> {
         let data = try req.content.syncDecode(CreatePostData.self)
-        let postID = try req.parameters.next(Int.self)
-        let postRepository = try req.make(BlogPostRepository.self)
-        
-        return postRepository.getPost(id: postID, on: req).unwrap(or: Abort(.notFound)).flatMap { post in
+        return try req.parameters.next(BlogPost.self).flatMap { post in
             //        if let errors = validatePostCreation(title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl) {
             //            return try viewFactory.createBlogPostView(uri: request.getURIWithHTTPSIfReverseProxy(), errors: errors, title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl, tags: tagsArray, isEditing: true, postToEdit: post, draft: false, user: try request.user())
             //        }
@@ -147,6 +143,7 @@ struct PostAdminController: RouteCollection {
 //            }
 //
             let redirect = req.redirect(to: self.pathCreator.createPath(for: "posts/\(post.slugUrl)"))
+            let postRepository = try req.make(BlogPostRepository.self)
             return postRepository.save(post, on: req).transform(to: redirect)
         }
     }

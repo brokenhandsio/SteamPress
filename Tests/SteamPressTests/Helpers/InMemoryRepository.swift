@@ -17,11 +17,11 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
     
     // MARK: - BlogTagRepository
     
-    func getAllTags(on req: Request) -> Future<[BlogTag]> {
-        return req.future(tags)
+    func getAllTags(on container: Container) -> Future<[BlogTag]> {
+        return container.future(tags)
     }
     
-    func getTags(for post: BlogPost, on req: Request) -> EventLoopFuture<[BlogTag]> {
+    func getTags(for post: BlogPost, on container: Container) -> EventLoopFuture<[BlogTag]> {
         var results = [BlogTag]()
         guard let postID = post.blogID else {
             fatalError("Post doesn't exist when it should")
@@ -33,7 +33,7 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
             }
             results.append(tag)
         }
-        return req.future(results)
+        return container.future(results)
     }
     
     func addTag(name: String) throws -> BlogTag {
@@ -55,8 +55,8 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         return newTag
     }
     
-    func getTag(_ name: String, on req: Request) -> EventLoopFuture<BlogTag?> {
-        return req.future(tags.first { $0.name == name })
+    func getTag(_ name: String, on container: Container) -> EventLoopFuture<BlogTag?> {
+        return container.future(tags.first { $0.name == name })
     }
     
     func addTag(_ tag: BlogTag, to post: BlogPost) {
@@ -72,36 +72,36 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
     
     // MARK: - BlogPostRepository
     
-    func getAllPosts(on req: Request) -> EventLoopFuture<[BlogPost]> {
-        return req.future(posts)
+    func getAllPosts(on container: Container) -> EventLoopFuture<[BlogPost]> {
+        return container.future(posts)
     }
     
-    func getAllPostsSortedByPublishDate(includeDrafts: Bool, on req: Request) -> EventLoopFuture<[BlogPost]> {
+    func getAllPostsSortedByPublishDate(includeDrafts: Bool, on container: Container) -> EventLoopFuture<[BlogPost]> {
         var sortedPosts = posts.sorted { $0.created > $1.created }
         if !includeDrafts {
             sortedPosts = sortedPosts.filter { $0.published }
         }
-        return req.future(sortedPosts)
+        return container.future(sortedPosts)
     }
     
-    func getAllPostsSortedByPublishDate(for user: BlogUser, includeDrafts: Bool, on req: Request) -> EventLoopFuture<[BlogPost]> {
+    func getAllPostsSortedByPublishDate(for user: BlogUser, includeDrafts: Bool, on container: Container) -> EventLoopFuture<[BlogPost]> {
         let authorsPosts = posts.filter { $0.author == user.userID }
         var sortedPosts = authorsPosts.sorted { $0.created > $1.created }
         if !includeDrafts {
             sortedPosts = sortedPosts.filter { $0.published }
         }
-        return req.future(sortedPosts)
+        return container.future(sortedPosts)
     }
     
-    func getPost(slug: String, on req: Request) -> EventLoopFuture<BlogPost?> {
-        return req.future(posts.first { $0.slugUrl == slug })
+    func getPost(slug: String, on container: Container) -> EventLoopFuture<BlogPost?> {
+        return container.future(posts.first { $0.slugUrl == slug })
     }
     
-    func getPost(id: Int, on req: Request) -> EventLoopFuture<BlogPost?> {
-        return req.future(posts.first { $0.blogID == id })
+    func getPost(id: Int, on container: Container) -> EventLoopFuture<BlogPost?> {
+        return container.future(posts.first { $0.blogID == id })
     }
     
-    func getSortedPublishedPosts(for tag: BlogTag, on req: Request) -> EventLoopFuture<[BlogPost]> {
+    func getSortedPublishedPosts(for tag: BlogTag, on container: Container) -> EventLoopFuture<[BlogPost]> {
         var results = [BlogPost]()
         guard let tagID = tag.tagID else {
             fatalError("Tag doesn't exist when it should")
@@ -114,17 +114,18 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
             results.append(post)
         }
         let sortedPosts = results.sorted { $0.created > $1.created }.filter { $0.published }
-        return req.future(sortedPosts)
+        return container.future(sortedPosts)
     }
     
-    func findPublishedPostsOrdered(for searchTerm: String, on req: Request) -> EventLoopFuture<[BlogPost]> {
+    func findPublishedPostsOrdered(for searchTerm: String, on container: Container) -> EventLoopFuture<[BlogPost]> {
         let titleResults = posts.filter { $0.title.contains(searchTerm) }
         let results = titleResults.sorted { $0.created > $1.created }.filter { $0.published }
-        return req.future(results)
+        return container.future(results)
     }
-    func save(_ post: BlogPost, on req: Request) -> EventLoopFuture<BlogPost> {
+    
+    func save(_ post: BlogPost, on container: Container) -> EventLoopFuture<BlogPost> {
         self.add(post)
-        return req.future(post)
+        return container.future(post)
     }
     
     func add(_ post: BlogPost) {
@@ -134,9 +135,9 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         }
     }
     
-    func delete(_ post: BlogPost, on req: Request) -> EventLoopFuture<Void> {
+    func delete(_ post: BlogPost, on container: Container) -> EventLoopFuture<Void> {
         posts.removeAll { $0.blogID == post.blogID }
-        return req.future()
+        return container.future()
     }
     
     // MARK: - BlogUserRepository
@@ -148,11 +149,11 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         }
     }
     
-    func getUser(_ id: Int, on container: Container) -> EventLoopFuture<BlogUser?> {
+    func getUser(id: Int, on container: Container) -> EventLoopFuture<BlogUser?> {
         return container.future(users.first { $0.userID == id })
     }
     
-    func getUser(_ name: String, on container: Container) -> EventLoopFuture<BlogUser?> {
+    func getUser(name: String, on container: Container) -> EventLoopFuture<BlogUser?> {
         return container.future(users.first { $0.name == name })
     }
     

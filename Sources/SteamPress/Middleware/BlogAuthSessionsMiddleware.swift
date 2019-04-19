@@ -5,7 +5,7 @@ public final class BlogAuthSessionsMiddleware: Middleware {
         let future: Future<Void>
         if let userIDString = try request.session()["_BlogUserSession"], let userID = Int(userIDString) {
             let userRepository = try request.make(BlogUserRepository.self)
-            future = userRepository.getUser(userID, on: request).flatMap { user in
+            future = userRepository.getUser(id: userID, on: request).flatMap { user in
                 if let user = user {
                     try request.authenticate(user)
                 }

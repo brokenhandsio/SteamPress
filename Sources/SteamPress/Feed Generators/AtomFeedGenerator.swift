@@ -84,7 +84,7 @@ fileprivate extension BlogPost {
     func getPostAtomFeed(blogPath: String, dateFormatter: DateFormatter, for request: Request) throws -> Future<String> {
         let updatedTime = lastEdited ?? created
         let authorRepository = try request.make(BlogUserRepository.self)
-        return authorRepository.getUser(author, on: request).flatMap { user in
+        return authorRepository.getUser(id: author, on: request).flatMap { user in
             guard let user = user else {
                 throw SteamPressError(identifier: "Invalid-relationship", "Blog user with ID \(self.author) not found")
             }

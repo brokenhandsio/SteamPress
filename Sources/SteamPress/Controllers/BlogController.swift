@@ -85,7 +85,7 @@ struct BlogController: RouteCollection {
         let blogRepository = try req.make(BlogPostRepository.self)
         return blogRepository.getPost(slug: blogSlug, on: req).unwrap(or: Abort(.notFound)).flatMap { post in
             let userRepository = try req.make(BlogUserRepository.self)
-            return userRepository.getUser(post.author, on: req).unwrap(or: Abort(.internalServerError)).flatMap { user in
+            return userRepository.getUser(id: post.author, on: req).unwrap(or: Abort(.internalServerError)).flatMap { user in
                 let presenter = try req.make(BlogPresenter.self)
                 return presenter.postView(on: req, post: post, author: user)
             }
