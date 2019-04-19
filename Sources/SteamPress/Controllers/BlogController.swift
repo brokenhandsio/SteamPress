@@ -1,8 +1,5 @@
 import Vapor
-//import HTTP
-//import Routing
-//import MarkdownProvider
-//
+
 struct BlogController: RouteCollection {
 
     // MARK: - Properties
@@ -20,10 +17,7 @@ struct BlogController: RouteCollection {
         self.enableAuthorPages = enableAuthorPages
         self.enableTagsPages = enableTagPages
     }
-//    init(drop: Droplet, pathCreator: BlogPathCreator, viewFactory: ViewFactory, enableAuthorsPages: Bool, enableTagsPages: Bool) {
-//        self.pathCreator = pathCreator
-//    }
-//
+
     // MARK: - Add routes
     func boot(router: Router) throws {
         router.get(use: indexHandler)
@@ -39,25 +33,6 @@ struct BlogController: RouteCollection {
             router.get(tagsPath, use: allTagsViewHandler)
         }
     }
-//    func addRoutes() {
-//        drop.group(pathCreator.blogPath ?? "") { index in
-//            index.get(handler: indexHandler)
-//            index.get(blogPostsPath, String.parameter, handler: blogPostHandler)
-//            index.get(apiPath, tagsPath, handler: tagApiHandler)
-//            index.get(blogPostsPath, handler: blogPostIndexRedirectHandler)
-//            index.get(searchPath, handler: searchHandler)
-//
-//            if enableAuthorsPages {
-//                index.get(authorsPath, String.parameter, handler: authorViewHandler)
-//                index.get(authorsPath, handler: allAuthorsViewHandler)
-//            }
-//
-//            if enableTagsPages {
-//                index.get(tagsPath, String.parameter, handler: tagViewHandler)
-//                index.get(tagsPath, handler: allTagsViewHandler)
-//            }
-//        }
-//    }
 
     // MARK: - Route Handlers
 

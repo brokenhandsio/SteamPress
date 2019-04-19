@@ -281,24 +281,6 @@ class AdminUserTests: XCTestCase {
         XCTAssertEqual(testWorld.context.repository.users.count, 1)
     }
 
-//    // MARK: - Reset Password tests
-//
-//    func testUserCannotResetPasswordWithMismatchingPasswords() throws {
-//        let user = TestDataBuilder.anyUser()
-//        try user.save()
-//
-//        let request = try createLoggedInRequest(method: .post, path: "resetPassword", for: user)
-//        let resetPasswordData = try Node(node: [
-//            "inputPassword": "Th3S@m3password",
-//            "inputConfirmPassword": "An0th3rPass!"
-//            ])
-//        request.formURLEncoded = resetPasswordData
-//
-//        _ = try drop.respond(to: request)
-//
-//        XCTAssertTrue(capturingViewFactory.resetPasswordErrors?.contains("Your passwords must match!") ?? false)
-//    }
-//
 //    func testUserCanResetPassword() throws {
 //        BlogUser.passwordHasher = FakePasswordHasher()
 //        let user = TestDataBuilder.anyUser()
@@ -317,6 +299,22 @@ class AdminUserTests: XCTestCase {
 //        XCTAssertEqual(user.password, newPassword.makeBytes())
 //        XCTAssertEqual(response.status, .seeOther)
 //        XCTAssertEqual(response.headers[HeaderKey.location], "/blog/admin/")
+//    }
+//
+//    func testUserCannotResetPasswordWithMismatchingPasswords() throws {
+//        let user = TestDataBuilder.anyUser()
+//        try user.save()
+//
+//        let request = try createLoggedInRequest(method: .post, path: "resetPassword", for: user)
+//        let resetPasswordData = try Node(node: [
+//            "inputPassword": "Th3S@m3password",
+//            "inputConfirmPassword": "An0th3rPass!"
+//            ])
+//        request.formURLEncoded = resetPasswordData
+//
+//        _ = try drop.respond(to: request)
+//
+//        XCTAssertTrue(capturingViewFactory.resetPasswordErrors?.contains("Your passwords must match!") ?? false)
 //    }
 //
 //    func testUserCannotResetPasswordWithoutPassword() throws {
