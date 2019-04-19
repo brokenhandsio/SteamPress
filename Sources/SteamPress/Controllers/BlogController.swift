@@ -66,7 +66,7 @@ struct BlogController: RouteCollection {
         let postRepository = try req.make(BlogPostRepository.self)
         let tagRepository = try req.make(BlogTagRepository.self)
         let userRepository = try req.make(BlogUserRepository.self)
-        return flatMap(postRepository.getAllPostsSortedByPublishDate(on: req, includeDrafts: false),
+        return flatMap(postRepository.getAllPostsSortedByPublishDate(includeDrafts: false, on: req),
                        tagRepository.getAllTags(on: req),
                        userRepository.getAllUsers(on: req)) { posts, tags, users in
             let presenter = try req.make(BlogPresenter.self)
@@ -83,7 +83,7 @@ struct BlogController: RouteCollection {
     func blogPostHandler(_ req: Request) throws -> Future<View> {
         let blogSlug = try req.parameters.next(String.self)
         let blogRepository = try req.make(BlogPostRepository.self)
-        return blogRepository.getPost(on: req, slug: blogSlug).unwrap(or: Abort(.notFound)).flatMap { post in
+        return blogRepository.getPost(slug: blogSlug, on: req).unwrap(or: Abort(.notFound)).flatMap { post in
             let userRepository = try req.make(BlogUserRepository.self)
             return userRepository.getUser(post.author, on: req).unwrap(or: Abort(.internalServerError)).flatMap { user in
                 let presenter = try req.make(BlogPresenter.self)
@@ -120,7 +120,7 @@ struct BlogController: RouteCollection {
             }
             
             let postRepository = try req.make(BlogPostRepository.self)
-            return postRepository.getAllPostsSortedByPublishDate(on: req, for: author, includeDrafts: false).flatMap { posts in
+            return postRepository.getAllPostsSortedByPublishDate(for: author, includeDrafts: false, on: req).flatMap { posts in
                 let presenter = try req.make(BlogPresenter.self)
                 return presenter.authorView(on: req, author: author, posts: posts)
             }

@@ -31,7 +31,7 @@ struct RSSFeedGenerator {
     func feedHandler(_ request: Request) throws -> Future<HTTPResponse> {
 
         let blogRepository = try request.make(BlogPostRepository.self)
-        return blogRepository.getAllPostsSortedByPublishDate(on: request, includeDrafts: false).flatMap { posts in
+        return blogRepository.getAllPostsSortedByPublishDate(includeDrafts: false, on: request).flatMap { posts in
             var xmlFeed = try self.getXMLStart(for: request)
             
             if !posts.isEmpty {

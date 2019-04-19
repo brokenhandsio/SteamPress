@@ -7,17 +7,15 @@ public protocol BlogTagRepository {
 }
 
 public protocol BlogPostRepository {
-    #warning("On request should be last parameter for everything")
     func getAllPosts(on req: Request) -> Future<[BlogPost]>
-    func getAllPostsSortedByPublishDate(on req: Request, includeDrafts: Bool) -> Future<[BlogPost]>
-    func getAllPostsSortedByPublishDate(on req: Request, for user: BlogUser, includeDrafts: Bool) -> Future<[BlogPost]>
-    func getPost(on req: Request, slug: String) -> Future<BlogPost?>
-    func getPost(on req: Request, id: Int) -> Future<BlogPost?>
+    func getAllPostsSortedByPublishDate(includeDrafts: Bool, on req: Request) -> Future<[BlogPost]>
+    func getAllPostsSortedByPublishDate(for user: BlogUser, includeDrafts: Bool, on req: Request) -> Future<[BlogPost]>
+    func getPost(slug: String, on req: Request) -> Future<BlogPost?>
+    func getPost(id: Int, on req: Request) -> Future<BlogPost?>
     func getSortedPublishedPosts(for tag: BlogTag, on req: Request) -> Future<[BlogPost]>
     func findPublishedPostsOrdered(for searchTerm: String, on req: Request) -> Future<[BlogPost]>
-    #warning("rename to save(_ post)")
-    func savePost(_ post: BlogPost, on req: Request) -> Future<BlogPost>
-    func deletePost(_ post: BlogPost, on req: Request) -> Future<Void>
+    func save(_ post: BlogPost, on req: Request) -> Future<BlogPost>
+    func delete(_ post: BlogPost, on req: Request) -> Future<Void>
 }
 
 public protocol BlogUserRepository {

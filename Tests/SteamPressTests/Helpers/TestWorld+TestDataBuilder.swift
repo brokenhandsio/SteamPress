@@ -8,7 +8,7 @@ extension TestWorld {
     
     func createUser(name: String = "Luke", username: String = "luke", password: String = "password") -> BlogUser {
         let user = TestDataBuilder.anyUser(name: name, username: username, password: password)
-        self.context.repository.addUser(user)
+        self.context.repository.add(user)
         return user
     }
     

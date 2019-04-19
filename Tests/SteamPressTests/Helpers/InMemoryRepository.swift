@@ -76,7 +76,7 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         return req.future(posts)
     }
     
-    func getAllPostsSortedByPublishDate(on req: Request, includeDrafts: Bool) -> EventLoopFuture<[BlogPost]> {
+    func getAllPostsSortedByPublishDate(includeDrafts: Bool, on req: Request) -> EventLoopFuture<[BlogPost]> {
         var sortedPosts = posts.sorted { $0.created > $1.created }
         if !includeDrafts {
             sortedPosts = sortedPosts.filter { $0.published }
@@ -84,7 +84,7 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         return req.future(sortedPosts)
     }
     
-    func getAllPostsSortedByPublishDate(on req: Request, for user: BlogUser, includeDrafts: Bool) -> EventLoopFuture<[BlogPost]> {
+    func getAllPostsSortedByPublishDate(for user: BlogUser, includeDrafts: Bool, on req: Request) -> EventLoopFuture<[BlogPost]> {
         let authorsPosts = posts.filter { $0.author == user.userID }
         var sortedPosts = authorsPosts.sorted { $0.created > $1.created }
         if !includeDrafts {
@@ -93,11 +93,11 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         return req.future(sortedPosts)
     }
     
-    func getPost(on req: Request, slug: String) -> EventLoopFuture<BlogPost?> {
+    func getPost(slug: String, on req: Request) -> EventLoopFuture<BlogPost?> {
         return req.future(posts.first { $0.slugUrl == slug })
     }
     
-    func getPost(on req: Request, id: Int) -> EventLoopFuture<BlogPost?> {
+    func getPost(id: Int, on req: Request) -> EventLoopFuture<BlogPost?> {
         return req.future(posts.first { $0.blogID == id })
     }
     
@@ -122,26 +122,26 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         let results = titleResults.sorted { $0.created > $1.created }.filter { $0.published }
         return req.future(results)
     }
-    func savePost(_ post: BlogPost, on req: Request) -> EventLoopFuture<BlogPost> {
-        self.addPost(post)
+    func save(_ post: BlogPost, on req: Request) -> EventLoopFuture<BlogPost> {
+        self.add(post)
         return req.future(post)
     }
     
-    func addPost(_ post: BlogPost) {
+    func add(_ post: BlogPost) {
         if (posts.first { $0.blogID == post.blogID } == nil) {
             post.blogID = posts.count + 1
             posts.append(post)
         }
     }
     
-    func deletePost(_ post: BlogPost, on req: Request) -> EventLoopFuture<Void> {
+    func delete(_ post: BlogPost, on req: Request) -> EventLoopFuture<Void> {
         posts.removeAll { $0.blogID == post.blogID }
         return req.future()
     }
     
     // MARK: - BlogUserRepository
     
-    func addUser(_ user: BlogUser) {
+    func add(_ user: BlogUser) {
         if (users.first { $0.userID == user.userID } == nil) {
             user.userID = users.count + 1
             users.append(user)
@@ -165,7 +165,7 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
     }
     
     func save(_ user: BlogUser, on req: Request) -> EventLoopFuture<BlogUser> {
-        self.addUser(user)
+        self.add(user)
         return req.future(user)
     }
     

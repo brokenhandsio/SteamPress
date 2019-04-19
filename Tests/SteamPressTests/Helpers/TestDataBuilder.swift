@@ -79,13 +79,13 @@ struct TestDataBuilder {
             postAuthor = author
         } else {
             postAuthor = TestDataBuilder.anyUser()
-            repository.addUser(postAuthor)
+            repository.add(postAuthor)
         }
         
         let post: BlogPost
         post = try TestDataBuilder.anyPost(author: postAuthor, title: title, contents: contents, slugUrl: slugUrl, creationDate: createdDate ?? Date(), published: published)
         
-        repository.addPost(post)
+        repository.add(post)
 
         if let tags = tags {
             for tag in tags {
@@ -98,7 +98,7 @@ struct TestDataBuilder {
     
     static func createUser(on repository: InMemoryRepository) -> BlogUser {
         let user = TestDataBuilder.anyUser()
-        repository.addUser(user)
+        repository.add(user)
         return user
     }
 }
