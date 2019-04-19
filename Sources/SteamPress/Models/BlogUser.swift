@@ -25,7 +25,7 @@ public final class BlogUser: Codable {
     public var name: String
     public var username: String
     var password: String
-    var resetPasswordRequired: Bool = false
+    public var resetPasswordRequired: Bool = false
     public var profilePicture: String?
     public var twitterHandle: String?
     public var biography: String?

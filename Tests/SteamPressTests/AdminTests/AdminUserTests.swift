@@ -9,6 +9,7 @@ class AdminUserTests: XCTestCase {
     static var allTests = [
         ("testLinuxTestSuiteIncludesAllTests", testLinuxTestSuiteIncludesAllTests),
         ("testUserCanBeCreatedSuccessfully", testUserCanBeCreatedSuccessfully),
+        ("testUserMustResetPasswordIfSetToWhenCreatingUser", testUserMustResetPasswordIfSetToWhenCreatingUser),
         ("testUserCannotBeCreatedWithoutName", testUserCannotBeCreatedWithoutName),
         ("testUserCannotBeCreatedWithoutUsername", testUserCannotBeCreatedWithoutUsername),
         ("testUserCannotBeCreatedWithoutPassword", testUserCannotBeCreatedWithoutPassword),
@@ -82,23 +83,26 @@ class AdminUserTests: XCTestCase {
         XCTAssertEqual(response.http.headers[.location].first, "/admin/")
     }
     
-//    func testUserMustResetPasswordIfSetToWhenCreatingUser() throws {
-        //        BlogUser.passwordHasher = FakePasswordHasher()
-        //        let request = try createLoggedInRequest(method: .post, path: "createUser")
-        //        let newName = "Leia"
-        //        let password = "AS3cretPassword"
-        //        var userData = Node([:], in: nil)
-        //        try userData.set("inputName", newName)
-        //        try userData.set("inputUsername", "leia")
-        //        try userData.set("inputPassword", password)
-        //        try userData.set("inputConfirmPassword", password)
-        //        try userData.set("inputResetPasswordOnLogin", "true")
-        //        request.formURLEncoded = userData
-        //
-        //        let _ = try drop.respond(to: request)
-        //
-        //        XCTAssertTrue(try BlogUser.makeQuery().filter("name", newName).all().first?.resetPasswordRequired ?? false)
-        //    }
+    func testUserMustResetPasswordIfSetToWhenCreatingUser() throws {
+        struct CreateUserResetData: Content {
+            static let defaultContentType = MediaType.urlEncodedForm
+            let name = "Luke"
+            let username = "lukes"
+            let password = "somepassword"
+            let confirmPassword = "somepassword"
+            let profilePicture = "https://static.brokenhands.io/images/cat.png"
+            let tagline = "The awesome tagline"
+            let biography = "The biograhy"
+            let twitterHandle = "brokenhandsio"
+            let resetPasswordOnLogin = true
+        }
+        
+        let data = CreateUserResetData()
+        _ = try testWorld.getResponse(to: createUserPath, body: data, loggedInUser: user)
+        
+        XCTAssertTrue(testWorld.context.repository.users.filter { $0.username == data.username }.first?.resetPasswordRequired ?? false)
+    }
+    
     func testUserCannotBeCreatedWithoutName() throws {
         struct CreateUserData: Content {
             static let defaultContentType = MediaType.urlEncodedForm

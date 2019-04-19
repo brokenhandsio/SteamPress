@@ -33,6 +33,9 @@ struct UserAdminController: RouteCollection {
         }
         
         let newUser = BlogUser(name: name, username: username, password: password, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline)
+        if let resetPasswordRequired = data.resetPasswordOnLogin, resetPasswordRequired {
+            newUser.resetPasswordRequired = true
+        }
         let userRepository = try req.make(BlogUserRepository.self)
         return userRepository.save(newUser, on: req).map { _ in
             return req.redirect(to: self.pathCreator.createPath(for: "admin"))
@@ -55,19 +58,6 @@ struct UserAdminController: RouteCollection {
         //        // We now have valid data
         //        let hashedPassword = try BlogUser.passwordHasher.make(password)
         //        let newUser = BlogUser(name: name, username: username.lowercased(), password: hashedPassword, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline)
-        //
-        //        if resetPasswordRequired {
-        //            newUser.resetPasswordRequired = true
-        //        }
-        //
-        //        do {
-        //            try newUser.save()
-        //        } catch {
-        //            return try viewFactory.createUserView(editing: false, errors: ["There was an error creating the user. Please try again"], name: name, username: username, passwordError: passwordError, confirmPasswordError: confirmPasswordError, resetPasswordRequired: resetPasswordRequired, userId: nil, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline, loggedInUser: request.user())
-        //        }
-        //
-        //        return Response(redirect: pathCreator.createPath(for: "admin"))
-        
     }
     
     func editUserPostHandler(_ req: Request) throws -> Future<Response> {
@@ -205,8 +195,7 @@ struct CreateUserData: Content {
     let tagline: String?
     let biography: String?
     let twitterHandle: String?
-    #warning("resetpassword")
-    //        let resetPasswordRequired = rawPasswordResetRequired != nil
+    let resetPasswordOnLogin: Bool?
 }
 
 extension CreateUserData: Validatable , Reflectable{
