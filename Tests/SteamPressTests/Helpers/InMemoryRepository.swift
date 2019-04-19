@@ -169,6 +169,15 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         return req.future(user)
     }
     
+    func delete(_ user: BlogUser, on req: Request) -> EventLoopFuture<Void> {
+        users.removeAll { $0.userID == user.userID }
+        return req.future()
+    }
+    
+    func getUsersCount(on req: Request) -> EventLoopFuture<Int> {
+        return req.future(users.count)
+    }
+    
 }
 
 private struct BlogPostTagLink: Codable {

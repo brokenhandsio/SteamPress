@@ -71,27 +71,11 @@ struct BlogAdminController: RouteCollection {
 //        let user = try request.parameters.next(BlogUser.self)
 //        return try viewFactory.createUserView(editing: true, errors: nil, name: user.name, username: user.username, passwordError: nil, confirmPasswordError: nil, resetPasswordRequired: nil, userId: user.id, profilePicture: user.profilePicture, twitterHandle: user.twitterHandle, biography: user.biography, tagline: user.tagline, loggedInUser: request.user())
 //    }
-//
-//    func deleteUserPostHandler(request: Request) throws -> ResponseRepresentable {
-//        let user = try request.parameters.next(BlogUser.self)
-//        // Check we have at least one user left
-//        let users = try BlogUser.all()
-//        if users.count <= 1 {
-//            return try viewFactory.createBlogAdminView(errors: ["You cannot delete the last user"], user: try request.user())
-//        }
-//        // Make sure we aren't deleting ourselves!
-//        else if try request.user().id == user.id {
-//            return try viewFactory.createBlogAdminView(errors: ["You cannot delete yourself whilst logged in"], user: try request.user())
-//        } else {
-//            try user.delete()
-//            return Response(redirect: pathCreator.createPath(for: "admin"))
-//        }
-//    }
 
 
     // MARK: Admin Handler
     func adminHandler(_ req: Request) throws -> Future<View> {
-        return try req.make(BlogAdminPresenter.self).createIndexView(on: req)
+        return try req.make(BlogAdminPresenter.self).createIndexView(on: req, errors: nil)
     }
 
 //    private func validateUserSaveDataExists(edit: Bool, name: String?, username: String?, password: String?, confirmPassword: String?, profilePicture: String?) -> ([String]?, Bool?, Bool?) {

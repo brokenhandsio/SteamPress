@@ -4,8 +4,9 @@ import Vapor
 class CapturingAdminPresenter: BlogAdminPresenter {
     
     // MARK: - BlogPresenter
-    
-    func createIndexView(on req: Request) -> EventLoopFuture<View> {
+    private(set) var adminViewErrors: [String]?
+    func createIndexView(on req: Request, errors: [String]?) -> EventLoopFuture<View> {
+        self.adminViewErrors = errors
         return createFutureView(on: req)
     }
     

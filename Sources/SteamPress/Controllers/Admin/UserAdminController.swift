@@ -15,6 +15,7 @@ struct UserAdminController: RouteCollection {
     func boot(router: Router) throws {
         router.post("createUser", use: createUserPostHandler)
         router.post("users", Int.parameter, "edit", use: editUserPostHandler)
+        router.post("users", Int.parameter, "delete", use: deleteUserPostHandler)
     }
     
     // MARK: - Route handlers
@@ -128,6 +129,30 @@ struct UserAdminController: RouteCollection {
 //
 //        try userToUpdate.save()
 //        return Response(redirect: pathCreator.createPath(for: "admin"))
+    }
+    
+
+    func deleteUserPostHandler(_ req: Request) throws -> Future<Response> {
+        #warning("Look at using a parameter override")
+        let userID = try req.parameters.next(Int.self)
+        let userRepository = try req.make(BlogUserRepository.self)
+        return flatMap(userRepository.getUser(userID, on: req).unwrap(or: Abort(.notFound)), userRepository.getUsersCount(on: req)) { user, userCount in
+            guard userCount > 1 else {
+                let presenter = try req.make(BlogAdminPresenter.self)
+                let view = presenter.createIndexView(on: req, errors: ["You cannot delete the last user"])
+                return try view.encode(for: req)
+            }
+            
+            let loggedInUser = try req.requireAuthenticated(BlogUser.self)
+            guard loggedInUser.userID != user.userID else {
+                let presenter = try req.make(BlogAdminPresenter.self)
+                let view = presenter.createIndexView(on: req, errors: ["You cannot delete yourself whilst logged in"])
+                return try view.encode(for: req)
+            }
+            
+            let redirect = req.redirect(to: self.pathCreator.createPath(for: "admin"))
+            return userRepository.delete(user, on: req).transform(to: redirect)
+        }
     }
 
     
