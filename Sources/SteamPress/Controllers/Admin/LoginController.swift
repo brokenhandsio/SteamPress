@@ -15,6 +15,7 @@ struct LoginController: RouteCollection {
     func boot(router: Router) throws {
         router.post("login", use: loginPostHandler)
         router.post("logout", use: logoutHandler)
+        router.post("resetPassword", use: resetPasswordPostHandler)
     }
     
     // MARK: - Route handlers
@@ -70,62 +71,84 @@ struct LoginController: RouteCollection {
         return request.redirect(to: pathCreator.createPath(for: pathCreator.blogPath))
     }
     
-    //    func resetPasswordHandler(_ request: Request) throws -> ResponseRepresentable {
-    //        return try viewFactory.createResetPasswordView(errors: nil, passwordError: nil, confirmPasswordError: nil, user: request.user())
-    //    }
-    //
-    //    func resetPasswordPostHandler(_ request: Request) throws -> ResponseRepresentable {
-    //        let rawPassword = request.data["inputPassword"]?.string
-    //        let rawConfirmPassword = request.data["inputConfirmPassword"]?.string
-    //        var resetPasswordErrors: [String] = []
-    //        var passwordError: Bool?
-    //        var confirmPasswordError: Bool?
-    //
-    //        guard let password = rawPassword, let confirmPassword = rawConfirmPassword else {
-    //            if rawPassword == nil {
-    //                resetPasswordErrors.append("You must specify a password")
-    //                passwordError = true
-    //            }
-    //
-    //            if rawConfirmPassword == nil {
-    //                resetPasswordErrors.append("You must confirm your password")
-    //                confirmPasswordError = true
-    //            }
-    //
-    //            // Return if we have any missing fields
-    //            return try viewFactory.createResetPasswordView(errors: resetPasswordErrors, passwordError: passwordError, confirmPasswordError: confirmPasswordError, user: request.user())
-    //        }
-    //
-    //        if password != confirmPassword {
-    //            resetPasswordErrors.append("Your passwords must match!")
-    //            passwordError = true
-    //            confirmPasswordError = true
-    //        }
-    //
-    //        // Check password is valid
-    //        let validPassword = password.passes(PasswordValidator())
-    //        if !validPassword {
-    //            resetPasswordErrors.append("Your password must contain a lowercase letter, an upperacase letter, a number and a symbol")
-    //            passwordError = true
-    //        }
-    //
-    //        if !resetPasswordErrors.isEmpty {
-    //            return try viewFactory.createResetPasswordView(errors: resetPasswordErrors, passwordError: passwordError, confirmPasswordError: confirmPasswordError, user: request.user())
-    //        }
-    //
-    //        let user = try request.user()
-    //
-    //        user.password = try BlogUser.passwordHasher.make(password)
-    //        user.resetPasswordRequired = false
-    //        try user.save()
-    //
-    //        return Response(redirect: pathCreator.createPath(for: "admin"))
-    //    }
+//    func resetPasswordHandler(_ request: Request) throws -> ResponseRepresentable {
+//        return try viewFactory.createResetPasswordView(errors: nil, passwordError: nil, confirmPasswordError: nil, user: request.user())
+//    }
+
+    func resetPasswordPostHandler(_ req: Request) throws -> EventLoopFuture<Response> {
+        let data = try req.content.syncDecode(ResetPasswordData.self)
+
+        var resetPasswordErrors = [String]()
+        var passwordError: Bool?
+        var confirmPasswordError: Bool?
+        let password = data.password
+        let confirmPassword = data.confirmPassword
+//        guard let password = data.password, let confirmPassword = data.confirmPassword else {
+//
+//            if data.password == nil {
+//                resetPasswordErrors.append("You must specify a password")
+//                passwordError = true
+//            }
+//
+//            fatalError()
+//        }
+//
+//            if rawConfirmPassword == nil {
+//                resetPasswordErrors.append("You must confirm your password")
+//                confirmPasswordError = true
+//            }
+//
+//            // Return if we have any missing fields
+//            return try viewFactory.createResetPasswordView(errors: resetPasswordErrors, passwordError: passwordError, confirmPasswordError: confirmPasswordError, user: request.user())
+//        }
+
+        if password != confirmPassword {
+            resetPasswordErrors.append("Your passwords must match!")
+            passwordError = true
+            confirmPasswordError = true
+        }
+//
+//        // Check password is valid
+//        let validPassword = password.passes(PasswordValidator())
+//        if !validPassword {
+//            resetPasswordErrors.append("Your password must contain a lowercase letter, an upperacase letter, a number and a symbol")
+//            passwordError = true
+//        }
+
+        guard resetPasswordErrors.isEmpty else {
+            let presenter = try req.make(BlogAdminPresenter.self)
+            let view = presenter.createResetPasswordView(on: req, errors: resetPasswordErrors, passwordError: passwordError, confirmPasswordError: confirmPasswordError)
+            return try view.encode(for: req)
+        }
+
+        let user = try req.requireAuthenticated(BlogUser.self)
+        let hasher = try req.make(PasswordHasher.self)
+        user.password = try hasher.hash(password!)
+//        user.resetPasswordRequired = false
+        let userRespository = try req.make(BlogUserRepository.self)
+        let redirect = req.redirect(to: pathCreator.createPath(for: "admin"))
+        return userRespository.save(user, on: req).transform(to: redirect)
+    }
+}
+
+public protocol PasswordHasher: Service {
+    func hash(_ plaintext: LosslessDataConvertible) throws -> String
+}
+
+extension BCryptDigest: PasswordHasher {
+    public func hash(_ plaintext: LosslessDataConvertible) throws -> String {
+        return try self.hash(plaintext, salt: nil)
+    }
 }
 
 struct LoginData: Content {
     let username: String?
     let password: String?
     #warning("Remember me")
+}
+
+struct ResetPasswordData: Content {
+    let password: String?
+    let confirmPassword: String?
 }
 

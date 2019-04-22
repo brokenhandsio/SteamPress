@@ -165,8 +165,10 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         return container.future(users.first { $0.username == username })
     }
     
+    private(set) var userUpdated = false
     func save(_ user: BlogUser, on container: Container) -> EventLoopFuture<BlogUser> {
         self.add(user)
+        userUpdated = true
         return container.future(user)
     }
     

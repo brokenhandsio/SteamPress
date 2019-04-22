@@ -49,12 +49,16 @@ struct TestDataBuilder {
             return repository
         }
         
-        services.register([BlogPresenter.self]) { _ in
+        services.register(BlogPresenter.self) { _ in
             return blogPresenter
         }
         
-        services.register([BlogAdminPresenter.self]) { _ in
+        services.register(BlogAdminPresenter.self) { _ in
             adminPresenter
+        }
+        
+        services.register(PasswordHasher.self) { _ in
+            return PlaintextHasher()
         }
         
         var middlewareConfig = MiddlewareConfig()
@@ -66,8 +70,10 @@ struct TestDataBuilder {
         
         if useRealPasswordHasher {
             config.prefer(BCryptDigest.self, for: PasswordVerifier.self)
+            config.prefer(BCryptDigest.self, for: PasswordHasher.self)
         } else {
             config.prefer(PlaintextVerifier.self, for: PasswordVerifier.self)
+            config.prefer(PlaintextHasher.self, for: PasswordHasher.self)
         }
         
         return try Application(config: config, services: services)

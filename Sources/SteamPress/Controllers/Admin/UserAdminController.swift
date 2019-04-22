@@ -18,18 +18,12 @@ struct UserAdminController: RouteCollection {
         router.post("users", BlogUser.parameter, "delete", use: deleteUserPostHandler)
     }
     
-    //    // MARK: - User handlers
-    //    func createUserHandler(_ request: Request) throws -> ResponseRepresentable {
-    //        return try viewFactory.createUserView(editing: false, errors: nil, name: nil, username: nil, passwordError: nil, confirmPasswordError: nil, resetPasswordRequired: nil, userId: nil, profilePicture: nil, twitterHandle: nil, biography: nil, tagline: nil, loggedInUser: request.user())
-    //    }
-    //
-    //
-    //    func editUserHandler(request: Request) throws -> ResponseRepresentable {
-    //        let user = try request.parameters.next(BlogUser.self)
-    //        return try viewFactory.createUserView(editing: true, errors: nil, name: user.name, username: user.username, passwordError: nil, confirmPasswordError: nil, resetPasswordRequired: nil, userId: user.id, profilePicture: user.profilePicture, twitterHandle: user.twitterHandle, biography: user.biography, tagline: user.tagline, loggedInUser: request.user())
-    //    }
-    
     // MARK: - Route handlers
+//    func createUserHandler(_ request: Request) throws -> ResponseRepresentable {
+//        return try viewFactory.createUserView(editing: false, errors: nil, name: nil, username: nil, passwordError: nil, confirmPasswordError: nil, resetPasswordRequired: nil, userId: nil, profilePicture: nil, twitterHandle: nil, biography: nil, tagline: nil, loggedInUser: request.user())
+//    }
+    
+    
     func createUserPostHandler(_ req: Request) throws -> Future<Response> {
         let data = try req.content.syncDecode(CreateUserData.self)
         
@@ -70,6 +64,11 @@ struct UserAdminController: RouteCollection {
         //        let hashedPassword = try BlogUser.passwordHasher.make(password)
         //        let newUser = BlogUser(name: name, username: username.lowercased(), password: hashedPassword, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline)
     }
+    //
+    //    func editUserHandler(request: Request) throws -> ResponseRepresentable {
+    //        let user = try request.parameters.next(BlogUser.self)
+    //        return try viewFactory.createUserView(editing: true, errors: nil, name: user.name, username: user.username, passwordError: nil, confirmPasswordError: nil, resetPasswordRequired: nil, userId: user.id, profilePicture: user.profilePicture, twitterHandle: user.twitterHandle, biography: user.biography, tagline: user.tagline, loggedInUser: request.user())
+    //    }
     
     func editUserPostHandler(_ req: Request) throws -> Future<Response> {
         return try req.parameters.next(BlogUser.self).flatMap { user in

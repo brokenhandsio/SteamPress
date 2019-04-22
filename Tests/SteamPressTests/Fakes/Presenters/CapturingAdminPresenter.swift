@@ -22,6 +22,17 @@ class CapturingAdminPresenter: BlogAdminPresenter {
         return createFutureView(on: req)
     }
     
+    private(set) var resetPasswordErrors: [String]?
+    private(set) var resetPasswordError: Bool?
+    private(set) var resetPasswordConfirmError: Bool?
+    func createResetPasswordView(on req: Request, errors: [String]?, passwordError: Bool?, confirmPasswordError: Bool?) -> EventLoopFuture<View> {
+        self.resetPasswordErrors = errors
+        self.resetPasswordError = passwordError
+        self.resetPasswordConfirmError = confirmPasswordError
+        return createFutureView(on: req)
+    }
+    
+    
     // MARK: - Helpers
     
     func createFutureView(on req: Request) -> Future<View> {

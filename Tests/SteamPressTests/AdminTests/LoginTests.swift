@@ -11,13 +11,19 @@ class LoginTests: XCTestCase {
     static var allTests = [
         ("testLinuxTestSuiteIncludesAllTests", testLinuxTestSuiteIncludesAllTests),
         ("testAdminUserCreatedOnFirstBoot", testAdminUserCreatedOnFirstBoot),
-        ("testLogin", testLogin)
+        ("testLogin", testLogin),
+        ("testUserCanResetPassword", testUserCanResetPassword),
+        ("testUserCannotResetPasswordWithMismatchingPasswords", testUserCannotResetPasswordWithMismatchingPasswords),
     ]
     
     // MARK: - Properties
     private var app: Application!
     private var testWorld: TestWorld!
     private var user: BlogUser!
+    
+    private var presenter: CapturingAdminPresenter {
+        return testWorld.context.blogAdminPresenter
+    }
     
     // MARK: - Overrides
     
@@ -80,5 +86,95 @@ class LoginTests: XCTestCase {
     func testAdminUserCreatedOnFirstBoot() {
         #warning("Implement")
     }
+    
+    func testUserCanResetPassword() throws {
+        struct ResetPasswordData: Content {
+            static let defaultContentType = MediaType.urlEncodedForm
+            let password = "Th3S@m3password"
+            let confirmPassword = "Th3S@m3password"
+        }
+        
+        let data = ResetPasswordData()
+        let response = try testWorld.getResponse(to: "/blog/admin/resetPassword", body: data, loggedInUser: user)
+        
+        XCTAssertEqual(user.password, data.password)
+        XCTAssertEqual(response.http.status, .seeOther)
+        XCTAssertEqual(response.http.headers[.location].first, "/blog/admin/")
+        XCTAssertTrue(testWorld.context.repository.userUpdated)
+    }
+
+    func testUserCannotResetPasswordWithMismatchingPasswords() throws {
+        struct ResetPasswordData: Content {
+            static let defaultContentType = MediaType.urlEncodedForm
+            let password = "Th3S@m3password"
+            let confirmPassword = "An0th3rPass!"
+        }
+
+        let data = ResetPasswordData()
+        _ = try testWorld.getResponse(to: "/blog/admin/resetPassword", body: data, loggedInUser: user)
+
+        XCTAssertTrue(presenter.resetPasswordErrors?.contains("Your passwords must match!") ?? false)
+        XCTAssertTrue(presenter.resetPasswordError ?? false)
+        XCTAssertTrue(presenter.resetPasswordConfirmError ?? false)
+    }
+
+    //    func testUserCannotResetPasswordWithoutPassword() throws {
+    //        let user = TestDataBuilder.anyUser()
+    //        try user.save()
+    //
+    //        let request = try createLoggedInRequest(method: .post, path: "resetPassword", for: user)
+    //        let resetPasswordData = try Node(node: [
+    //            "inputConfirmPassword": "Th3S@m3password",
+    //            ])
+    //        request.formURLEncoded = resetPasswordData
+    //
+    //        _ = try drop.respond(to: request)
+    //
+    //        XCTAssertTrue(capturingViewFactory.resetPasswordErrors?.contains("You must specify a password") ?? false)
+    //    }
+    //
+    //    func testUserCannotResetPasswordWithoutConfirmPassword() throws {
+    //        let user = TestDataBuilder.anyUser()
+    //        try user.save()
+    //
+    //        let request = try createLoggedInRequest(method: .post, path: "resetPassword", for: user)
+    //        let resetPasswordData = try Node(node: [
+    //            "inputPassword": "Th3S@m3password",
+    //            ])
+    //        request.formURLEncoded = resetPasswordData
+    //
+    //        _ = try drop.respond(to: request)
+    //
+    //        XCTAssertTrue(capturingViewFactory.resetPasswordErrors?.contains("You must confirm your password") ?? false)
+    //    }
+    //
+    //    func testUserCannotResetPasswordWithShortPassword() throws {
+    //        let user = TestDataBuilder.anyUser()
+    //        try user.save()
+    //
+    //        let request = try createLoggedInRequest(method: .post, path: "resetPassword", for: user)
+    //        let resetPasswordData = try Node(node: [
+    //            "inputPassword": "S12$345",
+    //            "inputConfirmPassword": "S12$345"
+    //            ])
+    //        request.formURLEncoded = resetPasswordData
+    //
+    //        _ = try drop.respond(to: request)
+    //
+    //        XCTAssertTrue(capturingViewFactory.resetPasswordErrors?.contains("Your password must contain a lowercase letter, an upperacase letter, a number and a symbol") ?? false)
+    //    }
+    //
+    //    func testUserIsRedirectedWhenLoggingInAndPasswordResetRequired() throws {
+    //        let user = TestDataBuilder.anyUser()
+    //        user.resetPasswordRequired = true
+    //        try user.save()
+    //
+    //        let request = try createLoggedInRequest(method: .get, path: "", for: user)
+    //
+    //        let response = try drop.respond(to: request)
+    //
+    //        XCTAssertEqual(response.status, .seeOther)
+    //        XCTAssertEqual(response.headers[HeaderKey.location], "/blog/admin/resetPassword/")
+    //    }
 }
 
