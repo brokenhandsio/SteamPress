@@ -81,26 +81,23 @@ struct LoginController: RouteCollection {
         var resetPasswordErrors = [String]()
         var passwordError: Bool?
         var confirmPasswordError: Bool?
-        let password = data.password
-        let confirmPassword = data.confirmPassword
-//        guard let password = data.password, let confirmPassword = data.confirmPassword else {
-//
-//            if data.password == nil {
-//                resetPasswordErrors.append("You must specify a password")
-//                passwordError = true
-//            }
-//
-//            fatalError()
-//        }
-//
-//            if rawConfirmPassword == nil {
-//                resetPasswordErrors.append("You must confirm your password")
-//                confirmPasswordError = true
-//            }
-//
-//            // Return if we have any missing fields
-//            return try viewFactory.createResetPasswordView(errors: resetPasswordErrors, passwordError: passwordError, confirmPasswordError: confirmPasswordError, user: request.user())
-//        }
+        
+        guard let password = data.password, let confirmPassword = data.confirmPassword else {
+
+            if data.password == nil {
+                resetPasswordErrors.append("You must specify a password")
+                passwordError = true
+            }
+            
+            if data.confirmPassword == nil {
+                resetPasswordErrors.append("You must confirm your password")
+                confirmPasswordError = true
+            }
+
+            let presenter = try req.make(BlogAdminPresenter.self)
+            let view = presenter.createResetPasswordView(on: req, errors: resetPasswordErrors, passwordError: passwordError, confirmPasswordError: confirmPasswordError)
+            return try view.encode(for: req)
+        }
 
         if password != confirmPassword {
             resetPasswordErrors.append("Your passwords must match!")
@@ -123,7 +120,7 @@ struct LoginController: RouteCollection {
 
         let user = try req.requireAuthenticated(BlogUser.self)
         let hasher = try req.make(PasswordHasher.self)
-        user.password = try hasher.hash(password!)
+        user.password = try hasher.hash(password)
 //        user.resetPasswordRequired = false
         let userRespository = try req.make(BlogUserRepository.self)
         let redirect = req.redirect(to: pathCreator.createPath(for: "admin"))
