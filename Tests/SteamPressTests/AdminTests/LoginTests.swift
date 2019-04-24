@@ -181,7 +181,7 @@ class LoginTests: XCTestCase {
     }
 
     func testUserIsRedirectedWhenLoggingInAndPasswordResetRequired() throws {
-        let user2 = testWorld.createUser(resetPasswordRequired: true)
+        let user2 = testWorld.createUser(username: "hans",  resetPasswordRequired: true)
 
         let response = try testWorld.getResponse(to: "/blog/admin/", method: .GET, body: EmptyContent(), loggedInUser: user2)
 
