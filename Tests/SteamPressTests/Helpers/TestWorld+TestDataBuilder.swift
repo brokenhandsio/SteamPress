@@ -9,7 +9,9 @@ extension TestWorld {
     func createUser(name: String = "Luke", username: String = "luke", password: String = "password", resetPasswordRequired: Bool = false) -> BlogUser {
         let user = TestDataBuilder.anyUser(name: name, username: username, password: password)
         self.context.repository.add(user)
-        user.resetPasswordRequired = true
+        if resetPasswordRequired {
+            user.resetPasswordRequired = true
+        }
         return user
     }
     
