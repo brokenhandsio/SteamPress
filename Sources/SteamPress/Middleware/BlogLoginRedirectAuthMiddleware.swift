@@ -8,7 +8,11 @@ struct BlogLoginRedirectAuthMiddleware: Middleware {
         do {
             let user = try request.requireAuthenticated(BlogUser.self)
             let resetPasswordPath = pathCreator.createPath(for: "admin/resetPassword")
-            if user.resetPasswordRequired && request.http.url.path != resetPasswordPath {
+            var requestPath = request.http.urlString
+            if !requestPath.hasSuffix("/") {
+                requestPath = requestPath + "/"
+            }
+            if user.resetPasswordRequired && requestPath != resetPasswordPath {
                 let redirect = request.redirect(to: resetPasswordPath)
                 return request.future(redirect)
             }

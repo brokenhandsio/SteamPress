@@ -14,8 +14,12 @@ struct LoginController: RouteCollection {
     // MARK: - Route setup
     func boot(router: Router) throws {
         router.post("login", use: loginPostHandler)
-        router.post("logout", use: logoutHandler)
-        router.post("resetPassword", use: resetPasswordPostHandler)
+        
+        #warning("TODO - wrap the middleware group in the auth tests")
+        let redirectMiddleware = BlogLoginRedirectAuthMiddleware(pathCreator: pathCreator)
+        let protectedRoutes = router.grouped(redirectMiddleware)
+        protectedRoutes.post("logout", use: logoutHandler)
+        protectedRoutes.post("resetPassword", use: resetPasswordPostHandler)
     }
     
     // MARK: - Route handlers
