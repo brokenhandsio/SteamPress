@@ -6,9 +6,10 @@ extension TestWorld {
         return try TestDataBuilder.createPost(on: self.context.repository, tags: tags, createdDate: createdDate, title: title, contents:contents, slugUrl: slugUrl, author: author, published: published)
     }
     
-    func createUser(name: String = "Luke", username: String = "luke", password: String = "password") -> BlogUser {
+    func createUser(name: String = "Luke", username: String = "luke", password: String = "password", resetPasswordRequired: Bool = false) -> BlogUser {
         let user = TestDataBuilder.anyUser(name: name, username: username, password: password)
         self.context.repository.add(user)
+        user.resetPasswordRequired = true
         return user
     }
     

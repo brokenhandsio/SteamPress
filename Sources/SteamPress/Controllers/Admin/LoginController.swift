@@ -104,13 +104,11 @@ struct LoginController: RouteCollection {
             passwordError = true
             confirmPasswordError = true
         }
-//
-//        // Check password is valid
-//        let validPassword = password.passes(PasswordValidator())
-//        if !validPassword {
-//            resetPasswordErrors.append("Your password must contain a lowercase letter, an upperacase letter, a number and a symbol")
-//            passwordError = true
-//        }
+        
+        if password.count < 10 {
+            passwordError = true
+            resetPasswordErrors.append("Your password must be at least 10 characters long")
+        }
 
         guard resetPasswordErrors.isEmpty else {
             let presenter = try req.make(BlogAdminPresenter.self)
@@ -121,13 +119,14 @@ struct LoginController: RouteCollection {
         let user = try req.requireAuthenticated(BlogUser.self)
         let hasher = try req.make(PasswordHasher.self)
         user.password = try hasher.hash(password)
-//        user.resetPasswordRequired = false
+        user.resetPasswordRequired = false
         let userRespository = try req.make(BlogUserRepository.self)
         let redirect = req.redirect(to: pathCreator.createPath(for: "admin"))
         return userRespository.save(user, on: req).transform(to: redirect)
     }
 }
 
+#warning("Move")
 public protocol PasswordHasher: Service {
     func hash(_ plaintext: LosslessDataConvertible) throws -> String
 }

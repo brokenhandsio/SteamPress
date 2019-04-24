@@ -15,7 +15,10 @@ class LoginTests: XCTestCase {
         ("testUserCanResetPassword", testUserCanResetPassword),
         ("testUserCannotResetPasswordWithMismatchingPasswords", testUserCannotResetPasswordWithMismatchingPasswords),
         ("testUserCannotResetPasswordWithoutPassword", testUserCannotResetPasswordWithoutPassword),
-        ("testUserCannotResetPasswordWithoutConfirmPassword", testUserCannotResetPasswordWithoutConfirmPassword)
+        ("testUserCannotResetPasswordWithoutConfirmPassword", testUserCannotResetPasswordWithoutConfirmPassword),
+        ("testUserCannotResetPasswordWithShortPassword", testUserCannotResetPasswordWithShortPassword),
+        ("testThatAfterResettingPasswordUserIsNotAskedToResetPassword", testThatAfterResettingPasswordUserIsNotAskedToResetPassword),
+        ("testUserIsRedirectedWhenLoggingInAndPasswordResetRequired", testUserIsRedirectedWhenLoggingInAndPasswordResetRequired),
     ]
     
     // MARK: - Properties
@@ -134,47 +137,56 @@ class LoginTests: XCTestCase {
         XCTAssertNil(presenter.resetPasswordConfirmError)
     }
 
-        func testUserCannotResetPasswordWithoutConfirmPassword() throws {
-            struct ResetPasswordData: Content {
-                static let defaultContentType = MediaType.urlEncodedForm
-                let password = "Th3S@m3password"
-            }
-            
-            let data = ResetPasswordData()
-            _ = try testWorld.getResponse(to: "/blog/admin/resetPassword", body: data, loggedInUser: user)
-            
-            XCTAssertTrue(presenter.resetPasswordErrors?.contains("You must confirm your password") ?? false)
-            XCTAssertNil(presenter.resetPasswordError)
-            XCTAssertTrue(presenter.resetPasswordConfirmError ?? false)
+    func testUserCannotResetPasswordWithoutConfirmPassword() throws {
+        struct ResetPasswordData: Content {
+            static let defaultContentType = MediaType.urlEncodedForm
+            let password = "Th3S@m3password"
         }
-    
-    //    func testUserCannotResetPasswordWithShortPassword() throws {
-    //        let user = TestDataBuilder.anyUser()
-    //        try user.save()
-    //
-    //        let request = try createLoggedInRequest(method: .post, path: "resetPassword", for: user)
-    //        let resetPasswordData = try Node(node: [
-    //            "inputPassword": "S12$345",
-    //            "inputConfirmPassword": "S12$345"
-    //            ])
-    //        request.formURLEncoded = resetPasswordData
-    //
-    //        _ = try drop.respond(to: request)
-    //
-    //        XCTAssertTrue(capturingViewFactory.resetPasswordErrors?.contains("Your password must contain a lowercase letter, an upperacase letter, a number and a symbol") ?? false)
-    //    }
-    //
-    //    func testUserIsRedirectedWhenLoggingInAndPasswordResetRequired() throws {
-    //        let user = TestDataBuilder.anyUser()
-    //        user.resetPasswordRequired = true
-    //        try user.save()
-    //
-    //        let request = try createLoggedInRequest(method: .get, path: "", for: user)
-    //
-    //        let response = try drop.respond(to: request)
-    //
-    //        XCTAssertEqual(response.status, .seeOther)
-    //        XCTAssertEqual(response.headers[HeaderKey.location], "/blog/admin/resetPassword/")
-    //    }
+        
+        let data = ResetPasswordData()
+        _ = try testWorld.getResponse(to: "/blog/admin/resetPassword", body: data, loggedInUser: user)
+        
+        XCTAssertTrue(presenter.resetPasswordErrors?.contains("You must confirm your password") ?? false)
+        XCTAssertNil(presenter.resetPasswordError)
+        XCTAssertTrue(presenter.resetPasswordConfirmError ?? false)
+    }
+
+    func testUserCannotResetPasswordWithShortPassword() throws {
+        struct ResetPasswordData: Content {
+            static let defaultContentType = MediaType.urlEncodedForm
+            let password = "apassword"
+            let confirmPassword = "apassword"
+        }
+        
+        let data = ResetPasswordData()
+        _ = try testWorld.getResponse(to: "/blog/admin/resetPassword", body: data, loggedInUser: user)
+
+        XCTAssertTrue(presenter.resetPasswordErrors?.contains("Your password must be at least 10 characters long") ?? false)
+    }
+
+    func testThatAfterResettingPasswordUserIsNotAskedToResetPassword() throws {
+        let user2 = testWorld.createUser(name: "Han", username: "hans", resetPasswordRequired: true)
+        struct ResetPasswordData: Content {
+            static let defaultContentType = MediaType.urlEncodedForm
+            let password = "alongpassword"
+            let confirmPassword = "alongpassword"
+        }
+        
+        let data = ResetPasswordData()
+        _ = try testWorld.getResponse(to: "/blog/admin/resetPassword", body: data, loggedInUser: user2)
+        
+        let response = try testWorld.getResponse(to: "/blog/admin", method: .GET, body: EmptyContent(), loggedInUser: user2)
+        
+        XCTAssertEqual(response.http.status, .ok)
+    }
+
+    func testUserIsRedirectedWhenLoggingInAndPasswordResetRequired() throws {
+        let user2 = testWorld.createUser(resetPasswordRequired: true)
+
+        let response = try testWorld.getResponse(to: "/blog/admin/", method: .GET, body: EmptyContent(), loggedInUser: user2)
+
+        XCTAssertEqual(response.http.status, .seeOther)
+        XCTAssertEqual(response.http.headers[.location].first, "/blog/admin/resetPassword/")
+    }
 }
 
