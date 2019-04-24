@@ -84,8 +84,12 @@ struct TestDataBuilder {
         if let author = author {
             postAuthor = author
         } else {
-            postAuthor = TestDataBuilder.anyUser()
-            repository.add(postAuthor)
+            if let existingUser = repository.users.first {
+                postAuthor = existingUser
+            } else {
+                postAuthor = TestDataBuilder.anyUser()
+                repository.add(postAuthor)
+            }
         }
         
         let post: BlogPost

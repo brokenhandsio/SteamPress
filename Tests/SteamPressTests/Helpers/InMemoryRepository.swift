@@ -144,6 +144,9 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
     
     func add(_ user: BlogUser) {
         if (users.first { $0.userID == user.userID } == nil) {
+            if (users.first { $0.username == user.username} != nil) {
+                fatalError("Duplicate users added with username \(user.username)")
+            }
             user.userID = users.count + 1
             users.append(user)
         }
