@@ -5,3 +5,4 @@
 DerivedData/
 Package.pins
 Package.resolved
+.swiftpm

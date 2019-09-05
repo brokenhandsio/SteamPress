@@ -6,7 +6,7 @@ import Vapor
 //import Foundation
 //import Fluent
 //
-//struct LeafViewFactory: ViewFactory {
+//struct LeafViewFactory: BlogViewFactory {
 //
 //    let viewRenderer: ViewRenderer
 //    let disqusName: String?

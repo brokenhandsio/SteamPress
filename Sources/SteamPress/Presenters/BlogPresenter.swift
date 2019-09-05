@@ -8,4 +8,5 @@ public protocol BlogPresenter: Service {
     func allTagsView(on req: Request, tags: [BlogTag]) -> Future<View>
     func tagView(on req: Request, tag: BlogTag, posts: [BlogPost]) -> Future<View>
     func searchView(on req: Request, posts: [BlogPost]?, searchTerm: String?) -> Future<View>
+    func loginView(on req: Request, loginWarning: Bool, errors: [String]?, username: String?, usernameError: Bool, passwordError: Bool) throws -> Future<View>
 }

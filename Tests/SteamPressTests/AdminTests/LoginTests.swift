@@ -19,6 +19,8 @@ class LoginTests: XCTestCase {
         ("testUserCannotResetPasswordWithShortPassword", testUserCannotResetPasswordWithShortPassword),
         ("testThatAfterResettingPasswordUserIsNotAskedToResetPassword", testThatAfterResettingPasswordUserIsNotAskedToResetPassword),
         ("testUserIsRedirectedWhenLoggingInAndPasswordResetRequired", testUserIsRedirectedWhenLoggingInAndPasswordResetRequired),
+        ("testErrorShownWhenTryingToLoginWithoutUsername", testErrorShownWhenTryingToLoginWithoutUsername),
+        ("testErrorShownWhenTryingToLoginWithoutPassword", testErrorShownWhenTryingToLoginWithoutPassword),
     ]
     
     // MARK: - Properties
@@ -187,6 +189,22 @@ class LoginTests: XCTestCase {
 
         XCTAssertEqual(response.http.status, .seeOther)
         XCTAssertEqual(response.http.headers[.location].first, "/blog/admin/resetPassword/")
+    }
+    
+    func testErrorShownWhenTryingToLoginWithoutUsername() throws {
+        let loginData = LoginData(username: nil, password: "password")
+        _ = try testWorld.getResponse(to: "/blog/admin/login", method: .POST, body: loginData)
+        
+        XCTAssertTrue(testWorld.context.blogPresenter.loginErrors?.contains("You must supply your username") ?? false)
+        XCTAssertTrue(testWorld.context.blogPresenter.loginUsernameError ?? false)
+    }
+    
+    func testErrorShownWhenTryingToLoginWithoutPassword() throws {
+        let loginData = LoginData(username: "usera", password: nil)
+        _ = try testWorld.getResponse(to: "/blog/admin/login", method: .POST, body: loginData)
+        
+        XCTAssertTrue(testWorld.context.blogPresenter.loginErrors?.contains("You must supply your password") ?? false)
+        XCTAssertTrue(testWorld.context.blogPresenter.loginPasswordError ?? false)
     }
 }
 

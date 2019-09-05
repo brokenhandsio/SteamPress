@@ -44,6 +44,6 @@ extension TestWorld {
 }
 
 struct LoginData: Content {
-    let username: String
-    let password: String
+    let username: String?
+    let password: String?
 }

@@ -1,11 +1,22 @@
 ////import URI
 //import Foundation
-//@testable import SteamPress
-//import Vapor
 //import Fluent
 //
-//class CapturingViewFactory: ViewFactory {
-//    
+//import SteamPress
+//import Vapor
+//
+//class CapturingViewFactory: BlogViewFactory {
+//
+//    private(set) var loginWarning: Bool?
+//    private(set) var loginErrors: [String]?
+//    private(set) var loginUsername: String?
+//    func createLoginView(on container: Container, loginWarning: Bool, errors: [String]?, username: String?) throws -> EventLoopFuture<View> {
+//        self.loginWarning = loginWarning
+//        self.loginErrors = errors
+//        self.loginUsername = username
+//        return TestDataBuilder.createFutureView(on: container)
+//    }
+//
 //    private func createDummyView() -> View {
 //        return View(data: "Test".makeBytes())
 //    }

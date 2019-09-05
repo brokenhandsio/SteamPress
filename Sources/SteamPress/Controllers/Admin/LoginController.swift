@@ -31,19 +31,22 @@ struct LoginController: RouteCollection {
     func loginPostHandler(_ req: Request) throws -> Future<Response> {
         let loginData = try req.content.syncDecode(LoginData.self)
         var loginErrors = [String]()
+        var usernameError = false
+        var passwordError = false
 
         if loginData.username == nil {
             loginErrors.append("You must supply your username")
+            usernameError = true
         }
 
         if loginData.password == nil {
             loginErrors.append("You must supply your password")
+            passwordError = true
         }
 
         if !loginErrors.isEmpty {
-            throw Abort(.badRequest)
-            #warning("Implement")
-//            return try viewFactory.createLoginView(loginWarning: false, errors: loginErrors, username: rawUsername, password: rawPassword)
+            let presenter = try req.make(BlogPresenter.self)
+            return try presenter.loginView(on: req, loginWarning: false, errors: loginErrors, username: loginData.username, usernameError: usernameError, passwordError: passwordError).encode(for: req)
         }
 
         guard let username = loginData.username, let password = loginData.password else {
@@ -131,16 +134,6 @@ struct LoginController: RouteCollection {
 }
 
 #warning("Move")
-public protocol PasswordHasher: Service {
-    func hash(_ plaintext: LosslessDataConvertible) throws -> String
-}
-
-extension BCryptDigest: PasswordHasher {
-    public func hash(_ plaintext: LosslessDataConvertible) throws -> String {
-        return try self.hash(plaintext, salt: nil)
-    }
-}
-
 struct LoginData: Content {
     let username: String?
     let password: String?

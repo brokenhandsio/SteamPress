@@ -2,7 +2,7 @@ import Vapor
 //import URI
 import Foundation
 
-protocol ViewFactory {
+//public protocol BlogViewFactory {
 
 //    // MARK: - Admin Controller
 //    func createBlogPostView(uri: URI, errors: [String]?, title: String?, contents: String?, slugUrl: String?,
@@ -11,7 +11,7 @@ protocol ViewFactory {
 //                        confirmPasswordError: Bool?, resetPasswordRequired: Bool?, userId: Identifier?,
 //                        profilePicture: String?, twitterHandle: String?, biography: String?,
 //                        tagline: String?, loggedInUser: BlogUser) throws -> View
-//    func createLoginView(loginWarning: Bool, errors: [String]?, username: String?, password: String?) throws -> View
+//    func createLoginView(on container: Container, loginWarning: Bool, errors: [String]?, username: String?) throws -> Future<View>
 //    func createBlogAdminView(errors: [String]?, user: BlogUser) throws -> View
 //    func createResetPasswordView(errors: [String]?, passwordError: Bool?, confirmPasswordError: Bool?, user: BlogUser) throws -> View
 //
@@ -24,4 +24,4 @@ protocol ViewFactory {
 //    func allTagsView(uri: URI, allTags: [BlogTag], user: BlogUser?) throws -> View
 //    func profileView(uri: URI, author: BlogUser, paginatedPosts: Page<BlogPost>, loggedInUser: BlogUser?) throws -> View
 //    func searchView(uri: URI, searchTerm: String?, foundPosts: Page<BlogPost>?, emptySearch: Bool, user: BlogUser?) throws -> View
-}
+//}
