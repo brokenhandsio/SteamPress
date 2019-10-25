@@ -48,14 +48,14 @@ class AccessControlTests: XCTestCase {
         try assertLoginRequired(method: .POST, path: "createUser")
     }
 
-//    func testCannotAccessEditUserPageWithoutLogin() throws {
-//        try assertLoginRequired(method: .get, path: "users/1/edit")
-//    }
-//
-//    func testCannotSendEditUserPageWithoutLogin() throws {
-//        try assertLoginRequired(method: .post, path: "users/1/edit")
-//    }
-//
+    func testCannotAccessEditUserPageWithoutLogin() throws {
+        try assertLoginRequired(method: .GET, path: "users/1/edit")
+    }
+
+    func testCannotSendEditUserPageWithoutLogin() throws {
+        try assertLoginRequired(method: .POST, path: "users/1/edit")
+    }
+
 //    func testCannotDeletePostWithoutLogin() throws {
 //        try assertLoginRequired(method: .get, path: "posts/1/delete")
 //    }
@@ -63,10 +63,10 @@ class AccessControlTests: XCTestCase {
 //    func testCannotDeleteUserWithoutLogin() throws {
 //        try assertLoginRequired(method: .get, path: "users/1/delete")
 //    }
-//
-//    func testCannotAccessResetPasswordPageWithoutLogin() throws {
-//        try assertLoginRequired(method: .get, path: "resetPassword")
-//    }
+
+    func testCannotAccessResetPasswordPageWithoutLogin() throws {
+        try assertLoginRequired(method: .GET, path: "resetPassword")
+    }
 
     func testCannotSendResetPasswordPageWithoutLogin() throws {
         try assertLoginRequired(method: .POST, path: "resetPassword")
@@ -100,14 +100,16 @@ class AccessControlTests: XCTestCase {
         XCTAssertEqual(response.http.status, .ok)
     }
 
-//    func testCanAccessEditUserPageWhenLoggedIn() throws {
+    func testCanAccessEditUserPageWhenLoggedIn() throws {
 //        let userToEdit = TestDataBuilder.anyUser(name: "Leia", username: "leia")
 //        try userToEdit.save()
 //        let request = try createLoggedInRequest(method: .get, path: "users/\(userToEdit.id!.string!)/edit")
 //        let response = try drop.respond(to: request)
 //
 //        XCTAssertEqual(response.status, .ok)
-//    }
+        let response = try testWorld.getResponse(to: "/blog/admin/users/1/edit", loggedInUser: user)
+        XCTAssertEqual(response.http.status, .ok)
+    }
 
     func testCanAccessResetPasswordPage() throws {
         let response = try testWorld.getResponse(to: "/blog/admin/resetPassword", loggedInUser: user)

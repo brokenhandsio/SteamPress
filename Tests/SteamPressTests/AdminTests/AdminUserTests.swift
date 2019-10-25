@@ -4,28 +4,6 @@ import SteamPress
 
 class AdminUserTests: XCTestCase {
     
-    // MARK: - allTests
-    
-    #warning("Rename to __allTests")
-    static var allTests = [
-        ("testLinuxTestSuiteIncludesAllTests", testLinuxTestSuiteIncludesAllTests),
-        ("testUserCanBeCreatedSuccessfully", testUserCanBeCreatedSuccessfully),
-        ("testUserMustResetPasswordIfSetToWhenCreatingUser", testUserMustResetPasswordIfSetToWhenCreatingUser),
-        ("testUserCannotBeCreatedWithoutName", testUserCannotBeCreatedWithoutName),
-        ("testUserCannotBeCreatedWithoutUsername", testUserCannotBeCreatedWithoutUsername),
-        ("testUserCannotBeCreatedWithoutPassword", testUserCannotBeCreatedWithoutPassword),
-        ("testUserCannotBeCreatedWithoutSpecifyingAConfirmPassword", testUserCannotBeCreatedWithoutSpecifyingAConfirmPassword),
-        ("testUserCannotBeCreatedWithPasswordsThatDontMatch", testUserCannotBeCreatedWithPasswordsThatDontMatch),
-        ("testUserCannotBeCreatedWithSimplePassword", testUserCannotBeCreatedWithSimplePassword),
-        ("testUserCannotBeCreatedWithEmptyName", testUserCannotBeCreatedWithEmptyName),
-        ("testUserCannotBeCreatedWithEmptyUsername", testUserCannotBeCreatedWithEmptyUsername),
-        ("testUserCannotBeCreatedWithInvalidUsername", testUserCannotBeCreatedWithInvalidUsername),
-        ("testUserCanBeUpdated", testUserCanBeUpdated),
-        ("testCanDeleteUser", testCanDeleteUser),
-        ("testCannotDeleteSelf", testCannotDeleteSelf),
-        ("testCannotDeleteLastUser", testCannotDeleteLastUser),
-    ]
-    
     // MARK: - Properties
     private var app: Application!
     private var testWorld: TestWorld!
@@ -40,19 +18,6 @@ class AdminUserTests: XCTestCase {
     override func setUp() {
         testWorld = try! TestWorld.create()
         user = testWorld.createUser(name: "Leia", username: "leia")
-    }
-    
-    // MARK: - Tests
-    
-    func testLinuxTestSuiteIncludesAllTests() {
-        #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
-        let thisClass = type(of: self)
-        let linuxCount = thisClass.allTests.count
-        let darwinCount = Int(thisClass
-            .defaultTestSuite.testCaseCount)
-        XCTAssertEqual(linuxCount, darwinCount,
-                       "\(darwinCount - linuxCount) tests are missing from allTests")
-        #endif
     }
     
     func testUserCanBeCreatedSuccessfully() throws {
@@ -233,6 +198,17 @@ class AdminUserTests: XCTestCase {
         _ = try testWorld.getResponse(to: createUserPath, body: createData, loggedInUser: user)
 
         XCTAssertTrue(presenter.createUserErrors?.contains("The username provided is not valid") ?? false)
+    }
+    
+    func testPresenterGetsUserInformationOnEditUserPage() throws {
+        _ = try testWorld.getResponse(to: "/admin/users/\(user.userID!)/edit", loggedInUser: user)
+        XCTAssertEqual(presenter.createUserName, user.name)
+        XCTAssertEqual(presenter.createUserUsername, user.username)
+        XCTAssertEqual(presenter.createUserUserID, user.userID)
+        XCTAssertEqual(presenter.createUserProfilePicture, user.profilePicture)
+        XCTAssertEqual(presenter.createUserTwitterHandle, user.twitterHandle)
+        XCTAssertEqual(presenter.createUserBiography, user.biography)
+        XCTAssertEqual(presenter.createUserTagline, user.tagline)
     }
 
     func testUserCanBeUpdated() throws {

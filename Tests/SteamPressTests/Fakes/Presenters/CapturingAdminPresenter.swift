@@ -17,8 +17,27 @@ class CapturingAdminPresenter: BlogAdminPresenter {
     }
     
     private(set) var createUserErrors: [String]?
-    func createUserView(on req: Request, errors: [String]?) -> EventLoopFuture<View> {
+    private(set) var createUserName: String?
+    private(set) var createUserUsername: String?
+    private(set) var createUserPasswordError: Bool?
+    private(set) var createUserConfirmPasswordError: Bool?
+    private(set) var createUserResetPasswordRequired: Bool?
+    private(set) var createUserUserID: Int?
+    private(set) var createUserProfilePicture: String?
+    private(set) var createUserTwitterHandle: String?
+    private(set) var createUserBiography: String?
+    private(set) var createUserTagline: String?
+    func createUserView(on req: Request, errors: [String]?, name: String?, username: String?, passwordError: Bool, confirmPasswordError: Bool, userID: Int?, profilePicture: String?, twitterHandle: String?, biography: String?, tagline: String?) -> EventLoopFuture<View> {
         self.createUserErrors = errors
+        self.createUserName = name
+        self.createUserUsername = username
+        self.createUserPasswordError = passwordError
+        self.createUserConfirmPasswordError = confirmPasswordError
+        self.createUserUserID = userID
+        self.createUserProfilePicture = profilePicture
+        self.createUserTwitterHandle = twitterHandle
+        self.createUserBiography = biography
+        self.createUserTagline = tagline
         return createFutureView(on: req)
     }
     
