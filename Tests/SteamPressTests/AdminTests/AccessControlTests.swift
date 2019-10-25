@@ -4,37 +4,19 @@ import SteamPress
 
 class AccessControlTests: XCTestCase {
     
-    // MARK: - allTests
-    
-    static var allTests = [
-        ("testLinuxTestSuiteIncludesAllTests", testLinuxTestSuiteIncludesAllTests),
-//        ("testCannotAccessAdminPageWithoutBeingLoggedIn", testCannotAccessAdminPageWithoutBeingLoggedIn),
-        ("testCannotAccessCreateBlogPostPageWithoutBeingLoggedIn", testCannotAccessCreateBlogPostPageWithoutBeingLoggedIn),
-        ("testCannotSendCreateBlogPostPageWithoutBeingLoggedIn", testCannotSendCreateBlogPostPageWithoutBeingLoggedIn),
-    ]
-    
     // MARK: - Properties
     private var app: Application!
     private var testWorld: TestWorld!
+    private var user: BlogUser!
     
     // MARK: - Overrides
     
     override func setUp() {
         testWorld = try! TestWorld.create(path: "blog")
+        user = testWorld.createUser()
     }
     
     // MARK: - Tests
-    
-    func testLinuxTestSuiteIncludesAllTests() {
-        #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
-        let thisClass = type(of: self)
-        let linuxCount = thisClass.allTests.count
-        let darwinCount = Int(thisClass
-            .defaultTestSuite.testCaseCount)
-        XCTAssertEqual(linuxCount, darwinCount,
-                       "\(darwinCount - linuxCount) tests are missing from allTests")
-        #endif
-    }
     
     // MARK: - Access restriction tests
     
@@ -86,9 +68,9 @@ class AccessControlTests: XCTestCase {
 //        try assertLoginRequired(method: .get, path: "resetPassword")
 //    }
 //
-//    func testCannotSendResetPasswordPageWithoutLogin() throws {
-//        try assertLoginRequired(method: .post, path: "resetPassword")
-//    }
+    func testCannotSendResetPasswordPageWithoutLogin() throws {
+        try assertLoginRequired(method: .POST, path: "resetPassword")
+    }
     
     // MARK: - Access Success Tests
     
@@ -99,12 +81,10 @@ class AccessControlTests: XCTestCase {
 //        XCTAssertEqual(response.status, .ok)
 //    }
 //
-//    func testCanAccessCreatePostPageWhenLoggedIn() throws {
-//        let request = try createLoggedInRequest(method: .get, path: "createPost")
-//        let response = try drop.respond(to: request)
-//
-//        XCTAssertEqual(response.status, .ok)
-//    }
+    func testCanAccessCreatePostPageWhenLoggedIn() throws {
+        let response = try testWorld.getResponse(to: "/blog/admin/createPost", loggedInUser: user)
+        XCTAssertEqual(response.http.status, .ok)
+    }
 //
 //    func testCanAccessEditPostPageWhenLoggedIn() throws {
 //        let user = TestDataBuilder.anyUser()
@@ -132,13 +112,11 @@ class AccessControlTests: XCTestCase {
 //
 //        XCTAssertEqual(response.status, .ok)
 //    }
-//
-//    func testCanAccessResetPasswordPage() throws {
-//        let request = try createLoggedInRequest(method: .get, path: "resetPassword")
-//        let response = try drop.respond(to: request)
-//
-//        XCTAssertEqual(response.status, .ok)
-//    }
+
+    func testCanAccessResetPasswordPage() throws {
+        let response = try testWorld.getResponse(to: "/blog/admin/resetPassword", loggedInUser: user)
+        XCTAssertEqual(response.http.status, .ok)
+    }
 
     
     // MARK: - Helpers

@@ -21,6 +21,7 @@ class LoginTests: XCTestCase {
         ("testUserIsRedirectedWhenLoggingInAndPasswordResetRequired", testUserIsRedirectedWhenLoggingInAndPasswordResetRequired),
         ("testErrorShownWhenTryingToLoginWithoutUsername", testErrorShownWhenTryingToLoginWithoutUsername),
         ("testErrorShownWhenTryingToLoginWithoutPassword", testErrorShownWhenTryingToLoginWithoutPassword),
+        ("testLoggingInWithInvalidCredentials", testLoggingInWithInvalidCredentials),
     ]
     
     // MARK: - Properties
@@ -205,6 +206,13 @@ class LoginTests: XCTestCase {
         
         XCTAssertTrue(testWorld.context.blogPresenter.loginErrors?.contains("You must supply your password") ?? false)
         XCTAssertTrue(testWorld.context.blogPresenter.loginPasswordError ?? false)
+    }
+    
+    func testLoggingInWithInvalidCredentials() throws {
+        let loginData = LoginData(username: "luke", password: "notthepassword")
+        _ = try testWorld.getResponse(to: "/blog/admin/login", method: .POST, body: loginData)
+        
+        XCTAssertTrue(testWorld.context.blogPresenter.loginErrors?.contains("Your username or password is incorrect") ?? false)
     }
 }
 

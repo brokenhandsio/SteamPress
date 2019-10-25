@@ -19,6 +19,7 @@ struct LoginController: RouteCollection {
         let redirectMiddleware = BlogLoginRedirectAuthMiddleware(pathCreator: pathCreator)
         let protectedRoutes = router.grouped(redirectMiddleware)
         protectedRoutes.post("logout", use: logoutHandler)
+        protectedRoutes.get("resetPassword", use: resetPasswordHandler)
         protectedRoutes.post("resetPassword", use: resetPasswordPostHandler)
     }
     
@@ -60,16 +61,15 @@ struct LoginController: RouteCollection {
 //        }
         
         let userRepository = try req.make(BlogUserRepository.self)
-        return userRepository.getUser(username: username, on: req).map { user in
+        return userRepository.getUser(username: username, on: req).flatMap { user in
             let verifier = try req.make(PasswordVerifier.self)
             guard let user = user, try verifier.verify(password, created: user.password) else {
-                #warning("TODO")
-//                let loginError = ["Your username or password was incorrect"]
-//                return try viewFactory.createLoginView(loginWarning: false, errors: loginError, username: username, password: "")
-                throw Abort(.badRequest)
+                let loginError = ["Your username or password is incorrect"]
+                let presenter = try req.make(BlogPresenter.self)
+                return try presenter.loginView(on: req, loginWarning: false, errors: loginError, username: loginData.username, usernameError: false, passwordError: false).encode(for: req)
             }
             try user.authenticateSession(on: req)
-            return req.redirect(to: self.pathCreator.createPath(for: "admin"))
+            return req.future(req.redirect(to: self.pathCreator.createPath(for: "admin")))
         }
     }
 
@@ -78,9 +78,10 @@ struct LoginController: RouteCollection {
         return request.redirect(to: pathCreator.createPath(for: pathCreator.blogPath))
     }
     
-//    func resetPasswordHandler(_ request: Request) throws -> ResponseRepresentable {
-//        return try viewFactory.createResetPasswordView(errors: nil, passwordError: nil, confirmPasswordError: nil, user: request.user())
-//    }
+    func resetPasswordHandler(_ req: Request) throws -> Future<View> {
+        let presenter = try req.make(BlogAdminPresenter.self)
+        return presenter.createResetPasswordView(on: req, errors: nil, passwordError: nil, confirmPasswordError: nil)
+    }
 
     func resetPasswordPostHandler(_ req: Request) throws -> EventLoopFuture<Response> {
         let data = try req.content.syncDecode(ResetPasswordData.self)
