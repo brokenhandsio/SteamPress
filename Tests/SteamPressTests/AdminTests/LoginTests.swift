@@ -6,24 +6,6 @@ import Authentication
 
 class LoginTests: XCTestCase {
     
-    // MARK: - allTests
-    
-    static var allTests = [
-        ("testLinuxTestSuiteIncludesAllTests", testLinuxTestSuiteIncludesAllTests),
-        ("testAdminUserCreatedOnFirstBoot", testAdminUserCreatedOnFirstBoot),
-        ("testLogin", testLogin),
-        ("testUserCanResetPassword", testUserCanResetPassword),
-        ("testUserCannotResetPasswordWithMismatchingPasswords", testUserCannotResetPasswordWithMismatchingPasswords),
-        ("testUserCannotResetPasswordWithoutPassword", testUserCannotResetPasswordWithoutPassword),
-        ("testUserCannotResetPasswordWithoutConfirmPassword", testUserCannotResetPasswordWithoutConfirmPassword),
-        ("testUserCannotResetPasswordWithShortPassword", testUserCannotResetPasswordWithShortPassword),
-        ("testThatAfterResettingPasswordUserIsNotAskedToResetPassword", testThatAfterResettingPasswordUserIsNotAskedToResetPassword),
-        ("testUserIsRedirectedWhenLoggingInAndPasswordResetRequired", testUserIsRedirectedWhenLoggingInAndPasswordResetRequired),
-        ("testErrorShownWhenTryingToLoginWithoutUsername", testErrorShownWhenTryingToLoginWithoutUsername),
-        ("testErrorShownWhenTryingToLoginWithoutPassword", testErrorShownWhenTryingToLoginWithoutPassword),
-        ("testLoggingInWithInvalidCredentials", testLoggingInWithInvalidCredentials),
-    ]
-    
     // MARK: - Properties
     private var app: Application!
     private var testWorld: TestWorld!
@@ -31,6 +13,10 @@ class LoginTests: XCTestCase {
     
     private var presenter: CapturingAdminPresenter {
         return testWorld.context.blogAdminPresenter
+    }
+    
+    private var blogPresenter: CapturingBlogPresenter {
+        return testWorld.context.blogPresenter
     }
     
     // MARK: - Overrides
@@ -41,17 +27,6 @@ class LoginTests: XCTestCase {
     }
     
     // MARK: - Tests
-    
-    func testLinuxTestSuiteIncludesAllTests() {
-        #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
-        let thisClass = type(of: self)
-        let linuxCount = thisClass.allTests.count
-        let darwinCount = Int(thisClass
-            .defaultTestSuite.testCaseCount)
-        XCTAssertEqual(linuxCount, darwinCount,
-                       "\(darwinCount - linuxCount) tests are missing from allTests")
-        #endif
-    }
     
     func testLogin() throws {
         testWorld = try TestWorld.create(path: "blog", useRealPasswordHasher: true)
@@ -89,6 +64,16 @@ class LoginTests: XCTestCase {
 
         XCTAssertEqual(loggedOutAdminResponse.http.status, .seeOther)
         XCTAssertEqual(loggedOutAdminResponse.http.headers[.location].first, "/blog/admin/login/?loginRequired")
+    }
+    
+    func testLoginPageCanBeAccessed() throws {
+        let response = try testWorld.getResponse(to: "/blog/admin/login")
+        XCTAssertEqual(response.http.status, .ok)
+    }
+    
+    func testLoginWarningShownIfRedirecting() throws {
+        _ = try testWorld.getResponse(to: "/blog/admin/login?loginRequired")
+        XCTAssertTrue(blogPresenter.loginWarning ?? false)
     }
     
     func testAdminUserCreatedOnFirstBoot() {

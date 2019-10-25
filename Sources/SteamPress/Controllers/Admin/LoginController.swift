@@ -13,6 +13,7 @@ struct LoginController: RouteCollection {
     
     // MARK: - Route setup
     func boot(router: Router) throws {
+        router.get("login", use: loginHandler)
         router.post("login", use: loginPostHandler)
         
         #warning("TODO - wrap the middleware group in the auth tests")
@@ -24,11 +25,12 @@ struct LoginController: RouteCollection {
     }
     
     // MARK: - Route handlers
-    //    func loginHandler(_ request: Request) throws -> ResponseRepresentable {
-    //        let loginRequired = request.uri.query == "loginRequired"
-    //        return try viewFactory.createLoginView(loginWarning: loginRequired, errors: nil, username: nil, password: nil)
-    //    }
-    //
+    func loginHandler(_ req: Request) throws -> Future<View> {
+        let loginRequied = (try? req.query.get(Bool.self, at: "loginRequired")) != nil
+        let presenter = try req.make(BlogPresenter.self)
+        return try presenter.loginView(on: req, loginWarning: loginRequied, errors: nil, username: nil, usernameError: false, passwordError: false)
+    }
+
     func loginPostHandler(_ req: Request) throws -> Future<Response> {
         let loginData = try req.content.syncDecode(LoginData.self)
         var loginErrors = [String]()
