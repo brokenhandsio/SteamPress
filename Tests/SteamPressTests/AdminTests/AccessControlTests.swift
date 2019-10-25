@@ -20,9 +20,9 @@ class AccessControlTests: XCTestCase {
     
     // MARK: - Access restriction tests
     
-//    func testCannotAccessAdminPageWithoutBeingLoggedIn() throws {
-//        try assertLoginRequired(method: .GET, path: "")
-//    }
+    func testCannotAccessAdminPageWithoutBeingLoggedIn() throws {
+        try assertLoginRequired(method: .GET, path: "")
+    }
     
     func testCannotAccessCreateBlogPostPageWithoutBeingLoggedIn() throws {
         try assertLoginRequired(method: .GET, path: "createPost")
@@ -74,13 +74,11 @@ class AccessControlTests: XCTestCase {
     
     // MARK: - Access Success Tests
     
-//    func testCanAccessAdminPageWhenLoggedIn() throws {
-//        let request = try createLoggedInRequest(method: .get, path: "")
-//        let response = try drop.respond(to: request)
-//
-//        XCTAssertEqual(response.status, .ok)
-//    }
-//
+    func testCanAccessAdminPageWhenLoggedIn() throws {
+        let response = try testWorld.getResponse(to: "/blog/admin/", loggedInUser: user)
+        XCTAssertEqual(response.http.status, .ok)
+    }
+
     func testCanAccessCreatePostPageWhenLoggedIn() throws {
         let response = try testWorld.getResponse(to: "/blog/admin/createPost", loggedInUser: user)
         XCTAssertEqual(response.http.status, .ok)
