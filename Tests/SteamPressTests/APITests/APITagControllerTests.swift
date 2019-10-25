@@ -4,25 +4,7 @@ import SteamPress
 
 class APITagControllerTests: XCTestCase {
     
-    // MARK: - allTests
-    
-    static var allTests = [
-        ("testLinuxTestSuiteIncludesAllTests", testLinuxTestSuiteIncludesAllTests),
-        ("testThatAllTagsAreReturnedFromAPI", testThatAllTagsAreReturnedFromAPI),
-        ]
-    
     // MARK: - Tests
-    
-    func testLinuxTestSuiteIncludesAllTests() {
-        #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
-        let thisClass = type(of: self)
-        let linuxCount = thisClass.allTests.count
-        let darwinCount = Int(thisClass
-            .defaultTestSuite.testCaseCount)
-        XCTAssertEqual(linuxCount, darwinCount,
-                       "\(darwinCount - linuxCount) tests are missing from allTests")
-        #endif
-    }
     
     func testThatAllTagsAreReturnedFromAPI() throws {
         let testWorld = try TestWorld.create()

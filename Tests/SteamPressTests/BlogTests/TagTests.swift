@@ -4,17 +4,6 @@ import SteamPress
 
 class TagTests: XCTestCase {
     
-    // MARK: - allTests
-    
-    static var allTests = [
-        ("testLinuxTestSuiteIncludesAllTests", testLinuxTestSuiteIncludesAllTests),
-        ("testAllTagsPageGetsAllTags", testAllTagsPageGetsAllTags),
-        ("testTagPageGetsOnlyPublishedPostsInDescendingOrder", testTagPageGetsOnlyPublishedPostsInDescendingOrder),
-        ("testDisabledBlogTagsPath", testDisabledBlogTagsPath),
-        ("testTagView", testTagView),
-        ("testTagNameContainsUrlEncodedName", testTagNameContainsUrlEncodedName)
-    ]
-    
     // MARK: - Properties
     var app: Application!
     var testWorld: TestWorld!
@@ -36,17 +25,6 @@ class TagTests: XCTestCase {
     }
     
     // MARK: - Tests
-    
-    func testLinuxTestSuiteIncludesAllTests() {
-        #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
-        let thisClass = type(of: self)
-        let linuxCount = thisClass.allTests.count
-        let darwinCount = Int(thisClass
-            .defaultTestSuite.testCaseCount)
-        XCTAssertEqual(linuxCount, darwinCount,
-                       "\(darwinCount - linuxCount) tests are missing from allTests")
-        #endif
-    }
     
     func testAllTagsPageGetsAllTags() throws {
         _ = try testWorld.getResponse(to: allTagsRequestPath)

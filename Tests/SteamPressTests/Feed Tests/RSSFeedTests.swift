@@ -4,28 +4,6 @@ import Vapor
 
 class RSSFeedTests: XCTestCase {
 
-    // MARK: - allTests
-
-    static var allTests = [
-        ("testLinuxTestSuiteIncludesAllTests", testLinuxTestSuiteIncludesAllTests),
-        ("testNoPostsReturnsCorrectRSSFeed", testNoPostsReturnsCorrectRSSFeed),
-        ("testOnePostReturnsCorrectRSSFeed", testOnePostReturnsCorrectRSSFeed),
-        ("testMultiplePostsReturnsCorrectRSSFeed", testMultiplePostsReturnsCorrectRSSFeed),
-        ("testDraftsAreNotIncludedInFeed", testDraftsAreNotIncludedInFeed),
-        ("testBlogTitleCanBeConfigured", testBlogTitleCanBeConfigured),
-        ("testBlogDescriptionCanBeConfigured", testBlogDescriptionCanBeConfigured),
-        ("testRSSFeedEndpointAddedToCorrectEndpointWhenBlogInSubPath", testRSSFeedEndpointAddedToCorrectEndpointWhenBlogInSubPath),
-        ("testPostLinkWhenBlogIsPlacedAtSubPath", testPostLinkWhenBlogIsPlacedAtSubPath),
-        ("testCopyrightCanBeAddedToRSS", testCopyrightCanBeAddedToRSS),
-        ("testThatTagsAreAddedToPostCorrectly", testThatTagsAreAddedToPostCorrectly),
-        ("testThatLinksComesFromRequestCorrectly", testThatLinksComesFromRequestCorrectly),
-        ("testThatLinksSpecifyHTTPSWhenComingFromReverseProxy", testThatLinksSpecifyHTTPSWhenComingFromReverseProxy),
-        ("testImageIsProvidedIfSupplied", testImageIsProvidedIfSupplied),
-        ("testCorrectHeaderSetForRSSFeed", testCorrectHeaderSetForRSSFeed),
-        ("testThatDateFormatterIsCorrect", testThatDateFormatterIsCorrect),
-        ("testThatDescriptionContainsOnlyText", testThatDescriptionContainsOnlyText),
-        ]
-
     // MARK: - Properties
     private var testWorld: TestWorld!
     private var rssPath = "/rss.xml"
@@ -41,17 +19,6 @@ class RSSFeedTests: XCTestCase {
     }
 
     // MARK: - Tests
-
-    func testLinuxTestSuiteIncludesAllTests() {
-        #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
-            let thisClass = type(of: self)
-            let linuxCount = thisClass.allTests.count
-            let darwinCount = Int(thisClass
-                .defaultTestSuite.testCaseCount)
-            XCTAssertEqual(linuxCount, darwinCount,
-                           "\(darwinCount - linuxCount) tests are missing from allTests")
-        #endif
-    }
 
     func testNoPostsReturnsCorrectRSSFeed() throws {
         testWorld = try TestWorld.create()

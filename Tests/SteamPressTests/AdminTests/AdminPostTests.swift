@@ -4,20 +4,6 @@ import SteamPress
 
 class AdminPostTests: XCTestCase {
     
-    // MARK: - allTests
-    
-    static var allTests = [
-        ("testLinuxTestSuiteIncludesAllTests", testLinuxTestSuiteIncludesAllTests),
-        ("testPostCanBeCreated", testPostCanBeCreated),
-        ("testPostCannotBeCreatedIfDraftAndPublishNotSet", testPostCannotBeCreatedIfDraftAndPublishNotSet),
-        ("testCreatePostMustIncludeTitle", testCreatePostMustIncludeTitle),
-        ("testCreatePostMustIncludeContents", testCreatePostMustIncludeContents),
-        ("testCreatePostWithDraftDoesNotPublishPost", testCreatePostWithDraftDoesNotPublishPost),
-        ("testPostCanBeUpdated", testPostCanBeUpdated),
-        ("testCanDeleteBlogPost", testCanDeleteBlogPost),
-        ("testThatEditingPostGetsRedirectToPostPage", testThatEditingPostGetsRedirectToPostPage),
-        ]
-    
     // MARK: - Properties
     private var app: Application!
     private var testWorld: TestWorld!
@@ -35,17 +21,6 @@ class AdminPostTests: XCTestCase {
     }
     
     // MARK: - Tests
-    
-    func testLinuxTestSuiteIncludesAllTests() {
-        #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
-        let thisClass = type(of: self)
-        let linuxCount = thisClass.allTests.count
-        let darwinCount = Int(thisClass
-            .defaultTestSuite.testCaseCount)
-        XCTAssertEqual(linuxCount, darwinCount,
-                       "\(darwinCount - linuxCount) tests are missing from allTests")
-        #endif
-    }
     
     func testPostCanBeCreated() throws {
         struct CreatePostData: Content {

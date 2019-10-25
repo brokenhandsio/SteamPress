@@ -4,16 +4,6 @@ import SteamPress
 
 class AuthorTests: XCTestCase {
     
-    // MARK: - allTests
-    
-    static var allTests = [
-        ("testLinuxTestSuiteIncludesAllTests", testLinuxTestSuiteIncludesAllTests),
-        ("testAllAuthorsPageGetAllAuthors", testAllAuthorsPageGetAllAuthors),
-        ("testAuthorPageGetsOnlyPublishedPostsInDescendingOrder", testAuthorPageGetsOnlyPublishedPostsInDescendingOrder),
-        ("testDisabledBlogAuthorsPath", testDisabledBlogAuthorsPath),
-        ("testAuthorView", testAuthorView)
-    ]
-    
     // MARK: - Properties
     private var app: Application!
     private var testWorld: TestWorld!
@@ -34,17 +24,6 @@ class AuthorTests: XCTestCase {
     }
     
     // MARK: - Tests
-    
-    func testLinuxTestSuiteIncludesAllTests() {
-        #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
-        let thisClass = type(of: self)
-        let linuxCount = thisClass.allTests.count
-        let darwinCount = Int(thisClass
-            .defaultTestSuite.testCaseCount)
-        XCTAssertEqual(linuxCount, darwinCount,
-                       "\(darwinCount - linuxCount) tests are missing from allTests")
-        #endif
-    }
     
     func testAllAuthorsPageGetAllAuthors() throws {
         _ = try testWorld.getResponse(to: allAuthorsRequestPath)

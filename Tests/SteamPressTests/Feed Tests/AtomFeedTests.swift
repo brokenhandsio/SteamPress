@@ -4,29 +4,6 @@ import Vapor
 
 class AtomFeedTests: XCTestCase {
 
-    // MARK: - allTests
-
-    static var allTests = [
-        ("testLinuxTestSuiteIncludesAllTests", testLinuxTestSuiteIncludesAllTests),
-        ("testNoPostsReturnsCorrectAtomFeed", testNoPostsReturnsCorrectAtomFeed),
-        ("testThatFeedTitleCanBeConfigured", testThatFeedTitleCanBeConfigured),
-        ("testThatFeedSubtitleCanBeConfigured", testThatFeedSubtitleCanBeConfigured),
-        ("testThatRightsCanBeConifgured", testThatRightsCanBeConifgured),
-        ("testThatLinksAreCorrectForFullURI", testThatLinksAreCorrectForFullURI),
-        ("testThatHTTPSLinksWorkWhenBehindReverseProxy", testThatHTTPSLinksWorkWhenBehindReverseProxy),
-        ("testThatLogoCanBeConfigured", testThatLogoCanBeConfigured),
-        ("testThatFeedIsCorrectForOnePost", testThatFeedIsCorrectForOnePost),
-        ("testThatFeedIsCorrectForOnePostUnderPath", testThatFeedIsCorrectForOnePostUnderPath),
-        ("testThatFeedCorrectForTwoPosts", testThatFeedCorrectForTwoPosts),
-        ("testThatDraftsDontAppearInFeed", testThatDraftsDontAppearInFeed),
-        ("testThatEditedPostsHaveUpdatedTimes", testThatEditedPostsHaveUpdatedTimes),
-        ("testThatTagsAppearWhenPostHasThem", testThatTagsAppearWhenPostHasThem),
-        ("testThatFullLinksWorksForPosts", testThatFullLinksWorksForPosts),
-        ("testThatHTTPSLinksWorkForPostsBehindReverseProxy", testThatHTTPSLinksWorkForPostsBehindReverseProxy),
-        ("testCorrectHeaderSetForAtomFeed", testCorrectHeaderSetForAtomFeed),
-        ("testThatDateFormatterIsCorrect", testThatDateFormatterIsCorrect),
-        ]
-
     // MARK: - Properties
     private var testWorld: TestWorld!
     private let atomPath = "/atom.xml"
@@ -42,17 +19,6 @@ class AtomFeedTests: XCTestCase {
     }
 
     // MARK: - Tests
-
-    func testLinuxTestSuiteIncludesAllTests() {
-        #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
-            let thisClass = type(of: self)
-            let linuxCount = thisClass.allTests.count
-            let darwinCount = Int(thisClass
-                .defaultTestSuite.testCaseCount)
-            XCTAssertEqual(linuxCount, darwinCount,
-                           "\(darwinCount - linuxCount) tests are missing from allTests")
-        #endif
-    }
 
     func testNoPostsReturnsCorrectAtomFeed() throws {
         testWorld = try TestWorld.create()

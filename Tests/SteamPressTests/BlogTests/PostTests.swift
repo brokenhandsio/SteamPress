@@ -5,13 +5,6 @@ import Foundation
 
 class PostTests: XCTestCase {
     
-    
-    // MARK: - all tests
-    static var allTests = [
-        ("testLinuxTestSuiteIncludesAllTests", testLinuxTestSuiteIncludesAllTests),
-        ("testBlogPostRetrievedCorrectlyFromSlugUrl", testBlogPostRetrievedCorrectlyFromSlugUrl),
-    ]
-    
     // MARK: - Properties
     var testWorld: TestWorld!
     var firstData: TestData!
@@ -29,17 +22,6 @@ class PostTests: XCTestCase {
     }
     
     // MARK: - Tests
-    
-    func testLinuxTestSuiteIncludesAllTests() {
-        #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
-        let thisClass = type(of: self)
-        let linuxCount = thisClass.allTests.count
-        let darwinCount = Int(thisClass
-            .defaultTestSuite.testCaseCount)
-        XCTAssertEqual(linuxCount, darwinCount,
-                       "\(darwinCount - linuxCount) tests are missing from allTests")
-        #endif
-    }
     
     func testBlogPostRetrievedCorrectlyFromSlugUrl() throws {
         _ = try testWorld.getResponse(to: blogPostPath)
