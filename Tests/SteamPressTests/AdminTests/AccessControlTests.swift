@@ -32,13 +32,15 @@ class AccessControlTests: XCTestCase {
         try assertLoginRequired(method: .POST, path: "createPost")
     }
 
-//    func testCannotAccessEditPostPageWithoutLogin() throws {
-//        try assertLoginRequired(method: .get, path: "posts/2/edit")
-//    }
-//
-//    func testCannotSendEditPostPageWithoutLogin() throws {
-//        try assertLoginRequired(method: .post, path: "posts/2/edit")
-//    }
+    func testCannotAccessEditPostPageWithoutLogin() throws {
+        let post = try testWorld.createPost()
+        try assertLoginRequired(method: .GET, path: "posts/\(post.post.blogID!)/edit")
+    }
+
+    func testCannotSendEditPostPageWithoutLogin() throws {
+        let post = try testWorld.createPost()
+        try assertLoginRequired(method: .POST, path: "posts/\(post.post.blogID!)/edit")
+    }
 
     func testCannotAccessCreateUserPageWithoutLogin() throws {
         try assertLoginRequired(method: .GET, path: "createUser")
@@ -56,13 +58,13 @@ class AccessControlTests: XCTestCase {
         try assertLoginRequired(method: .POST, path: "users/1/edit")
     }
 
-//    func testCannotDeletePostWithoutLogin() throws {
-//        try assertLoginRequired(method: .get, path: "posts/1/delete")
-//    }
-//
-//    func testCannotDeleteUserWithoutLogin() throws {
-//        try assertLoginRequired(method: .get, path: "users/1/delete")
-//    }
+    func testCannotDeletePostWithoutLogin() throws {
+        try assertLoginRequired(method: .POST, path: "posts/1/delete")
+    }
+
+    func testCannotDeleteUserWithoutLogin() throws {
+        try assertLoginRequired(method: .POST, path: "users/1/delete")
+    }
 
     func testCannotAccessResetPasswordPageWithoutLogin() throws {
         try assertLoginRequired(method: .GET, path: "resetPassword")
@@ -84,16 +86,11 @@ class AccessControlTests: XCTestCase {
         XCTAssertEqual(response.http.status, .ok)
     }
 
-//    func testCanAccessEditPostPageWhenLoggedIn() throws {
-//        let user = TestDataBuilder.anyUser()
-//        try user.save()
-//        let post = TestDataBuilder.anyPost(author: user)
-//        try post.save()
-//        let request = try createLoggedInRequest(method: .get, path: "posts/\(post.id!.string!)/edit", for: user)
-//        let response = try drop.respond(to: request)
-//
-//        XCTAssertEqual(response.status, .ok)
-//    }
+    func testCanAccessEditPostPageWhenLoggedIn() throws {
+        let post = try testWorld.createPost()
+        let response = try testWorld.getResponse(to: "/blog/admin/posts/\(post.post.blogID!)/edit", loggedInUser: user)
+        XCTAssertEqual(response.http.status, .ok)
+    }
 
     func testCanAccessCreateUserPageWhenLoggedIn() throws {
         let response = try testWorld.getResponse(to: "/blog/admin/createUser", loggedInUser: user)
@@ -101,12 +98,6 @@ class AccessControlTests: XCTestCase {
     }
 
     func testCanAccessEditUserPageWhenLoggedIn() throws {
-//        let userToEdit = TestDataBuilder.anyUser(name: "Leia", username: "leia")
-//        try userToEdit.save()
-//        let request = try createLoggedInRequest(method: .get, path: "users/\(userToEdit.id!.string!)/edit")
-//        let response = try drop.respond(to: request)
-//
-//        XCTAssertEqual(response.status, .ok)
         let response = try testWorld.getResponse(to: "/blog/admin/users/1/edit", loggedInUser: user)
         XCTAssertEqual(response.http.status, .ok)
     }

@@ -14,6 +14,7 @@ struct PostAdminController: RouteCollection {
     func boot(router: Router) throws {
         router.get("createPost", use: createPostHandler)
         router.post("createPost", use: createPostPostHandler)
+        router.get("posts", BlogPost.parameter, "edit", use: editPostHandler)
         router.post("posts", BlogPost.parameter, "edit", use: editPostPostHandler)
         router.post("posts", BlogPost.parameter, "delete", use: deletePostHandler)
     }
@@ -81,12 +82,16 @@ struct PostAdminController: RouteCollection {
         }
     }
 
-//    func editPostHandler(request: Request) throws -> ResponseRepresentable {
-//        let post = try request.parameters.next(BlogPost.self)
-//        let tags = try post.tags.all()
-//        let tagsArray: [Node] = tags.map { $0.name.makeNode(in: nil) }
-//        return try viewFactory.createBlogPostView(uri: request.getURIWithHTTPSIfReverseProxy(), errors: nil, title: post.title, contents: post.contents, slugUrl: post.slugUrl, tags: tagsArray, isEditing: true, postToEdit: post, draft: !post.published, user: try request.user())
-//    }
+    func editPostHandler(_ req: Request) throws -> Future<View> {
+        return try req.parameters.next(BlogPost.self).flatMap { post in
+            #warning("Test")
+//            let tags = try post.tags.all()
+//            let tagsArray: [Node] = tags.map { $0.name.makeNode(in: nil) }
+//            return try viewFactory.createBlogPostView(uri: request.getURIWithHTTPSIfReverseProxy(), errors: nil, title: post.title, contents: post.contents, slugUrl: post.slugUrl, tags: tagsArray, isEditing: true, postToEdit: post, draft: !post.published, user: try request.user())
+            let presenter = try req.make(BlogAdminPresenter.self)
+            return presenter.createPostView(on: req, errors: nil)
+        }
+    }
     
     func editPostPostHandler(_ req: Request) throws -> Future<Response> {
         let data = try req.content.syncDecode(CreatePostData.self)
