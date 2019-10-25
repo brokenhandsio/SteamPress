@@ -22,7 +22,8 @@ struct PostAdminController: RouteCollection {
     // MARK: - Route handlers
     func createPostHandler(_ req: Request) throws -> Future<View> {
         let presenter = try req.make(BlogAdminPresenter.self)
-        return presenter.createPostView(on: req, errors: nil)
+        #warning("test is editing = true")
+        return presenter.createPostView(on: req, errors: nil, title: nil, contents: nil, slugURL: nil, tags: nil, isEditing: false, post: nil, isDraft: nil)
     }
     
     func createPostPostHandler(_ req: Request) throws -> Future<Response> {
@@ -35,7 +36,8 @@ struct PostAdminController: RouteCollection {
         
         if let createPostErrors = validatePostCreation(data) {
             let presenter = try req.make(BlogAdminPresenter.self)
-            let view = presenter.createPostView(on: req, errors: createPostErrors)
+            #warning("Test/sort out tags")
+            let view = presenter.createPostView(on: req, errors: createPostErrors, title: data.title, contents: data.contents, slugURL: data.slugURL, tags: nil, isEditing: false, post: nil, isDraft: nil)
             return try view.encode(for: req)
         }
         
@@ -84,12 +86,11 @@ struct PostAdminController: RouteCollection {
 
     func editPostHandler(_ req: Request) throws -> Future<View> {
         return try req.parameters.next(BlogPost.self).flatMap { post in
-            #warning("Test")
+            #warning("Test tags")
 //            let tags = try post.tags.all()
 //            let tagsArray: [Node] = tags.map { $0.name.makeNode(in: nil) }
-//            return try viewFactory.createBlogPostView(uri: request.getURIWithHTTPSIfReverseProxy(), errors: nil, title: post.title, contents: post.contents, slugUrl: post.slugUrl, tags: tagsArray, isEditing: true, postToEdit: post, draft: !post.published, user: try request.user())
             let presenter = try req.make(BlogAdminPresenter.self)
-            return presenter.createPostView(on: req, errors: nil)
+            return presenter.createPostView(on: req, errors: nil, title: post.title, contents: post.contents, slugURL: post.slugUrl, tags: nil, isEditing: true, post: post, isDraft: !post.published)
         }
     }
     

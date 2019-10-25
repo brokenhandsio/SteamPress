@@ -133,6 +133,18 @@ class AdminPostTests: XCTestCase {
         XCTAssertEqual(testWorld.context.repository.posts.count, 0)
     }
     
+    func testEditPageGetsPostInfo() throws {
+        let post = try testWorld.createPost().post
+        _ = try testWorld.getResponse(to: "/admin/posts/\(post.blogID!)/edit", loggedInUser: user)
+        
+        XCTAssertEqual(presenter.createPostTitle, post.title)
+        XCTAssertEqual(presenter.createPostContents, post.contents)
+        XCTAssertEqual(presenter.createPostSlugURL, post.slugUrl)
+        XCTAssertTrue(presenter.createPostIsEditing ?? false)
+        XCTAssertEqual(presenter.createPostPost?.blogID, post.blogID)
+        XCTAssertEqual(presenter.createPostDraft, !post.published)
+    }
+    
     func testThatEditingPostGetsRedirectToPostPage() throws {
         let testData = try testWorld.createPost()
         

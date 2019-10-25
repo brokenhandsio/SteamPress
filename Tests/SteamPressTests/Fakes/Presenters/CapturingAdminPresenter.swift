@@ -11,8 +11,22 @@ class CapturingAdminPresenter: BlogAdminPresenter {
     }
     
     private(set) var createPostErrors: [String]?
-    func createPostView(on req: Request, errors: [String]?) -> EventLoopFuture<View> {
+    private(set) var createPostTitle: String?
+    private(set) var createPostContents: String?
+    private(set) var createPostSlugURL: String?
+    private(set) var createPostTags: [String]?
+    private(set) var createPostIsEditing: Bool?
+    private(set) var createPostPost: BlogPost?
+    private(set) var createPostDraft: Bool?
+    func createPostView(on req: Request, errors: [String]?, title: String?, contents: String?, slugURL: String?, tags: [String]?, isEditing: Bool, post: BlogPost?, isDraft: Bool?) -> EventLoopFuture<View> {
         self.createPostErrors = errors
+        self.createPostTitle = title
+        self.createPostContents = contents
+        self.createPostSlugURL = slugURL
+        self.createPostTags = tags
+        self.createPostIsEditing = isEditing
+        self.createPostPost = post
+        self.createPostDraft = isDraft
         return createFutureView(on: req)
     }
     
