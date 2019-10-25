@@ -13,16 +13,17 @@ struct UserAdminController: RouteCollection {
     
     // MARK: - Route setup
     func boot(router: Router) throws {
+        router.get("createUser", use: createUserHandler)
         router.post("createUser", use: createUserPostHandler)
         router.post("users", BlogUser.parameter, "edit", use: editUserPostHandler)
         router.post("users", BlogUser.parameter, "delete", use: deleteUserPostHandler)
     }
     
     // MARK: - Route handlers
-//    func createUserHandler(_ request: Request) throws -> ResponseRepresentable {
-//        return try viewFactory.createUserView(editing: false, errors: nil, name: nil, username: nil, passwordError: nil, confirmPasswordError: nil, resetPasswordRequired: nil, userId: nil, profilePicture: nil, twitterHandle: nil, biography: nil, tagline: nil, loggedInUser: request.user())
-//    }
-    
+    func createUserHandler(_ req: Request) throws -> Future<View> {
+        let presenter = try req.make(BlogAdminPresenter.self)
+        return presenter.createUserView(on: req, errors: nil)
+    }
     
     func createUserPostHandler(_ req: Request) throws -> Future<Response> {
         let data = try req.content.syncDecode(CreateUserData.self)

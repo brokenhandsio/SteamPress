@@ -39,15 +39,15 @@ class AccessControlTests: XCTestCase {
 //    func testCannotSendEditPostPageWithoutLogin() throws {
 //        try assertLoginRequired(method: .post, path: "posts/2/edit")
 //    }
-//
-//    func testCannotAccessCreateUserPageWithoutLogin() throws {
-//        try assertLoginRequired(method: .get, path: "createUser")
-//    }
-//
-//    func testCannotSendCreateUserPageWithoutLogin() throws {
-//        try assertLoginRequired(method: .post, path: "createUser")
-//    }
-//
+
+    func testCannotAccessCreateUserPageWithoutLogin() throws {
+        try assertLoginRequired(method: .GET, path: "createUser")
+    }
+
+    func testCannotSendCreateUserPageWithoutLogin() throws {
+        try assertLoginRequired(method: .POST, path: "createUser")
+    }
+
 //    func testCannotAccessEditUserPageWithoutLogin() throws {
 //        try assertLoginRequired(method: .get, path: "users/1/edit")
 //    }
@@ -67,7 +67,7 @@ class AccessControlTests: XCTestCase {
 //    func testCannotAccessResetPasswordPageWithoutLogin() throws {
 //        try assertLoginRequired(method: .get, path: "resetPassword")
 //    }
-//
+
     func testCannotSendResetPasswordPageWithoutLogin() throws {
         try assertLoginRequired(method: .POST, path: "resetPassword")
     }
@@ -83,7 +83,7 @@ class AccessControlTests: XCTestCase {
         let response = try testWorld.getResponse(to: "/blog/admin/createPost", loggedInUser: user)
         XCTAssertEqual(response.http.status, .ok)
     }
-//
+
 //    func testCanAccessEditPostPageWhenLoggedIn() throws {
 //        let user = TestDataBuilder.anyUser()
 //        try user.save()
@@ -94,14 +94,12 @@ class AccessControlTests: XCTestCase {
 //
 //        XCTAssertEqual(response.status, .ok)
 //    }
-//
-//    func testCanAccessCreateUserPageWhenLoggedIn() throws {
-//        let request = try createLoggedInRequest(method: .get, path: "createUser")
-//        let response = try drop.respond(to: request)
-//
-//        XCTAssertEqual(response.status, .ok)
-//    }
-//
+
+    func testCanAccessCreateUserPageWhenLoggedIn() throws {
+        let response = try testWorld.getResponse(to: "/blog/admin/createUser", loggedInUser: user)
+        XCTAssertEqual(response.http.status, .ok)
+    }
+
 //    func testCanAccessEditUserPageWhenLoggedIn() throws {
 //        let userToEdit = TestDataBuilder.anyUser(name: "Leia", username: "leia")
 //        try userToEdit.save()
