@@ -5,16 +5,6 @@ import Foundation
 
 class IndexTests: XCTestCase {
     
-    
-    // MARK: - all tests
-    static var allTests = [
-        ("testLinuxTestSuiteIncludesAllTests", testLinuxTestSuiteIncludesAllTests),
-        ("testBlogIndexGetsPostsInReverseOrder", testBlogIndexGetsPostsInReverseOrder),
-        ("testBlogIndexGetsAllTags", testBlogIndexGetsAllTags),
-        ("testBlogIndexGetsAllAuthors", testBlogIndexGetsAllAuthors),
-        ("testThatAccessingPathsRouteRedirectsToBlogIndex", testThatAccessingPathsRouteRedirectsToBlogIndex),
-        ]
-    
     // MARK: - Properties
     var testWorld: TestWorld!
     var firstData: TestData!
@@ -32,17 +22,6 @@ class IndexTests: XCTestCase {
     }
     
     // MARK: - Tests
-    
-    func testLinuxTestSuiteIncludesAllTests() {
-        #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
-        let thisClass = type(of: self)
-        let linuxCount = thisClass.allTests.count
-        let darwinCount = Int(thisClass
-            .defaultTestSuite.testCaseCount)
-        XCTAssertEqual(linuxCount, darwinCount,
-                       "\(darwinCount - linuxCount) tests are missing from allTests")
-        #endif
-    }
     
     func testBlogIndexGetsPostsInReverseOrder() throws {
         let secondData = try testWorld.createPost(title: "A New Post")
@@ -75,6 +54,13 @@ class IndexTests: XCTestCase {
         let response = try testWorld.getResponse(to: "/posts/")
         XCTAssertEqual(response.http.status, .movedPermanently)
         XCTAssertEqual(response.http.headers[.location].first, "/")
+    }
+    
+    func testThatAccessingPathsRouteRedirectsToBlogIndexWithCustomPath() throws {
+        testWorld = try! TestWorld.create(path: "blog")
+        let response = try testWorld.getResponse(to: "/blog/posts/")
+        XCTAssertEqual(response.http.status, .movedPermanently)
+        XCTAssertEqual(response.http.headers[.location].first, "/blog/")
     }
 }
 

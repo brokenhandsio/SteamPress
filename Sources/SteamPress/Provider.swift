@@ -89,7 +89,7 @@ public struct Provider: Vapor.Provider {
 
         let feedController = FeedController(pathCreator: pathCreator, feedInformation: feedInformation)
         let apiController = APIController()
-        let blogController = BlogController(enableAuthorPages: enableAuthorPages, enableTagPages: enableTagPages)
+        let blogController = BlogController(pathCreator: pathCreator, enableAuthorPages: enableAuthorPages, enableTagPages: enableTagPages)
         let blogAdminController = BlogAdminController(pathCreator: pathCreator)
 
         let blogRoutes: Router
