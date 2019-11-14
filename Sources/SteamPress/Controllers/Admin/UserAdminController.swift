@@ -164,20 +164,28 @@ struct UserAdminController: RouteCollection {
         if !editing {
             if data.password.isEmptyOrWhitespace() {
                 createUserErrors.append("You must specify a password")
+                #warning("Test")
+                passwordError = true
             }
             
             if data.confirmPassword.isEmptyOrWhitespace() {
                 createUserErrors.append("You must confirm your password")
+                #warning("Test")
+                confirmPasswordError = true
             }
         }
         
         if let password = data.password {
             if password.count < 10 {
                 createUserErrors.append("Your password must be at least 10 characters long")
+                #warning("Test")
+                passwordError = true
             }
             
             if data.password != data.confirmPassword {
                 createUserErrors.append("Your passwords must match")
+                passwordError = true
+                confirmPasswordError = true
             }
         }
         
