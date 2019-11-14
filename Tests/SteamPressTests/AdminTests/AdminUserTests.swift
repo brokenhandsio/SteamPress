@@ -246,15 +246,14 @@ class AdminUserTests: XCTestCase {
         let response = try testWorld.getResponse(to: "/admin/users/\(user.userID!)/edit", body: editData, loggedInUser: user)
         
         XCTAssertEqual(testWorld.context.repository.users.count, 1)
-        let updatedUser = testWorld.context.repository.users.first
-        XCTAssertNotNil(updatedUser)
-        XCTAssertEqual(updatedUser?.username, editData.username)
-        XCTAssertEqual(updatedUser?.name, editData.name)
-        XCTAssertEqual(updatedUser?.twitterHandle, editData.twitterHandle)
-        XCTAssertEqual(updatedUser?.profilePicture, editData.profilePicture)
-        XCTAssertEqual(updatedUser?.tagline, editData.tagline)
-        XCTAssertEqual(updatedUser?.biography, editData.biography)
-        XCTAssertEqual(updatedUser?.userID, user.userID)
+        let updatedUser = try XCTUnwrap(testWorld.context.repository.users.first)
+        XCTAssertEqual(updatedUser.username, editData.username)
+        XCTAssertEqual(updatedUser.name, editData.name)
+        XCTAssertEqual(updatedUser.twitterHandle, editData.twitterHandle)
+        XCTAssertEqual(updatedUser.profilePicture, editData.profilePicture)
+        XCTAssertEqual(updatedUser.tagline, editData.tagline)
+        XCTAssertEqual(updatedUser.biography, editData.biography)
+        XCTAssertEqual(updatedUser.userID, user.userID)
         XCTAssertEqual(response.http.status, .seeOther)
         XCTAssertEqual(response.http.headers[.location].first, "/admin/")
     }
@@ -264,18 +263,35 @@ class AdminUserTests: XCTestCase {
             static let defaultContentType = MediaType.urlEncodedForm
             let name = "Luke"
             let username = "lukes"
-            let resetPasswordOnLogin =  true
+            let resetPasswordOnLogin = true
         }
         
         let editData = EditUserData()
         let response = try testWorld.getResponse(to: "/admin/users/\(user.userID!)/edit", body: editData, loggedInUser: user)
         
         XCTAssertEqual(testWorld.context.repository.users.count, 1)
-        let updatedUser = testWorld.context.repository.users.first
-        XCTAssertNotNil(updatedUser)
-        let resetPasswordRequired = try XCTUnwrap(updatedUser?.resetPasswordRequired)
-        XCTAssertTrue(resetPasswordRequired)
-        XCTAssertEqual(updatedUser?.userID, user.userID)
+        let updatedUser = try XCTUnwrap(testWorld.context.repository.users.first)
+        XCTAssertTrue(updatedUser.resetPasswordRequired)
+        XCTAssertEqual(updatedUser.userID, user.userID)
+        XCTAssertEqual(response.http.status, .seeOther)
+        XCTAssertEqual(response.http.headers[.location].first, "/admin/")
+    }
+    
+    func testWhenEditingUserResetPasswordFlagNotSetIfSetToFalse() throws {
+        struct EditUserData: Content {
+            static let defaultContentType = MediaType.urlEncodedForm
+            let name = "Luke"
+            let username = "lukes"
+            let resetPasswordOnLogin = false
+        }
+        
+        let editData = EditUserData()
+        let response = try testWorld.getResponse(to: "/admin/users/\(user.userID!)/edit", body: editData, loggedInUser: user)
+        
+        XCTAssertEqual(testWorld.context.repository.users.count, 1)
+        let updatedUser = try XCTUnwrap(testWorld.context.repository.users.first)
+        XCTAssertFalse(updatedUser.resetPasswordRequired)
+        XCTAssertEqual(updatedUser.userID, user.userID)
         XCTAssertEqual(response.http.status, .seeOther)
         XCTAssertEqual(response.http.headers[.location].first, "/admin/")
     }
