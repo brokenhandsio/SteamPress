@@ -39,6 +39,7 @@ struct UserAdminController: RouteCollection {
             throw Abort(.internalServerError)
         }
         
+        #warning("Test passowrd hash")
         let newUser = BlogUser(name: name, username: username, password: password, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline)
         if let resetPasswordRequired = data.resetPasswordOnLogin, resetPasswordRequired {
             newUser.resetPasswordRequired = true
@@ -47,24 +48,6 @@ struct UserAdminController: RouteCollection {
         return userRepository.save(newUser, on: req).map { _ in
             return req.redirect(to: self.pathCreator.createPath(for: "admin"))
         }
-        
-        //
-        //        let (createUserRawErrors, passwordRawError, confirmPasswordRawError) = validateUserSaveDataExists(edit: false, name: rawName, username: rawUsername, password: rawPassword, confirmPassword: rawConfirmPassword, profilePicture: profilePicture)
-        //
-        //        // Return if we have any missing fields
-        //        if !(createUserRawErrors?.isEmpty ?? true) {
-        //            return try viewFactory.createUserView(editing: false, errors: createUserRawErrors, name: rawName, username: rawUsername, passwordError: passwordRawError, confirmPasswordError: confirmPasswordRawError, resetPasswordRequired: resetPasswordRequired, userId: nil, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline, loggedInUser: request.user())
-        //        }
-        //
-        //        let (createUserErrors, passwordError, confirmPasswordError) = validateUserSaveData(edit: false, name: name, username: username, password: password, confirmPassword: confirmPassword)
-        //
-        //        if !(createUserErrors?.isEmpty ?? true) {
-        //            return try viewFactory.createUserView(editing: false, errors: createUserErrors, name: name, username: username, passwordError: passwordError, confirmPasswordError: confirmPasswordError, resetPasswordRequired: resetPasswordRequired, userId: nil, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline, loggedInUser: request.user())
-        //        }
-        //
-        //        // We now have valid data
-        //        let hashedPassword = try BlogUser.passwordHasher.make(password)
-        //        let newUser = BlogUser(name: name, username: username.lowercased(), password: hashedPassword, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline)
     }
     
     func editUserHandler(_ req: Request) throws -> Future<View> {
@@ -100,6 +83,7 @@ struct UserAdminController: RouteCollection {
             }
             
             if let password = data.password {
+                #warning("Test password is hashed")
                 let hasher = try req.make(PasswordHasher.self)
                 user.password = try hasher.hash(password)
             }
@@ -108,19 +92,6 @@ struct UserAdminController: RouteCollection {
             let userRepository = try req.make(BlogUserRepository.self)
             return userRepository.save(user, on: req).transform(to: redirect)
         }
-//
-//        let (saveUserRawErrors, passwordRawError, confirmPasswordRawError) = validateUserSaveDataExists(edit: true, name: rawName, username: rawUsername, password: rawPassword, confirmPassword: rawConfirmPassword, profilePicture: profilePicture)
-//
-//        // Return if we have any missing fields
-//        if !(saveUserRawErrors?.isEmpty ?? true) {
-//            return try viewFactory.createUserView(editing: true, errors: saveUserRawErrors, name: rawName, username: rawUsername, passwordError: passwordRawError, confirmPasswordError: confirmPasswordRawError, resetPasswordRequired: resetPasswordRequired, userId: user.id, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline, loggedInUser: request.user())
-//        }
-//
-//        let (saveUserErrors, passwordError, confirmPasswordError) = validateUserSaveData(edit: true, name: name, username: username, password: rawPassword, confirmPassword: rawConfirmPassword, previousUsername: user.username)
-//
-//        if !(saveUserErrors?.isEmpty ?? true) {
-//            return try viewFactory.createUserView(editing: true, errors: saveUserErrors, name: name, username: username, passwordError: passwordError, confirmPasswordError: confirmPasswordError, resetPasswordRequired: resetPasswordRequired, userId: user.id, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline, loggedInUser: request.user())
-//        }
     }
     
 
