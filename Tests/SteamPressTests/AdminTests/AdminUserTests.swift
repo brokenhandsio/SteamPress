@@ -240,6 +240,27 @@ class AdminUserTests: XCTestCase {
         XCTAssertTrue(viewErrors.contains("The username provided is not valid"))
     }
     
+    func testPasswordIsActuallyHashedWhenCreatingAUser() throws {
+        testWorld = try! TestWorld.create(passwordHasherToUse: .reversed)
+        let usersPassword = "password"
+        let hashedPassword = String(usersPassword.reversed())
+        user = testWorld.createUser(name: "Leia", username: "leia", password: hashedPassword)
+        
+        struct CreateUserData: Content {
+            static let defaultContentType = MediaType.urlEncodedForm
+            let name = "Luke"
+            let username = "lukes"
+            let password = "somepassword"
+            let confirmPassword = "somepassword"
+        }
+
+        let createData = CreateUserData()
+        _ = try testWorld.getResponse(to: createUserPath, body: createData, loggedInUser: user, passwordToLoginWith: usersPassword)
+        
+        let newUser = try XCTUnwrap(testWorld.context.repository.users.last)
+        XCTAssertEqual(newUser.password, String(createData.password.reversed()))
+    }
+    
     // MARK: - Edit Users
     
     func testPresenterGetsUserInformationOnEditUserPage() throws {
@@ -414,6 +435,27 @@ class AdminUserTests: XCTestCase {
         let confirmPasswordError = try XCTUnwrap(presenter.createUserConfirmPasswordError)
         XCTAssertTrue(passwordError)
         XCTAssertTrue(confirmPasswordError)
+    }
+    
+    func testPasswordIsActuallyHashedWhenEditingAUser() throws {
+        testWorld = try! TestWorld.create(passwordHasherToUse: .reversed)
+        let usersPassword = "password"
+        let hashedPassword = String(usersPassword.reversed())
+        user = testWorld.createUser(name: "Leia", username: "leia", password: hashedPassword)
+        
+        struct EditUserData: Content {
+            static let defaultContentType = MediaType.urlEncodedForm
+            let name = "Darth Vader"
+            let username = "darth_vader"
+            let password = "somenewpassword"
+            let confirmPassword = "somenewpassword"
+        }
+        
+        let editData = EditUserData()
+        _ = try testWorld.getResponse(to: "/admin/users/\(user.userID!)/edit", body: editData, loggedInUser: user, passwordToLoginWith: usersPassword)
+        
+        let updatedUser = try XCTUnwrap(testWorld.context.repository.users.first)
+        XCTAssertEqual(updatedUser.password, String(editData.password.reversed()))
     }
     
     // MARK: - Delete users

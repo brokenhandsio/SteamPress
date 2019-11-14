@@ -29,7 +29,7 @@ class LoginTests: XCTestCase {
     // MARK: - Tests
     
     func testLogin() throws {
-        testWorld = try TestWorld.create(path: "blog", useRealPasswordHasher: true)
+        testWorld = try TestWorld.create(path: "blog", passwordHasherToUse: .real)
         let hashedPassword = try BCrypt.hash("password")
         user = testWorld.createUser(password: hashedPassword)
         let loginData = LoginData(username: user.username, password: "password")

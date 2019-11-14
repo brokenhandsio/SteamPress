@@ -31,11 +31,11 @@ extension TestWorld {
         return String(data: data!, encoding: .utf8)!
     }
     
-    func getResponse<T: Content>(to path: String, method: HTTPMethod = .POST, body: T, loggedInUser: BlogUser? = nil) throws -> Response {
+    func getResponse<T: Content>(to path: String, method: HTTPMethod = .POST, body: T, loggedInUser: BlogUser? = nil, passwordToLoginWith: String? = nil) throws -> Response {
         var request = HTTPRequest(method: method, url: URL(string: path)!)
         
         if let user = loggedInUser {
-            let loginData = LoginData(username: user.username, password: user.password)
+            let loginData = LoginData(username: user.username, password: passwordToLoginWith ?? user.password)
             var loginPath = "/admin/login"
             if let path = context.path {
                 loginPath = "/\(path)\(loginPath)"

@@ -39,8 +39,9 @@ struct UserAdminController: RouteCollection {
             throw Abort(.internalServerError)
         }
         
-        #warning("Test passowrd hash")
-        let newUser = BlogUser(name: name, username: username, password: password, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline)
+        let hasher = try req.make(PasswordHasher.self)
+        let hashedPassword = try hasher.hash(password)
+        let newUser = BlogUser(name: name, username: username, password: hashedPassword, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline)
         if let resetPasswordRequired = data.resetPasswordOnLogin, resetPasswordRequired {
             newUser.resetPasswordRequired = true
         }
@@ -83,7 +84,6 @@ struct UserAdminController: RouteCollection {
             }
             
             if let password = data.password {
-                #warning("Test password is hashed")
                 let hasher = try req.make(PasswordHasher.self)
                 user.password = try hasher.hash(password)
             }
@@ -171,33 +171,4 @@ struct UserAdminController: RouteCollection {
         return errors
     }
     
-}
-
-#warning("Move")
-struct CreateUserData: Content {
-    let name: String?
-    let username: String?
-    let password: String?
-    let confirmPassword: String?
-    let profilePicture: String?
-    let tagline: String?
-    let biography: String?
-    let twitterHandle: String?
-    let resetPasswordOnLogin: Bool?
-}
-
-extension CreateUserData: Validatable , Reflectable{
-    static func validations() throws -> Validations<CreateUserData> {
-        var validations = Validations(CreateUserData.self)
-        let usernameCharacterSet = CharacterSet(charactersIn: "-_")
-        let usernameValidationCharacters = Validator<String>.characterSet(.alphanumerics + usernameCharacterSet)
-        try validations.add(\.username, usernameValidationCharacters || .nil)
-        return validations
-    }
-}
-
-struct CreateUserErrors {
-    let errors: [String]
-    let passwordError: Bool
-    let confirmPasswordError: Bool
 }
