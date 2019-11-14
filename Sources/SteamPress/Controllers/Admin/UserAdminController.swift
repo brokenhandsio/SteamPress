@@ -32,7 +32,7 @@ struct UserAdminController: RouteCollection {
         if let createUserErrors = validateUserCreation(data) {
             let presenter = try req.make(BlogAdminPresenter.self)
             #warning("Test password and confirm password error")
-            let view = presenter.createUserView(on: req, errors: createUserErrors, name: data.name, username: data.username, passwordError: false, confirmPasswordError: false, userID: nil, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline)
+            let view = presenter.createUserView(on: req, errors: createUserErrors.errors, name: data.name, username: data.username, passwordError: false, confirmPasswordError: false, userID: nil, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline)
             return try view.encode(for: req)
         }
         
@@ -83,6 +83,12 @@ struct UserAdminController: RouteCollection {
                 throw Abort(.internalServerError)
             }
             
+            if let editUserErrors = self.validateUserCreation(data, editing: true) {
+                let presenter = try req.make(BlogAdminPresenter.self)
+                let view = presenter.createUserView(on: req, errors: editUserErrors.errors, name: data.name, username: data.username, passwordError: editUserErrors.passwordError, confirmPasswordError: editUserErrors.confirmPasswordError, userID: nil, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline)
+                return try view.encode(for: req)
+            }
+            
             user.name = name
             user.username = username
             user.profilePicture = data.profilePicture
@@ -111,19 +117,10 @@ struct UserAdminController: RouteCollection {
 //            return try viewFactory.createUserView(editing: true, errors: saveUserRawErrors, name: rawName, username: rawUsername, passwordError: passwordRawError, confirmPasswordError: confirmPasswordRawError, resetPasswordRequired: resetPasswordRequired, userId: user.id, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline, loggedInUser: request.user())
 //        }
 //
-//        guard let name = rawName, let username = rawUsername else {
-//            throw Abort.badRequest
-//        }
-//
 //        let (saveUserErrors, passwordError, confirmPasswordError) = validateUserSaveData(edit: true, name: name, username: username, password: rawPassword, confirmPassword: rawConfirmPassword, previousUsername: user.username)
 //
 //        if !(saveUserErrors?.isEmpty ?? true) {
 //            return try viewFactory.createUserView(editing: true, errors: saveUserErrors, name: name, username: username, passwordError: passwordError, confirmPasswordError: confirmPasswordError, resetPasswordRequired: resetPasswordRequired, userId: user.id, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline, loggedInUser: request.user())
-//        }
-//
-//        // We now have valid data
-//        guard let userId = user.id, let userToUpdate = try BlogUser.find(userId) else {
-//            throw Abort.badRequest
 //        }
     }
     
@@ -151,8 +148,10 @@ struct UserAdminController: RouteCollection {
 
     
     // MARK: - Validators
-    private func validateUserCreation(_ data: CreateUserData) -> [String]? {
+    private func validateUserCreation(_ data: CreateUserData, editing: Bool = false) -> CreateUserErrors? {
         var createUserErrors = [String]()
+        var passwordError = false
+        var confirmPasswordError = false
         
         if data.name.isEmptyOrWhitespace() {
             createUserErrors.append("You must specify a name")
@@ -162,20 +161,24 @@ struct UserAdminController: RouteCollection {
             createUserErrors.append("You must specify a username")
         }
         
-        if data.password.isEmptyOrWhitespace() {
-            createUserErrors.append("You must specify a password")
+        if !editing {
+            if data.password.isEmptyOrWhitespace() {
+                createUserErrors.append("You must specify a password")
+            }
+            
+            if data.confirmPassword.isEmptyOrWhitespace() {
+                createUserErrors.append("You must confirm your password")
+            }
         }
         
-        if data.confirmPassword.isEmptyOrWhitespace() {
-            createUserErrors.append("You must confirm your password")
-        }
-        
-        if data.password?.count ?? 0 < 10 {
-            createUserErrors.append("Your password must be at least 10 characters long")
-        }
-        
-        if data.password != data.confirmPassword {
-            createUserErrors.append("Your passwords must match")
+        if let password = data.password {
+            if password.count < 10 {
+                createUserErrors.append("Your password must be at least 10 characters long")
+            }
+            
+            if data.password != data.confirmPassword {
+                createUserErrors.append("Your passwords must match")
+            }
         }
         
         do {
@@ -188,11 +191,14 @@ struct UserAdminController: RouteCollection {
             return nil
         }
         
-        return createUserErrors
+        let errors = CreateUserErrors(errors: createUserErrors, passwordError: passwordError, confirmPasswordError: confirmPasswordError)
+        
+        return errors
     }
     
 }
 
+#warning("Move")
 struct CreateUserData: Content {
     let name: String?
     let username: String?
@@ -208,7 +214,15 @@ struct CreateUserData: Content {
 extension CreateUserData: Validatable , Reflectable{
     static func validations() throws -> Validations<CreateUserData> {
         var validations = Validations(CreateUserData.self)
-        try validations.add(\.username, .alphanumeric || .nil)
+        let usernameCharacterSet = CharacterSet(charactersIn: "-_")
+        let usernameValidationCharacters = Validator<String>.characterSet(.alphanumerics + usernameCharacterSet)
+        try validations.add(\.username, usernameValidationCharacters || .nil)
         return validations
     }
+}
+
+struct CreateUserErrors {
+    let errors: [String]
+    let passwordError: Bool
+    let confirmPasswordError: Bool
 }

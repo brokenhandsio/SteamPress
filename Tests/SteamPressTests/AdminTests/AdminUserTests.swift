@@ -314,6 +314,7 @@ class AdminUserTests: XCTestCase {
             let name = "Luke"
             let username = "lukes"
             let password = "anewpassword"
+            let confirmPassword = "anewpassword"
         }
         
         let editData = EditUserData()
@@ -325,6 +326,26 @@ class AdminUserTests: XCTestCase {
         XCTAssertEqual(updatedUser.userID, user.userID)
         XCTAssertEqual(response.http.status, .seeOther)
         XCTAssertEqual(response.http.headers[.location].first, "/admin/")
+    }
+    
+    func testErrorShownWhenUpdatingUsersPasswordWithNonMatchingPasswords() throws {
+        struct EditUserData: Content {
+            static let defaultContentType = MediaType.urlEncodedForm
+            let name = "Luke"
+            let username = "lukes"
+            let password = "anewpassword"
+            let confirmPassword = "someotherpassword"
+        }
+        
+        let editData = EditUserData()
+        let _ = try testWorld.getResponse(to: "/admin/users/\(user.userID!)/edit", body: editData, loggedInUser: user)
+        
+        let viewErrors = try XCTUnwrap(presenter.createUserErrors)
+        XCTAssertTrue(viewErrors.contains("Your passwords must match"))
+        let passwordError = try XCTUnwrap(presenter.createUserPasswordError)
+        let confirmPasswordError = try XCTUnwrap(presenter.createUserConfirmPasswordError)
+        XCTAssertTrue(passwordError)
+        XCTAssertTrue(confirmPasswordError)
     }
     
     // MARK: - Delete users
