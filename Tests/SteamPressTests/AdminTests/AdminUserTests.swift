@@ -37,14 +37,13 @@ class AdminUserTests: XCTestCase {
         let response = try testWorld.getResponse(to: createUserPath, body: createData, loggedInUser: user)
         
         XCTAssertEqual(testWorld.context.repository.users.count, 2)
-        let user = testWorld.context.repository.users.last
-        XCTAssertNotNil(user)
-        XCTAssertEqual(user?.username, createData.username)
-        XCTAssertEqual(user?.name, createData.name)
-        XCTAssertEqual(user?.profilePicture, createData.profilePicture)
-        XCTAssertEqual(user?.tagline, createData.tagline)
-        XCTAssertEqual(user?.biography, createData.biography)
-        XCTAssertEqual(user?.twitterHandle, createData.twitterHandle)
+        let user = try XCTUnwrap(testWorld.context.repository.users.last)
+        XCTAssertEqual(user.username, createData.username)
+        XCTAssertEqual(user.name, createData.name)
+        XCTAssertEqual(user.profilePicture, createData.profilePicture)
+        XCTAssertEqual(user.tagline, createData.tagline)
+        XCTAssertEqual(user.biography, createData.biography)
+        XCTAssertEqual(user.twitterHandle, createData.twitterHandle)
         XCTAssertEqual(response.http.status, .seeOther)
         XCTAssertEqual(response.http.headers[.location].first, "/admin/")
     }
@@ -66,7 +65,8 @@ class AdminUserTests: XCTestCase {
         let data = CreateUserResetData()
         _ = try testWorld.getResponse(to: createUserPath, body: data, loggedInUser: user)
         
-        XCTAssertTrue(testWorld.context.repository.users.filter { $0.username == data.username }.first?.resetPasswordRequired ?? false)
+        let user = try XCTUnwrap(testWorld.context.repository.users.filter { $0.username == data.username }.first)
+        XCTAssertTrue(user.resetPasswordRequired)
     }
     
     func testUserCannotBeCreatedWithoutName() throws {
@@ -80,7 +80,8 @@ class AdminUserTests: XCTestCase {
         let createData = CreateUserData()
         _ = try testWorld.getResponse(to: createUserPath, body: createData, loggedInUser: user)
 
-        XCTAssertTrue(presenter.createUserErrors?.contains("You must specify a name") ?? false)
+        let viewErrors = try XCTUnwrap(presenter.createUserErrors)
+        XCTAssertTrue(viewErrors.contains("You must specify a name"))
     }
 
     func testUserCannotBeCreatedWithoutUsername() throws {
@@ -94,7 +95,8 @@ class AdminUserTests: XCTestCase {
         let createData = CreateUserData()
         _ = try testWorld.getResponse(to: createUserPath, body: createData, loggedInUser: user)
         
-        XCTAssertTrue(presenter.createUserErrors?.contains("You must specify a username") ?? false)
+        let viewErrors = try XCTUnwrap(presenter.createUserErrors)
+        XCTAssertTrue(viewErrors.contains("You must specify a username"))
     }
 
     func testUserCannotBeCreatedWithoutPassword() throws {
@@ -108,7 +110,8 @@ class AdminUserTests: XCTestCase {
         let createData = CreateUserData()
         _ = try testWorld.getResponse(to: createUserPath, body: createData, loggedInUser: user)
         
-        XCTAssertTrue(presenter.createUserErrors?.contains("You must specify a password") ?? false)
+        let viewErrors = try XCTUnwrap(presenter.createUserErrors)
+        XCTAssertTrue(viewErrors.contains("You must specify a password"))
     }
 
     func testUserCannotBeCreatedWithoutSpecifyingAConfirmPassword() throws {
@@ -122,7 +125,8 @@ class AdminUserTests: XCTestCase {
         let createData = CreateUserData()
         _ = try testWorld.getResponse(to: createUserPath, body: createData, loggedInUser: user)
         
-        XCTAssertTrue(presenter.createUserErrors?.contains("You must confirm your password") ?? false)
+        let viewErrors = try XCTUnwrap(presenter.createUserErrors)
+        XCTAssertTrue(viewErrors.contains("You must confirm your password"))
     }
 
     func testUserCannotBeCreatedWithPasswordsThatDontMatch() throws {
@@ -137,7 +141,8 @@ class AdminUserTests: XCTestCase {
         let createData = CreateUserData()
         _ = try testWorld.getResponse(to: createUserPath, body: createData, loggedInUser: user)
         
-        XCTAssertTrue(presenter.createUserErrors?.contains("Your passwords must match") ?? false)
+        let viewErrors = try XCTUnwrap(presenter.createUserErrors)
+        XCTAssertTrue(viewErrors.contains("Your passwords must match"))
     }
 
     func testUserCannotBeCreatedWithSimplePassword() throws {
@@ -152,7 +157,8 @@ class AdminUserTests: XCTestCase {
         let createData = CreateUserData()
         _ = try testWorld.getResponse(to: createUserPath, body: createData, loggedInUser: user)
 
-        XCTAssertTrue(presenter.createUserErrors?.contains("Your password must be at least 10 characters long") ?? false)
+        let viewErrors = try XCTUnwrap(presenter.createUserErrors)
+        XCTAssertTrue(viewErrors.contains("Your password must be at least 10 characters long"))
     }
 
     func testUserCannotBeCreatedWithEmptyName() throws {
@@ -167,7 +173,8 @@ class AdminUserTests: XCTestCase {
         let createData = CreateUserData()
         _ = try testWorld.getResponse(to: createUserPath, body: createData, loggedInUser: user)
         
-        XCTAssertTrue(presenter.createUserErrors?.contains("You must specify a name") ?? false)
+        let viewErrors = try XCTUnwrap(presenter.createUserErrors)
+        XCTAssertTrue(viewErrors.contains("You must specify a name"))
     }
 
     func testUserCannotBeCreatedWithEmptyUsername() throws {
@@ -182,7 +189,8 @@ class AdminUserTests: XCTestCase {
         let createData = CreateUserData()
         _ = try testWorld.getResponse(to: createUserPath, body: createData, loggedInUser: user)
         
-        XCTAssertTrue(presenter.createUserErrors?.contains("You must specify a username") ?? false)
+        let viewErrors = try XCTUnwrap(presenter.createUserErrors)
+        XCTAssertTrue(viewErrors.contains("You must specify a username"))
     }
 
     func testUserCannotBeCreatedWithInvalidUsername() throws {
@@ -197,7 +205,8 @@ class AdminUserTests: XCTestCase {
         let createData = CreateUserData()
         _ = try testWorld.getResponse(to: createUserPath, body: createData, loggedInUser: user)
 
-        XCTAssertTrue(presenter.createUserErrors?.contains("The username provided is not valid") ?? false)
+        let viewErrors = try XCTUnwrap(presenter.createUserErrors)
+        XCTAssertTrue(viewErrors.contains("The username provided is not valid"))
     }
     
     func testPresenterGetsUserInformationOnEditUserPage() throws {
@@ -222,11 +231,10 @@ class AdminUserTests: XCTestCase {
         let response = try testWorld.getResponse(to: "/admin/users/\(user.userID!)/edit", body: editData, loggedInUser: user)
         
         XCTAssertEqual(testWorld.context.repository.users.count, 1)
-        let updatedUser = testWorld.context.repository.users.first
-        XCTAssertNotNil(updatedUser)
-        XCTAssertEqual(updatedUser?.username, editData.username)
-        XCTAssertEqual(updatedUser?.name, editData.name)
-        XCTAssertEqual(updatedUser?.userID, user.userID)
+        let updatedUser = try XCTUnwrap(testWorld.context.repository.users.first)
+        XCTAssertEqual(updatedUser.username, editData.username)
+        XCTAssertEqual(updatedUser.name, editData.name)
+        XCTAssertEqual(updatedUser.userID, user.userID)
         XCTAssertEqual(response.http.status, .seeOther)
         XCTAssertEqual(response.http.headers[.location].first, "/admin/")
     }
@@ -312,14 +320,16 @@ class AdminUserTests: XCTestCase {
 
         _ = try testWorld.getResponse(to: "/admin/users/\(user2.userID!)/delete", body: EmptyContent(), loggedInUser: user2)
 
-        XCTAssertTrue(presenter.adminViewErrors?.contains("You cannot delete yourself whilst logged in") ?? false)
+        let viewErrors = try XCTUnwrap(presenter.adminViewErrors)
+        XCTAssertTrue(viewErrors.contains("You cannot delete yourself whilst logged in"))
         XCTAssertEqual(testWorld.context.repository.users.count, 2)
     }
 
     func testCannotDeleteLastUser() throws {
         _ = try testWorld.getResponse(to: "/admin/users/\(user.userID!)/delete", body: EmptyContent(), loggedInUser: user)
         
-        XCTAssertTrue(presenter.adminViewErrors?.contains("You cannot delete the last user") ?? false)
+        let viewErrors = try XCTUnwrap(presenter.adminViewErrors)
+        XCTAssertTrue(viewErrors.contains("You cannot delete the last user"))
         XCTAssertEqual(testWorld.context.repository.users.count, 1)
     }
     
