@@ -85,10 +85,10 @@ struct UserAdminController: RouteCollection {
             
             user.name = name
             user.username = username
-//            user.profilePicture = data.profilePicture
-//            user.twitterHandle = data.twitterHandle
-//            user.biography = data.biography
-//            user.tagline = data.tagline
+            user.profilePicture = data.profilePicture
+            user.twitterHandle = data.twitterHandle
+            user.biography = data.biography
+            user.tagline = data.tagline
             
             let redirect = req.redirect(to: self.pathCreator.createPath(for: "admin"))
             let userRepository = try req.make(BlogUserRepository.self)

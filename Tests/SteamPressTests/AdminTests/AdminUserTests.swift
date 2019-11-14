@@ -231,6 +231,34 @@ class AdminUserTests: XCTestCase {
         XCTAssertEqual(response.http.headers[.location].first, "/admin/")
     }
     
+    func testUserCanBeUpdatedWithAllInformation() throws {
+        struct EditUserData: Content {
+            static let defaultContentType = MediaType.urlEncodedForm
+            let name = "Darth Vader"
+            let username = "darth_vader"
+            let twitterHandle = "darthVader"
+            let profilePicture = "https://deathstar.org/pictures/dv.jpg"
+            let tagline = "The Sith Lord formally known as Anakin"
+            let biography = "Father of one, part cyborg, Sith Lord. Something something dark side."
+        }
+        
+        let editData = EditUserData()
+        let response = try testWorld.getResponse(to: "/admin/users/\(user.userID!)/edit", body: editData, loggedInUser: user)
+        
+        XCTAssertEqual(testWorld.context.repository.users.count, 1)
+        let updatedUser = testWorld.context.repository.users.first
+        XCTAssertNotNil(updatedUser)
+        XCTAssertEqual(updatedUser?.username, editData.username)
+        XCTAssertEqual(updatedUser?.name, editData.name)
+        XCTAssertEqual(updatedUser?.twitterHandle, editData.twitterHandle)
+        XCTAssertEqual(updatedUser?.profilePicture, editData.profilePicture)
+        XCTAssertEqual(updatedUser?.tagline, editData.tagline)
+        XCTAssertEqual(updatedUser?.biography, editData.biography)
+        XCTAssertEqual(updatedUser?.userID, user.userID)
+        XCTAssertEqual(response.http.status, .seeOther)
+        XCTAssertEqual(response.http.headers[.location].first, "/admin/")
+    }
+    
     func testCanDeleteUser() throws {
         let user2 = testWorld.createUser(name: "Han", username: "han")
         
