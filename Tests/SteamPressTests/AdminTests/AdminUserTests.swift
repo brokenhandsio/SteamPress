@@ -1,6 +1,6 @@
 import XCTest
 import Vapor
-import SteamPress
+@testable import SteamPress
 
 class AdminUserTests: XCTestCase {
     
@@ -19,6 +19,8 @@ class AdminUserTests: XCTestCase {
         testWorld = try! TestWorld.create()
         user = testWorld.createUser(name: "Leia", username: "leia")
     }
+    
+    // MARK: - User Creation
     
     func testUserCanBeCreatedSuccessfully() throws {
         struct CreateUserData: Content {
@@ -209,6 +211,8 @@ class AdminUserTests: XCTestCase {
         XCTAssertTrue(viewErrors.contains("The username provided is not valid"))
     }
     
+    // MARK: - Edit Users
+    
     func testPresenterGetsUserInformationOnEditUserPage() throws {
         _ = try testWorld.getResponse(to: "/admin/users/\(user.userID!)/edit", loggedInUser: user)
         XCTAssertEqual(presenter.createUserName, user.name)
@@ -303,6 +307,27 @@ class AdminUserTests: XCTestCase {
         XCTAssertEqual(response.http.status, .seeOther)
         XCTAssertEqual(response.http.headers[.location].first, "/admin/")
     }
+    
+    func testPasswordIsUpdatedWhenNewPasswordProvidedWhenEditingUser() throws {
+        struct EditUserData: Content {
+            static let defaultContentType = MediaType.urlEncodedForm
+            let name = "Luke"
+            let username = "lukes"
+            let password = "anewpassword"
+        }
+        
+        let editData = EditUserData()
+        let response = try testWorld.getResponse(to: "/admin/users/\(user.userID!)/edit", body: editData, loggedInUser: user)
+        
+        XCTAssertEqual(testWorld.context.repository.users.count, 1)
+        let updatedUser = try XCTUnwrap(testWorld.context.repository.users.first)
+        XCTAssertEqual(updatedUser.password, editData.password)
+        XCTAssertEqual(updatedUser.userID, user.userID)
+        XCTAssertEqual(response.http.status, .seeOther)
+        XCTAssertEqual(response.http.headers[.location].first, "/admin/")
+    }
+    
+    // MARK: - Delete users
     
     func testCanDeleteUser() throws {
         let user2 = testWorld.createUser(name: "Han", username: "han")

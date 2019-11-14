@@ -117,6 +117,7 @@ class AdminPostTests: XCTestCase {
         let updatePostPath = "/admin/posts/\(testData.post.blogID!)/edit"
         _ = try testWorld.getResponse(to: updatePostPath, body: updateData, loggedInUser: user)
 
+        #warning("Migrate to XCTUnwrap in the whole file/all tests")
         XCTAssertEqual(testWorld.context.repository.posts.count, 1)
         XCTAssertEqual(testWorld.context.repository.posts.first?.title, updateData.title)
         XCTAssertEqual(testWorld.context.repository.posts.first?.contents, updateData.contents)
