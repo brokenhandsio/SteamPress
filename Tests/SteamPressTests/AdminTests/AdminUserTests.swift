@@ -259,6 +259,27 @@ class AdminUserTests: XCTestCase {
         XCTAssertEqual(response.http.headers[.location].first, "/admin/")
     }
     
+    func testWhenEditingUserResetPasswordFlagSetIfRequired() throws {
+        struct EditUserData: Content {
+            static let defaultContentType = MediaType.urlEncodedForm
+            let name = "Luke"
+            let username = "lukes"
+            let resetPasswordOnLogin =  true
+        }
+        
+        let editData = EditUserData()
+        let response = try testWorld.getResponse(to: "/admin/users/\(user.userID!)/edit", body: editData, loggedInUser: user)
+        
+        XCTAssertEqual(testWorld.context.repository.users.count, 1)
+        let updatedUser = testWorld.context.repository.users.first
+        XCTAssertNotNil(updatedUser)
+        let resetPasswordRequired = try XCTUnwrap(updatedUser?.resetPasswordRequired)
+        XCTAssertTrue(resetPasswordRequired)
+        XCTAssertEqual(updatedUser?.userID, user.userID)
+        XCTAssertEqual(response.http.status, .seeOther)
+        XCTAssertEqual(response.http.headers[.location].first, "/admin/")
+    }
+    
     func testCanDeleteUser() throws {
         let user2 = testWorld.createUser(name: "Han", username: "han")
         

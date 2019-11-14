@@ -90,6 +90,10 @@ struct UserAdminController: RouteCollection {
             user.biography = data.biography
             user.tagline = data.tagline
             
+            if let resetPasswordOnLogin = data.resetPasswordOnLogin, resetPasswordOnLogin {
+                user.resetPasswordRequired = true
+            }
+            
             let redirect = req.redirect(to: self.pathCreator.createPath(for: "admin"))
             let userRepository = try req.make(BlogUserRepository.self)
             return userRepository.save(user, on: req).transform(to: redirect)
@@ -131,8 +135,6 @@ struct UserAdminController: RouteCollection {
 //            userToUpdate.password = try BlogUser.passwordHasher.make(password)
 //        }
 //
-//        try userToUpdate.save()
-//        return Response(redirect: pathCreator.createPath(for: "admin"))
     }
     
 
