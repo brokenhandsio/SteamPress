@@ -31,8 +31,7 @@ struct UserAdminController: RouteCollection {
         
         if let createUserErrors = validateUserCreation(data) {
             let presenter = try req.make(BlogAdminPresenter.self)
-            #warning("Test password and confirm password error")
-            let view = presenter.createUserView(on: req, errors: createUserErrors.errors, name: data.name, username: data.username, passwordError: false, confirmPasswordError: false, userID: nil, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline)
+            let view = presenter.createUserView(on: req, errors: createUserErrors.errors, name: data.name, username: data.username, passwordError: createUserErrors.passwordError, confirmPasswordError: createUserErrors.confirmPasswordError, userID: nil, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline)
             return try view.encode(for: req)
         }
         
@@ -161,16 +160,14 @@ struct UserAdminController: RouteCollection {
             createUserErrors.append("You must specify a username")
         }
         
-        if !editing {
+        if !editing || data.password != nil {
             if data.password.isEmptyOrWhitespace() {
                 createUserErrors.append("You must specify a password")
-                #warning("Test")
                 passwordError = true
             }
             
             if data.confirmPassword.isEmptyOrWhitespace() {
                 createUserErrors.append("You must confirm your password")
-                #warning("Test")
                 confirmPasswordError = true
             }
         }
@@ -178,7 +175,6 @@ struct UserAdminController: RouteCollection {
         if let password = data.password {
             if password.count < 10 {
                 createUserErrors.append("Your password must be at least 10 characters long")
-                #warning("Test")
                 passwordError = true
             }
             

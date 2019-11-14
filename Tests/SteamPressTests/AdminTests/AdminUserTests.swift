@@ -114,6 +114,26 @@ class AdminUserTests: XCTestCase {
         
         let viewErrors = try XCTUnwrap(presenter.createUserErrors)
         XCTAssertTrue(viewErrors.contains("You must specify a password"))
+        let passwordError = try XCTUnwrap(presenter.createUserPasswordError)
+        XCTAssertTrue(passwordError)
+    }
+    
+    func testUserCannotBeCreatedWithEmptyPassword() throws {
+        struct CreateUserData: Content {
+            static let defaultContentType = MediaType.urlEncodedForm
+            let name = "Luke"
+            let username = "lukes"
+            let password = ""
+            let confirmPassword = ""
+        }
+        
+        let createData = CreateUserData()
+        _ = try testWorld.getResponse(to: createUserPath, body: createData, loggedInUser: user)
+        
+        let viewErrors = try XCTUnwrap(presenter.createUserErrors)
+        XCTAssertTrue(viewErrors.contains("You must specify a password"))
+        let passwordError = try XCTUnwrap(presenter.createUserPasswordError)
+        XCTAssertTrue(passwordError)
     }
 
     func testUserCannotBeCreatedWithoutSpecifyingAConfirmPassword() throws {
@@ -129,6 +149,8 @@ class AdminUserTests: XCTestCase {
         
         let viewErrors = try XCTUnwrap(presenter.createUserErrors)
         XCTAssertTrue(viewErrors.contains("You must confirm your password"))
+        let confirmPasswordError = try XCTUnwrap(presenter.createUserConfirmPasswordError)
+        XCTAssertTrue(confirmPasswordError)
     }
 
     func testUserCannotBeCreatedWithPasswordsThatDontMatch() throws {
@@ -145,6 +167,11 @@ class AdminUserTests: XCTestCase {
         
         let viewErrors = try XCTUnwrap(presenter.createUserErrors)
         XCTAssertTrue(viewErrors.contains("Your passwords must match"))
+        
+        let passwordError = try XCTUnwrap(presenter.createUserPasswordError)
+        let confirmPasswordError = try XCTUnwrap(presenter.createUserConfirmPasswordError)
+        XCTAssertTrue(passwordError)
+        XCTAssertTrue(confirmPasswordError)
     }
 
     func testUserCannotBeCreatedWithSimplePassword() throws {
@@ -161,6 +188,8 @@ class AdminUserTests: XCTestCase {
 
         let viewErrors = try XCTUnwrap(presenter.createUserErrors)
         XCTAssertTrue(viewErrors.contains("Your password must be at least 10 characters long"))
+        let passwordError = try XCTUnwrap(presenter.createUserPasswordError)
+        XCTAssertTrue(passwordError)
     }
 
     func testUserCannotBeCreatedWithEmptyName() throws {
@@ -342,6 +371,45 @@ class AdminUserTests: XCTestCase {
         
         let viewErrors = try XCTUnwrap(presenter.createUserErrors)
         XCTAssertTrue(viewErrors.contains("Your passwords must match"))
+        let passwordError = try XCTUnwrap(presenter.createUserPasswordError)
+        let confirmPasswordError = try XCTUnwrap(presenter.createUserConfirmPasswordError)
+        XCTAssertTrue(passwordError)
+        XCTAssertTrue(confirmPasswordError)
+    }
+    
+    func testErrorShownWhenChangingUsersPasswordWithShortPassword() throws {
+        struct EditUserData: Content {
+            static let defaultContentType = MediaType.urlEncodedForm
+            let name = "Luke"
+            let username = "lukes"
+            let password = "a"
+            let confirmPassword = "a"
+        }
+        
+        let editData = EditUserData()
+        let _ = try testWorld.getResponse(to: "/admin/users/\(user.userID!)/edit", body: editData, loggedInUser: user)
+        
+        let viewErrors = try XCTUnwrap(presenter.createUserErrors)
+        XCTAssertTrue(viewErrors.contains("Your password must be at least 10 characters long"))
+        let passwordError = try XCTUnwrap(presenter.createUserPasswordError)
+        XCTAssertTrue(passwordError)
+    }
+    
+    func testErrorShownWhenTryingToChangeUsersPasswordWithEmptyString() throws {
+        struct EditUserData: Content {
+            static let defaultContentType = MediaType.urlEncodedForm
+            let name = "Luke"
+            let username = "lukes"
+            let password = ""
+            let confirmPassword = ""
+        }
+        
+        let editData = EditUserData()
+        let _ = try testWorld.getResponse(to: "/admin/users/\(user.userID!)/edit", body: editData, loggedInUser: user)
+        
+        let viewErrors = try XCTUnwrap(presenter.createUserErrors)
+        XCTAssertTrue(viewErrors.contains("You must confirm your password"))
+        XCTAssertTrue(viewErrors.contains("You must specify a password"))
         let passwordError = try XCTUnwrap(presenter.createUserPasswordError)
         let confirmPasswordError = try XCTUnwrap(presenter.createUserConfirmPasswordError)
         XCTAssertTrue(passwordError)
