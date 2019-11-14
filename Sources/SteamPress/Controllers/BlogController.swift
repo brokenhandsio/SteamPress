@@ -143,14 +143,3 @@ extension Request {
         return self.http.url
     }
 }
-
-//
-//    private func getLoggedInUser(in request: Request) -> BlogUser? {
-//        var loggedInUser: BlogUser? = nil
-//
-//        do {
-//            loggedInUser = try request.user()
-//        } catch {}
-//
-//        return loggedInUser
-//    }

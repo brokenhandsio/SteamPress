@@ -135,16 +135,3 @@ struct LoginController: RouteCollection {
         return userRespository.save(user, on: req).transform(to: redirect)
     }
 }
-
-#warning("Move")
-struct LoginData: Content {
-    let username: String?
-    let password: String?
-    #warning("Remember me")
-}
-
-struct ResetPasswordData: Content {
-    let password: String?
-    let confirmPassword: String?
-}
-
