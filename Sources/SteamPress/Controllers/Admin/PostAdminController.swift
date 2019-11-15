@@ -124,20 +124,14 @@ struct PostAdminController: RouteCollection {
 //            }
             post.slugUrl = slugUrl
             
-            post.lastEdited = Date()
-            
-            #warning("Test drafts/update time")
-            
-            //
-            //            if post.published {
-            //                post.lastEdited = Date()
-            //            } else {
-            //                post.created = Date()
-            //                if publish != nil {
-            //                    post.published = true
-            //                }
-            //            }
-            //
+            if post.published {
+                post.lastEdited = Date()
+            } else {
+                post.created = Date()
+                if let publish = data.publish, publish {
+                    post.published = true
+                }
+            }
             
             let tagsRepository = try req.make(BlogTagRepository.self)
             return tagsRepository.getTags(for: post, on: req).flatMap { existingTags in

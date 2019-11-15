@@ -284,6 +284,52 @@ class AdminPostTests: XCTestCase {
         XCTAssertEqual(postLastEdited.timeIntervalSince1970, Date().timeIntervalSince1970, accuracy: 0.1)
         XCTAssertTrue(postLastEdited > post.created)
     }
+    
+    func testCreatedTimeSetWhenPublishingADraft() throws {
+        struct UpdatePostData: Content {
+            static let defaultContentType = MediaType.urlEncodedForm
+            let title = "Post Title"
+            let contents = "# Post Title\n\nWe have a post"
+            let tags = ["First Tag", "Second Tag"]
+            let slugURL = "post-title"
+            let publish = true
+        }
+        
+        let testData = try testWorld.createPost(title: "Initial title", contents: "Some initial contents", slugUrl: "initial-title", published: false)
+        
+        let updateData = UpdatePostData()
+        
+        let updatePostPath = "/admin/posts/\(testData.post.blogID!)/edit"
+        _ = try testWorld.getResponse(to: updatePostPath, body: updateData, loggedInUser: user)
+
+        let post = try XCTUnwrap(testWorld.context.repository.posts.first)
+        XCTAssertEqual(post.created.timeIntervalSince1970, Date().timeIntervalSince1970, accuracy: 0.1)
+        XCTAssertTrue(post.published)
+        XCTAssertNil(post.lastEdited)
+    }
+    
+    func testCreatedTimeSetAndMarkedAsDraftWhenSavingADraft() throws {
+        struct UpdatePostData: Content {
+            static let defaultContentType = MediaType.urlEncodedForm
+            let title = "Post Title"
+            let contents = "# Post Title\n\nWe have a post"
+            let tags = ["First Tag", "Second Tag"]
+            let slugURL = "post-title"
+            let draft = true
+        }
+        
+        let testData = try testWorld.createPost(title: "Initial title", contents: "Some initial contents", slugUrl: "initial-title", published: false)
+        
+        let updateData = UpdatePostData()
+        
+        let updatePostPath = "/admin/posts/\(testData.post.blogID!)/edit"
+        _ = try testWorld.getResponse(to: updatePostPath, body: updateData, loggedInUser: user)
+
+        let post = try XCTUnwrap(testWorld.context.repository.posts.first)
+        XCTAssertFalse(post.published)
+        XCTAssertNil(post.lastEdited)
+        XCTAssertEqual(post.created.timeIntervalSince1970, Date().timeIntervalSince1970, accuracy: 0.1)
+    }
 
     // MARK: - Post Deletion
     
