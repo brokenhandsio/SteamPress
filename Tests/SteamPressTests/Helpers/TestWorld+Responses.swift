@@ -7,47 +7,42 @@ extension TestWorld {
         return try response.content.decode(type).wait()
     }
     
-    func getResponse(to path: String, method: HTTPMethod = .GET, headers: HTTPHeaders = .init(), loggedInUser: BlogUser? = nil) throws -> Response {
-        var request = HTTPRequest(method: method, url: URL(string: path)!, headers: headers)
-        
-        #warning("Remove duplication")
-        if let user = loggedInUser {
-            let loginData = LoginData(username: user.username, password: user.password)
-            var loginPath = "/admin/login"
-            if let path = context.path {
-                loginPath = "/\(path)\(loginPath)"
-            }
-            let loginResponse = try getResponse(to: loginPath, method: .POST, body: loginData)
-            let sessionCookie = loginResponse.http.cookies["steampress-session"]
-            request.cookies["steampress-session"] = sessionCookie
-        }
-        
-        let wrappedRequest = Request(http: request, using: context.app)
-        return try getResponse(to: wrappedRequest)
-    }
-    
     func getResponseString(to path: String, headers: HTTPHeaders = .init()) throws -> String {
         let data = try getResponse(to: path, headers: headers).http.body.convertToHTTPBody().data
         return String(data: data!, encoding: .utf8)!
     }
     
-    func getResponse<T: Content>(to path: String, method: HTTPMethod = .POST, body: T, loggedInUser: BlogUser? = nil, passwordToLoginWith: String? = nil) throws -> Response {
-        var request = HTTPRequest(method: method, url: URL(string: path)!)
+    func getResponse<T: Content>(to path: String, method: HTTPMethod = .POST, body: T, loggedInUser: BlogUser? = nil, passwordToLoginWith: String? = nil, headers: HTTPHeaders = .init()) throws -> Response {
+        let request = try setupRequest(to: path, method: method, loggedInUser: loggedInUser, passwordToLoginWith: passwordToLoginWith, headers: headers)
+        try request.content.encode(body)
+        return try getResponse(to: request)
+    }
+    
+    func getResponse(to path: String, method: HTTPMethod = .GET, headers: HTTPHeaders = .init(), loggedInUser: BlogUser? = nil) throws -> Response {
+        let request = try setupRequest(to: path, method: method, loggedInUser: loggedInUser, passwordToLoginWith: nil, headers: headers)
+        return try getResponse(to: request)
+    }
+    
+    func setupRequest(to path: String, method: HTTPMethod = .POST, loggedInUser: BlogUser? = nil, passwordToLoginWith: String? = nil, headers: HTTPHeaders = .init()) throws -> Request {
+        var request = HTTPRequest(method: method, url: URL(string: path)!, headers: headers)
+        request.cookies["steampress-session"] = try setLoginCookie(for: loggedInUser, password: passwordToLoginWith)
         
-        if let user = loggedInUser {
-            let loginData = LoginData(username: user.username, password: passwordToLoginWith ?? user.password)
+        return Request(http: request, using: context.app)
+    }
+    
+    func setLoginCookie(for user: BlogUser?, password: String? = nil) throws -> HTTPCookieValue? {
+        if let user = user {
+            let loginData = LoginData(username: user.username, password: password ?? user.password)
             var loginPath = "/admin/login"
             if let path = context.path {
                 loginPath = "/\(path)\(loginPath)"
             }
             let loginResponse = try getResponse(to: loginPath, method: .POST, body: loginData)
             let sessionCookie = loginResponse.http.cookies["steampress-session"]
-            request.cookies["steampress-session"] = sessionCookie
+            return sessionCookie
+        } else {
+            return nil
         }
-        
-        let wrappedRequest = Request(http: request, using: context.app)
-        try wrappedRequest.content.encode(body)
-        return try getResponse(to: wrappedRequest)
     }
     
     func getResponse(to request: Request) throws -> Response {
