@@ -121,12 +121,12 @@ class AdminPostTests: XCTestCase {
         let updatePostPath = "/admin/posts/\(testData.post.blogID!)/edit"
         _ = try testWorld.getResponse(to: updatePostPath, body: updateData, loggedInUser: user)
 
-        #warning("Migrate to XCTUnwrap in the whole file/all tests")
         XCTAssertEqual(testWorld.context.repository.posts.count, 1)
-        XCTAssertEqual(testWorld.context.repository.posts.first?.title, updateData.title)
-        XCTAssertEqual(testWorld.context.repository.posts.first?.contents, updateData.contents)
-        XCTAssertEqual(testWorld.context.repository.posts.first?.slugUrl, updateData.slugURL)
-        XCTAssertEqual(testWorld.context.repository.posts.first?.blogID, testData.post.blogID)
+        let post = try XCTUnwrap(testWorld.context.repository.posts.first)
+        XCTAssertEqual(post.title, updateData.title)
+        XCTAssertEqual(post.contents, updateData.contents)
+        XCTAssertEqual(post.slugUrl, updateData.slugURL)
+        XCTAssertEqual(post.blogID, testData.post.blogID)
     }
 
     func testCanDeleteBlogPost() throws {
