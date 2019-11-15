@@ -90,11 +90,11 @@ struct PostAdminController: RouteCollection {
 
     func editPostHandler(_ req: Request) throws -> Future<View> {
         return try req.parameters.next(BlogPost.self).flatMap { post in
-            #warning("Test tags")
-//            let tags = try post.tags.all()
-//            let tagsArray: [Node] = tags.map { $0.name.makeNode(in: nil) }
-            let presenter = try req.make(BlogAdminPresenter.self)
-            return presenter.createPostView(on: req, errors: nil, title: post.title, contents: post.contents, slugURL: post.slugUrl, tags: nil, isEditing: true, post: post, isDraft: !post.published)
+            let tagsRepository = try req.make(BlogTagRepository.self)
+            return tagsRepository.getTags(for: post, on: req).flatMap { tags in
+                let presenter = try req.make(BlogAdminPresenter.self)
+                return presenter.createPostView(on: req, errors: nil, title: post.title, contents: post.contents, slugURL: post.slugUrl, tags: tags.map { $0.name }, isEditing: true, post: post, isDraft: !post.published)
+            }
         }
     }
     

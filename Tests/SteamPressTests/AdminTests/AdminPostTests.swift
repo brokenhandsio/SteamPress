@@ -149,6 +149,10 @@ class AdminPostTests: XCTestCase {
     
     func testEditPageGetsPostInfo() throws {
         let post = try testWorld.createPost().post
+        let tag1Name = "Engineering"
+        let tag2Name = "SteamPress"
+        _ = try testWorld.createTag(tag1Name, on: post)
+        _ = try testWorld.createTag(tag2Name, on: post)
         _ = try testWorld.getResponse(to: "/admin/posts/\(post.blogID!)/edit", loggedInUser: user)
         
         XCTAssertEqual(presenter.createPostTitle, post.title)
@@ -158,6 +162,10 @@ class AdminPostTests: XCTestCase {
         XCTAssertTrue(isEditing)
         XCTAssertEqual(presenter.createPostPost?.blogID, post.blogID)
         XCTAssertEqual(presenter.createPostDraft, !post.published)
+        XCTAssertEqual(presenter.createPostTags?.count, 2)
+        let postTags = try XCTUnwrap(presenter.createPostTags)
+        XCTAssertTrue(postTags.contains(tag1Name))
+        XCTAssertTrue(postTags.contains(tag2Name))
     }
     
     func testThatEditingPostGetsRedirectToPostPage() throws {
