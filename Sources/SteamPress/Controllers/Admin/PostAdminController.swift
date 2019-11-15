@@ -124,6 +124,8 @@ struct PostAdminController: RouteCollection {
 //            }
             post.slugUrl = slugUrl
             
+            post.lastEdited = Date()
+            
             #warning("Test drafts/update time")
             
             //

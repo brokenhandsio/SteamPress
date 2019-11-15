@@ -38,6 +38,8 @@ class AdminPostTests: XCTestCase {
         XCTAssertEqual(testWorld.context.repository.posts.count, 1)
         XCTAssertEqual(post.title, createData.title)
         XCTAssertTrue(post.published)
+        XCTAssertEqual(post.created.timeIntervalSince1970, Date().timeIntervalSince1970, accuracy: 0.1)
+        XCTAssertTrue(post.created < Date())
         
         XCTAssertEqual(testWorld.context.repository.tags.count, 2)
         let firstTagID = testWorld.context.repository.tags[0].tagID!
@@ -259,6 +261,28 @@ class AdminPostTests: XCTestCase {
         XCTAssertTrue(testWorld.context.repository.postTagLinks
         .contains { $0.postID == post.blogID! && $0.tagID == newTag.tagID! })
         XCTAssertEqual(testWorld.context.repository.tags.filter { $0.name.removingPercentEncoding == firstTagName}.count, 1)
+    }
+    
+    func testLastUpdatedTimeGetsChangedWhenEditingAPost() throws {
+        struct UpdatePostData: Content {
+            static let defaultContentType = MediaType.urlEncodedForm
+            let title = "Post Title"
+            let contents = "# Post Title\n\nWe have a post"
+            let tags = ["First Tag", "Second Tag"]
+            let slugURL = "post-title"
+        }
+        
+        let testData = try testWorld.createPost(title: "Initial title", contents: "Some initial contents", slugUrl: "initial-title")
+        
+        let updateData = UpdatePostData()
+        
+        let updatePostPath = "/admin/posts/\(testData.post.blogID!)/edit"
+        _ = try testWorld.getResponse(to: updatePostPath, body: updateData, loggedInUser: user)
+
+        let post = try XCTUnwrap(testWorld.context.repository.posts.first)
+        let postLastEdited = try XCTUnwrap(post.lastEdited)
+        XCTAssertEqual(postLastEdited.timeIntervalSince1970, Date().timeIntervalSince1970, accuracy: 0.1)
+        XCTAssertTrue(postLastEdited > post.created)
     }
 
     // MARK: - Post Deletion
