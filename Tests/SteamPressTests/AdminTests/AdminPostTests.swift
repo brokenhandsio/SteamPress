@@ -189,6 +189,17 @@ class AdminPostTests: XCTestCase {
         XCTAssertEqual(testWorld.context.repository.posts.count, 0)
     }
     
-    #warning("Test tags when deleting a post")
+    func testDeletingBlogPostRemovesTagLinks() throws {
+        let testData = try testWorld.createPost()
+        _ = try testWorld.createTag(on: testData.post)
+        _ = try testWorld.createTag("SteamPress", on: testData.post)
+        
+        XCTAssertEqual(testWorld.context.repository.postTagLinks.count, 2)
+        
+        _ = try testWorld.getResponse(to: "/admin/posts/\(testData.post.blogID!)/delete", method: .POST, body: EmptyContent(), loggedInUser: user)
+        
+        
+        XCTAssertEqual(testWorld.context.repository.postTagLinks.count, 0)
+    }
     
 }

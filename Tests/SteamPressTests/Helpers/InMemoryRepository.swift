@@ -92,8 +92,11 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
     }
     
     func deleteTags(for post: BlogPost, on container: Container) -> EventLoopFuture<Void> {
-        #warning("Done")
-        return container.future()
+        return getTags(for: post, on: container).map { tags in
+            for tag in tags {
+                self.postTagLinks.removeAll { $0.tagID == tag.tagID! && $0.postID == post.blogID! }
+            }
+        }
     }
     
     // MARK: - BlogPostRepository
