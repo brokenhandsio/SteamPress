@@ -174,7 +174,6 @@ class AdminPostTests: XCTestCase {
             let contents = "# Post Title\n\nWe have a post"
             let tags = ["First Tag", "Second Tag"]
             let slugURL = "post-title"
-            let draft = true
         }
         
         let testData = try testWorld.createPost(title: "Initial title", contents: "Some initial contents", slugUrl: "initial-title")
@@ -189,6 +188,7 @@ class AdminPostTests: XCTestCase {
         XCTAssertEqual(post.contents, updateData.contents)
         XCTAssertEqual(post.slugUrl, updateData.slugURL)
         XCTAssertEqual(post.blogID, testData.post.blogID)
+        XCTAssertTrue(post.published)
     }
     
     func testEditPageGetsPostInfo() throws {
@@ -219,7 +219,6 @@ class AdminPostTests: XCTestCase {
             let title: String
             let contents = "Updated contents"
             let slugURL: String
-            let publish = true
             let tags = [String]()
         }
         
@@ -228,6 +227,38 @@ class AdminPostTests: XCTestCase {
 
         XCTAssertEqual(response.http.status, .seeOther)
         XCTAssertEqual(response.http.headers[.location].first, "/posts/\(updateData.slugURL)/")
+    }
+    
+    func testEditingPostWithNewTagsRemovesOldLinksAndAddsNewLinks() throws {
+        let post = try testWorld.createPost(title: "Initial title", contents: "Some initial contents", slugUrl: "initial-title").post
+        let firstTagName = "Some Tag"
+        let secondTagName = "Engineering"
+        let firstTag = try testWorld.createTag(firstTagName, on: post)
+        let secondTag = try testWorld.createTag(secondTagName, on: post)
+        
+        let newTagName = "A New Tag"
+        
+        struct UpdatePostData: Content {
+            static let defaultContentType = MediaType.urlEncodedForm
+            let title = "Post Title"
+            let contents = "# Post Title\n\nWe have a post"
+            let tags: [String]
+            let slugURL = "post-title"
+        }
+        
+        let updateData = UpdatePostData(tags: [firstTagName, newTagName])
+        
+        let updatePostPath = "/admin/posts/\(post.blogID!)/edit"
+        _ = try testWorld.getResponse(to: updatePostPath, body: updateData, loggedInUser: user)
+
+        XCTAssertTrue(testWorld.context.repository.postTagLinks
+            .contains { $0.postID == post.blogID! && $0.tagID == firstTag.tagID! })
+        XCTAssertFalse(testWorld.context.repository.postTagLinks
+        .contains { $0.postID == post.blogID! && $0.tagID == secondTag.tagID! })
+        let newTag = try XCTUnwrap(testWorld.context.repository.tags.first { $0.name.removingPercentEncoding == newTagName })
+        XCTAssertTrue(testWorld.context.repository.postTagLinks
+        .contains { $0.postID == post.blogID! && $0.tagID == newTag.tagID! })
+        XCTAssertEqual(testWorld.context.repository.tags.filter { $0.name.removingPercentEncoding == firstTagName}.count, 1)
     }
 
     // MARK: - Post Deletion

@@ -8,6 +8,7 @@ public protocol BlogTagRepository {
     // Delete all the pivots between a post and collection of tags - you should probably delete the
     // tags that have no posts associated with a tag
     func deleteTags(for post: BlogPost, on container: Container) -> Future<Void>
+    func remove(_ tag: BlogTag, from post: BlogPost, on container: Container) -> Future<Void>
     func add(_ tag: BlogTag, to post: BlogPost, on conainter: Container) -> Future<Void>
 }
 

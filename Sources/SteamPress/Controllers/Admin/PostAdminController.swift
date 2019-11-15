@@ -110,56 +110,72 @@ struct PostAdminController: RouteCollection {
             //            return try viewFactory.createBlogPostView(uri: request.getURIWithHTTPSIfReverseProxy(), errors: errors, title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl, tags: tagsArray, isEditing: true, postToEdit: post, draft: false, user: try request.user())
             //        }
             
+            #warning("Validate data here")
+            
             guard let title = data.title, let contents = data.contents, let slugUrl = data.slugURL else {
                 throw Abort(.internalServerError)
             }
             
             post.title = title
             post.contents = contents
-            post.slugUrl = slugUrl
-
+            
 //            if post.slugUrl != slugUrl {
 //                post.slugUrl = BlogPost.generateUniqueSlugUrl(from: slugUrl, logger: log)
 //            }
-//
-//            let existing = try post.tags.all()
-//            let existingStringArray = existing.map { $0.name }
-//            let newTagsStringArray = tagsArray.map { $0.string ?? "" }.filter { $0 != "" }
-//
-//            // Work out new tags and tags to delete
-//            let existingSet: Set<String> = Set(existingStringArray)
-//            let newTagSet: Set<String> = Set(newTagsStringArray)
-//
-//            let tagsToDelete = existingSet.subtracting(newTagSet)
-//            let tagsToAdd = newTagSet.subtracting(existingSet)
-//
-//            for deleteTag in tagsToDelete {
-//                let tag = try BlogTag.makeQuery().filter(BlogTag.Properties.name, deleteTag).first()
-//                guard let tagToCleanUp = tag else {
-//                    throw Abort.badRequest
-//                }
-//                try tagToCleanUp.deletePivot(for: post)
-//                if try tagToCleanUp.posts.all().count == 0 {
-//                    try tagToCleanUp.delete()
-//                }
-//            }
-//
-//            for newTagString in tagsToAdd {
-//                try BlogTag.addTag(newTagString, to: post)
-//            }
-//
-//            if post.published {
-//                post.lastEdited = Date()
-//            } else {
-//                post.created = Date()
-//                if publish != nil {
-//                    post.published = true
-//                }
-//            }
-//
-            let redirect = req.redirect(to: self.pathCreator.createPath(for: "posts/\(post.slugUrl)"))
-            let postRepository = try req.make(BlogPostRepository.self)
-            return postRepository.save(post, on: req).transform(to: redirect)
+            post.slugUrl = slugUrl
+            
+            #warning("Test drafts/update time")
+            
+            //
+            //            if post.published {
+            //                post.lastEdited = Date()
+            //            } else {
+            //                post.created = Date()
+            //                if publish != nil {
+            //                    post.published = true
+            //                }
+            //            }
+            //
+            
+            let tagsRepository = try req.make(BlogTagRepository.self)
+            return tagsRepository.getTags(for: post, on: req).flatMap { existingTags in
+                let tagsToUnlink = try existingTags.filter { (anExistingTag) -> Bool in
+                    for tagName in data.tags {
+                        if try anExistingTag.name == BlogTag.percentEncodedTagName(from: tagName) {
+                            return false
+                        }
+                    }
+                    return true
+                }
+                var removeTagLinkResults = [Future<Void>]()
+                for tagToUnlink in tagsToUnlink {
+                    removeTagLinkResults.append(tagsRepository.remove(tagToUnlink, from: post, on: req))
+                }
+                
+                let newTagsNames = try data.tags.filter { (tagName) -> Bool in
+                    try !existingTags.contains { (existingTag) -> Bool in
+                        try existingTag.name == BlogTag.percentEncodedTagName(from: tagName)
+                    }
+                }
+                
+                var tagCreateSaves = [Future<BlogTag>]()
+                for newTagName in newTagsNames {
+                    let newTag = try BlogTag(name: newTagName)
+                    tagCreateSaves.append(tagsRepository.save(newTag, on: req))
+                }
+                
+                return removeTagLinkResults.flatten(on: req).and(tagCreateSaves.flatten(on: req)).flatMap { (_, newTags) in
+                    var postTagLinkResults = [Future<Void>]()
+                    for tag in newTags {
+                        postTagLinkResults.append(tagsRepository.add(tag, to: post, on: req))
+                    }
+                    return postTagLinkResults.flatten(on: req).flatMap {
+                        let redirect = req.redirect(to: self.pathCreator.createPath(for: "posts/\(post.slugUrl)"))
+                        let postRepository = try req.make(BlogPostRepository.self)
+                        return postRepository.save(post, on: req).transform(to: redirect)
+                    }
+                }
+            }
         }
     }
     
