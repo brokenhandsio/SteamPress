@@ -35,8 +35,7 @@ struct PostAdminController: RouteCollection {
         
         if let createPostErrors = validatePostCreation(data) {
             let presenter = try req.make(BlogAdminPresenter.self)
-            #warning("Test/sort out tags")
-            let view = presenter.createPostView(on: req, errors: createPostErrors, title: data.title, contents: data.contents, slugURL: data.slugURL, tags: nil, isEditing: false, post: nil, isDraft: nil)
+            let view = presenter.createPostView(on: req, errors: createPostErrors, title: data.title, contents: data.contents, slugURL: data.slugURL, tags: data.tags, isEditing: false, post: nil, isDraft: nil)
             return try view.encode(for: req)
         }
         
@@ -80,7 +79,7 @@ struct PostAdminController: RouteCollection {
     func deletePostHandler(_ req: Request) throws -> Future<Response> {
         return try req.parameters.next(BlogPost.self).flatMap { post in
             let tagsRepository = try req.make(BlogTagRepository.self)
-            return try tagsRepository.deleteTags(for: post, on: req).flatMap { tags in
+            return tagsRepository.deleteTags(for: post, on: req).flatMap { tags in
                 let redirect = req.redirect(to: self.pathCreator.createPath(for: "admin"))
                 let postRepository = try req.make(BlogPostRepository.self)
                 return postRepository.delete(post, on: req).transform(to: redirect)

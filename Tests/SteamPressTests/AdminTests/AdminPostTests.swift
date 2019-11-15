@@ -102,6 +102,26 @@ class AdminPostTests: XCTestCase {
         let createPostErrors = try XCTUnwrap(presenter.createPostErrors)
         XCTAssertTrue(createPostErrors.contains("You must have some content in your blog post"))
     }
+    
+    func testPresenterGetsDataIfValidationOfDataFails() throws {
+        struct CreatePostData: Content {
+            static let defaultContentType = MediaType.urlEncodedForm
+            let title = "Post Title"
+            let tags = ["First Tag", "Second Tag"]
+            let slugURL = "post-title"
+            let publish = true
+            let contents = ""
+        }
+        let createData = CreatePostData()
+        _ = try testWorld.getResponse(to: createPostPath, body: createData, loggedInUser: user)
+
+        let createPostErrors = try XCTUnwrap(presenter.createPostErrors)
+        XCTAssertTrue(createPostErrors.contains("You must have some content in your blog post"))
+        XCTAssertEqual(presenter.createPostTags, createData.tags)
+        XCTAssertEqual(presenter.createPostContents, createData.contents)
+        XCTAssertEqual(presenter.createPostTitle, createData.title)
+        XCTAssertEqual(presenter.createPostSlugURL, createData.slugURL)
+    }
 
     func testCreatePostWithDraftDoesNotPublishPost() throws {
         struct CreatePostData: Content {
