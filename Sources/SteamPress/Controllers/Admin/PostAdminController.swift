@@ -43,37 +43,43 @@ struct PostAdminController: RouteCollection {
             throw Abort(.internalServerError)
         }
         
+        //        // Make sure slugUrl is unique
+        //        slugUrl = BlogPost.generateUniqueSlugUrl(from: slugUrl, logger: log)
+        
         let newPost = try BlogPost(title: title, contents: contents, author: author, creationDate: Date(), slugUrl: slugURL, published: data.publish != nil)
         
         let postRepository = try req.make(BlogPostRepository.self)
         return postRepository.save(newPost, on: req).flatMap { post in
             let tagsRepository = try req.make(BlogTagRepository.self)
-            var tagsSaves = [Future<BlogTag>]()
+            
+            var existingTagsQuery = [Future<BlogTag?>]()
             for tagName in data.tags {
-                let tag = try BlogTag(name: tagName)
-                tagsSaves.append(tagsRepository.save(tag, on: req))
+                try existingTagsQuery.append(tagsRepository.getTag(BlogTag.percentEncodedTagName(from: tagName), on: req))
             }
-            return tagsSaves.flatten(on: req).flatMap { tags in
-                var tagLinks = [Future<Void>]()
-                for tag in tags {
-                    tagLinks.append(tagsRepository.add(tag, to: post, on: req))
+            
+            return existingTagsQuery.flatten(on: req).flatMap { existingTagsWithOptionals in
+                let existingTags = existingTagsWithOptionals.compactMap { $0 }
+                var tagsSaves = [Future<BlogTag>]()
+                for tagName in data.tags {
+                    if try !existingTags.contains { try $0.name == BlogTag.percentEncodedTagName(from: tagName) } {
+                        let tag = try BlogTag(name: tagName)
+                        tagsSaves.append(tagsRepository.save(tag, on: req))
+                    }
                 }
-                let redirect = req.redirect(to: self.pathCreator.createPath(for: "posts/\(post.slugUrl)"))
-                return tagLinks.flatten(on: req).transform(to: redirect)
+
+                return tagsSaves.flatten(on: req).flatMap { tags in
+                    var tagLinks = [Future<Void>]()
+                    for tag in tags {
+                        tagLinks.append(tagsRepository.add(tag, to: post, on: req))
+                    }
+                    for tag in existingTags {
+                        tagLinks.append(tagsRepository.add(tag, to: post, on: req))
+                    }
+                    let redirect = req.redirect(to: self.pathCreator.createPath(for: "posts/\(post.slugUrl)"))
+                    return tagLinks.flatten(on: req).transform(to: redirect)
+                }
             }
         }
-        
-        //        if let createPostErrors = validatePostCreation(title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl) {
-        //            return try viewFactory.createBlogPostView(uri: request.getURIWithHTTPSIfReverseProxy(), errors: createPostErrors, title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl, tags: rawTags?.array, isEditing: false, postToEdit: nil, draft: true, user: try request.user())
-        //        }
-        //        // Make sure slugUrl is unique
-        //        slugUrl = BlogPost.generateUniqueSlugUrl(from: slugUrl, logger: log)
-        //        // Save the tags
-        //        for tagNode in tagsArray {
-        //            if let tagName = tagNode.string {
-        //                try BlogTag.addTag(tagName, to: newPost)
-        //            }
-        //        }
     }
 
     func deletePostHandler(_ req: Request) throws -> Future<Response> {

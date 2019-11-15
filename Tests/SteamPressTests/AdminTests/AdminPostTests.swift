@@ -141,6 +141,30 @@ class AdminPostTests: XCTestCase {
         XCTAssertFalse(post.published)
     }
     
+    func testCreatingPostWithExistingTagsDoesntDuplicateTag() throws {
+        let existingPost = try testWorld.createPost()
+        let existingTagName = "First Tag"
+        let existingTag = try testWorld.createTag(existingTagName, on: existingPost.post)
+        
+        struct CreatePostData: Content {
+            static let defaultContentType = MediaType.urlEncodedForm
+            let title = "Post Title"
+            let contents = "# Post Title\n\nWe have a post"
+            let tags = ["First Tag", "Second Tag"]
+            let slugURL = "post-title"
+            let publish = true
+        }
+        let createData = CreatePostData()
+        _ = try testWorld.getResponse(to: createPostPath, body: createData, loggedInUser: user)
+        
+        let newPostID = testWorld.context.repository.posts.last?.blogID!
+        
+        XCTAssertNotEqual(existingPost.post.blogID, newPostID)
+        XCTAssertEqual(testWorld.context.repository.tags.count, 2)
+        XCTAssertTrue(testWorld.context.repository.postTagLinks
+            .contains { $0.postID == newPostID && $0.tagID == existingTag.tagID! })
+    }
+    
     // MARK: - Post editing
     
     func testPostCanBeUpdated() throws {
