@@ -6,7 +6,7 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
     private(set) var tags: [BlogTag]
     private(set) var posts: [BlogPost]
     private(set) var users: [BlogUser]
-    private var postTagLinks: [BlogPostTagLink]
+    private(set) var postTagLinks: [BlogPostTagLink]
     
     init() {
         tags = []
@@ -36,22 +36,43 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         return container.future(results)
     }
     
+    func save(_ tag: BlogTag, on container: Container) -> EventLoopFuture<BlogTag> {
+        if tag.tagID == nil {
+            tag.tagID = tags.count + 1
+        }
+        tags.append(tag)
+        return container.future(tag)
+    }
+    
     func addTag(name: String) throws -> BlogTag {
         let newTag = try BlogTag(id: tags.count + 1, name: name)
         tags.append(newTag)
         return newTag
     }
     
-    func addTag(name: String, for post: BlogPost) throws -> BlogTag{
-        let newTag = try addTag(name: name)
+    func add(_ tag: BlogTag, to post: BlogPost, on container: Container) -> EventLoopFuture<Void> {
+        do {
+            try add(tag, to: post)
+            return container.future()
+        } catch {
+            return container.future(error: SteamPressTestError(name: "Failed to add tag to post"))
+        }
+    }
+    
+    func add(_ tag: BlogTag, to post: BlogPost) throws {
         guard let postID = post.blogID else {
             fatalError("Blog doesn't exist when it should")
         }
-        guard let tagID = newTag.tagID else {
+        guard let tagID = tag.tagID else {
             fatalError("Tag ID hasn't been set")
         }
         let newLink = BlogPostTagLink(postID: postID, tagID: tagID)
         postTagLinks.append(newLink)
+    }
+    
+    func addTag(name: String, for post: BlogPost) throws -> BlogTag {
+        let newTag = try addTag(name: name)
+        try add(newTag, to: post)
         return newTag
     }
     
@@ -68,6 +89,11 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         }
         let newLink = BlogPostTagLink(postID: postID, tagID: tagID)
         postTagLinks.append(newLink)
+    }
+    
+    func deleteTags(for post: BlogPost, on container: Container) -> EventLoopFuture<Void> {
+        #warning("Done")
+        return container.future()
     }
     
     // MARK: - BlogPostRepository
@@ -186,7 +212,7 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
     
 }
 
-private struct BlogPostTagLink: Codable {
+struct BlogPostTagLink: Codable {
     let postID: Int
     let tagID: Int
 }

@@ -47,8 +47,21 @@ struct PostAdminController: RouteCollection {
         let newPost = try BlogPost(title: title, contents: contents, author: author, creationDate: Date(), slugUrl: slugURL, published: data.publish != nil)
         
         let postRepository = try req.make(BlogPostRepository.self)
-        return postRepository.save(newPost, on: req).map { post in
-            return req.redirect(to: self.pathCreator.createPath(for: "posts/\(post.slugUrl)"))
+        return postRepository.save(newPost, on: req).flatMap { post in
+            let tagsRepository = try req.make(BlogTagRepository.self)
+            var tagsSaves = [Future<BlogTag>]()
+            for tagName in data.tags {
+                let tag = try BlogTag(name: tagName)
+                tagsSaves.append(tagsRepository.save(tag, on: req))
+            }
+            return tagsSaves.flatten(on: req).flatMap { tags in
+                var tagLinks = [Future<Void>]()
+                for tag in tags {
+                    tagLinks.append(tagsRepository.add(tag, to: post, on: req))
+                }
+                let redirect = req.redirect(to: self.pathCreator.createPath(for: "posts/\(post.slugUrl)"))
+                return tagLinks.flatten(on: req).transform(to: redirect)
+            }
         }
         
         //        if let createPostErrors = validatePostCreation(title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl) {
@@ -66,20 +79,12 @@ struct PostAdminController: RouteCollection {
 
     func deletePostHandler(_ req: Request) throws -> Future<Response> {
         return try req.parameters.next(BlogPost.self).flatMap { post in
-//            let tags = try post.tags.all()
-//
-//            // Clean up pivots
-//            for tag in tags {
-//                try tag.deletePivot(for: post)
-//
-//                // See if any of the tags need to be deleted
-//                if try tag.posts.all().count == 0 {
-//                    try tag.delete()
-//                }
-//            }
-            let redirect = req.redirect(to: self.pathCreator.createPath(for: "admin"))
-            let postRepository = try req.make(BlogPostRepository.self)
-            return postRepository.delete(post, on: req).transform(to: redirect)
+            let tagsRepository = try req.make(BlogTagRepository.self)
+            return try tagsRepository.deleteTags(for: post, on: req).flatMap { tags in
+                let redirect = req.redirect(to: self.pathCreator.createPath(for: "admin"))
+                let postRepository = try req.make(BlogPostRepository.self)
+                return postRepository.delete(post, on: req).transform(to: redirect)
+            }
         }
     }
 

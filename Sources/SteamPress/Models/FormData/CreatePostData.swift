@@ -6,6 +6,7 @@ struct CreatePostData: Content {
     let publish: Bool?
     let draft: Bool?
     let slugURL: String?
+    let tags: [String]
     #warning("Tags")
     #warning("Slug URL")
     #warning("Publish flag")

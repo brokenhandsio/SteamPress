@@ -19,8 +19,8 @@ class AdminPostTests: XCTestCase {
         testWorld = try! TestWorld.create()
         user = testWorld.createUser(username: "leia")
     }
-    
-    // MARK: - Tests
+        
+    // MARK: - Post Creation
     
     func testPostCanBeCreated() throws {
         struct CreatePostData: Content {
@@ -38,6 +38,15 @@ class AdminPostTests: XCTestCase {
         XCTAssertEqual(testWorld.context.repository.posts.count, 1)
         XCTAssertEqual(post.title, createData.title)
         XCTAssertTrue(post.published)
+        
+        XCTAssertEqual(testWorld.context.repository.tags.count, 2)
+        let firstTagID = testWorld.context.repository.tags[0].tagID!
+        let secondTagID = testWorld.context.repository.tags[1].tagID!
+        XCTAssertTrue(testWorld.context.repository.postTagLinks
+            .contains { $0.postID == post.blogID! && $0.tagID == firstTagID })
+        XCTAssertTrue(testWorld.context.repository.postTagLinks
+        .contains { $0.postID == post.blogID! && $0.tagID == secondTagID })
+        
         XCTAssertEqual(response.http.status, .seeOther)
         XCTAssertEqual(response.http.headers[.location].first, "/posts/post-title/")
     }
@@ -112,6 +121,8 @@ class AdminPostTests: XCTestCase {
         XCTAssertFalse(post.published)
     }
     
+    // MARK: - Post editing
+    
     func testPostCanBeUpdated() throws {
         struct UpdatePostData: Content {
             static let defaultContentType = MediaType.urlEncodedForm
@@ -135,15 +146,6 @@ class AdminPostTests: XCTestCase {
         XCTAssertEqual(post.slugUrl, updateData.slugURL)
         XCTAssertEqual(post.blogID, testData.post.blogID)
     }
-
-    func testCanDeleteBlogPost() throws {
-        let testData = try testWorld.createPost()
-        let response = try testWorld.getResponse(to: "/admin/posts/\(testData.post.blogID!)/delete", method: .POST, body: EmptyContent(), loggedInUser: user)
-        
-        XCTAssertEqual(response.http.status, .seeOther)
-        XCTAssertEqual(response.http.headers[.location].first, "/admin/")
-        XCTAssertEqual(testWorld.context.repository.posts.count, 0)
-    }
     
     func testEditPageGetsPostInfo() throws {
         let post = try testWorld.createPost().post
@@ -166,6 +168,7 @@ class AdminPostTests: XCTestCase {
             let contents = "Updated contents"
             let slugURL: String
             let publish = true
+            let tags = [String]()
         }
         
         let updateData = UpdateData(title: testData.post.title, slugURL: testData.post.slugUrl)
@@ -175,4 +178,17 @@ class AdminPostTests: XCTestCase {
         XCTAssertEqual(response.http.headers[.location].first, "/posts/\(updateData.slugURL)/")
     }
 
+    // MARK: - Post Deletion
+    
+    func testCanDeleteBlogPost() throws {
+        let testData = try testWorld.createPost()
+        let response = try testWorld.getResponse(to: "/admin/posts/\(testData.post.blogID!)/delete", method: .POST, body: EmptyContent(), loggedInUser: user)
+        
+        XCTAssertEqual(response.http.status, .seeOther)
+        XCTAssertEqual(response.http.headers[.location].first, "/admin/")
+        XCTAssertEqual(testWorld.context.repository.posts.count, 0)
+    }
+    
+    #warning("Test tags when deleting a post")
+    
 }

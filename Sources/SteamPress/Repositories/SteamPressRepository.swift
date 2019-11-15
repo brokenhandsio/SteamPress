@@ -4,6 +4,11 @@ public protocol BlogTagRepository {
     func getAllTags(on container: Container) -> Future<[BlogTag]>
     func getTags(for post: BlogPost, on container: Container) -> Future<[BlogTag]>
     func getTag(_ name: String, on container: Container) -> Future<BlogTag?>
+    func save(_ tag: BlogTag, on container: Container) -> Future<BlogTag>
+    // Delete all the pivots between a post and collection of tags - you should probably delete the
+    // tags that have no posts associated with a tag
+    func deleteTags(for post: BlogPost, on container: Container) -> Future<Void>
+    func add(_ tag: BlogTag, to post: BlogPost, on conainter: Container) -> Future<Void>
 }
 
 public protocol BlogPostRepository {
