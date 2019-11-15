@@ -22,7 +22,6 @@ struct PostAdminController: RouteCollection {
     // MARK: - Route handlers
     func createPostHandler(_ req: Request) throws -> Future<View> {
         let presenter = try req.make(BlogAdminPresenter.self)
-        #warning("test is editing = true")
         return presenter.createPostView(on: req, errors: nil, title: nil, contents: nil, slugURL: nil, tags: nil, isEditing: false, post: nil, isDraft: nil)
     }
     
@@ -157,7 +156,7 @@ struct PostAdminController: RouteCollection {
     
     
     
-    //    // MARK: - Validators
+    // MARK: - Validators
     private func validatePostCreation(_ data: CreatePostData) -> [String]? {
         var createPostErrors = [String]()
         
@@ -181,15 +180,4 @@ struct PostAdminController: RouteCollection {
         return createPostErrors
     }
 
-}
-
-#warning("move")
-extension Optional where Wrapped == String {
-    func isEmptyOrWhitespace() -> Bool {
-        guard let string = self else {
-            return true
-        }
-        
-        return string.trimmingCharacters(in: .whitespaces).isEmpty
-    }
 }

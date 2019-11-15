@@ -42,6 +42,13 @@ class AdminPostTests: XCTestCase {
         XCTAssertEqual(response.http.headers[.location].first, "/posts/post-title/")
     }
     
+    func testPostCreationPageGetsBasicInfo() throws {
+        _ = try testWorld.getResponse(to: createPostPath, loggedInUser: user)
+        
+        let isEditing = try XCTUnwrap(presenter.createPostIsEditing)
+        XCTAssertFalse(isEditing)
+    }
+    
     func testPostCannotBeCreatedIfDraftAndPublishNotSet() throws {
         struct CreatePostData: Content {
             static let defaultContentType = MediaType.urlEncodedForm
@@ -145,7 +152,8 @@ class AdminPostTests: XCTestCase {
         XCTAssertEqual(presenter.createPostTitle, post.title)
         XCTAssertEqual(presenter.createPostContents, post.contents)
         XCTAssertEqual(presenter.createPostSlugURL, post.slugUrl)
-        XCTAssertTrue(presenter.createPostIsEditing ?? false)
+        let isEditing = try XCTUnwrap(presenter.createPostIsEditing)
+        XCTAssertTrue(isEditing)
         XCTAssertEqual(presenter.createPostPost?.blogID, post.blogID)
         XCTAssertEqual(presenter.createPostDraft, !post.published)
     }
