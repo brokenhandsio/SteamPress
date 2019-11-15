@@ -34,9 +34,10 @@ class AdminPostTests: XCTestCase {
         let createData = CreatePostData()
         let response = try testWorld.getResponse(to: createPostPath, body: createData, loggedInUser: user)
         
+        let post = try XCTUnwrap(testWorld.context.repository.posts.first)
         XCTAssertEqual(testWorld.context.repository.posts.count, 1)
-        XCTAssertEqual(testWorld.context.repository.posts.first?.title, createData.title)
-        XCTAssertTrue(testWorld.context.repository.posts.first?.published ?? false)
+        XCTAssertEqual(post.title, createData.title)
+        XCTAssertTrue(post.published)
         XCTAssertEqual(response.http.status, .seeOther)
         XCTAssertEqual(response.http.headers[.location].first, "/posts/post-title/")
     }
@@ -67,7 +68,8 @@ class AdminPostTests: XCTestCase {
         let createData = CreatePostData()
         _ = try testWorld.getResponse(to: createPostPath, body: createData, loggedInUser: user)
 
-        XCTAssertTrue(presenter.createPostErrors?.contains("You must specify a blog post title") ?? false)
+        let createPostErrors = try XCTUnwrap(presenter.createPostErrors)
+        XCTAssertTrue(createPostErrors.contains("You must specify a blog post title"))
     }
 
     func testCreatePostMustIncludeContents() throws {
@@ -81,7 +83,8 @@ class AdminPostTests: XCTestCase {
         let createData = CreatePostData()
         _ = try testWorld.getResponse(to: createPostPath, body: createData, loggedInUser: user)
 
-        XCTAssertTrue(presenter.createPostErrors?.contains("You must have some content in your blog post") ?? false)
+        let createPostErrors = try XCTUnwrap(presenter.createPostErrors)
+        XCTAssertTrue(createPostErrors.contains("You must have some content in your blog post"))
     }
 
     func testCreatePostWithDraftDoesNotPublishPost() throws {
@@ -97,8 +100,9 @@ class AdminPostTests: XCTestCase {
         _ = try testWorld.getResponse(to: createPostPath, body: createData, loggedInUser: user)
 
         XCTAssertEqual(testWorld.context.repository.posts.count, 1)
-        XCTAssertEqual(testWorld.context.repository.posts.first?.title, createData.title)
-        XCTAssertFalse(testWorld.context.repository.posts.first?.published ?? true)
+        let post = try XCTUnwrap(testWorld.context.repository.posts.first)
+        XCTAssertEqual(post.title, createData.title)
+        XCTAssertFalse(post.published)
     }
     
     func testPostCanBeUpdated() throws {

@@ -73,7 +73,8 @@ class LoginTests: XCTestCase {
     
     func testLoginWarningShownIfRedirecting() throws {
         _ = try testWorld.getResponse(to: "/blog/admin/login?loginRequired")
-        XCTAssertTrue(blogPresenter.loginWarning ?? false)
+        let loginWarning = try XCTUnwrap(blogPresenter.loginWarning)
+        XCTAssertTrue(loginWarning)
     }
     
     func testAdminUserCreatedOnFirstBoot() {
@@ -106,9 +107,13 @@ class LoginTests: XCTestCase {
         let data = ResetPasswordData()
         _ = try testWorld.getResponse(to: "/blog/admin/resetPassword", body: data, loggedInUser: user)
 
-        XCTAssertTrue(presenter.resetPasswordErrors?.contains("Your passwords must match!") ?? false)
-        XCTAssertTrue(presenter.resetPasswordError ?? false)
-        XCTAssertTrue(presenter.resetPasswordConfirmError ?? false)
+        let passwordErrors = try XCTUnwrap(presenter.resetPasswordErrors)
+        let resetPasswordError = try XCTUnwrap(presenter.resetPasswordError)
+        let confirmPasswordError = try XCTUnwrap(presenter.resetPasswordConfirmError)
+        
+        XCTAssertTrue(passwordErrors.contains("Your passwords must match!"))
+        XCTAssertTrue(resetPasswordError)
+        XCTAssertTrue(confirmPasswordError)
     }
 
     func testUserCannotResetPasswordWithoutPassword() throws {
@@ -120,8 +125,11 @@ class LoginTests: XCTestCase {
         let data = ResetPasswordData()
         _ = try testWorld.getResponse(to: "/blog/admin/resetPassword", body: data, loggedInUser: user)
 
-        XCTAssertTrue(presenter.resetPasswordErrors?.contains("You must specify a password") ?? false)
-        XCTAssertTrue(presenter.resetPasswordError ?? false)
+        let passwordErrors = try XCTUnwrap(presenter.resetPasswordErrors)
+        let resetPasswordError = try XCTUnwrap(presenter.resetPasswordError)
+        
+        XCTAssertTrue(passwordErrors.contains("You must specify a password"))
+        XCTAssertTrue(resetPasswordError)
         XCTAssertNil(presenter.resetPasswordConfirmError)
     }
 
@@ -134,9 +142,11 @@ class LoginTests: XCTestCase {
         let data = ResetPasswordData()
         _ = try testWorld.getResponse(to: "/blog/admin/resetPassword", body: data, loggedInUser: user)
         
-        XCTAssertTrue(presenter.resetPasswordErrors?.contains("You must confirm your password") ?? false)
+        let passwordErrors = try XCTUnwrap(presenter.resetPasswordErrors)
+        let passwordError = try XCTUnwrap(presenter.resetPasswordConfirmError)
+        XCTAssertTrue(passwordErrors.contains("You must confirm your password"))
         XCTAssertNil(presenter.resetPasswordError)
-        XCTAssertTrue(presenter.resetPasswordConfirmError ?? false)
+        XCTAssertTrue(passwordError)
     }
 
     func testUserCannotResetPasswordWithShortPassword() throws {
@@ -149,7 +159,8 @@ class LoginTests: XCTestCase {
         let data = ResetPasswordData()
         _ = try testWorld.getResponse(to: "/blog/admin/resetPassword", body: data, loggedInUser: user)
 
-        XCTAssertTrue(presenter.resetPasswordErrors?.contains("Your password must be at least 10 characters long") ?? false)
+        let passwordErrors = try XCTUnwrap(presenter.resetPasswordErrors)
+        XCTAssertTrue(passwordErrors.contains("Your password must be at least 10 characters long"))
     }
 
     func testThatAfterResettingPasswordUserIsNotAskedToResetPassword() throws {
@@ -181,23 +192,28 @@ class LoginTests: XCTestCase {
         let loginData = LoginData(username: nil, password: "password")
         _ = try testWorld.getResponse(to: "/blog/admin/login", method: .POST, body: loginData)
         
-        XCTAssertTrue(testWorld.context.blogPresenter.loginErrors?.contains("You must supply your username") ?? false)
-        XCTAssertTrue(testWorld.context.blogPresenter.loginUsernameError ?? false)
+        let loginErrors = try XCTUnwrap(testWorld.context.blogPresenter.loginErrors)
+        let usernameError = try XCTUnwrap(testWorld.context.blogPresenter.loginUsernameError)
+        XCTAssertTrue(loginErrors.contains("You must supply your username"))
+        XCTAssertTrue(usernameError)
     }
     
     func testErrorShownWhenTryingToLoginWithoutPassword() throws {
         let loginData = LoginData(username: "usera", password: nil)
         _ = try testWorld.getResponse(to: "/blog/admin/login", method: .POST, body: loginData)
         
-        XCTAssertTrue(testWorld.context.blogPresenter.loginErrors?.contains("You must supply your password") ?? false)
-        XCTAssertTrue(testWorld.context.blogPresenter.loginPasswordError ?? false)
+        let loginErrors = try XCTUnwrap(testWorld.context.blogPresenter.loginErrors)
+        let passwordError = try XCTUnwrap(testWorld.context.blogPresenter.loginPasswordError)
+        XCTAssertTrue(loginErrors.contains("You must supply your password"))
+        XCTAssertTrue(passwordError)
     }
     
     func testLoggingInWithInvalidCredentials() throws {
         let loginData = LoginData(username: "luke", password: "notthepassword")
         _ = try testWorld.getResponse(to: "/blog/admin/login", method: .POST, body: loginData)
         
-        XCTAssertTrue(testWorld.context.blogPresenter.loginErrors?.contains("Your username or password is incorrect") ?? false)
+        let loginErrors = try XCTUnwrap(testWorld.context.blogPresenter.loginErrors)
+        XCTAssertTrue(loginErrors.contains("Your username or password is incorrect"))
     }
 }
 
