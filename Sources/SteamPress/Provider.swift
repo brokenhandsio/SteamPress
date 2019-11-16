@@ -81,6 +81,8 @@ public struct Provider: Vapor.Provider {
         services.register([PasswordHasher.self, PasswordVerifier.self]) { _ in
             return BCryptDigest()
         }
+        
+        try services.register(BlogRememberMeMiddleware.self)
     }
 
     public func willBoot(_ container: Container) throws -> Future<Void> {

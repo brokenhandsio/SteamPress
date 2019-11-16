@@ -35,6 +35,7 @@ extension TestWorld {
         
         var middlewareConfig = MiddlewareConfig()
         middlewareConfig.use(ErrorMiddleware.self)
+        middlewareConfig.use(BlogRememberMeMiddleware.self)
         middlewareConfig.use(SessionsMiddleware.self)
         services.register(middlewareConfig)
         
