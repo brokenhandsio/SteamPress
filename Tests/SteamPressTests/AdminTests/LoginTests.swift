@@ -222,7 +222,7 @@ class LoginTests: XCTestCase {
         
         let cookieExpiry = try XCTUnwrap(response.http.cookies["steampress-session"]?.expires)
         let oneYear: TimeInterval = 60 * 60 * 24 * 365
-        XCTAssertEqual(cookieExpiry.timeIntervalSince1970, Date().addingTimeInterval(oneYear).timeIntervalSince1970, accuracy: 0.1)
+        XCTAssertEqual(cookieExpiry.timeIntervalSince1970, Date().addingTimeInterval(oneYear).timeIntervalSince1970, accuracy: 1)
     }
     
     func testLoginWithoutRememberMeDoesntSetCookieExpiryDate() throws {
@@ -250,6 +250,19 @@ class LoginTests: XCTestCase {
         
         let cookie = try XCTUnwrap(response.http.cookies["steampress-session"])
         XCTAssertNil(cookie.expires)
+    }
+    
+    func testRememberMeDateOnlySetOnceThenLoginAgainWithItDisabledDoesntRememberMe() throws {
+        let loginData = LoginData(username: "luke", password: "password", rememberMe: true)
+        let loginResponse = try testWorld.getResponse(to: "/blog/admin/login", method: .POST, body: loginData)
+        
+        let cookie = loginResponse.http.cookies["steampress-session"]
+        var adminRequest = HTTPRequest(method: .GET, url: URL(string: "/blog/admin")!)
+        adminRequest.cookies["steampress-session"] = cookie
+        let wrappedAdminRequest = Request(http: adminRequest, using: testWorld.context.app)
+        let response = try testWorld.getResponse(to: wrappedAdminRequest)
+        
+        XCTAssertEqual(loginResponse.http.cookies["steampress-session"]?.expires, response.http.cookies["steampress-session"]?.expires)
     }
 }
 
