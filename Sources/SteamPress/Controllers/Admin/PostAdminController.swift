@@ -106,11 +106,10 @@ struct PostAdminController: RouteCollection {
     func editPostPostHandler(_ req: Request) throws -> Future<Response> {
         let data = try req.content.syncDecode(CreatePostData.self)
         return try req.parameters.next(BlogPost.self).flatMap { post in
-            //        if let errors = validatePostCreation(title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl) {
-            //            return try viewFactory.createBlogPostView(uri: request.getURIWithHTTPSIfReverseProxy(), errors: errors, title: rawTitle, contents: rawContents, slugUrl: rawSlugUrl, tags: tagsArray, isEditing: true, postToEdit: post, draft: false, user: try request.user())
-            //        }
-            
-            #warning("Validate data here")
+            if let errors = self.validatePostCreation(data) {
+                let presenter = try req.make(BlogAdminPresenter.self)
+                return try presenter.createPostView(on: req, errors: errors, title: data.title, contents: data.contents, slugURL: data.slugURL, tags: data.tags, isEditing: true, post: post, isDraft: !post.published).encode(for: req)
+            }
             
             guard let title = data.title, let contents = data.contents, let slugUrl = data.slugURL else {
                 throw Abort(.internalServerError)

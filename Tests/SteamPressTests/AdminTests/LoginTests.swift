@@ -215,5 +215,41 @@ class LoginTests: XCTestCase {
         let loginErrors = try XCTUnwrap(testWorld.context.blogPresenter.loginErrors)
         XCTAssertTrue(loginErrors.contains("Your username or password is incorrect"))
     }
+    
+    func testLoginWithRememberMeSetsCookieExpiryDateTo1Year() throws {
+        let loginData = LoginData(username: "luke", password: "password", rememberMe: true)
+        let response = try testWorld.getResponse(to: "/blog/admin/login", method: .POST, body: loginData)
+        
+        let cookieExpiry = try XCTUnwrap(response.http.cookies["steampress-session"]?.expires)
+        let oneYear: TimeInterval = 60 * 60 * 24 * 365
+        XCTAssertEqual(cookieExpiry.timeIntervalSince1970, Date().addingTimeInterval(oneYear).timeIntervalSince1970, accuracy: 0.1)
+    }
+    
+    func testLoginWithoutRememberMeDoesntSetCookieExpiryDate() throws {
+        let loginData = LoginData(username: "luke", password: "password", rememberMe: nil)
+        let response = try testWorld.getResponse(to: "/blog/admin/login", method: .POST, body: loginData)
+        
+        let cookie = try XCTUnwrap(response.http.cookies["steampress-session"])
+        XCTAssertNil(cookie.expires)
+    }
+    
+    func testLoginWithRememberMeSetToFalseDoesntSetCookieExpiryDate() throws {
+        let loginData = LoginData(username: "luke", password: "password", rememberMe: false)
+        let response = try testWorld.getResponse(to: "/blog/admin/login", method: .POST, body: loginData)
+        
+        let cookie = try XCTUnwrap(response.http.cookies["steampress-session"])
+        XCTAssertNil(cookie.expires)
+    }
+    
+    func testLoginWithRememberMeThenLoginAgainWithItDisabledDoesntRememberMe() throws {
+        var loginData = LoginData(username: "luke", password: "password", rememberMe: true)
+        _ = try testWorld.getResponse(to: "/blog/admin/login", method: .POST, body: loginData)
+        
+        loginData = LoginData(username: "luke", password: "password", rememberMe: false)
+        let response = try testWorld.getResponse(to: "/blog/admin/login", method: .POST, body: loginData)
+        
+        let cookie = try XCTUnwrap(response.http.cookies["steampress-session"])
+        XCTAssertNil(cookie.expires)
+    }
 }
 

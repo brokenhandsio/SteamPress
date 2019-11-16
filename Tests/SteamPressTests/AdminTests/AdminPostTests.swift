@@ -330,6 +330,32 @@ class AdminPostTests: XCTestCase {
         XCTAssertNil(post.lastEdited)
         XCTAssertEqual(post.created.timeIntervalSince1970, Date().timeIntervalSince1970, accuracy: 0.1)
     }
+    
+    func testEditingPageWithInvalidDataPassesExistingDataToPresenter() throws {
+        struct UpdatePostData: Content {
+            static let defaultContentType = MediaType.urlEncodedForm
+            let title = ""
+            let contents = "# Post Title\n\nWe have a post"
+            let tags = ["First Tag", "Second Tag"]
+            let slugURL = "post-title"
+        }
+        
+        let testData = try testWorld.createPost(title: "Initial title", contents: "Some initial contents", slugUrl: "initial-title")
+        let updateData = UpdatePostData()
+        
+        let updatePostPath = "/admin/posts/\(testData.post.blogID!)/edit"
+        _ = try testWorld.getResponse(to: updatePostPath, body: updateData, loggedInUser: user)
+
+        XCTAssertEqual(presenter.createPostTitle, "")
+        XCTAssertEqual(presenter.createPostPost?.blogID, testData.post.blogID)
+        XCTAssertEqual(presenter.createPostContents, updateData.contents)
+        XCTAssertEqual(presenter.createPostSlugURL, updateData.slugURL)
+        XCTAssertEqual(presenter.createPostTags, updateData.tags)
+        XCTAssertEqual(presenter.createPostIsEditing, true)
+        XCTAssertEqual(presenter.createPostDraft, false)
+        let createPostErrors = try XCTUnwrap(presenter.createPostErrors)
+        XCTAssertTrue(createPostErrors.contains("You must specify a blog post title"))
+    }
 
     // MARK: - Post Deletion
     

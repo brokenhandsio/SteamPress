@@ -3,5 +3,5 @@ import Vapor
 struct LoginData: Content {
     let username: String?
     let password: String?
-    #warning("Remember me")
+    let rememberMe: Bool?
 }

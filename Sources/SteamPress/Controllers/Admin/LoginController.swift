@@ -16,7 +16,6 @@ struct LoginController: RouteCollection {
         router.get("login", use: loginHandler)
         router.post("login", use: loginPostHandler)
         
-        #warning("TODO - wrap the middleware group in the auth tests")
         let redirectMiddleware = BlogLoginRedirectAuthMiddleware(pathCreator: pathCreator)
         let protectedRoutes = router.grouped(redirectMiddleware)
         protectedRoutes.post("logout", use: logoutHandler)
@@ -55,12 +54,12 @@ struct LoginController: RouteCollection {
         guard let username = loginData.username, let password = loginData.password else {
             throw Abort(.internalServerError)
         }
-
-//        if rememberMe {
-//            request.storage["remember_me"] = true
-//        } else {
-//            request.storage.removeValue(forKey: "remember_me")
-//        }
+        
+        if let rememberMe = loginData.rememberMe, rememberMe {
+            try req.session()["SteamPressRememberMe"] = "YES"
+        } else {
+            try req.session()["SteamPressRememberMe"] = nil
+        }
         
         let userRepository = try req.make(BlogUserRepository.self)
         return userRepository.getUser(username: username, on: req).flatMap { user in

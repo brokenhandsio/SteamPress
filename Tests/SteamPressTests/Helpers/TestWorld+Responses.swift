@@ -50,8 +50,3 @@ extension TestWorld {
         return try responder.respond(to: request).wait()
     }
 }
-
-struct LoginData: Content {
-    let username: String?
-    let password: String?
-}
