@@ -82,7 +82,7 @@ public struct Provider: Vapor.Provider {
             return BCryptDigest()
         }
         
-        try services.register(BlogRememberMeMiddleware.self)
+        services.register(BlogRememberMeMiddleware.self)
     }
 
     public func willBoot(_ container: Container) throws -> Future<Void> {
