@@ -68,5 +68,17 @@ class TagTests: XCTestCase {
         let tag = try BlogTag(name: "Luke's Tatooine")
         XCTAssertEqual(tag.name, "Luke's%20Tatooine")
     }
+    
+    func testGettingTagViewWithURLEncodedName() throws {
+        let tagName = "Some Tag"
+        _ = try testWorld.createTag(tagName)
+        
+        let urlEncodedName = try XCTUnwrap(tagName.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed))
+        let response = try testWorld.getResponse(to: "/tags/\(urlEncodedName)")
+        
+        XCTAssertEqual(response.http.status, .ok)
+        XCTAssertEqual(presenter.tag?.name.removingPercentEncoding, tagName)
+        #warning("Test that this is URL decoded in the Leaf presenter")
+    }
 }
 

@@ -30,7 +30,7 @@ struct BlogController: RouteCollection {
             router.get(authorsPath, String.parameter, use: authorViewHandler)
         }
         if enableTagsPages {
-            router.get(tagsPath, String.parameter, use: tagViewHandler)
+            router.get(tagsPath, BlogTag.parameter, use: tagViewHandler)
             router.get(tagsPath, use: allTagsViewHandler)
         }
     }
@@ -67,16 +67,9 @@ struct BlogController: RouteCollection {
     }
 
     func tagViewHandler(_ req: Request) throws -> Future<View> {
-        #warning("Pagination")
-        let tagName = try req.parameters.next(String.self)
-
-        guard let decodedTagName = tagName.removingPercentEncoding else {
-            throw Abort(.badRequest)
-        }
-        
-        let tagRepository = try req.make(BlogTagRepository.self)
-        return tagRepository.getTag(decodedTagName, on: req).unwrap(or: Abort(.notFound)).flatMap { tag in
+        return try req.parameters.next(BlogTag.self).flatMap { tag in
             let postRepository = try req.make(BlogPostRepository.self)
+            #warning("Pagination")
             return postRepository.getSortedPublishedPosts(for: tag, on: req).flatMap { posts in
                 let presenter = try req.make(BlogPresenter.self)
                 return presenter.tagView(on: req, tag: tag, posts: posts)
