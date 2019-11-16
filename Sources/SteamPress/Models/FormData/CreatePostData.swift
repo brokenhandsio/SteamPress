@@ -7,5 +7,4 @@ struct CreatePostData: Content {
     let draft: Bool?
     let slugURL: String?
     let tags: [String]
-    #warning("Slug URL")
 }
