@@ -18,19 +18,12 @@ extension TestWorld {
                                              postsPerPage: 10,
                                              enableAuthorPages: enableAuthorPages,
                                              enableTagPages: enableTagPages,
-                                             blogPresenter: blogPresenter)
+                                             blogPresenter: blogPresenter,
+                                             blogAdminPresenter: adminPresenter)
         try services.register(steampress)
 
         services.register([BlogTagRepository.self, BlogPostRepository.self, BlogUserRepository.self]) { _ in
             return repository
-        }
-        
-        services.register(BlogPresenter.self) { _ in
-            return blogPresenter
-        }
-        
-        services.register(BlogAdminPresenter.self) { _ in
-            adminPresenter
         }
         
         var middlewareConfig = MiddlewareConfig()
