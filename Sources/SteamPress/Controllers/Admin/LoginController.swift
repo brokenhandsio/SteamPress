@@ -24,13 +24,13 @@ struct LoginController: RouteCollection {
     }
     
     // MARK: - Route handlers
-    func loginHandler(_ req: Request) throws -> Future<View> {
+    func loginHandler(_ req: Request) throws -> EventLoopFuture<View> {
         let loginRequied = (try? req.query.get(Bool.self, at: "loginRequired")) != nil
         let presenter = try req.make(BlogPresenter.self)
         return try presenter.loginView(on: req, loginWarning: loginRequied, errors: nil, username: nil, usernameError: false, passwordError: false)
     }
 
-    func loginPostHandler(_ req: Request) throws -> Future<Response> {
+    func loginPostHandler(_ req: Request) throws -> EventLoopFuture<Response> {
         let loginData = try req.content.syncDecode(LoginData.self)
         var loginErrors = [String]()
         var usernameError = false
@@ -79,7 +79,7 @@ struct LoginController: RouteCollection {
         return request.redirect(to: pathCreator.createPath(for: pathCreator.blogPath))
     }
     
-    func resetPasswordHandler(_ req: Request) throws -> Future<View> {
+    func resetPasswordHandler(_ req: Request) throws -> EventLoopFuture<View> {
         let presenter = try req.make(BlogAdminPresenter.self)
         return presenter.createResetPasswordView(on: req, errors: nil, passwordError: nil, confirmPasswordError: nil)
     }

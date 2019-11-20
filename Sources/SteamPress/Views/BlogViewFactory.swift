@@ -11,7 +11,7 @@ import Foundation
 //                        confirmPasswordError: Bool?, resetPasswordRequired: Bool?, userId: Identifier?,
 //                        profilePicture: String?, twitterHandle: String?, biography: String?,
 //                        tagline: String?, loggedInUser: BlogUser) throws -> View
-//    func createLoginView(on container: Container, loginWarning: Bool, errors: [String]?, username: String?) throws -> Future<View>
+//    func createLoginView(on container: Container, loginWarning: Bool, errors: [String]?, username: String?) throws -> EventLoopFuture<View>
 //    func createBlogAdminView(errors: [String]?, user: BlogUser) throws -> View
 //    func createResetPasswordView(errors: [String]?, passwordError: Bool?, confirmPasswordError: Bool?, user: BlogUser) throws -> View
 //

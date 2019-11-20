@@ -68,7 +68,7 @@ class CapturingAdminPresenter: BlogAdminPresenter {
     
     // MARK: - Helpers
     
-    func createFutureView(on req: Request) -> Future<View> {
+    func createFutureView(on req: Request) -> EventLoopFuture<View> {
         let data = "some HTML".convertToData()
         let view = View(data: data)
         return req.future(view)

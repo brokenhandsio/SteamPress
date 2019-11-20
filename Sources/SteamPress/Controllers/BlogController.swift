@@ -37,7 +37,7 @@ struct BlogController: RouteCollection {
 
     // MARK: - Route Handlers
 
-    func indexHandler(_ req: Request) throws -> Future<View> {
+    func indexHandler(_ req: Request) throws -> EventLoopFuture<View> {
         #warning("Pagination")
         let postRepository = try req.make(BlogPostRepository.self)
         let tagRepository = try req.make(BlogTagRepository.self)
@@ -54,7 +54,7 @@ struct BlogController: RouteCollection {
         return req.redirect(to: pathCreator.createPath(for: pathCreator.blogPath), type: .permanent)
     }
 
-    func blogPostHandler(_ req: Request) throws -> Future<View> {
+    func blogPostHandler(_ req: Request) throws -> EventLoopFuture<View> {
         let blogSlug = try req.parameters.next(String.self)
         let blogRepository = try req.make(BlogPostRepository.self)
         return blogRepository.getPost(slug: blogSlug, on: req).unwrap(or: Abort(.notFound)).flatMap { post in
@@ -66,7 +66,7 @@ struct BlogController: RouteCollection {
         }
     }
 
-    func tagViewHandler(_ req: Request) throws -> Future<View> {
+    func tagViewHandler(_ req: Request) throws -> EventLoopFuture<View> {
         return try req.parameters.next(BlogTag.self).flatMap { tag in
             let postRepository = try req.make(BlogPostRepository.self)
             #warning("Pagination")
@@ -77,7 +77,7 @@ struct BlogController: RouteCollection {
         }
     }
 
-    func authorViewHandler(_ req: Request) throws -> Future<View> {
+    func authorViewHandler(_ req: Request) throws -> EventLoopFuture<View> {
         let authorUsername = try req.parameters.next(String.self)
         let userRepository = try req.make(BlogUserRepository.self)
         
@@ -94,7 +94,7 @@ struct BlogController: RouteCollection {
         }
     }
 
-    func allTagsViewHandler(_ req: Request) throws -> Future<View> {
+    func allTagsViewHandler(_ req: Request) throws -> EventLoopFuture<View> {
         let tagRepository = try req.make(BlogTagRepository.self)
         return tagRepository.getAllTags(on: req).flatMap { tags in
             let presenter = try req.make(BlogPresenter.self)
@@ -102,7 +102,7 @@ struct BlogController: RouteCollection {
         }
     }
 
-    func allAuthorsViewHandler(_ req: Request) throws -> Future<View> {
+    func allAuthorsViewHandler(_ req: Request) throws -> EventLoopFuture<View> {
         let presenter = try req.make(BlogPresenter.self)
         let authorRepository = try req.make(BlogUserRepository.self)
         return authorRepository.getAllUsers(on: req).flatMap { allUsers in
@@ -110,7 +110,7 @@ struct BlogController: RouteCollection {
         }
     }
 
-    func searchHandler(_ req: Request) throws -> Future<View> {
+    func searchHandler(_ req: Request) throws -> EventLoopFuture<View> {
         let preseneter = try req.make(BlogPresenter.self)
         guard let searchTerm = req.query[String.self, at: "term"], !searchTerm.isEmpty else {
             return preseneter.searchView(on: req, posts: nil, searchTerm: nil)

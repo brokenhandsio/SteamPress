@@ -20,12 +20,12 @@ struct PostAdminController: RouteCollection {
     }
     
     // MARK: - Route handlers
-    func createPostHandler(_ req: Request) throws -> Future<View> {
+    func createPostHandler(_ req: Request) throws -> EventLoopFuture<View> {
         let presenter = try req.make(BlogAdminPresenter.self)
         return presenter.createPostView(on: req, errors: nil, title: nil, contents: nil, slugURL: nil, tags: nil, isEditing: false, post: nil, isDraft: nil)
     }
     
-    func createPostPostHandler(_ req: Request) throws -> Future<Response> {
+    func createPostPostHandler(_ req: Request) throws -> EventLoopFuture<Response> {
         let data = try req.content.syncDecode(CreatePostData.self)
         let author = try req.requireAuthenticated(BlogUser.self)
         
@@ -82,7 +82,7 @@ struct PostAdminController: RouteCollection {
         }
     }
 
-    func deletePostHandler(_ req: Request) throws -> Future<Response> {
+    func deletePostHandler(_ req: Request) throws -> EventLoopFuture<Response> {
         return try req.parameters.next(BlogPost.self).flatMap { post in
             let tagsRepository = try req.make(BlogTagRepository.self)
             return tagsRepository.deleteTags(for: post, on: req).flatMap { tags in
@@ -93,7 +93,7 @@ struct PostAdminController: RouteCollection {
         }
     }
 
-    func editPostHandler(_ req: Request) throws -> Future<View> {
+    func editPostHandler(_ req: Request) throws -> EventLoopFuture<View> {
         return try req.parameters.next(BlogPost.self).flatMap { post in
             let tagsRepository = try req.make(BlogTagRepository.self)
             return tagsRepository.getTags(for: post, on: req).flatMap { tags in
@@ -103,7 +103,7 @@ struct PostAdminController: RouteCollection {
         }
     }
     
-    func editPostPostHandler(_ req: Request) throws -> Future<Response> {
+    func editPostPostHandler(_ req: Request) throws -> EventLoopFuture<Response> {
         let data = try req.content.syncDecode(CreatePostData.self)
         return try req.parameters.next(BlogPost.self).flatMap { post in
             if let errors = self.validatePostCreation(data) {

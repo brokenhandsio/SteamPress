@@ -2,7 +2,7 @@ import Vapor
 
 public final class BlogAuthSessionsMiddleware: Middleware {
     public func respond(to request: Request, chainingTo next: Responder) throws -> EventLoopFuture<Response> {
-        let future: Future<Void>
+        let future: EventLoopFuture<Void>
         if let userIDString = try request.session()["_BlogUserSession"], let userID = Int(userIDString) {
             let userRepository = try request.make(BlogUserRepository.self)
             future = userRepository.getUser(id: userID, on: request).flatMap { user in

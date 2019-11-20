@@ -25,14 +25,14 @@ class CapturingBlogPresenter: BlogPresenter {
     }
     
     private(set) var allAuthors: [BlogUser]?
-    func allAuthorsView(on req: Request, authors: [BlogUser]) -> Future<View> {
+    func allAuthorsView(on req: Request, authors: [BlogUser]) -> EventLoopFuture<View> {
         self.allAuthors = authors
         return TestDataBuilder.createFutureView(on: req)
     }
     
     private(set) var author: BlogUser?
     private(set) var authorPosts: [BlogPost]?
-    func authorView(on req: Request, author: BlogUser, posts: [BlogPost]) -> Future<View> {
+    func authorView(on req: Request, author: BlogUser, posts: [BlogPost]) -> EventLoopFuture<View> {
         self.author = author
         self.authorPosts = posts
         return TestDataBuilder.createFutureView(on: req)
@@ -46,7 +46,7 @@ class CapturingBlogPresenter: BlogPresenter {
     
     private(set) var tag: BlogTag?
     private(set) var tagPosts: [BlogPost]?
-    func tagView(on req: Request, tag: BlogTag, posts: [BlogPost]) -> Future<View> {
+    func tagView(on req: Request, tag: BlogTag, posts: [BlogPost]) -> EventLoopFuture<View> {
         self.tag = tag
         self.tagPosts = posts
         return TestDataBuilder.createFutureView(on: req)

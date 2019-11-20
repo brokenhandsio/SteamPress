@@ -48,7 +48,7 @@ struct TestDataBuilder {
         return user
     }
     
-    static func createFutureView(on container: Container) -> Future<View> {
+    static func createFutureView(on container: Container) -> EventLoopFuture<View> {
         let data = "some HTML".convertToData()
         let view = View(data: data)
         return container.future(view)

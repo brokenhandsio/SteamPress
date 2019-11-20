@@ -21,12 +21,12 @@ struct UserAdminController: RouteCollection {
     }
     
     // MARK: - Route handlers
-    func createUserHandler(_ req: Request) throws -> Future<View> {
+    func createUserHandler(_ req: Request) throws -> EventLoopFuture<View> {
         let presenter = try req.make(BlogAdminPresenter.self)
         return presenter.createUserView(on: req, errors: nil, name: nil, username: nil, passwordError: false, confirmPasswordError: false, userID: nil, profilePicture: nil, twitterHandle: nil, biography: nil, tagline: nil)
     }
     
-    func createUserPostHandler(_ req: Request) throws -> Future<Response> {
+    func createUserPostHandler(_ req: Request) throws -> EventLoopFuture<Response> {
         let data = try req.content.syncDecode(CreateUserData.self)
         
         if let createUserErrors = validateUserCreation(data) {
@@ -51,14 +51,14 @@ struct UserAdminController: RouteCollection {
         }
     }
     
-    func editUserHandler(_ req: Request) throws -> Future<View> {
+    func editUserHandler(_ req: Request) throws -> EventLoopFuture<View> {
         return try req.parameters.next(BlogUser.self).flatMap { user in
             let presenter = try req.make(BlogAdminPresenter.self)
             return presenter.createUserView(on: req, errors: nil, name: user.name, username: user.username, passwordError: false, confirmPasswordError: false, userID: user.userID, profilePicture: user.profilePicture, twitterHandle: user.twitterHandle, biography: user.biography, tagline: user.tagline)
         }
     }
     
-    func editUserPostHandler(_ req: Request) throws -> Future<Response> {
+    func editUserPostHandler(_ req: Request) throws -> EventLoopFuture<Response> {
         return try req.parameters.next(BlogUser.self).flatMap { user in
             let data = try req.content.syncDecode(CreateUserData.self)
             
@@ -95,7 +95,7 @@ struct UserAdminController: RouteCollection {
     }
     
 
-    func deleteUserPostHandler(_ req: Request) throws -> Future<Response> {
+    func deleteUserPostHandler(_ req: Request) throws -> EventLoopFuture<Response> {
         let userRepository = try req.make(BlogUserRepository.self)
         return try flatMap(req.parameters.next(BlogUser.self), userRepository.getUsersCount(on: req)) { user, userCount in
             guard userCount > 1 else {

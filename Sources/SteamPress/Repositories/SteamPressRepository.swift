@@ -1,37 +1,37 @@
 import Vapor
 
 public protocol BlogTagRepository {
-    func getAllTags(on container: Container) -> Future<[BlogTag]>
-    func getTags(for post: BlogPost, on container: Container) -> Future<[BlogTag]>
-    func getTag(_ name: String, on container: Container) -> Future<BlogTag?>
-    func save(_ tag: BlogTag, on container: Container) -> Future<BlogTag>
+    func getAllTags(on container: Container) -> EventLoopFuture<[BlogTag]>
+    func getTags(for post: BlogPost, on container: Container) -> EventLoopFuture<[BlogTag]>
+    func getTag(_ name: String, on container: Container) -> EventLoopFuture<BlogTag?>
+    func save(_ tag: BlogTag, on container: Container) -> EventLoopFuture<BlogTag>
     // Delete all the pivots between a post and collection of tags - you should probably delete the
     // tags that have no posts associated with a tag
-    func deleteTags(for post: BlogPost, on container: Container) -> Future<Void>
-    func remove(_ tag: BlogTag, from post: BlogPost, on container: Container) -> Future<Void>
-    func add(_ tag: BlogTag, to post: BlogPost, on conainter: Container) -> Future<Void>
+    func deleteTags(for post: BlogPost, on container: Container) -> EventLoopFuture<Void>
+    func remove(_ tag: BlogTag, from post: BlogPost, on container: Container) -> EventLoopFuture<Void>
+    func add(_ tag: BlogTag, to post: BlogPost, on conainter: Container) -> EventLoopFuture<Void>
 }
 
 public protocol BlogPostRepository {
-    func getAllPosts(on container: Container) -> Future<[BlogPost]>
-    func getAllPostsSortedByPublishDate(includeDrafts: Bool, on container: Container) -> Future<[BlogPost]>
-    func getAllPostsSortedByPublishDate(for user: BlogUser, includeDrafts: Bool, on container: Container) -> Future<[BlogPost]>
-    func getPost(slug: String, on container: Container) -> Future<BlogPost?>
-    func getPost(id: Int, on container: Container) -> Future<BlogPost?>
-    func getSortedPublishedPosts(for tag: BlogTag, on container: Container) -> Future<[BlogPost]>
-    func findPublishedPostsOrdered(for searchTerm: String, on container: Container) -> Future<[BlogPost]>
-    func save(_ post: BlogPost, on container: Container) -> Future<BlogPost>
-    func delete(_ post: BlogPost, on container: Container) -> Future<Void>
+    func getAllPosts(on container: Container) -> EventLoopFuture<[BlogPost]>
+    func getAllPostsSortedByPublishDate(includeDrafts: Bool, on container: Container) -> EventLoopFuture<[BlogPost]>
+    func getAllPostsSortedByPublishDate(for user: BlogUser, includeDrafts: Bool, on container: Container) -> EventLoopFuture<[BlogPost]>
+    func getPost(slug: String, on container: Container) -> EventLoopFuture<BlogPost?>
+    func getPost(id: Int, on container: Container) -> EventLoopFuture<BlogPost?>
+    func getSortedPublishedPosts(for tag: BlogTag, on container: Container) -> EventLoopFuture<[BlogPost]>
+    func findPublishedPostsOrdered(for searchTerm: String, on container: Container) -> EventLoopFuture<[BlogPost]>
+    func save(_ post: BlogPost, on container: Container) -> EventLoopFuture<BlogPost>
+    func delete(_ post: BlogPost, on container: Container) -> EventLoopFuture<Void>
 }
 
 public protocol BlogUserRepository {
-    func getAllUsers(on container: Container) -> Future<[BlogUser]>
-    func getUser(id: Int, on container: Container) -> Future<BlogUser?>
-    func getUser(name: String, on container: Container) -> Future<BlogUser?>
-    func getUser(username: String, on container: Container) -> Future<BlogUser?>
-    func save(_ user: BlogUser, on container: Container) -> Future<BlogUser>
-    func delete(_ user: BlogUser, on container: Container) -> Future<Void>
-    func getUsersCount(on container: Container) -> Future<Int>
+    func getAllUsers(on container: Container) -> EventLoopFuture<[BlogUser]>
+    func getUser(id: Int, on container: Container) -> EventLoopFuture<BlogUser?>
+    func getUser(name: String, on container: Container) -> EventLoopFuture<BlogUser?>
+    func getUser(username: String, on container: Container) -> EventLoopFuture<BlogUser?>
+    func save(_ user: BlogUser, on container: Container) -> EventLoopFuture<BlogUser>
+    func delete(_ user: BlogUser, on container: Container) -> EventLoopFuture<Void>
+    func getUsersCount(on container: Container) -> EventLoopFuture<Int>
 }
 
 extension BlogUser: Parameter {

@@ -28,7 +28,7 @@ struct RSSFeedGenerator {
 
     // MARK: - Route Handler
 
-    func feedHandler(_ request: Request) throws -> Future<HTTPResponse> {
+    func feedHandler(_ request: Request) throws -> EventLoopFuture<HTTPResponse> {
 
         let blogRepository = try request.make(BlogPostRepository.self)
         return blogRepository.getAllPostsSortedByPublishDate(includeDrafts: false, on: request).flatMap { posts in
@@ -84,7 +84,7 @@ struct RSSFeedGenerator {
 }
 
 fileprivate extension BlogPost {
-    func getPostRSSFeed(rootPath: String, dateFormatter: DateFormatter, for request: Request) throws -> Future<String> {
+    func getPostRSSFeed(rootPath: String, dateFormatter: DateFormatter, for request: Request) throws -> EventLoopFuture<String> {
         let link = rootPath + "/posts/\(slugUrl)/"
         var postEntry = "<item>\n<title>\n\(title)\n</title>\n<description>\n\(try description())\n</description>\n<link>\n\(link)\n</link>\n"
         

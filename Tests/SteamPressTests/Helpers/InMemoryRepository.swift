@@ -17,7 +17,7 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
     
     // MARK: - BlogTagRepository
     
-    func getAllTags(on container: Container) -> Future<[BlogTag]> {
+    func getAllTags(on container: Container) -> EventLoopFuture<[BlogTag]> {
         return container.future(tags)
     }
     

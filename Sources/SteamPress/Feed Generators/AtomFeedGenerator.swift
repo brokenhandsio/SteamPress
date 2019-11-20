@@ -28,7 +28,7 @@ struct AtomFeedGenerator {
     
     // MARK: - Route Handler
     
-    func feedHandler(_ request: Request) throws -> Future<HTTPResponse> {
+    func feedHandler(_ request: Request) throws -> EventLoopFuture<HTTPResponse> {
         
         let blogRepository = try request.make(BlogPostRepository.self)
         return blogRepository.getAllPostsSortedByPublishDate(includeDrafts: false, on: request).flatMap { posts in
@@ -81,7 +81,7 @@ struct AtomFeedGenerator {
 }
 
 fileprivate extension BlogPost {
-    func getPostAtomFeed(blogPath: String, dateFormatter: DateFormatter, for request: Request) throws -> Future<String> {
+    func getPostAtomFeed(blogPath: String, dateFormatter: DateFormatter, for request: Request) throws -> EventLoopFuture<String> {
         let updatedTime = lastEdited ?? created
         let authorRepository = try request.make(BlogUserRepository.self)
         return authorRepository.getUser(id: author, on: request).flatMap { user in
