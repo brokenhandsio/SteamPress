@@ -8,47 +8,46 @@ public struct Provider<P: BlogPresenter, AP: BlogAdminPresenter>: Vapor.Provider
     }
     
     let blogPath: String?
-    let pathCreator: BlogPathCreator
-    let blogPresenter: P
-    let blogAdminPresenter: AP
     let feedInformation: FeedInformation
+    let postsPerPage: Int
     let enableAuthorPages: Bool
     let enableTagPages: Bool
+    let blogPresenter: P
+    let blogAdminPresenter: AP
+    let pathCreator: BlogPathCreator
     
-    #warning("Update")
     /**
      Initialiser for SteamPress' Provider to add a blog to your Vapor App. You can pass it an optional
      `blogPath` to add the blog to. For instance, if you pass in "blog", your blog will be accessible
      at http://mysite.com/blog/, or if you pass in `nil` your blog will be added to the root of your
      site (i.e. http://mysite.com/)
-     - Parameter blogPath: The path to add the blog too
-     blog (integrates with Paginator)
-     - Parameter feedInformation: Information to vend to the RSS and Atom feeds
-     - Parameter postsPerPage: The number of posts to show per page on the main index page of the
+     - Parameter blogPath: The path to add the blog to (see above).
+     - Parameter feedInformation: Information to vend to the RSS and Atom feeds. Defaults to empty information.
+     - Parameter postsPerPage: The number of posts to show per page on the main index page of the blog. Defaults to 10.
      - Parameter enableAuthorsPages: Flag used to determine whether to publicly expose the authors endpoints
-     or not. Defaults to true
+     or not. Defaults to true.
      - Parameter enableTagsPages: Flag used to determine whether to publicy expose the tags endpoints or not.
-     Defaults to true
-     - Parameter blogPresenter: The presenter to generate templates with, defaults to LeafBlogPresenter
-     - Parameter blogAdminPresenter: The presenter to generate templates for the admin section, defaults to LeadBlogAdminPresenter
+     Defaults to true.
+     - Parameter blogPresenter: The presenter to generate templates with. Defaults to LeafBlogPresenter.
+     - Parameter blogAdminPresenter: The presenter to generate templates for the admin section. Defaults to LeadBlogAdminPresenter.
      */
     public init(
         blogPath: String? = nil,
         feedInformation: FeedInformation = FeedInformation(),
-        postsPerPage: Int,
+        postsPerPage: Int = 10,
         enableAuthorPages: Bool = true,
         enableTagPages: Bool = true,
         blogPresenter: P,
         blogAdminPresenter: AP) {
-        //        self.postsPerPage = postsPerPage
         self.blogPath = blogPath
         self.feedInformation = feedInformation
-        self.pathCreator = BlogPathCreator(blogPath: self.blogPath)
+        self.postsPerPage = postsPerPage
         #warning("Default to sensible ones in the constructor")
-        self.blogPresenter = blogPresenter
-        self.blogAdminPresenter = blogAdminPresenter
         self.enableAuthorPages = enableAuthorPages
         self.enableTagPages = enableTagPages
+        self.blogPresenter = blogPresenter
+        self.blogAdminPresenter = blogAdminPresenter
+        self.pathCreator = BlogPathCreator(blogPath: self.blogPath)
     }
     
     public func register(_ services: inout Services) throws {
