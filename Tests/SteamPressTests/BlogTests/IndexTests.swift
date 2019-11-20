@@ -70,5 +70,18 @@ class IndexTests: XCTestCase {
         _ = try testWorld.getResponse(to: blogIndexPath)
         XCTAssertEqual(presenter.indexPosts?.count, postsPerPage)
     }
+    
+    func testIndexGetsCorrectPostsForPage() throws {
+        try testWorld.createPosts(count: 15, author: firstData.author)
+        _ = try testWorld.getResponse(to: "/?page=2")
+        XCTAssertEqual(presenter.indexPosts?.count, 6)
+    }
+    
+    // This is a bit of a dummy test since it should be handled by the DB
+    func testIndexHandlesIncorrectPageCorrectly() throws {
+        try testWorld.createPosts(count: 15, author: firstData.author)
+        _ = try testWorld.getResponse(to: "/?page=3")
+        XCTAssertEqual(presenter.indexPosts?.count, 0)
+    }
 }
 

@@ -7,7 +7,7 @@ extension TestWorld {
     }
     
     func createPosts(count: Int, author: BlogUser) throws {
-        for index in 1..<count {
+        for index in 1...count {
             _ = try createPost(title: "Post \(index)", slugUrl: "post-\(index)", author: author)
         }
     }

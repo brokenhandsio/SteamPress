@@ -44,7 +44,8 @@ struct BlogController: RouteCollection {
         let tagRepository = try req.make(BlogTagRepository.self)
         let userRepository = try req.make(BlogUserRepository.self)
         let paginationInformation = req.getPaginationInformation()
-        return flatMap(postRepository.getAllPostsSortedByPublishDate(includeDrafts: false, on: req, count: postsPerPage, offset: paginationInformation.page - 1),
+        let offset = (paginationInformation.page - 1) * postsPerPage
+        return flatMap(postRepository.getAllPostsSortedByPublishDate(includeDrafts: false, on: req, count: postsPerPage, offset: offset),
                        tagRepository.getAllTags(on: req),
                        userRepository.getAllUsers(on: req)) { posts, tags, users in
             let presenter = try req.make(BlogPresenter.self)

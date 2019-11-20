@@ -123,7 +123,7 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         if !includeDrafts {
             sortedPosts = sortedPosts.filter { $0.published }
         }
-        let startIndex = offset
+        let startIndex = min(offset, sortedPosts.count)
         let endIndex = min(offset + count, sortedPosts.count)
         return container.future(Array(sortedPosts[startIndex..<endIndex]))
     }
