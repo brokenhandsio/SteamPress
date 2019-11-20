@@ -83,5 +83,17 @@ class IndexTests: XCTestCase {
         _ = try testWorld.getResponse(to: "/?page=3")
         XCTAssertEqual(presenter.indexPosts?.count, 0)
     }
+    
+    func testIndexHandlesNegativePageCorrectly() throws {
+        try testWorld.createPosts(count: 15, author: firstData.author)
+        _ = try testWorld.getResponse(to: "/?page=-3")
+        XCTAssertEqual(presenter.indexPosts?.count, postsPerPage)
+    }
+    
+    func testIndexHandlesPageAsStringSafely() throws {
+        try testWorld.createPosts(count: 15, author: firstData.author)
+        _ = try testWorld.getResponse(to: "/?page=three")
+        XCTAssertEqual(presenter.indexPosts?.count, postsPerPage)
+    }
 }
 
