@@ -11,12 +11,14 @@ struct BlogController: RouteCollection {
     fileprivate let pathCreator: BlogPathCreator
     fileprivate let enableAuthorPages: Bool
     fileprivate let enableTagsPages: Bool
+    fileprivate let postsPerPage: Int
 
     // MARK: - Initialiser
-    init(pathCreator: BlogPathCreator, enableAuthorPages: Bool, enableTagPages: Bool) {
+    init(pathCreator: BlogPathCreator, enableAuthorPages: Bool, enableTagPages: Bool, postsPerPage: Int) {
         self.pathCreator = pathCreator
         self.enableAuthorPages = enableAuthorPages
         self.enableTagsPages = enableTagPages
+        self.postsPerPage = postsPerPage
     }
 
     // MARK: - Add routes

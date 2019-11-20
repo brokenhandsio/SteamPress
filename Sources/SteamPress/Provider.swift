@@ -70,10 +70,10 @@ public struct Provider<P: BlogPresenter, AP: BlogAdminPresenter>: Vapor.Provider
     public func willBoot(_ container: Container) throws -> EventLoopFuture<Void> {
         let router = try container.make(Router.self)
         
-        let feedController = FeedController(pathCreator: pathCreator, feedInformation: feedInformation)
+        let feedController = FeedController(pathCreator: self.pathCreator, feedInformation: self.feedInformation)
         let apiController = APIController()
-        let blogController = BlogController(pathCreator: pathCreator, enableAuthorPages: enableAuthorPages, enableTagPages: enableTagPages)
-        let blogAdminController = BlogAdminController(pathCreator: pathCreator)
+        let blogController = BlogController(pathCreator: self.pathCreator, enableAuthorPages: self.enableAuthorPages, enableTagPages: self.enableTagPages, postsPerPage: self.postsPerPage)
+        let blogAdminController = BlogAdminController(pathCreator: self.pathCreator)
         
         let blogRoutes: Router
         if let blogPath = blogPath {
