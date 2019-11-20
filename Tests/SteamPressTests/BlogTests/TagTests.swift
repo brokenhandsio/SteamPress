@@ -15,11 +15,12 @@ class TagTests: XCTestCase {
     var presenter: CapturingBlogPresenter {
         return testWorld.context.blogPresenter
     }
+    let postsPerPage = 7
     
     // MARK: - Overrides
     
     override func setUp() {
-        testWorld = try! TestWorld.create()
+        testWorld = try! TestWorld.create(postsPerPage: postsPerPage)
         postData = try! testWorld.createPost()
         tag = try! testWorld.createTag(tagName, on: postData.post)
     }
@@ -79,6 +80,19 @@ class TagTests: XCTestCase {
         XCTAssertEqual(response.http.status, .ok)
         XCTAssertEqual(presenter.tag?.name.removingPercentEncoding, tagName)
         #warning("Test that this is URL decoded in the Leaf presenter")
+    }
+    
+    // MARK: - Pagination Tests
+    func testTagViewOnlyGetsTheSpecifiedNumberOfPosts() throws {
+        try testWorld.createPosts(count: 15, author: postData.author, tag: tag)
+        _ = try testWorld.getResponse(to: tagRequestPath)
+        XCTAssertEqual(presenter.tagPosts?.count, postsPerPage)
+    }
+    
+    func testTagViewGetsCorrectPostsForPage() throws {
+        try testWorld.createPosts(count: 15, author: postData.author, tag: tag)
+        _ = try testWorld.getResponse(to: "\(tagRequestPath)?page=3")
+        XCTAssertEqual(presenter.tagPosts?.count, 2)
     }
 }
 

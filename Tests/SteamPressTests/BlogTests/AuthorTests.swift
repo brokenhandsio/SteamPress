@@ -14,11 +14,12 @@ class AuthorTests: XCTestCase {
     private var presenter: CapturingBlogPresenter {
         return testWorld.context.blogPresenter
     }
+    private var postsPerPage = 7
     
     // MARK: - Overrides
     
     override func setUp() {
-        testWorld = try! TestWorld.create()
+        testWorld = try! TestWorld.create(postsPerPage: postsPerPage)
         user = testWorld.createUser(username: "leia")
         postData = try! testWorld.createPost(author: user)
     }
@@ -60,6 +61,19 @@ class AuthorTests: XCTestCase {
         XCTAssertEqual(presenter.authorPosts?.count, 1)
         XCTAssertEqual(presenter.authorPosts?.first?.title, postData.post.title)
         XCTAssertEqual(presenter.authorPosts?.first?.contents, postData.post.contents)
+    }
+    
+    // MARK: - Pagination Tests
+    func testAuthorViewOnlyGetsTheSpecifiedNumberOfPosts() throws {
+        try testWorld.createPosts(count: 15, author: user)
+        _ = try testWorld.getResponse(to: authorsRequestPath)
+        XCTAssertEqual(presenter.authorPosts?.count, postsPerPage)
+    }
+    
+    func testAuthorViewGetsCorrectPostsForPage() throws {
+        try testWorld.createPosts(count: 15, author: user)
+        _ = try testWorld.getResponse(to: "/authors/leia?page=3")
+        XCTAssertEqual(presenter.authorPosts?.count, 2)
     }
     
 }

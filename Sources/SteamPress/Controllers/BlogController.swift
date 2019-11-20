@@ -43,9 +43,8 @@ struct BlogController: RouteCollection {
         let postRepository = try req.make(BlogPostRepository.self)
         let tagRepository = try req.make(BlogTagRepository.self)
         let userRepository = try req.make(BlogUserRepository.self)
-        let paginationInformation = req.getPaginationInformation()
-        let offset = (paginationInformation.page - 1) * postsPerPage
-        return flatMap(postRepository.getAllPostsSortedByPublishDate(includeDrafts: false, on: req, count: postsPerPage, offset: offset),
+        let paginationInformation = req.getPaginationInformation(postsPerPage: postsPerPage)
+        return flatMap(postRepository.getAllPostsSortedByPublishDate(includeDrafts: false, on: req, count: postsPerPage, offset: paginationInformation.offset),
                        tagRepository.getAllTags(on: req),
                        userRepository.getAllUsers(on: req)) { posts, tags, users in
             let presenter = try req.make(BlogPresenter.self)
@@ -72,8 +71,8 @@ struct BlogController: RouteCollection {
     func tagViewHandler(_ req: Request) throws -> EventLoopFuture<View> {
         return try req.parameters.next(BlogTag.self).flatMap { tag in
             let postRepository = try req.make(BlogPostRepository.self)
-            #warning("Pagination")
-            return postRepository.getSortedPublishedPosts(for: tag, on: req).flatMap { posts in
+            let paginationInformation = req.getPaginationInformation(postsPerPage: self.postsPerPage)
+            return postRepository.getSortedPublishedPosts(for: tag, on: req, count: self.postsPerPage, offset: paginationInformation.offset).flatMap { posts in
                 let presenter = try req.make(BlogPresenter.self)
                 return presenter.tagView(on: req, tag: tag, posts: posts)
             }
@@ -83,14 +82,14 @@ struct BlogController: RouteCollection {
     func authorViewHandler(_ req: Request) throws -> EventLoopFuture<View> {
         let authorUsername = try req.parameters.next(String.self)
         let userRepository = try req.make(BlogUserRepository.self)
-        #warning("Pagination")
+        let paginationInformation = req.getPaginationInformation(postsPerPage: postsPerPage)
         return userRepository.getUser(username: authorUsername, on: req).flatMap { user in
             guard let author = user else {
                 throw Abort(.notFound)
             }
             
             let postRepository = try req.make(BlogPostRepository.self)
-            return postRepository.getAllPostsSortedByPublishDate(for: author, includeDrafts: false, on: req).flatMap { posts in
+            return postRepository.getAllPostsSortedByPublishDate(for: author, includeDrafts: false, on: req, count: self.postsPerPage, offset: paginationInformation.offset).flatMap { posts in
                 let presenter = try req.make(BlogPresenter.self)
                 return presenter.authorView(on: req, author: author, posts: posts)
             }
