@@ -40,11 +40,11 @@ struct BlogController: RouteCollection {
     // MARK: - Route Handlers
 
     func indexHandler(_ req: Request) throws -> EventLoopFuture<View> {
-        #warning("Pagination")
         let postRepository = try req.make(BlogPostRepository.self)
         let tagRepository = try req.make(BlogTagRepository.self)
         let userRepository = try req.make(BlogUserRepository.self)
-        return flatMap(postRepository.getAllPostsSortedByPublishDate(includeDrafts: false, on: req),
+        let paginationInformation = req.getPaginationInformation()
+        return flatMap(postRepository.getAllPostsSortedByPublishDate(includeDrafts: false, on: req, count: postsPerPage, offset: paginationInformation.page - 1),
                        tagRepository.getAllTags(on: req),
                        userRepository.getAllUsers(on: req)) { posts, tags, users in
             let presenter = try req.make(BlogPresenter.self)
@@ -82,7 +82,7 @@ struct BlogController: RouteCollection {
     func authorViewHandler(_ req: Request) throws -> EventLoopFuture<View> {
         let authorUsername = try req.parameters.next(String.self)
         let userRepository = try req.make(BlogUserRepository.self)
-        
+        #warning("Pagination")
         return userRepository.getUser(username: authorUsername, on: req).flatMap { user in
             guard let author = user else {
                 throw Abort(.notFound)

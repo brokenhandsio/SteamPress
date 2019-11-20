@@ -8,7 +8,8 @@ class IndexTests: XCTestCase {
     // MARK: - Properties
     var testWorld: TestWorld!
     var firstData: TestData!
-    private let blogIndexPath = "/"
+    let blogIndexPath = "/"
+    let postsPerPage = 10
     
     var presenter: CapturingBlogPresenter {
         return testWorld.context.blogPresenter
@@ -17,7 +18,7 @@ class IndexTests: XCTestCase {
     // MARK: - Overrides
     
     override func setUp() {
-        testWorld = try! TestWorld.create()
+        testWorld = try! TestWorld.create(postsPerPage: postsPerPage)
         firstData = try! testWorld.createPost(title: "Test Path", slugUrl: "test-path")
     }
     
@@ -61,6 +62,13 @@ class IndexTests: XCTestCase {
         let response = try testWorld.getResponse(to: "/blog/posts/")
         XCTAssertEqual(response.http.status, .movedPermanently)
         XCTAssertEqual(response.http.headers[.location].first, "/blog/")
+    }
+    
+    // MARK: - Pagination Tests
+    func testIndexOnlyGetsTheSpecifiedNumberOfPosts() throws {
+        try testWorld.createPosts(count: 15, author: firstData.author)
+        _ = try testWorld.getResponse(to: blogIndexPath)
+        XCTAssertEqual(presenter.indexPosts?.count, postsPerPage)
     }
 }
 

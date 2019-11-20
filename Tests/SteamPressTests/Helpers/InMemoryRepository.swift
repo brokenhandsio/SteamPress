@@ -118,6 +118,16 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         return container.future(sortedPosts)
     }
     
+    func getAllPostsSortedByPublishDate(includeDrafts: Bool, on container: Container, count: Int, offset: Int) -> EventLoopFuture<[BlogPost]> {
+        var sortedPosts = posts.sorted { $0.created > $1.created }
+        if !includeDrafts {
+            sortedPosts = sortedPosts.filter { $0.published }
+        }
+        let startIndex = offset
+        let endIndex = min(offset + count, sortedPosts.count)
+        return container.future(Array(sortedPosts[startIndex..<endIndex]))
+    }
+    
     func getAllPostsSortedByPublishDate(for user: BlogUser, includeDrafts: Bool, on container: Container) -> EventLoopFuture<[BlogPost]> {
         let authorsPosts = posts.filter { $0.author == user.userID }
         var sortedPosts = authorsPosts.sorted { $0.created > $1.created }

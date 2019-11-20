@@ -6,6 +6,12 @@ extension TestWorld {
         return try TestDataBuilder.createPost(on: self.context.repository, tags: tags, createdDate: createdDate, title: title, contents:contents, slugUrl: slugUrl, author: author, published: published)
     }
     
+    func createPosts(count: Int, author: BlogUser) throws {
+        for index in 1..<count {
+            _ = try createPost(title: "Post \(index)", slugUrl: "post-\(index)", author: author)
+        }
+    }
+    
     func createUser(name: String = "Luke", username: String = "luke", password: String = "password", resetPasswordRequired: Bool = false) -> BlogUser {
         let user = TestDataBuilder.anyUser(name: name, username: username, password: password)
         self.context.repository.add(user)

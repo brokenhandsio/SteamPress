@@ -1,10 +1,4 @@
-//import XCTest
-//
-//@testable import SteamPress
-//import Fluent
-//import Vapor
-//import Foundation
-//
+
 //class BlogPostTests: XCTestCase {
 //
 //    static var allTests = [
@@ -21,28 +15,6 @@
 //        ("testLongSnippet", testLongSnippet),
 //        ("testCreatedAndEditedDateInISOFormForAllContext", testCreatedAndEditedDateInISOFormForAllContext)
 //    ]
-//
-//    private var database: Database!
-//
-//    override func setUp() {
-//        database = try! Database(MemoryDriver())
-//        try! Droplet.prepare(database: database)
-//    }
-//
-//    override func tearDown() {
-//        try! Droplet.teardown(database: database)
-//    }
-//
-//    func testLinuxTestSuiteIncludesAllTests() {
-//        #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
-//            let thisClass = type(of: self)
-//            let linuxCount = thisClass.allTests.count
-//            let darwinCount = Int(thisClass
-//                .defaultTestSuite.testCaseCount)
-//            XCTAssertEqual(linuxCount, darwinCount,
-//                           "\(darwinCount - linuxCount) tests are missing from allTests")
-//        #endif
-//    }
 //
 //    func testThatSlugUrlCalculatedCorrectlyForTitleWithSpaces() {
 //        let title = "This is a title"
@@ -130,9 +102,6 @@
 //        XCTAssertEqual(node["created_date_iso8601"]?.string, "1970-01-01T00:00:01+0000")
 //        XCTAssertEqual(node["last_edited_date_iso8601"]?.string, "1970-01-01T00:00:10+0000")
 //    }
-//
-//    // TODO test tag pivot logic
-//    // TODO test context make node stuff
 //
 //}
 

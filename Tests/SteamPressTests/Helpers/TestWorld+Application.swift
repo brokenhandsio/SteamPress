@@ -5,6 +5,7 @@ import Authentication
 extension TestWorld {
     static func getSteamPressApp(repository: InMemoryRepository,
                                  path: String?,
+                                 postsPerPage: Int,
                                  feedInformation: FeedInformation,
                                  blogPresenter: CapturingBlogPresenter,
                                  adminPresenter: CapturingAdminPresenter,
@@ -15,7 +16,7 @@ extension TestWorld {
         let steampress = SteamPress.Provider(
                                              blogPath: path,
                                              feedInformation: feedInformation,
-                                             postsPerPage: 10,
+                                             postsPerPage: postsPerPage,
                                              enableAuthorPages: enableAuthorPages,
                                              enableTagPages: enableTagPages,
                                              blogPresenter: blogPresenter,
