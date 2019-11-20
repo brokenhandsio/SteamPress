@@ -8,7 +8,7 @@ import Authentication
 //import Foundation
 //
 
-public struct Provider: Vapor.Provider {
+public struct Provider<P: BlogPresenter>: Vapor.Provider {
 
     public static var repositoryName: String {
         return "steampress"
@@ -16,7 +16,7 @@ public struct Provider: Vapor.Provider {
 
     let blogPath: String?
     let pathCreator: BlogPathCreator
-    let blogPresenter: BlogPresenter
+    let blogPresenter: P
     let feedInformation: FeedInformation
     let enableAuthorPages: Bool
     let enableTagPages: Bool
@@ -46,15 +46,15 @@ public struct Provider: Vapor.Provider {
                 useBootstrap4: Bool = true,
                 enableAuthorPages: Bool = true,
                 enableTagPages: Bool = true,
-                blogPresenter: BlogPresenter? = nil) {
+                blogPresenter: P) {
 //        self.postsPerPage = postsPerPage
 //        self.databaseIdentifier = databaseIdentifier
         self.blogPath = blogPath
         self.feedInformation = feedInformation
 
         self.pathCreator = BlogPathCreator(blogPath: self.blogPath)
-        #warning("Default to sensible one")
-        self.blogPresenter = blogPresenter!
+        #warning("Default to sensible one in the constructor")
+        self.blogPresenter = blogPresenter
         self.enableAuthorPages = enableAuthorPages
         self.enableTagPages = enableTagPages
 
@@ -73,10 +73,11 @@ public struct Provider: Vapor.Provider {
 //        let factory = BasicServiceFactory(BlogPresenter.self, supports: interfaces) { container in
 //            return instance
 //        }
-        #warning("sort out with generics")
-//        services.register([BlogPresenter.self], factory: { _ in
-//            return blogPresenter
-//        })
+        services.register(BlogPresenter.self) { _ in
+            return self.blogPresenter
+        }
+        
+        
         try services.register(AuthenticationProvider())
         services.register([PasswordHasher.self, PasswordVerifier.self]) { _ in
             return BCryptDigest()
