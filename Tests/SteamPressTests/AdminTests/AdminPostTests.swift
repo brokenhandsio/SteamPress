@@ -19,7 +19,7 @@ class AdminPostTests: XCTestCase {
         testWorld = try! TestWorld.create()
         user = testWorld.createUser(username: "leia")
     }
-        
+    
     // MARK: - Post Creation
     
     func testPostCanBeCreated() throws {
@@ -47,7 +47,7 @@ class AdminPostTests: XCTestCase {
         XCTAssertTrue(testWorld.context.repository.postTagLinks
             .contains { $0.postID == post.blogID! && $0.tagID == firstTagID })
         XCTAssertTrue(testWorld.context.repository.postTagLinks
-        .contains { $0.postID == post.blogID! && $0.tagID == secondTagID })
+            .contains { $0.postID == post.blogID! && $0.tagID == secondTagID })
         
         XCTAssertEqual(response.http.status, .seeOther)
         XCTAssertEqual(response.http.headers[.location].first, "/posts/post-title/")
@@ -91,10 +91,10 @@ class AdminPostTests: XCTestCase {
         let createData = CreatePostData()
         
         let response = try testWorld.getResponse(to: createPostPath, body: createData, loggedInUser: user)
-
+        
         XCTAssertEqual(response.http.status, .badRequest)
     }
-
+    
     func testCreatePostMustIncludeTitle() throws {
         struct CreatePostData: Content {
             static let defaultContentType = MediaType.urlEncodedForm
@@ -104,11 +104,11 @@ class AdminPostTests: XCTestCase {
         }
         let createData = CreatePostData()
         _ = try testWorld.getResponse(to: createPostPath, body: createData, loggedInUser: user)
-
+        
         let createPostErrors = try XCTUnwrap(presenter.createPostErrors)
         XCTAssertTrue(createPostErrors.contains("You must specify a blog post title"))
     }
-
+    
     func testCreatePostMustIncludeContents() throws {
         struct CreatePostData: Content {
             static let defaultContentType = MediaType.urlEncodedForm
@@ -118,7 +118,7 @@ class AdminPostTests: XCTestCase {
         }
         let createData = CreatePostData()
         _ = try testWorld.getResponse(to: createPostPath, body: createData, loggedInUser: user)
-
+        
         let createPostErrors = try XCTUnwrap(presenter.createPostErrors)
         XCTAssertTrue(createPostErrors.contains("You must have some content in your blog post"))
     }
@@ -133,14 +133,14 @@ class AdminPostTests: XCTestCase {
         }
         let createData = CreatePostData()
         _ = try testWorld.getResponse(to: createPostPath, body: createData, loggedInUser: user)
-
+        
         let createPostErrors = try XCTUnwrap(presenter.createPostErrors)
         XCTAssertTrue(createPostErrors.contains("You must have some content in your blog post"))
         XCTAssertEqual(presenter.createPostTags, createData.tags)
         XCTAssertEqual(presenter.createPostContents, createData.contents)
         XCTAssertEqual(presenter.createPostTitle, createData.title)
     }
-
+    
     func testCreatePostWithDraftDoesNotPublishPost() throws {
         struct CreatePostData: Content {
             static let defaultContentType = MediaType.urlEncodedForm
@@ -151,7 +151,7 @@ class AdminPostTests: XCTestCase {
         }
         let createData = CreatePostData()
         _ = try testWorld.getResponse(to: createPostPath, body: createData, loggedInUser: user)
-
+        
         XCTAssertEqual(testWorld.context.repository.posts.count, 1)
         let post = try XCTUnwrap(testWorld.context.repository.posts.first)
         XCTAssertEqual(post.title, createData.title)
@@ -196,7 +196,7 @@ class AdminPostTests: XCTestCase {
         
         let updatePostPath = "/admin/posts/\(testData.post.blogID!)/edit"
         _ = try testWorld.getResponse(to: updatePostPath, body: updateData, loggedInUser: user)
-
+        
         XCTAssertEqual(testWorld.context.repository.posts.count, 1)
         let post = try XCTUnwrap(testWorld.context.repository.posts.first)
         XCTAssertEqual(post.title, updateData.title)
@@ -220,7 +220,7 @@ class AdminPostTests: XCTestCase {
         
         let updatePostPath = "/admin/posts/\(testData.post.blogID!)/edit"
         _ = try testWorld.getResponse(to: updatePostPath, body: updateData, loggedInUser: user)
-
+        
         let post = try XCTUnwrap(testWorld.context.repository.posts.first)
         XCTAssertEqual(post.slugUrl, "post-title")
     }
@@ -257,7 +257,7 @@ class AdminPostTests: XCTestCase {
         
         let updateData = UpdateData(title: testData.post.title)
         let response = try testWorld.getResponse(to: "/admin/posts/\(testData.post.blogID!)/edit", body: updateData, loggedInUser: user)
-
+        
         XCTAssertEqual(response.http.status, .seeOther)
         XCTAssertEqual(response.http.headers[.location].first, "/posts/\(testData.post.slugUrl)/")
     }
@@ -274,7 +274,7 @@ class AdminPostTests: XCTestCase {
         
         let updateData = UpdateData(title: "Some New Title")
         let response = try testWorld.getResponse(to: "/admin/posts/\(testData.post.blogID!)/edit", body: updateData, loggedInUser: user)
-
+        
         XCTAssertEqual(response.http.status, .seeOther)
         XCTAssertEqual(response.http.headers[.location].first, "/posts/some-new-title/")
     }
@@ -299,14 +299,14 @@ class AdminPostTests: XCTestCase {
         
         let updatePostPath = "/admin/posts/\(post.blogID!)/edit"
         _ = try testWorld.getResponse(to: updatePostPath, body: updateData, loggedInUser: user)
-
+        
         XCTAssertTrue(testWorld.context.repository.postTagLinks
             .contains { $0.postID == post.blogID! && $0.tagID == firstTag.tagID! })
         XCTAssertFalse(testWorld.context.repository.postTagLinks
-        .contains { $0.postID == post.blogID! && $0.tagID == secondTag.tagID! })
+            .contains { $0.postID == post.blogID! && $0.tagID == secondTag.tagID! })
         let newTag = try XCTUnwrap(testWorld.context.repository.tags.first { $0.name.removingPercentEncoding == newTagName })
         XCTAssertTrue(testWorld.context.repository.postTagLinks
-        .contains { $0.postID == post.blogID! && $0.tagID == newTag.tagID! })
+            .contains { $0.postID == post.blogID! && $0.tagID == newTag.tagID! })
         XCTAssertEqual(testWorld.context.repository.tags.filter { $0.name.removingPercentEncoding == firstTagName}.count, 1)
     }
     
@@ -324,7 +324,7 @@ class AdminPostTests: XCTestCase {
         
         let updatePostPath = "/admin/posts/\(testData.post.blogID!)/edit"
         _ = try testWorld.getResponse(to: updatePostPath, body: updateData, loggedInUser: user)
-
+        
         let post = try XCTUnwrap(testWorld.context.repository.posts.first)
         let postLastEdited = try XCTUnwrap(post.lastEdited)
         XCTAssertEqual(postLastEdited.timeIntervalSince1970, Date().timeIntervalSince1970, accuracy: 0.1)
@@ -346,7 +346,7 @@ class AdminPostTests: XCTestCase {
         
         let updatePostPath = "/admin/posts/\(testData.post.blogID!)/edit"
         _ = try testWorld.getResponse(to: updatePostPath, body: updateData, loggedInUser: user)
-
+        
         let post = try XCTUnwrap(testWorld.context.repository.posts.first)
         XCTAssertEqual(post.created.timeIntervalSince1970, Date().timeIntervalSince1970, accuracy: 0.1)
         XCTAssertTrue(post.published)
@@ -368,7 +368,7 @@ class AdminPostTests: XCTestCase {
         
         let updatePostPath = "/admin/posts/\(testData.post.blogID!)/edit"
         _ = try testWorld.getResponse(to: updatePostPath, body: updateData, loggedInUser: user)
-
+        
         let post = try XCTUnwrap(testWorld.context.repository.posts.first)
         XCTAssertFalse(post.published)
         XCTAssertNil(post.lastEdited)
@@ -388,7 +388,7 @@ class AdminPostTests: XCTestCase {
         
         let updatePostPath = "/admin/posts/\(testData.post.blogID!)/edit"
         _ = try testWorld.getResponse(to: updatePostPath, body: updateData, loggedInUser: user)
-
+        
         XCTAssertEqual(presenter.createPostTitle, "")
         XCTAssertEqual(presenter.createPostPost?.blogID, testData.post.blogID)
         XCTAssertEqual(presenter.createPostContents, updateData.contents)
@@ -399,7 +399,7 @@ class AdminPostTests: XCTestCase {
         let createPostErrors = try XCTUnwrap(presenter.createPostErrors)
         XCTAssertTrue(createPostErrors.contains("You must specify a blog post title"))
     }
-
+    
     // MARK: - Post Deletion
     
     func testCanDeleteBlogPost() throws {
@@ -422,6 +422,94 @@ class AdminPostTests: XCTestCase {
         
         
         XCTAssertEqual(testWorld.context.repository.postTagLinks.count, 0)
+    }
+    
+    // MARK: - Slug URL Generation
+    
+    func testThatSlugUrlCalculatedCorrectlyForTitleWithSpaces() throws {
+        let title = "This is a title"
+        let expectedSlugUrl = "this-is-a-title"
+        let post = try createPostViaRequest(title: title)
+        XCTAssertEqual(post.slugUrl, expectedSlugUrl)
+    }
+    
+    func testThatSlugUrlCalculatedCorrectlyForTitleWithPunctuation() throws {
+        let title = "This is an awesome post!"
+        let expectedSlugUrl = "this-is-an-awesome-post"
+        let post = try createPostViaRequest(title: title)
+        XCTAssertEqual(expectedSlugUrl, post.slugUrl)
+    }
+    
+    func testThatSlugUrlStripsWhitespace() throws {
+        let title = "    Title  "
+        let expectedSlugUrl = "title"
+        let post = try createPostViaRequest(title: title)
+        XCTAssertEqual(expectedSlugUrl, post.slugUrl)
+    }
+    
+    func testNumbersRemainInUrl() throws {
+        let title = "The 2nd url"
+        let expectedSlugUrl = "the-2nd-url"
+        let post = try createPostViaRequest(title: title)
+        XCTAssertEqual(expectedSlugUrl, post.slugUrl)
+    }
+    
+    func testSlugUrlLowerCases() throws {
+        let title = "AN AMAZING POST"
+        let expectedSlugUrl = "an-amazing-post"
+        let post = try createPostViaRequest(title: title)
+        XCTAssertEqual(expectedSlugUrl, post.slugUrl)
+    }
+    
+    func testEverythingWithLotsOfCharacters() throws {
+        let title = " This should remove! \nalmost _all_ of the @ punctuation, but it doesn't?"
+        let expectedSlugUrl = "this-should-remove-almost-all-of-the-punctuation-but-it-doesnt"
+        let post = try createPostViaRequest(title: title)
+        XCTAssertEqual(expectedSlugUrl, post.slugUrl)
+    }
+    
+//    func testShortSnippet() {
+//        let post = TestDataBuilder.anyLongPost(author: TestDataBuilder.anyUser())
+//        let shortSnippet = post.shortSnippet()
+//        XCTAssertLessThan(shortSnippet.count, 500)
+//    }
+//
+//    func testLongSnippet() {
+//        let post = TestDataBuilder.anyLongPost(author: TestDataBuilder.anyUser())
+//        let shortSnippet = post.longSnippet()
+//        XCTAssertLessThan(shortSnippet.count, 1500)
+//    }
+//
+//
+//    func testCreatedAndEditedDateInISOFormForAllContext() throws {
+//        let created = Date(timeIntervalSince1970: 1.0)
+//        let lastEdited = Date(timeIntervalSince1970: 10.0)
+//        let author = TestDataBuilder.anyUser()
+//        try author.save()
+//        let post = TestDataBuilder.anyPost(author: author, creationDate: created)
+//        post.lastEdited = lastEdited
+//        try post.save()
+//        let node = try post.makeNode(in: BlogPostContext.all)
+//
+//        XCTAssertEqual(node["created_date_iso8601"]?.string, "1970-01-01T00:00:01+0000")
+//        XCTAssertEqual(node["last_edited_date_iso8601"]?.string, "1970-01-01T00:00:10+0000")
+//    }
+    
+    // MARK: - Helpers
+    
+    private func createPostViaRequest(title: String) throws -> BlogPost {
+        struct CreatePostData: Content {
+            static let defaultContentType = MediaType.urlEncodedForm
+            let title: String
+            let contents = "# Post Title\n\nWe have a post"
+            let tags = ["First Tag", "Second Tag"]
+            let publish = true
+        }
+        let createData = CreatePostData(title: title)
+        _ = try testWorld.getResponse(to: createPostPath, body: createData, loggedInUser: user)
+        
+        let post = try XCTUnwrap(testWorld.context.repository.posts.first)
+        return post
     }
     
 }

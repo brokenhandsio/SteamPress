@@ -192,12 +192,6 @@ struct PostAdminController: RouteCollection {
         if data.contents.isEmptyOrWhitespace() {
             createPostErrors.append("You must have some content in your blog post")
         }
-        #warning("TODO")
-        //
-        //        if (slugUrl == nil || (slugUrl?.isWhitespace() ?? false)) && (!(title == nil || (title?.isWhitespace() ?? false))) {
-        //            // The user can't manually edit this so if the title wasn't empty, we should never hit here
-        //            createPostErrors.append("There was an error with your request, please try again")
-        //        }
         
         if createPostErrors.count == 0 {
             return nil
