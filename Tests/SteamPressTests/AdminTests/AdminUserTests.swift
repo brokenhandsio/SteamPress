@@ -101,6 +101,22 @@ class AdminUserTests: XCTestCase {
         let viewErrors = try XCTUnwrap(presenter.createUserErrors)
         XCTAssertTrue(viewErrors.contains("You must specify a username"))
     }
+    
+    func testUserCannotBeCreatedWithUsernameThatAlreadyExists() throws {
+        struct CreateUserData: Content {
+            static let defaultContentType = MediaType.urlEncodedForm
+            let name = "Luke"
+            let password = "password"
+            let confirmPassword = "password"
+            let username = "admin"
+        }
+        
+        let createData = CreateUserData()
+        _ = try testWorld.getResponse(to: createUserPath, body: createData, loggedInUser: user)
+        
+        let viewErrors = try XCTUnwrap(presenter.createUserErrors)
+        XCTAssertTrue(viewErrors.contains("Sorry that username has already been taken"))
+    }
 
     func testUserCannotBeCreatedWithoutPassword() throws {
         struct CreateUserData: Content {

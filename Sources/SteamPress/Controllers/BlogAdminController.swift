@@ -32,69 +32,8 @@ struct BlogAdminController: RouteCollection {
         return try req.make(BlogAdminPresenter.self).createIndexView(on: req, errors: nil)
     }
 
-//    private func validateUserSaveDataExists(edit: Bool, name: String?, username: String?, password: String?, confirmPassword: String?, profilePicture: String?) -> ([String]?, Bool?, Bool?) {
-//        var userSaveErrors: [String] = []
-//        var passwordError: Bool?
-//        var confirmPasswordError: Bool?
-//
-//        if name == nil || (name?.isWhitespace() ?? false) {
-//            userSaveErrors.append("You must specify a name")
-//        }
-//
-//        if username == nil || (username?.isWhitespace() ?? false) {
-//            userSaveErrors.append("You must specify a username")
-//        }
-//
-//        if !edit {
-//            if password == nil {
-//                userSaveErrors.append("You must specify a password")
-//                passwordError = true
-//            }
-//
-//            if confirmPassword == nil {
-//                userSaveErrors.append("You must confirm your password")
-//                confirmPasswordError = true
-//            }
-//        }
-//
-//        return (userSaveErrors, passwordError, confirmPasswordError)
-//    }
 //
 //    private func validateUserSaveData(edit: Bool, name: String, username: String, password: String?, confirmPassword: String?, previousUsername: String? = nil) -> ([String]?, Bool?, Bool?) {
-//
-//        var userSaveErrors: [String] = []
-//        var passwordError: Bool?
-//        var confirmPasswordError: Bool?
-//
-//        if password != confirmPassword {
-//            userSaveErrors.append("Your passwords must match!")
-//            passwordError = true
-//            confirmPasswordError = true
-//        }
-//
-//        // Check name is valid
-//        let validName = name.passes(NameValidator())
-//        if !validName {
-//            userSaveErrors.append("The name provided is not valid")
-//        }
-//
-//        // Check username is valid
-//        let validUsername = username.passes(UsernameValidator())
-//        if !validUsername {
-//            userSaveErrors.append("The username provided is not valid")
-//        }
-//
-//        // Check password is valid
-//        if !edit || password != nil {
-//            guard let actualPassword = password else {
-//                fatalError()
-//            }
-//            let validPassword = actualPassword.passes(PasswordValidator())
-//            if !validPassword {
-//                userSaveErrors.append("Your password must contain a lowercase letter, an upperacase letter, a number and a symbol")
-//                passwordError = true
-//            }
-//        }
 //
 //        // Check username unique
 //        do {
@@ -112,8 +51,6 @@ struct BlogAdminController: RouteCollection {
 //    }
 //
 //}
-//
-//// MARK: - Extensions
 
 }
 

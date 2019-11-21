@@ -29,25 +29,28 @@ struct UserAdminController: RouteCollection {
     func createUserPostHandler(_ req: Request) throws -> EventLoopFuture<Response> {
         let data = try req.content.syncDecode(CreateUserData.self)
         
-        if let createUserErrors = validateUserCreation(data) {
-            let presenter = try req.make(BlogAdminPresenter.self)
-            let view = presenter.createUserView(on: req, errors: createUserErrors.errors, name: data.name, username: data.username, passwordError: createUserErrors.passwordError, confirmPasswordError: createUserErrors.confirmPasswordError, userID: nil, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline)
-            return try view.encode(for: req)
-        }
-        
-        guard let name = data.name, let username = data.username, let password = data.password else {
-            throw Abort(.internalServerError)
-        }
-        
-        let hasher = try req.make(PasswordHasher.self)
-        let hashedPassword = try hasher.hash(password)
-        let newUser = BlogUser(name: name, username: username, password: hashedPassword, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline)
-        if let resetPasswordRequired = data.resetPasswordOnLogin, resetPasswordRequired {
-            newUser.resetPasswordRequired = true
-        }
-        let userRepository = try req.make(BlogUserRepository.self)
-        return userRepository.save(newUser, on: req).map { _ in
-            return req.redirect(to: self.pathCreator.createPath(for: "admin"))
+        return try validateUserCreation(data, on: req).flatMap { createUserErrors in
+            if let errors = createUserErrors {
+                let presenter = try req.make(BlogAdminPresenter.self)
+                let view = presenter.createUserView(on: req, errors: errors.errors, name: data.name, username: data.username, passwordError: errors.passwordError, confirmPasswordError: errors.confirmPasswordError, userID: nil, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline)
+                return try view.encode(for: req)
+            }
+            
+            guard let name = data.name, let username = data.username, let password = data.password else {
+                throw Abort(.internalServerError)
+            }
+            
+            let hasher = try req.make(PasswordHasher.self)
+            let hashedPassword = try hasher.hash(password)
+            let newUser = BlogUser(name: name, username: username, password: hashedPassword, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline)
+            if let resetPasswordRequired = data.resetPasswordOnLogin, resetPasswordRequired {
+                newUser.resetPasswordRequired = true
+            }
+            let userRepository = try req.make(BlogUserRepository.self)
+            return userRepository.save(newUser, on: req).map { _ in
+                return req.redirect(to: self.pathCreator.createPath(for: "admin"))
+            }
+            
         }
     }
     
@@ -66,35 +69,37 @@ struct UserAdminController: RouteCollection {
                 throw Abort(.internalServerError)
             }
             
-            if let editUserErrors = self.validateUserCreation(data, editing: true) {
-                let presenter = try req.make(BlogAdminPresenter.self)
-                let view = presenter.createUserView(on: req, errors: editUserErrors.errors, name: data.name, username: data.username, passwordError: editUserErrors.passwordError, confirmPasswordError: editUserErrors.confirmPasswordError, userID: nil, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline)
-                return try view.encode(for: req)
+            return try self.validateUserCreation(data, editing: true, on: req).flatMap { errors in
+                if let editUserErrors = errors {
+                    let presenter = try req.make(BlogAdminPresenter.self)
+                    let view = presenter.createUserView(on: req, errors: editUserErrors.errors, name: data.name, username: data.username, passwordError: editUserErrors.passwordError, confirmPasswordError: editUserErrors.confirmPasswordError, userID: nil, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline)
+                    return try view.encode(for: req)
+                }
+                
+                user.name = name
+                user.username = username
+                user.profilePicture = data.profilePicture
+                user.twitterHandle = data.twitterHandle
+                user.biography = data.biography
+                user.tagline = data.tagline
+                
+                if let resetPasswordOnLogin = data.resetPasswordOnLogin, resetPasswordOnLogin {
+                    user.resetPasswordRequired = true
+                }
+                
+                if let password = data.password {
+                    let hasher = try req.make(PasswordHasher.self)
+                    user.password = try hasher.hash(password)
+                }
+                
+                let redirect = req.redirect(to: self.pathCreator.createPath(for: "admin"))
+                let userRepository = try req.make(BlogUserRepository.self)
+                return userRepository.save(user, on: req).transform(to: redirect)
             }
-            
-            user.name = name
-            user.username = username
-            user.profilePicture = data.profilePicture
-            user.twitterHandle = data.twitterHandle
-            user.biography = data.biography
-            user.tagline = data.tagline
-            
-            if let resetPasswordOnLogin = data.resetPasswordOnLogin, resetPasswordOnLogin {
-                user.resetPasswordRequired = true
-            }
-            
-            if let password = data.password {
-                let hasher = try req.make(PasswordHasher.self)
-                user.password = try hasher.hash(password)
-            }
-            
-            let redirect = req.redirect(to: self.pathCreator.createPath(for: "admin"))
-            let userRepository = try req.make(BlogUserRepository.self)
-            return userRepository.save(user, on: req).transform(to: redirect)
         }
     }
     
-
+    
     func deleteUserPostHandler(_ req: Request) throws -> EventLoopFuture<Response> {
         let userRepository = try req.make(BlogUserRepository.self)
         return try flatMap(req.parameters.next(BlogUser.self), userRepository.getUsersCount(on: req)) { user, userCount in
@@ -115,10 +120,10 @@ struct UserAdminController: RouteCollection {
             return userRepository.delete(user, on: req).transform(to: redirect)
         }
     }
-
+    
     
     // MARK: - Validators
-    private func validateUserCreation(_ data: CreateUserData, editing: Bool = false) -> CreateUserErrors? {
+    private func validateUserCreation(_ data: CreateUserData, editing: Bool = false, on req: Request) throws -> Future<CreateUserErrors?> {
         var createUserErrors = [String]()
         var passwordError = false
         var confirmPasswordError = false
@@ -162,13 +167,33 @@ struct UserAdminController: RouteCollection {
             createUserErrors.append("The username provided is not valid")
         }
         
-        if createUserErrors.count == 0 {
-            return nil
+        var usernameUniqueError: Future<String?>
+        
+        let usersRepository = try req.make(BlogUserRepository.self)
+        if let username = data.username {
+            usernameUniqueError = usersRepository.getUser(username: username, on: req).map { user in
+                if user != nil {
+                    return "Sorry that username has already been taken"
+                } else {
+                    return nil
+                }
+            }
+        } else {
+            usernameUniqueError = req.future(nil)
         }
         
-        let errors = CreateUserErrors(errors: createUserErrors, passwordError: passwordError, confirmPasswordError: confirmPasswordError)
-        
-        return errors
+        return usernameUniqueError.map { usernameError in
+            if let uniqueError = usernameError {
+                createUserErrors.append(uniqueError)
+            }
+            if createUserErrors.count == 0 {
+                return nil
+            }
+            
+            let errors = CreateUserErrors(errors: createUserErrors, passwordError: passwordError, confirmPasswordError: confirmPasswordError)
+            
+            return errors
+            
+        }
     }
-    
 }
