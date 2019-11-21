@@ -468,6 +468,7 @@ class AdminPostTests: XCTestCase {
         XCTAssertEqual(expectedSlugUrl, post.slugUrl)
     }
     
+    #warning("Move to Leaf tests")
 //    func testShortSnippet() {
 //        let post = TestDataBuilder.anyLongPost(author: TestDataBuilder.anyUser())
 //        let shortSnippet = post.shortSnippet()

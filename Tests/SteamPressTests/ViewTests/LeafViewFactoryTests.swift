@@ -11,7 +11,6 @@
 //    // MARK: - allTests
 //
 //    static var allTests = [
-//        ("testLinuxTestSuiteIncludesAllTests", testLinuxTestSuiteIncludesAllTests),
 //        ("testParametersAreSetCorrectlyOnAllTagsPage", testParametersAreSetCorrectlyOnAllTagsPage),
 //        ("testTagsPageGetsPassedAllTagsWithBlogCount", testTagsPageGetsPassedAllTagsWithBlogCount),
 //        ("testTagsPageGetsPassedTagsSortedByPageCount", testTagsPageGetsPassedTagsSortedByPageCount),
@@ -119,17 +118,6 @@
 //    }
 //
 //    // MARK: - Tests
-//
-//    func testLinuxTestSuiteIncludesAllTests() {
-//        #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
-//            let thisClass = type(of: self)
-//            let linuxCount = thisClass.allTests.count
-//            let darwinCount = Int(thisClass
-//                .defaultTestSuite.testCaseCount)
-//            XCTAssertEqual(linuxCount, darwinCount,
-//                           "\(darwinCount - linuxCount) tests are missing from allTests")
-//        #endif
-//    }
 //
 //    // MARK: - All Tags Page
 //
@@ -331,70 +319,6 @@
 //        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil, googleAnalyticsIdentifier: nil)
 //        let testTag = try setupTagPage()
 //        _ = try viewFactory.tagView(uri: tagURI, tag: testTag, paginatedPosts: try testTag.sortedPosts().paginate(for: tagRequest), user: nil)
-//        XCTAssertNil(viewRenderer.capturedContext?["google_analytics_identifier"]?.string)
-//    }
-//
-//    // MARK: - Blog Page
-//
-//    func testBlogPageGetsImageUrlIfOneInPostMarkdown() throws {
-//       let (postWithImage, user) = try setupBlogPost()
-//        _ = try viewFactory.blogPostView(uri: postURI, post: postWithImage, author: user, user: nil)
-//
-//        XCTAssertNotNil((viewRenderer.capturedContext?["post_image"])?.string)
-//    }
-//
-//    func testDescriptionOnBlogPostPageIsShortSnippetTextCleaned() throws {
-//        let (postWithImage, user) = try setupBlogPost()
-//        _ = try viewFactory.blogPostView(uri: postURI, post: postWithImage, author: user, user: nil)
-//
-//        let expectedDescription = "Welcome to SteamPress! SteamPress started out as an idea - after all, I was porting sites and backends over to Swift and would like to have a blog as well. Being early days for Server-Side Swift, and embracing Vapor, there wasn't anything available to put a blog on my site, so I did what any self-respecting engineer would do - I made one! Besides, what better way to learn a framework than build a blog!"
-//
-//        XCTAssertEqual((viewRenderer.capturedContext?["post_description"])?.string?.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines), expectedDescription)
-//    }
-//
-//    func testBlogPostPageGetsCorrectParameters() throws {
-//        let (postWithImage, user) = try setupBlogPost()
-//        _ = try viewFactory.blogPostView(uri: postURI, post: postWithImage, author: user, user: nil)
-//
-//        XCTAssertEqual(viewRenderer.capturedContext?["post"]?["title"]?.string, postWithImage.title)
-//        XCTAssertEqual(viewRenderer.capturedContext?["author"]?["name"]?.string, user.name)
-//        XCTAssertTrue(((viewRenderer.capturedContext?["blog_post_page"])?.bool) ?? false)
-//        XCTAssertNil(viewRenderer.capturedContext?["user"])
-//        XCTAssertEqual(viewRenderer.capturedContext?["disqus_name"]?.string, disqusName)
-//        XCTAssertEqual(viewRenderer.capturedContext?["site_twitter_handle"]?.string, siteTwitterHandle)
-//        XCTAssertEqual(viewRenderer.capturedContext?["google_analytics_identifier"]?.string, googleAnalyticsIdentifier)
-//        XCTAssertNotNil((viewRenderer.capturedContext?["post_image"])?.string)
-//        XCTAssertNotNil((viewRenderer.capturedContext?["post_image_alt"])?.string)
-//        XCTAssertEqual(viewRenderer.capturedContext?["post_uri"]?.string, "https://test.com/posts/test-post/")
-//        XCTAssertEqual(viewRenderer.capturedContext?["site_uri"]?.string, "https://test.com/")
-//        XCTAssertEqual(viewRenderer.capturedContext?["post_uri_encoded"]?.string, "https://test.com/posts/test-post/")
-//        XCTAssertEqual(viewRenderer.leafPath, "blog/blogpost")
-//    }
-//
-//    func testUserPassedToBlogPostPageIfUserPassedIn() throws {
-//        let (postWithImage, user) = try setupBlogPost()
-//        _ = try viewFactory.blogPostView(uri: postURI, post: postWithImage, author: user, user: user)
-//        XCTAssertEqual(viewRenderer.capturedContext?["user"]?["name"]?.string, user.name)
-//    }
-//
-//    func testDisqusNameNotPassedToBlogPostPageIfNotPassedIn() throws {
-//        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil, googleAnalyticsIdentifier: nil)
-//        let (postWithImage, user) = try setupBlogPost()
-//        _ = try viewFactory.blogPostView(uri: postURI, post: postWithImage, author: user, user: nil)
-//        XCTAssertNil(viewRenderer.capturedContext?["disqus_name"]?.string)
-//    }
-//
-//    func testTwitterHandleNotPassedToBlogPostPageIfNotPassedIn() throws {
-//        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil, googleAnalyticsIdentifier: nil)
-//        let (postWithImage, user) = try setupBlogPost()
-//        _ = try viewFactory.blogPostView(uri: postURI, post: postWithImage, author: user, user: nil)
-//        XCTAssertNil(viewRenderer.capturedContext?["site_twitter_handle"]?.string)
-//    }
-//
-//    func testGAIdentifierNotPassedToBlogPostPageIfNotPassedIn() throws {
-//        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil, googleAnalyticsIdentifier: nil)
-//        let (postWithImage, user) = try setupBlogPost()
-//        _ = try viewFactory.blogPostView(uri: postURI, post: postWithImage, author: user, user: nil)
 //        XCTAssertNil(viewRenderer.capturedContext?["google_analytics_identifier"]?.string)
 //    }
 //
