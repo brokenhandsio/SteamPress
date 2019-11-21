@@ -96,7 +96,20 @@ public struct Provider<P: BlogPresenter, AP: BlogAdminPresenter>: Vapor.Provider
     }
     
     public func didBoot(_ container: Container) throws -> EventLoopFuture<Void> {
-        return .done(on: container)
+        let userRepository = try container.make(BlogUserRepository.self)
+        return userRepository.getAllUsers(on: container).flatMap { users in
+            if users.count == 0 {
+                let passwordHasher = try container.make(PasswordHasher.self)
+                let password = try String.random()
+                let logger = try container.make(Logger.self)
+                logger.info("Admin's password is \(password)")
+                let passwordHash = try passwordHasher.hash(password)
+                let adminUser = BlogUser(name: "Admin", username: "admin", password: passwordHash, profilePicture: nil, twitterHandle: nil, biography: nil, tagline: nil)
+                return userRepository.save(adminUser, on: container).transform(to: ())
+            } else {
+                return .done(on: container)
+            }
+        }
     }
     
     

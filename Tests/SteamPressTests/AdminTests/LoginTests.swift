@@ -77,8 +77,9 @@ class LoginTests: XCTestCase {
         XCTAssertTrue(loginWarning)
     }
     
-    func testAdminUserCreatedOnFirstBoot() {
-        #warning("Implement")
+    func testAdminUserCreatedOnFirstBootIfSpecified() throws {
+        testWorld = try TestWorld.create()
+        XCTAssertEqual(testWorld.context.repository.users.count, 1)
     }
     
     func testUserCanResetPassword() throws {

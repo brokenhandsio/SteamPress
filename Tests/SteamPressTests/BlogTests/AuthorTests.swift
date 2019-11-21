@@ -26,11 +26,11 @@ class AuthorTests: XCTestCase {
     
     // MARK: - Tests
     
-    func testAllAuthorsPageGetAllAuthors() throws {
+    func testAllAuthorsPageGetAllAuthorsAndDoesNotShowAdminUser() throws {
         _ = try testWorld.getResponse(to: allAuthorsRequestPath)
         
-        XCTAssertEqual(testWorld.context.blogPresenter.allAuthors?.count, 1)
-        XCTAssertEqual(presenter.allAuthors?.first?.name, user.name)
+        XCTAssertEqual(testWorld.context.blogPresenter.allAuthors?.count, 2)
+        XCTAssertEqual(presenter.allAuthors?.last?.name, user.name)
     }
     
     func testAuthorPageGetsOnlyPublishedPostsInDescendingOrder() throws {

@@ -38,7 +38,8 @@ class AdminUserTests: XCTestCase {
         let createData = CreateUserData()
         let response = try testWorld.getResponse(to: createUserPath, body: createData, loggedInUser: user)
         
-        XCTAssertEqual(testWorld.context.repository.users.count, 2)
+        // First is admin user, next is user created in setup, final is one just created
+        XCTAssertEqual(testWorld.context.repository.users.count, 3)
         let user = try XCTUnwrap(testWorld.context.repository.users.last)
         XCTAssertEqual(user.username, createData.username)
         XCTAssertEqual(user.name, createData.name)
@@ -284,8 +285,8 @@ class AdminUserTests: XCTestCase {
         let editData = EditUserData()
         let response = try testWorld.getResponse(to: "/admin/users/\(user.userID!)/edit", body: editData, loggedInUser: user)
         
-        XCTAssertEqual(testWorld.context.repository.users.count, 1)
-        let updatedUser = try XCTUnwrap(testWorld.context.repository.users.first)
+        XCTAssertEqual(testWorld.context.repository.users.count, 2)
+        let updatedUser = try XCTUnwrap(testWorld.context.repository.users.last)
         XCTAssertEqual(updatedUser.username, editData.username)
         XCTAssertEqual(updatedUser.name, editData.name)
         XCTAssertEqual(updatedUser.userID, user.userID)
@@ -307,8 +308,8 @@ class AdminUserTests: XCTestCase {
         let editData = EditUserData()
         let response = try testWorld.getResponse(to: "/admin/users/\(user.userID!)/edit", body: editData, loggedInUser: user)
         
-        XCTAssertEqual(testWorld.context.repository.users.count, 1)
-        let updatedUser = try XCTUnwrap(testWorld.context.repository.users.first)
+        XCTAssertEqual(testWorld.context.repository.users.count, 2)
+        let updatedUser = try XCTUnwrap(testWorld.context.repository.users.last)
         XCTAssertEqual(updatedUser.username, editData.username)
         XCTAssertEqual(updatedUser.name, editData.name)
         XCTAssertEqual(updatedUser.twitterHandle, editData.twitterHandle)
@@ -331,8 +332,8 @@ class AdminUserTests: XCTestCase {
         let editData = EditUserData()
         let response = try testWorld.getResponse(to: "/admin/users/\(user.userID!)/edit", body: editData, loggedInUser: user)
         
-        XCTAssertEqual(testWorld.context.repository.users.count, 1)
-        let updatedUser = try XCTUnwrap(testWorld.context.repository.users.first)
+        XCTAssertEqual(testWorld.context.repository.users.count, 2)
+        let updatedUser = try XCTUnwrap(testWorld.context.repository.users.last)
         XCTAssertTrue(updatedUser.resetPasswordRequired)
         XCTAssertEqual(updatedUser.userID, user.userID)
         XCTAssertEqual(response.http.status, .seeOther)
@@ -350,8 +351,8 @@ class AdminUserTests: XCTestCase {
         let editData = EditUserData()
         let response = try testWorld.getResponse(to: "/admin/users/\(user.userID!)/edit", body: editData, loggedInUser: user)
         
-        XCTAssertEqual(testWorld.context.repository.users.count, 1)
-        let updatedUser = try XCTUnwrap(testWorld.context.repository.users.first)
+        XCTAssertEqual(testWorld.context.repository.users.count, 2)
+        let updatedUser = try XCTUnwrap(testWorld.context.repository.users.last)
         XCTAssertFalse(updatedUser.resetPasswordRequired)
         XCTAssertEqual(updatedUser.userID, user.userID)
         XCTAssertEqual(response.http.status, .seeOther)
@@ -370,8 +371,8 @@ class AdminUserTests: XCTestCase {
         let editData = EditUserData()
         let response = try testWorld.getResponse(to: "/admin/users/\(user.userID!)/edit", body: editData, loggedInUser: user)
         
-        XCTAssertEqual(testWorld.context.repository.users.count, 1)
-        let updatedUser = try XCTUnwrap(testWorld.context.repository.users.first)
+        XCTAssertEqual(testWorld.context.repository.users.count, 2)
+        let updatedUser = try XCTUnwrap(testWorld.context.repository.users.last)
         XCTAssertEqual(updatedUser.password, editData.password)
         XCTAssertEqual(updatedUser.userID, user.userID)
         XCTAssertEqual(response.http.status, .seeOther)
@@ -454,7 +455,7 @@ class AdminUserTests: XCTestCase {
         let editData = EditUserData()
         _ = try testWorld.getResponse(to: "/admin/users/\(user.userID!)/edit", body: editData, loggedInUser: user, passwordToLoginWith: usersPassword)
         
-        let updatedUser = try XCTUnwrap(testWorld.context.repository.users.first)
+        let updatedUser = try XCTUnwrap(testWorld.context.repository.users.last)
         XCTAssertEqual(updatedUser.password, String(editData.password.reversed()))
     }
     
@@ -467,8 +468,8 @@ class AdminUserTests: XCTestCase {
 
         XCTAssertEqual(response.http.status, .seeOther)
         XCTAssertEqual(response.http.headers[.location].first, "/admin/")
-        XCTAssertEqual(testWorld.context.repository.users.count, 1)
-        XCTAssertNotEqual(testWorld.context.repository.users.first?.name, "Han")
+        XCTAssertEqual(testWorld.context.repository.users.count, 2)
+        XCTAssertNotEqual(testWorld.context.repository.users.last?.name, "Han")
     }
 
     func testCannotDeleteSelf() throws {
@@ -478,11 +479,13 @@ class AdminUserTests: XCTestCase {
 
         let viewErrors = try XCTUnwrap(presenter.adminViewErrors)
         XCTAssertTrue(viewErrors.contains("You cannot delete yourself whilst logged in"))
-        XCTAssertEqual(testWorld.context.repository.users.count, 2)
+        XCTAssertEqual(testWorld.context.repository.users.count, 3)
     }
 
     func testCannotDeleteLastUser() throws {
-        _ = try testWorld.getResponse(to: "/admin/users/\(user.userID!)/delete", body: EmptyContent(), loggedInUser: user)
+        testWorld = try TestWorld.create()
+        let adminUser = try XCTUnwrap(testWorld.context.repository.users.first)
+        _ = try testWorld.getResponse(to: "/admin/users/\(adminUser.userID!)/delete", body: EmptyContent(), loggedInUser: adminUser)
         
         let viewErrors = try XCTUnwrap(presenter.adminViewErrors)
         XCTAssertTrue(viewErrors.contains("You cannot delete the last user"))

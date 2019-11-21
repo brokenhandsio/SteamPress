@@ -349,7 +349,7 @@ import Vapor
 //    
 //}
 
-// TODO Move all of this
+#warning("Move all of this")
 
 extension URL {
     func getRootUri() -> URL {
