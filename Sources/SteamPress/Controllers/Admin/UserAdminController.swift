@@ -123,7 +123,7 @@ struct UserAdminController: RouteCollection {
     
     
     // MARK: - Validators
-    private func validateUserCreation(_ data: CreateUserData, editing: Bool = false, on req: Request) throws -> Future<CreateUserErrors?> {
+    private func validateUserCreation(_ data: CreateUserData, editing: Bool = false, on req: Request) throws -> EventLoopFuture<CreateUserErrors?> {
         var createUserErrors = [String]()
         var passwordError = false
         var confirmPasswordError = false
@@ -167,7 +167,7 @@ struct UserAdminController: RouteCollection {
             createUserErrors.append("The username provided is not valid")
         }
         
-        var usernameUniqueError: Future<String?>
+        var usernameUniqueError: EventLoopFuture<String?>
         
         let usersRepository = try req.make(BlogUserRepository.self)
         if let username = data.username {

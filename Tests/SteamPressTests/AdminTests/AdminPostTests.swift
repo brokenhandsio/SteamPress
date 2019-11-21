@@ -206,7 +206,24 @@ class AdminPostTests: XCTestCase {
         XCTAssertTrue(post.published)
     }
     
-    #warning("Test updating slugURL")
+    func testPostCanBeUpdatedAndUpdateSlugURL() throws {
+        struct UpdatePostData: Content {
+            static let defaultContentType = MediaType.urlEncodedForm
+            let title = "Post Title"
+            let contents = "# Post Title\n\nWe have a post"
+            let tags = ["First Tag", "Second Tag"]
+            let updateSlugURL = true
+        }
+        
+        let testData = try testWorld.createPost(title: "Initial title", contents: "Some initial contents", slugUrl: "initial-title")
+        let updateData = UpdatePostData()
+        
+        let updatePostPath = "/admin/posts/\(testData.post.blogID!)/edit"
+        _ = try testWorld.getResponse(to: updatePostPath, body: updateData, loggedInUser: user)
+
+        let post = try XCTUnwrap(testWorld.context.repository.posts.first)
+        XCTAssertEqual(post.slugUrl, "post-title")
+    }
     
     func testEditPageGetsPostInfo() throws {
         let post = try testWorld.createPost().post
@@ -245,7 +262,22 @@ class AdminPostTests: XCTestCase {
         XCTAssertEqual(response.http.headers[.location].first, "/posts/\(testData.post.slugUrl)/")
     }
     
-    #warning("Test when changing Slug URL")
+    func testThatEditingPostGetsRedirectToPostPageWithNewSlugURL() throws {
+        let testData = try testWorld.createPost()
+        
+        struct UpdateData: Content {
+            let title: String
+            let contents = "Updated contents"
+            let tags = [String]()
+            let updateSlugURL = true
+        }
+        
+        let updateData = UpdateData(title: "Some New Title")
+        let response = try testWorld.getResponse(to: "/admin/posts/\(testData.post.blogID!)/edit", body: updateData, loggedInUser: user)
+
+        XCTAssertEqual(response.http.status, .seeOther)
+        XCTAssertEqual(response.http.headers[.location].first, "/posts/some-new-title/")
+    }
     
     func testEditingPostWithNewTagsRemovesOldLinksAndAddsNewLinks() throws {
         let post = try testWorld.createPost(title: "Initial title", contents: "Some initial contents", slugUrl: "initial-title").post

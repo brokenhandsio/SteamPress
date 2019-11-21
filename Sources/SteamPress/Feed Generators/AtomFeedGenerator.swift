@@ -49,7 +49,7 @@ struct AtomFeedGenerator {
                 feed += "<logo>\(imageURL)</logo>\n"
             }
             
-            var postData: [Future<String>] = []
+            var postData: [EventLoopFuture<String>] = []
             for post in posts {
                 try postData.append(post.getPostAtomFeed(blogPath: self.getRootPath(for: request), dateFormatter: self.iso8601Formatter, for: request))
             }

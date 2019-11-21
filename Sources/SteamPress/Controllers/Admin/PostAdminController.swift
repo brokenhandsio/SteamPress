@@ -50,14 +50,14 @@ struct PostAdminController: RouteCollection {
             return postRepository.save(newPost, on: req).flatMap { post in
                 let tagsRepository = try req.make(BlogTagRepository.self)
                 
-                var existingTagsQuery = [Future<BlogTag?>]()
+                var existingTagsQuery = [EventLoopFuture<BlogTag?>]()
                 for tagName in data.tags {
                     try existingTagsQuery.append(tagsRepository.getTag(BlogTag.percentEncodedTagName(from: tagName), on: req))
                 }
                 
                 return existingTagsQuery.flatten(on: req).flatMap { existingTagsWithOptionals in
                     let existingTags = existingTagsWithOptionals.compactMap { $0 }
-                    var tagsSaves = [Future<BlogTag>]()
+                    var tagsSaves = [EventLoopFuture<BlogTag>]()
                     for tagName in data.tags {
                         if try !existingTags.contains { try $0.name == BlogTag.percentEncodedTagName(from: tagName) } {
                             let tag = try BlogTag(name: tagName)
@@ -66,7 +66,7 @@ struct PostAdminController: RouteCollection {
                     }
 
                     return tagsSaves.flatten(on: req).flatMap { tags in
-                        var tagLinks = [Future<Void>]()
+                        var tagLinks = [EventLoopFuture<Void>]()
                         for tag in tags {
                             tagLinks.append(tagsRepository.add(tag, to: post, on: req))
                         }
@@ -117,56 +117,61 @@ struct PostAdminController: RouteCollection {
             post.title = title
             post.contents = contents
             
-            #warning("Implement unique slug URL")
-//            if post.slugUrl != slugUrl {
-//                post.slugUrl = BlogPost.generateUniqueSlugUrl(from: slugUrl, logger: log)
-//            }
-            
-            if post.published {
-                post.lastEdited = Date()
+            let slugURLFuture: EventLoopFuture<String>
+            if let updateSlugURL = data.updateSlugURL, updateSlugURL {
+                slugURLFuture = try BlogPost.generateUniqueSlugURL(from: title, on: req)
             } else {
-                post.created = Date()
-                if let publish = data.publish, publish {
-                    post.published = true
-                }
+                slugURLFuture = req.future(post.slugUrl)
             }
             
-            let tagsRepository = try req.make(BlogTagRepository.self)
-            return tagsRepository.getTags(for: post, on: req).flatMap { existingTags in
-                let tagsToUnlink = try existingTags.filter { (anExistingTag) -> Bool in
-                    for tagName in data.tags {
-                        if try anExistingTag.name == BlogTag.percentEncodedTagName(from: tagName) {
-                            return false
+            return slugURLFuture.flatMap { slugURL in
+                post.slugUrl = slugURL
+                if post.published {
+                    post.lastEdited = Date()
+                } else {
+                    post.created = Date()
+                    if let publish = data.publish, publish {
+                        post.published = true
+                    }
+                }
+                
+                let tagsRepository = try req.make(BlogTagRepository.self)
+                return tagsRepository.getTags(for: post, on: req).flatMap { existingTags in
+                    let tagsToUnlink = try existingTags.filter { (anExistingTag) -> Bool in
+                        for tagName in data.tags {
+                            if try anExistingTag.name == BlogTag.percentEncodedTagName(from: tagName) {
+                                return false
+                            }
+                        }
+                        return true
+                    }
+                    var removeTagLinkResults = [EventLoopFuture<Void>]()
+                    for tagToUnlink in tagsToUnlink {
+                        removeTagLinkResults.append(tagsRepository.remove(tagToUnlink, from: post, on: req))
+                    }
+                    
+                    let newTagsNames = try data.tags.filter { (tagName) -> Bool in
+                        try !existingTags.contains { (existingTag) -> Bool in
+                            try existingTag.name == BlogTag.percentEncodedTagName(from: tagName)
                         }
                     }
-                    return true
-                }
-                var removeTagLinkResults = [Future<Void>]()
-                for tagToUnlink in tagsToUnlink {
-                    removeTagLinkResults.append(tagsRepository.remove(tagToUnlink, from: post, on: req))
-                }
-                
-                let newTagsNames = try data.tags.filter { (tagName) -> Bool in
-                    try !existingTags.contains { (existingTag) -> Bool in
-                        try existingTag.name == BlogTag.percentEncodedTagName(from: tagName)
+                    
+                    var tagCreateSaves = [EventLoopFuture<BlogTag>]()
+                    for newTagName in newTagsNames {
+                        let newTag = try BlogTag(name: newTagName)
+                        tagCreateSaves.append(tagsRepository.save(newTag, on: req))
                     }
-                }
-                
-                var tagCreateSaves = [Future<BlogTag>]()
-                for newTagName in newTagsNames {
-                    let newTag = try BlogTag(name: newTagName)
-                    tagCreateSaves.append(tagsRepository.save(newTag, on: req))
-                }
-                
-                return removeTagLinkResults.flatten(on: req).and(tagCreateSaves.flatten(on: req)).flatMap { (_, newTags) in
-                    var postTagLinkResults = [Future<Void>]()
-                    for tag in newTags {
-                        postTagLinkResults.append(tagsRepository.add(tag, to: post, on: req))
-                    }
-                    return postTagLinkResults.flatten(on: req).flatMap {
-                        let redirect = req.redirect(to: self.pathCreator.createPath(for: "posts/\(post.slugUrl)"))
-                        let postRepository = try req.make(BlogPostRepository.self)
-                        return postRepository.save(post, on: req).transform(to: redirect)
+                    
+                    return removeTagLinkResults.flatten(on: req).and(tagCreateSaves.flatten(on: req)).flatMap { (_, newTags) in
+                        var postTagLinkResults = [EventLoopFuture<Void>]()
+                        for tag in newTags {
+                            postTagLinkResults.append(tagsRepository.add(tag, to: post, on: req))
+                        }
+                        return postTagLinkResults.flatten(on: req).flatMap {
+                            let redirect = req.redirect(to: self.pathCreator.createPath(for: "posts/\(post.slugUrl)"))
+                            let postRepository = try req.make(BlogPostRepository.self)
+                            return postRepository.save(post, on: req).transform(to: redirect)
+                        }
                     }
                 }
             }

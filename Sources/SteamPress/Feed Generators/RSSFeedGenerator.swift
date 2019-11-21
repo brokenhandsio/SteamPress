@@ -41,7 +41,7 @@ struct RSSFeedGenerator {
             
             xmlFeed += "<textinput>\n<description>Search \(self.title)</description>\n<title>Search</title>\n<link>\(self.getRootPath(for: request))/search?</link>\n<name>term</name>\n</textinput>\n"
 
-            var postData: [Future<String>] = []
+            var postData: [EventLoopFuture<String>] = []
             for post in posts {
                 try postData.append(post.getPostRSSFeed(rootPath: self.getRootPath(for: request), dateFormatter: self.rfc822DateFormatter, for: request))
             }

@@ -60,7 +60,7 @@ extension BlogPost {
         return snippet
     }
     
-    static func generateUniqueSlugURL(from title: String, on req: Request) throws -> Future<String> {
+    static func generateUniqueSlugURL(from title: String, on req: Request) throws -> EventLoopFuture<String> {
         let postRepository = try req.make(BlogPostRepository.self)
         let alphanumericsWithHyphenAndSpace = CharacterSet(charactersIn: " -0123456789abcdefghijklmnopqrstuvwxyz")
         let initialSlug = title.lowercased()

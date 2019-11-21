@@ -6,4 +6,5 @@ struct CreatePostData: Content {
     let publish: Bool?
     let draft: Bool?
     let tags: [String]
+    let updateSlugURL: Bool?
 }
