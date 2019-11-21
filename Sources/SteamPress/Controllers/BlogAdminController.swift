@@ -32,25 +32,5 @@ struct BlogAdminController: RouteCollection {
         return try req.make(BlogAdminPresenter.self).createIndexView(on: req, errors: nil)
     }
 
-//
-//    private func validateUserSaveData(edit: Bool, name: String, username: String, password: String?, confirmPassword: String?, previousUsername: String? = nil) -> ([String]?, Bool?, Bool?) {
-//
-//        // Check username unique
-//        do {
-//            if username != previousUsername {
-//                let usernames = try BlogUser.all().map { $0.username.lowercased() }
-//                if usernames.contains(username.lowercased()) {
-//                    userSaveErrors.append("Sorry that username has already been taken")
-//                }
-//            }
-//        } catch {
-//            userSaveErrors.append("Unable to validate username")
-//        }
-//
-//        return (userSaveErrors, passwordError, confirmPasswordError)
-//    }
-//
-//}
-
 }
 

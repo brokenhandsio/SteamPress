@@ -42,7 +42,7 @@ struct UserAdminController: RouteCollection {
             
             let hasher = try req.make(PasswordHasher.self)
             let hashedPassword = try hasher.hash(password)
-            let newUser = BlogUser(name: name, username: username, password: hashedPassword, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline)
+            let newUser = BlogUser(name: name, username: username.lowercased(), password: hashedPassword, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline)
             if let resetPasswordRequired = data.resetPasswordOnLogin, resetPasswordRequired {
                 newUser.resetPasswordRequired = true
             }
@@ -77,7 +77,7 @@ struct UserAdminController: RouteCollection {
                 }
                 
                 user.name = name
-                user.username = username
+                user.username = username.lowercased()
                 user.profilePicture = data.profilePicture
                 user.twitterHandle = data.twitterHandle
                 user.biography = data.biography
@@ -171,7 +171,7 @@ struct UserAdminController: RouteCollection {
         
         let usersRepository = try req.make(BlogUserRepository.self)
         if let username = data.username {
-            usernameUniqueError = usersRepository.getUser(username: username, on: req).map { user in
+            usernameUniqueError = usersRepository.getUser(username: username.lowercased(), on: req).map { user in
                 if user != nil {
                     return "Sorry that username has already been taken"
                 } else {
