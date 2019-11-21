@@ -48,7 +48,7 @@ struct BlogController: RouteCollection {
                        tagRepository.getAllTags(on: req),
                        userRepository.getAllUsers(on: req)) { posts, tags, users in
             let presenter = try req.make(BlogPresenter.self)
-            return presenter.indexView(on: req, posts: posts, tags: tags, authors: users)
+            return presenter.indexView(on: req, posts: posts, tags: tags, authors: users, pageInformation: try req.pageInformation())
         }
     }
 
@@ -63,7 +63,7 @@ struct BlogController: RouteCollection {
             let userRepository = try req.make(BlogUserRepository.self)
             return userRepository.getUser(id: post.author, on: req).unwrap(or: Abort(.internalServerError)).flatMap { user in
                 let presenter = try req.make(BlogPresenter.self)
-                return presenter.postView(on: req, post: post, author: user)
+                return presenter.postView(on: req, post: post, author: user, pageInformation: try req.pageInformation())
             }
         }
     }
@@ -74,7 +74,7 @@ struct BlogController: RouteCollection {
             let paginationInformation = req.getPaginationInformation(postsPerPage: self.postsPerPage)
             return postRepository.getSortedPublishedPosts(for: tag, on: req, count: self.postsPerPage, offset: paginationInformation.offset).flatMap { posts in
                 let presenter = try req.make(BlogPresenter.self)
-                return presenter.tagView(on: req, tag: tag, posts: posts)
+                return presenter.tagView(on: req, tag: tag, posts: posts, pageInformation: try req.pageInformation())
             }
         }
     }
@@ -91,7 +91,7 @@ struct BlogController: RouteCollection {
             let postRepository = try req.make(BlogPostRepository.self)
             return postRepository.getAllPostsSortedByPublishDate(for: author, includeDrafts: false, on: req, count: self.postsPerPage, offset: paginationInformation.offset).flatMap { posts in
                 let presenter = try req.make(BlogPresenter.self)
-                return presenter.authorView(on: req, author: author, posts: posts)
+                return presenter.authorView(on: req, author: author, posts: posts, pageInformation: try req.pageInformation())
             }
         }
     }
@@ -100,7 +100,7 @@ struct BlogController: RouteCollection {
         let tagRepository = try req.make(BlogTagRepository.self)
         return tagRepository.getAllTags(on: req).flatMap { tags in
             let presenter = try req.make(BlogPresenter.self)
-            return presenter.allTagsView(on: req, tags: tags)
+            return presenter.allTagsView(on: req, tags: tags, pageInformation: try req.pageInformation())
         }
     }
 
@@ -108,19 +108,19 @@ struct BlogController: RouteCollection {
         let presenter = try req.make(BlogPresenter.self)
         let authorRepository = try req.make(BlogUserRepository.self)
         return authorRepository.getAllUsers(on: req).flatMap { allUsers in
-            return presenter.allAuthorsView(on: req, authors: allUsers)
+            return presenter.allAuthorsView(on: req, authors: allUsers, pageInformation: try req.pageInformation())
         }
     }
 
     func searchHandler(_ req: Request) throws -> EventLoopFuture<View> {
         let preseneter = try req.make(BlogPresenter.self)
         guard let searchTerm = req.query[String.self, at: "term"], !searchTerm.isEmpty else {
-            return preseneter.searchView(on: req, posts: nil, searchTerm: nil)
+            return preseneter.searchView(on: req, posts: nil, searchTerm: nil, pageInformation: try req.pageInformation())
         }
         
         let postRepository = try req.make(BlogPostRepository.self)
         return postRepository.findPublishedPostsOrdered(for: searchTerm, on: req).flatMap { posts in
-            return preseneter.searchView(on: req, posts: posts, searchTerm: searchTerm)
+            return preseneter.searchView(on: req, posts: posts, searchTerm: searchTerm, pageInformation: try req.pageInformation())
         }
     }
 

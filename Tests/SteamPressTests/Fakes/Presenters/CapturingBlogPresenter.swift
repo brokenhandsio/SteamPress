@@ -9,7 +9,7 @@ class CapturingBlogPresenter: BlogPresenter {
     private(set) var indexPosts: [BlogPost]?
     private(set) var indexTags: [BlogTag]?
     private(set) var indexAuthors: [BlogUser]?
-    func indexView(on container: Container, posts: [BlogPost], tags: [BlogTag], authors: [BlogUser]) -> EventLoopFuture<View> {
+    func indexView(on container: Container, posts: [BlogPost], tags: [BlogTag], authors: [BlogUser], pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
         self.indexPosts = posts
         self.indexTags = tags
         self.indexAuthors = authors
@@ -18,35 +18,35 @@ class CapturingBlogPresenter: BlogPresenter {
     
     private(set) var post: BlogPost?
     private(set) var postAuthor: BlogUser?
-    func postView(on container: Container, post: BlogPost, author: BlogUser) -> EventLoopFuture<View> {
+    func postView(on container: Container, post: BlogPost, author: BlogUser, pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
         self.post = post
         self.postAuthor = author
         return TestDataBuilder.createFutureView(on: container)
     }
     
     private(set) var allAuthors: [BlogUser]?
-    func allAuthorsView(on container: Container, authors: [BlogUser]) -> EventLoopFuture<View> {
+    func allAuthorsView(on container: Container, authors: [BlogUser], pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
         self.allAuthors = authors
         return TestDataBuilder.createFutureView(on: container)
     }
     
     private(set) var author: BlogUser?
     private(set) var authorPosts: [BlogPost]?
-    func authorView(on container: Container, author: BlogUser, posts: [BlogPost]) -> EventLoopFuture<View> {
+    func authorView(on container: Container, author: BlogUser, posts: [BlogPost], pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
         self.author = author
         self.authorPosts = posts
         return TestDataBuilder.createFutureView(on: container)
     }
     
     private(set) var allTagsPageTags: [BlogTag]?
-    func allTagsView(on container: Container, tags: [BlogTag]) -> EventLoopFuture<View> {
+    func allTagsView(on container: Container, tags: [BlogTag], pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
         self.allTagsPageTags = tags
         return TestDataBuilder.createFutureView(on: container)
     }
     
     private(set) var tag: BlogTag?
     private(set) var tagPosts: [BlogPost]?
-    func tagView(on container: Container, tag: BlogTag, posts: [BlogPost]) -> EventLoopFuture<View> {
+    func tagView(on container: Container, tag: BlogTag, posts: [BlogPost], pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
         self.tag = tag
         self.tagPosts = posts
         return TestDataBuilder.createFutureView(on: container)
@@ -54,7 +54,7 @@ class CapturingBlogPresenter: BlogPresenter {
     
     private(set) var searchPosts: [BlogPost]?
     private(set) var searchTerm: String?
-    func searchView(on container: Container, posts: [BlogPost]?, searchTerm: String?) -> EventLoopFuture<View> {
+    func searchView(on container: Container, posts: [BlogPost]?, searchTerm: String?, pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
         self.searchPosts = posts
         self.searchTerm = searchTerm
         return TestDataBuilder.createFutureView(on: container)
@@ -65,7 +65,7 @@ class CapturingBlogPresenter: BlogPresenter {
     private(set) var loginUsername: String?
     private(set) var loginUsernameError: Bool?
     private(set) var loginPasswordError: Bool?
-    func loginView(on container: Container, loginWarning: Bool, errors: [String]?, username: String?, usernameError: Bool, passwordError: Bool) throws -> EventLoopFuture<View> {
+    func loginView(on container: Container, loginWarning: Bool, errors: [String]?, username: String?, usernameError: Bool, passwordError: Bool, pageInformation: BlogGlobalPageInformation) throws -> EventLoopFuture<View> {
         self.loginWarning = loginWarning
         self.loginErrors = errors
         self.loginUsername = username

@@ -2,41 +2,50 @@ import Vapor
 
 public struct ViewBlogPresenter: BlogPresenter {
     
-    public func indexView(on container: Container, posts: [BlogPost], tags: [BlogTag], authors: [BlogUser]) -> EventLoopFuture<View> {
+    public func indexView(on container: Container, posts: [BlogPost], tags: [BlogTag], authors: [BlogUser], pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
         fatalError()
     }
     
-    public func postView(on container: Container, post: BlogPost, author: BlogUser) -> EventLoopFuture<View> {
+    public func postView(on container: Container, post: BlogPost, author: BlogUser, pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
         do {
             let viewRenderer = try container.make(ViewRenderer.self)
-            return viewRenderer.render("blog/post")
+            let context = BlogPostPageContext(title: post.title, post: post, author: author, pageInformation: pageInformation)
+            return viewRenderer.render("blog/post", context)
         } catch {
-            return container.eventLoop.newFailedFuture(error: SteamPressError(identifier: "ViewBlogPresenterError", "Failed to get a view renderer"))
+            return container.eventLoop.newFailedFuture(error: error)
         }
         
     }
     
-    public func allAuthorsView(on container: Container, authors: [BlogUser]) -> EventLoopFuture<View> {
+    public func allAuthorsView(on container: Container, authors: [BlogUser], pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
         fatalError()
     }
     
-    public func authorView(on container: Container, author: BlogUser, posts: [BlogPost]) -> EventLoopFuture<View> {
+    public func authorView(on container: Container, author: BlogUser, posts: [BlogPost], pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
         fatalError()
     }
     
-    public func allTagsView(on container: Container, tags: [BlogTag]) -> EventLoopFuture<View> {
+    public func allTagsView(on container: Container, tags: [BlogTag], pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
         fatalError()
     }
     
-    public func tagView(on container: Container, tag: BlogTag, posts: [BlogPost]) -> EventLoopFuture<View> {
+    public func tagView(on container: Container, tag: BlogTag, posts: [BlogPost], pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
         fatalError()
     }
     
-    public func searchView(on container: Container, posts: [BlogPost]?, searchTerm: String?) -> EventLoopFuture<View> {
+    public func searchView(on container: Container, posts: [BlogPost]?, searchTerm: String?, pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
         fatalError()
     }
     
-    public func loginView(on container: Container, loginWarning: Bool, errors: [String]?, username: String?, usernameError: Bool, passwordError: Bool) throws -> EventLoopFuture<View> {
+    public func loginView(on container: Container, loginWarning: Bool, errors: [String]?, username: String?, usernameError: Bool, passwordError: Bool, pageInformation: BlogGlobalPageInformation) throws -> EventLoopFuture<View> {
         fatalError()
     }
+}
+
+struct BlogPostPageContext: Encodable {
+    let title: String
+    let post: BlogPost
+    let author: BlogUser
+    let blogPostPage = true
+    let pageInformation: BlogGlobalPageInformation
 }

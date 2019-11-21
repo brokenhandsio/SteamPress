@@ -10,6 +10,7 @@ class BlogViewTests: XCTestCase {
     var author: BlogUser!
     var post: BlogPost!
     var viewRenderer: CapturingViewRenderer!
+    var pageInformation: BlogGlobalPageInformation!
     
     // MARK: - Overrides
     
@@ -23,6 +24,7 @@ class BlogViewTests: XCTestCase {
         author = TestDataBuilder.anyUser()
         author.userID = 1
         post = try! TestDataBuilder.anyPost(author: author)
+        pageInformation = BlogGlobalPageInformation(disqusName: "disqusName", siteTwitterHandler: "twitterHandleSomething", googleAnalyticsIdentifier: "GAString....", loggedInUser: author)
     }
     
     // MARK: - Tests
@@ -46,17 +48,19 @@ class BlogViewTests: XCTestCase {
 //    }
 
     func testBlogPostPageGetsCorrectParameters() throws {
-        _ = presenter.postView(on: basicContainer, post: post, author: author)
-//        let (postWithImage, user) = try setupBlogPost()
-//        _ = try viewFactory.blogPostView(uri: postURI, post: postWithImage, author: user, user: nil)
-//
-//        XCTAssertEqual(viewRenderer.capturedContext?["post"]?["title"]?.string, postWithImage.title)
-//        XCTAssertEqual(viewRenderer.capturedContext?["author"]?["name"]?.string, user.name)
-//        XCTAssertTrue(((viewRenderer.capturedContext?["blog_post_page"])?.bool) ?? false)
-//        XCTAssertNil(viewRenderer.capturedContext?["user"])
-//        XCTAssertEqual(viewRenderer.capturedContext?["disqus_name"]?.string, disqusName)
-//        XCTAssertEqual(viewRenderer.capturedContext?["site_twitter_handle"]?.string, siteTwitterHandle)
-//        XCTAssertEqual(viewRenderer.capturedContext?["google_analytics_identifier"]?.string, googleAnalyticsIdentifier)
+        _ = presenter.postView(on: basicContainer, post: post, author: author, pageInformation: pageInformation)
+        
+        let context = try XCTUnwrap(viewRenderer.capturedContext as? BlogPostPageContext)
+
+        XCTAssertEqual(context.title, post.title)
+        XCTAssertEqual(context.post.title, post.title)
+        XCTAssertEqual(context.post.title, post.title)
+        XCTAssertEqual(context.author.name, author.name)
+        XCTAssertTrue(context.blogPostPage)
+        XCTAssertEqual(context.pageInformation.disqusName, pageInformation.disqusName)
+        XCTAssertEqual(context.pageInformation.siteTwitterHandler, pageInformation.siteTwitterHandler)
+        XCTAssertEqual(context.pageInformation.googleAnalyticsIdentifier, pageInformation.googleAnalyticsIdentifier)
+        XCTAssertEqual(context.pageInformation.loggedInUser?.username, pageInformation.loggedInUser?.username)
 //        XCTAssertNotNil((viewRenderer.capturedContext?["post_image"])?.string)
 //        XCTAssertNotNil((viewRenderer.capturedContext?["post_image_alt"])?.string)
 //        XCTAssertEqual(viewRenderer.capturedContext?["post_uri"]?.string, "https://test.com/posts/test-post/")
