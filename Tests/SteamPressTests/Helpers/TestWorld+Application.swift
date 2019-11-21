@@ -11,7 +11,8 @@ extension TestWorld {
                                  adminPresenter: CapturingAdminPresenter,
                                  enableAuthorPages: Bool,
                                  enableTagPages: Bool,
-                                 passwordHasherToUse: PasswordHasherChoice) throws -> Application {
+                                 passwordHasherToUse: PasswordHasherChoice,
+                                 randomNumberGenerator: StubbedRandomNumberGenerator) throws -> Application {
         var services = Services.default()
         let steampress = SteamPress.Provider(
                                              blogPath: path,
@@ -27,6 +28,10 @@ extension TestWorld {
             return repository
         }
         
+        services.register(SteamPressRandomNumberGenerator.self) { _ in
+            return randomNumberGenerator
+        }
+        
         var middlewareConfig = MiddlewareConfig()
         middlewareConfig.use(ErrorMiddleware.self)
         middlewareConfig.use(BlogRememberMeMiddleware.self)
@@ -34,6 +39,8 @@ extension TestWorld {
         services.register(middlewareConfig)
         
         var config = Config.default()
+        
+        config.prefer(StubbedRandomNumberGenerator.self, for: SteamPressRandomNumberGenerator.self)
         
         switch passwordHasherToUse {
         case .real:

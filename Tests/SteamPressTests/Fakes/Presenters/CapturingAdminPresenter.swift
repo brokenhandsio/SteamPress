@@ -13,11 +13,11 @@ class CapturingAdminPresenter: BlogAdminPresenter {
     private(set) var createPostErrors: [String]?
     private(set) var createPostTitle: String?
     private(set) var createPostContents: String?
-    private(set) var createPostSlugURL: String?
     private(set) var createPostTags: [String]?
     private(set) var createPostIsEditing: Bool?
     private(set) var createPostPost: BlogPost?
     private(set) var createPostDraft: Bool?
+    private(set) var createPostSlugURL: String?
     func createPostView(on req: Request, errors: [String]?, title: String?, contents: String?, slugURL: String?, tags: [String]?, isEditing: Bool, post: BlogPost?, isDraft: Bool?) -> EventLoopFuture<View> {
         self.createPostErrors = errors
         self.createPostTitle = title

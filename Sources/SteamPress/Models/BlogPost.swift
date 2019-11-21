@@ -16,9 +16,8 @@ public final class BlogPost: Codable {
     public var slugUrl: String
     public var published: Bool
 
-    #warning("Slug URL should be auto generated?")
     public init(title: String, contents: String, author: BlogUser, creationDate: Date, slugUrl: String,
-         published: Bool/*, logger: LogProtocol? = nil*/) throws {
+         published: Bool) throws {
         self.title = title
         self.contents = contents
         guard let authorID = author.userID else {
@@ -26,7 +25,6 @@ public final class BlogPost: Codable {
         }
         self.author = authorID
         self.created = creationDate
-//        self.slugUrl = BlogPost.generateUniqueSlugUrl(from: slugUrl, logger: logger)
         self.slugUrl = slugUrl
         self.lastEdited = nil
         self.published = published
@@ -61,29 +59,23 @@ extension BlogPost {
         }
         return snippet
     }
-
-//    static func generateUniqueSlugUrl(from title: String, logger: LogProtocol?) -> String {
-//        let alphanumericsWithHyphenAndSpace = CharacterSet(charactersIn: " -0123456789abcdefghijklmnopqrstuvwxyz")
-//
-//        let slugUrl = title.lowercased()
-//            .trimmingCharacters(in: .whitespacesAndNewlines)
-//            .components(separatedBy: alphanumericsWithHyphenAndSpace.inverted).joined()
-//            .components(separatedBy: .whitespacesAndNewlines).filter { !$0.isEmpty }.joined(separator: " ")
-//            .replacingOccurrences(of: " ", with: "-", options: .regularExpression)
-//
-//        var newSlugUrl = slugUrl
-//        var count = 2
-//
-//        do {
-//            while try BlogPost.makeQuery().filter(Properties.slugUrl, newSlugUrl).first() != nil {
-//              newSlugUrl = "\(slugUrl)-\(count)"
-//              count += 1
-//            }
-//        } catch {
-//            logger?.debug("Error uniqueing the slug URL: \(error)")
-//            // Swallow error - this will propragate the error up to the DB driver which should fail if it is not unique
-//        }
-//
-//        return newSlugUrl
-//    }
+    
+    static func generateUniqueSlugURL(from title: String, on req: Request) throws -> Future<String> {
+        let postRepository = try req.make(BlogPostRepository.self)
+        let alphanumericsWithHyphenAndSpace = CharacterSet(charactersIn: " -0123456789abcdefghijklmnopqrstuvwxyz")
+        let initialSlug = title.lowercased()
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .components(separatedBy: alphanumericsWithHyphenAndSpace.inverted).joined()
+            .components(separatedBy: .whitespacesAndNewlines).filter { !$0.isEmpty }.joined(separator: " ")
+            .replacingOccurrences(of: " ", with: "-", options: .regularExpression)
+        return postRepository.getPost(slug: initialSlug, on: req).map { postWithSameSlug in
+            if postWithSameSlug != nil {
+                let randomNumberGenerator = try req.make(SteamPressRandomNumberGenerator.self)
+                let randomNumber = randomNumberGenerator.getNumber()
+                return "\(initialSlug)-\(randomNumber)"
+            } else {
+                return initialSlug
+            }
+        }
+    }
 }

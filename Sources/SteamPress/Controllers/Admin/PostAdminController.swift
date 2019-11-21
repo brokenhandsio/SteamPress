@@ -35,48 +35,47 @@ struct PostAdminController: RouteCollection {
         
         if let createPostErrors = validatePostCreation(data) {
             let presenter = try req.make(BlogAdminPresenter.self)
-            let view = presenter.createPostView(on: req, errors: createPostErrors, title: data.title, contents: data.contents, slugURL: data.slugURL, tags: data.tags, isEditing: false, post: nil, isDraft: nil)
+            let view = presenter.createPostView(on: req, errors: createPostErrors, title: data.title, contents: data.contents, slugURL: nil, tags: data.tags, isEditing: false, post: nil, isDraft: nil)
             return try view.encode(for: req)
         }
         
-        guard let title = data.title, let contents = data.contents, let slugURL = data.slugURL else {
+        guard let title = data.title, let contents = data.contents else {
             throw Abort(.internalServerError)
         }
         
-        //        // Make sure slugUrl is unique
-        //        slugUrl = BlogPost.generateUniqueSlugUrl(from: slugUrl, logger: log)
-        
-        let newPost = try BlogPost(title: title, contents: contents, author: author, creationDate: Date(), slugUrl: slugURL, published: data.publish != nil)
-        
-        let postRepository = try req.make(BlogPostRepository.self)
-        return postRepository.save(newPost, on: req).flatMap { post in
-            let tagsRepository = try req.make(BlogTagRepository.self)
+        return try BlogPost.generateUniqueSlugURL(from: title, on: req).flatMap { uniqueSlug in
+            let newPost = try BlogPost(title: title, contents: contents, author: author, creationDate: Date(), slugUrl: uniqueSlug, published: data.publish != nil)
             
-            var existingTagsQuery = [Future<BlogTag?>]()
-            for tagName in data.tags {
-                try existingTagsQuery.append(tagsRepository.getTag(BlogTag.percentEncodedTagName(from: tagName), on: req))
-            }
-            
-            return existingTagsQuery.flatten(on: req).flatMap { existingTagsWithOptionals in
-                let existingTags = existingTagsWithOptionals.compactMap { $0 }
-                var tagsSaves = [Future<BlogTag>]()
+            let postRepository = try req.make(BlogPostRepository.self)
+            return postRepository.save(newPost, on: req).flatMap { post in
+                let tagsRepository = try req.make(BlogTagRepository.self)
+                
+                var existingTagsQuery = [Future<BlogTag?>]()
                 for tagName in data.tags {
-                    if try !existingTags.contains { try $0.name == BlogTag.percentEncodedTagName(from: tagName) } {
-                        let tag = try BlogTag(name: tagName)
-                        tagsSaves.append(tagsRepository.save(tag, on: req))
-                    }
+                    try existingTagsQuery.append(tagsRepository.getTag(BlogTag.percentEncodedTagName(from: tagName), on: req))
                 }
+                
+                return existingTagsQuery.flatten(on: req).flatMap { existingTagsWithOptionals in
+                    let existingTags = existingTagsWithOptionals.compactMap { $0 }
+                    var tagsSaves = [Future<BlogTag>]()
+                    for tagName in data.tags {
+                        if try !existingTags.contains { try $0.name == BlogTag.percentEncodedTagName(from: tagName) } {
+                            let tag = try BlogTag(name: tagName)
+                            tagsSaves.append(tagsRepository.save(tag, on: req))
+                        }
+                    }
 
-                return tagsSaves.flatten(on: req).flatMap { tags in
-                    var tagLinks = [Future<Void>]()
-                    for tag in tags {
-                        tagLinks.append(tagsRepository.add(tag, to: post, on: req))
+                    return tagsSaves.flatten(on: req).flatMap { tags in
+                        var tagLinks = [Future<Void>]()
+                        for tag in tags {
+                            tagLinks.append(tagsRepository.add(tag, to: post, on: req))
+                        }
+                        for tag in existingTags {
+                            tagLinks.append(tagsRepository.add(tag, to: post, on: req))
+                        }
+                        let redirect = req.redirect(to: self.pathCreator.createPath(for: "posts/\(post.slugUrl)"))
+                        return tagLinks.flatten(on: req).transform(to: redirect)
                     }
-                    for tag in existingTags {
-                        tagLinks.append(tagsRepository.add(tag, to: post, on: req))
-                    }
-                    let redirect = req.redirect(to: self.pathCreator.createPath(for: "posts/\(post.slugUrl)"))
-                    return tagLinks.flatten(on: req).transform(to: redirect)
                 }
             }
         }
@@ -108,20 +107,20 @@ struct PostAdminController: RouteCollection {
         return try req.parameters.next(BlogPost.self).flatMap { post in
             if let errors = self.validatePostCreation(data) {
                 let presenter = try req.make(BlogAdminPresenter.self)
-                return try presenter.createPostView(on: req, errors: errors, title: data.title, contents: data.contents, slugURL: data.slugURL, tags: data.tags, isEditing: true, post: post, isDraft: !post.published).encode(for: req)
+                return try presenter.createPostView(on: req, errors: errors, title: data.title, contents: data.contents, slugURL: post.slugUrl, tags: data.tags, isEditing: true, post: post, isDraft: !post.published).encode(for: req)
             }
             
-            guard let title = data.title, let contents = data.contents, let slugUrl = data.slugURL else {
+            guard let title = data.title, let contents = data.contents else {
                 throw Abort(.internalServerError)
             }
             
             post.title = title
             post.contents = contents
             
+            #warning("Implement unique slug URL")
 //            if post.slugUrl != slugUrl {
 //                post.slugUrl = BlogPost.generateUniqueSlugUrl(from: slugUrl, logger: log)
 //            }
-            post.slugUrl = slugUrl
             
             if post.published {
                 post.lastEdited = Date()
@@ -188,6 +187,7 @@ struct PostAdminController: RouteCollection {
         if data.contents.isEmptyOrWhitespace() {
             createPostErrors.append("You must have some content in your blog post")
         }
+        #warning("TODO")
         //
         //        if (slugUrl == nil || (slugUrl?.isWhitespace() ?? false)) && (!(title == nil || (title?.isWhitespace() ?? false))) {
         //            // The user can't manually edit this so if the title wasn't empty, we should never hit here

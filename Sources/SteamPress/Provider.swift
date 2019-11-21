@@ -63,6 +63,9 @@ public struct Provider<P: BlogPresenter, AP: BlogAdminPresenter>: Vapor.Provider
         services.register([PasswordHasher.self, PasswordVerifier.self]) { _ in
             return BCryptDigest()
         }
+        services.register(SteamPressRandomNumberGenerator.self) { _ in
+            return RealRandomNumberGenerator()
+        }
         
         services.register(BlogRememberMeMiddleware.self)
     }

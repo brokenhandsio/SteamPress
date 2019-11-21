@@ -1,20 +1,6 @@
 
 //class BlogPostTests: XCTestCase {
 //
-//    static var allTests = [
-//        ("testLinuxTestSuiteIncludesAllTests", testLinuxTestSuiteIncludesAllTests),
-//        ("testThatSlugUrlCalculatedCorrectlyForTitleWithSpaces", testThatSlugUrlCalculatedCorrectlyForTitleWithSpaces),
-//        ("testThatSlugUrlCalculatedCorrectlyForTitleWithPunctuation", testThatSlugUrlCalculatedCorrectlyForTitleWithPunctuation),
-//        ("testThatSlugUrlNotChangedWhenSetWithValidSlugUrl", testThatSlugUrlNotChangedWhenSetWithValidSlugUrl),
-//        ("testThatSlugUrlStripsWhitespace", testThatSlugUrlStripsWhitespace),
-//        ("testNumbersRemainInUrl", testNumbersRemainInUrl),
-//        ("testSlugUrlLowerCases", testSlugUrlLowerCases),
-//        ("testEverythingWithLotsOfCharacters", testEverythingWithLotsOfCharacters),
-//        ("testSlugUrlGivenUniqueNameIfDuplicate", testSlugUrlGivenUniqueNameIfDuplicate),
-//        ("testShortSnippet", testShortSnippet),
-//        ("testLongSnippet", testLongSnippet),
-//        ("testCreatedAndEditedDateInISOFormForAllContext", testCreatedAndEditedDateInISOFormForAllContext)
-//    ]
 //
 //    func testThatSlugUrlCalculatedCorrectlyForTitleWithSpaces() {
 //        let title = "This is a title"

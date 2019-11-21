@@ -28,7 +28,6 @@ class AdminPostTests: XCTestCase {
             let title = "Post Title"
             let contents = "# Post Title\n\nWe have a post"
             let tags = ["First Tag", "Second Tag"]
-            let slugURL = "post-title"
             let publish = true
         }
         let createData = CreatePostData()
@@ -37,6 +36,7 @@ class AdminPostTests: XCTestCase {
         let post = try XCTUnwrap(testWorld.context.repository.posts.first)
         XCTAssertEqual(testWorld.context.repository.posts.count, 1)
         XCTAssertEqual(post.title, createData.title)
+        XCTAssertEqual(post.slugUrl, "post-title")
         XCTAssertTrue(post.published)
         XCTAssertEqual(post.created.timeIntervalSince1970, Date().timeIntervalSince1970, accuracy: 0.1)
         XCTAssertTrue(post.created < Date())
@@ -53,6 +53,27 @@ class AdminPostTests: XCTestCase {
         XCTAssertEqual(response.http.headers[.location].first, "/posts/post-title/")
     }
     
+    func testCreatingPostWithNonUniqueSlugFromSameTitle() throws {
+        let randomNumber = 345
+        testWorld = try TestWorld.create(randomNumberGenerator: StubbedRandomNumberGenerator(numberToReturn: randomNumber))
+        let initialPostData = try testWorld.createPost(title: "Post Title", slugUrl: "post-title")
+        
+        struct CreatePostData: Content {
+            static let defaultContentType = MediaType.urlEncodedForm
+            let title = "Post Title"
+            let contents = "# Post Title\n\nWe have a post"
+            let tags = ["First Tag", "Second Tag"]
+            let publish = true
+        }
+        let createData = CreatePostData()
+        let response = try testWorld.getResponse(to: createPostPath, body: createData, loggedInUser: initialPostData.author)
+        
+        XCTAssertEqual(testWorld.context.repository.posts.count, 2)
+        let post = try XCTUnwrap(testWorld.context.repository.posts.last)
+        XCTAssertEqual(post.slugUrl, "post-title-\(randomNumber)")
+        XCTAssertEqual(response.http.headers[.location].first, "/posts/post-title-\(randomNumber)/")
+    }
+    
     func testPostCreationPageGetsBasicInfo() throws {
         _ = try testWorld.getResponse(to: createPostPath, loggedInUser: user)
         
@@ -66,7 +87,6 @@ class AdminPostTests: XCTestCase {
             let title = "Post Title"
             let contents = "# Post Title\n\nWe have a post"
             let tags = ["First Tag", "Second Tag"]
-            let slugURL = "post-title"
         }
         let createData = CreatePostData()
         
@@ -80,7 +100,6 @@ class AdminPostTests: XCTestCase {
             static let defaultContentType = MediaType.urlEncodedForm
             let contents = "# Post Title\n\nWe have a post"
             let tags = ["First Tag", "Second Tag"]
-            let slugURL = "post-title"
             let publish = true
         }
         let createData = CreatePostData()
@@ -95,7 +114,6 @@ class AdminPostTests: XCTestCase {
             static let defaultContentType = MediaType.urlEncodedForm
             let title = "Post Title"
             let tags = ["First Tag", "Second Tag"]
-            let slugURL = "post-title"
             let publish = true
         }
         let createData = CreatePostData()
@@ -110,7 +128,6 @@ class AdminPostTests: XCTestCase {
             static let defaultContentType = MediaType.urlEncodedForm
             let title = "Post Title"
             let tags = ["First Tag", "Second Tag"]
-            let slugURL = "post-title"
             let publish = true
             let contents = ""
         }
@@ -122,7 +139,6 @@ class AdminPostTests: XCTestCase {
         XCTAssertEqual(presenter.createPostTags, createData.tags)
         XCTAssertEqual(presenter.createPostContents, createData.contents)
         XCTAssertEqual(presenter.createPostTitle, createData.title)
-        XCTAssertEqual(presenter.createPostSlugURL, createData.slugURL)
     }
 
     func testCreatePostWithDraftDoesNotPublishPost() throws {
@@ -131,7 +147,6 @@ class AdminPostTests: XCTestCase {
             let title = "Post Title"
             let contents = "# Post Title\n\nWe have a post"
             let tags = ["First Tag", "Second Tag"]
-            let slugURL = "post-title"
             let draft = true
         }
         let createData = CreatePostData()
@@ -153,7 +168,6 @@ class AdminPostTests: XCTestCase {
             let title = "Post Title"
             let contents = "# Post Title\n\nWe have a post"
             let tags = ["First Tag", "Second Tag"]
-            let slugURL = "post-title"
             let publish = true
         }
         let createData = CreatePostData()
@@ -175,7 +189,6 @@ class AdminPostTests: XCTestCase {
             let title = "Post Title"
             let contents = "# Post Title\n\nWe have a post"
             let tags = ["First Tag", "Second Tag"]
-            let slugURL = "post-title"
         }
         
         let testData = try testWorld.createPost(title: "Initial title", contents: "Some initial contents", slugUrl: "initial-title")
@@ -188,10 +201,12 @@ class AdminPostTests: XCTestCase {
         let post = try XCTUnwrap(testWorld.context.repository.posts.first)
         XCTAssertEqual(post.title, updateData.title)
         XCTAssertEqual(post.contents, updateData.contents)
-        XCTAssertEqual(post.slugUrl, updateData.slugURL)
+        XCTAssertEqual(post.slugUrl, testData.post.slugUrl)
         XCTAssertEqual(post.blogID, testData.post.blogID)
         XCTAssertTrue(post.published)
     }
+    
+    #warning("Test updating slugURL")
     
     func testEditPageGetsPostInfo() throws {
         let post = try testWorld.createPost().post
@@ -220,16 +235,17 @@ class AdminPostTests: XCTestCase {
         struct UpdateData: Content {
             let title: String
             let contents = "Updated contents"
-            let slugURL: String
             let tags = [String]()
         }
         
-        let updateData = UpdateData(title: testData.post.title, slugURL: testData.post.slugUrl)
+        let updateData = UpdateData(title: testData.post.title)
         let response = try testWorld.getResponse(to: "/admin/posts/\(testData.post.blogID!)/edit", body: updateData, loggedInUser: user)
 
         XCTAssertEqual(response.http.status, .seeOther)
-        XCTAssertEqual(response.http.headers[.location].first, "/posts/\(updateData.slugURL)/")
+        XCTAssertEqual(response.http.headers[.location].first, "/posts/\(testData.post.slugUrl)/")
     }
+    
+    #warning("Test when changing Slug URL")
     
     func testEditingPostWithNewTagsRemovesOldLinksAndAddsNewLinks() throws {
         let post = try testWorld.createPost(title: "Initial title", contents: "Some initial contents", slugUrl: "initial-title").post
@@ -245,7 +261,6 @@ class AdminPostTests: XCTestCase {
             let title = "Post Title"
             let contents = "# Post Title\n\nWe have a post"
             let tags: [String]
-            let slugURL = "post-title"
         }
         
         let updateData = UpdatePostData(tags: [firstTagName, newTagName])
@@ -269,7 +284,6 @@ class AdminPostTests: XCTestCase {
             let title = "Post Title"
             let contents = "# Post Title\n\nWe have a post"
             let tags = ["First Tag", "Second Tag"]
-            let slugURL = "post-title"
         }
         
         let testData = try testWorld.createPost(title: "Initial title", contents: "Some initial contents", slugUrl: "initial-title")
@@ -291,7 +305,6 @@ class AdminPostTests: XCTestCase {
             let title = "Post Title"
             let contents = "# Post Title\n\nWe have a post"
             let tags = ["First Tag", "Second Tag"]
-            let slugURL = "post-title"
             let publish = true
         }
         
@@ -314,7 +327,6 @@ class AdminPostTests: XCTestCase {
             let title = "Post Title"
             let contents = "# Post Title\n\nWe have a post"
             let tags = ["First Tag", "Second Tag"]
-            let slugURL = "post-title"
             let draft = true
         }
         
@@ -337,7 +349,6 @@ class AdminPostTests: XCTestCase {
             let title = ""
             let contents = "# Post Title\n\nWe have a post"
             let tags = ["First Tag", "Second Tag"]
-            let slugURL = "post-title"
         }
         
         let testData = try testWorld.createPost(title: "Initial title", contents: "Some initial contents", slugUrl: "initial-title")
@@ -349,7 +360,7 @@ class AdminPostTests: XCTestCase {
         XCTAssertEqual(presenter.createPostTitle, "")
         XCTAssertEqual(presenter.createPostPost?.blogID, testData.post.blogID)
         XCTAssertEqual(presenter.createPostContents, updateData.contents)
-        XCTAssertEqual(presenter.createPostSlugURL, updateData.slugURL)
+        XCTAssertEqual(presenter.createPostSlugURL, testData.post.slugUrl)
         XCTAssertEqual(presenter.createPostTags, updateData.tags)
         XCTAssertEqual(presenter.createPostIsEditing, true)
         XCTAssertEqual(presenter.createPostDraft, false)
