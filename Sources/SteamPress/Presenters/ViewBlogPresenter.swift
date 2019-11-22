@@ -1,4 +1,6 @@
 import Vapor
+import SwiftSoup
+import SwiftMarkdown
 
 public struct ViewBlogPresenter: BlogPresenter {
 
@@ -9,7 +11,18 @@ public struct ViewBlogPresenter: BlogPresenter {
     public func postView(on container: Container, post: BlogPost, author: BlogUser, pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
         do {
             let viewRenderer = try container.make(ViewRenderer.self)
-            let context = BlogPostPageContext(title: post.title, post: post, author: author, pageInformation: pageInformation)
+            
+            var postImage: String? = nil
+            var postImageAlt: String? = nil
+            if let image = try SwiftSoup.parse(markdownToHTML(post.contents)).select("img").first() {
+                postImage = try image.attr("src")
+                let imageAlt = try image.attr("alt")
+                if imageAlt != "" {
+                    postImageAlt = imageAlt
+                }
+            }
+            
+            let context = BlogPostPageContext(title: post.title, post: post, author: author, pageInformation: pageInformation, postImage: postImage, postImageAlt: postImageAlt)
             return viewRenderer.render("blog/post", context)
         } catch {
             return container.eventLoop.newFailedFuture(error: error)
@@ -48,4 +61,6 @@ struct BlogPostPageContext: Encodable {
     let author: BlogUser
     let blogPostPage = true
     let pageInformation: BlogGlobalPageInformation
+    let postImage: String?
+    let postImageAlt: String?
 }

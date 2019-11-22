@@ -23,19 +23,11 @@ class BlogViewTests: XCTestCase {
         viewRenderer = CapturingViewRenderer(worker: basicContainer)
         author = TestDataBuilder.anyUser()
         author.userID = 1
-        post = try! TestDataBuilder.anyPost(author: author)
+        post = try! TestDataBuilder.anyPost(author: author, contents: TestDataBuilder.longContents)
         pageInformation = BlogGlobalPageInformation(disqusName: "disqusName", siteTwitterHandler: "twitterHandleSomething", googleAnalyticsIdentifier: "GAString....", loggedInUser: author)
     }
 
     // MARK: - Tests
-
-    func testBlogPageGetsImageUrlIfOneInPostMarkdown() throws {
-
-//       let (postWithImage, user) = try setupBlogPost()
-//        _ = try viewFactory.blogPostView(uri: postURI, post: postWithImage, author: user, user: nil)
-//
-//        XCTAssertNotNil((viewRenderer.capturedContext?["post_image"])?.string)
-    }
 
 //    func testDescriptionOnBlogPostPageIsShortSnippetTextCleaned() throws {
 //        let (postWithImage, user) = try setupBlogPost()
@@ -52,47 +44,45 @@ class BlogViewTests: XCTestCase {
         let context = try XCTUnwrap(viewRenderer.capturedContext as? BlogPostPageContext)
 
         XCTAssertEqual(context.title, post.title)
+        XCTAssertEqual(context.post.blogID, post.blogID)
         XCTAssertEqual(context.post.title, post.title)
-        XCTAssertEqual(context.post.title, post.title)
+        XCTAssertEqual(context.post.contents, post.contents)
         XCTAssertEqual(context.author.name, author.name)
         XCTAssertTrue(context.blogPostPage)
         XCTAssertEqual(context.pageInformation.disqusName, pageInformation.disqusName)
         XCTAssertEqual(context.pageInformation.siteTwitterHandler, pageInformation.siteTwitterHandler)
         XCTAssertEqual(context.pageInformation.googleAnalyticsIdentifier, pageInformation.googleAnalyticsIdentifier)
         XCTAssertEqual(context.pageInformation.loggedInUser?.username, pageInformation.loggedInUser?.username)
-//        XCTAssertNotNil((viewRenderer.capturedContext?["post_image"])?.string)
-//        XCTAssertNotNil((viewRenderer.capturedContext?["post_image_alt"])?.string)
+        XCTAssertEqual(context.postImage, "https://user-images.githubusercontent.com/9938337/29742058-ed41dcc0-8a6f-11e7-9cfc-680501cdfb97.png")
+        XCTAssertEqual(context.postImageAlt, "SteamPress Logo")
 //        XCTAssertEqual(viewRenderer.capturedContext?["post_uri"]?.string, "https://test.com/posts/test-post/")
 //        XCTAssertEqual(viewRenderer.capturedContext?["site_uri"]?.string, "https://test.com/")
 //        XCTAssertEqual(viewRenderer.capturedContext?["post_uri_encoded"]?.string, "https://test.com/posts/test-post/")
         XCTAssertEqual(viewRenderer.templatePath, "blog/post")
     }
 
-//    func testUserPassedToBlogPostPageIfUserPassedIn() throws {
-//        let (postWithImage, user) = try setupBlogPost()
-//        _ = try viewFactory.blogPostView(uri: postURI, post: postWithImage, author: user, user: user)
-//        XCTAssertEqual(viewRenderer.capturedContext?["user"]?["name"]?.string, user.name)
-//    }
-//
-//    func testDisqusNameNotPassedToBlogPostPageIfNotPassedIn() throws {
-//        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil, googleAnalyticsIdentifier: nil)
-//        let (postWithImage, user) = try setupBlogPost()
-//        _ = try viewFactory.blogPostView(uri: postURI, post: postWithImage, author: user, user: nil)
-//        XCTAssertNil(viewRenderer.capturedContext?["disqus_name"]?.string)
-//    }
-//
-//    func testTwitterHandleNotPassedToBlogPostPageIfNotPassedIn() throws {
-//        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil, googleAnalyticsIdentifier: nil)
-//        let (postWithImage, user) = try setupBlogPost()
-//        _ = try viewFactory.blogPostView(uri: postURI, post: postWithImage, author: user, user: nil)
-//        XCTAssertNil(viewRenderer.capturedContext?["site_twitter_handle"]?.string)
-//    }
-//
-//    func testGAIdentifierNotPassedToBlogPostPageIfNotPassedIn() throws {
-//        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil, googleAnalyticsIdentifier: nil)
-//        let (postWithImage, user) = try setupBlogPost()
-//        _ = try viewFactory.blogPostView(uri: postURI, post: postWithImage, author: user, user: nil)
-//        XCTAssertNil(viewRenderer.capturedContext?["google_analytics_identifier"]?.string)
-//    }
+    func testDisqusNameNotPassedToBlogPostPageIfNotPassedIn() throws {
+        let pageInformationWithoutDisqus = BlogGlobalPageInformation(disqusName: nil, siteTwitterHandler: "twitter", googleAnalyticsIdentifier: "google", loggedInUser: author)
+        _ = presenter.postView(on: basicContainer, post: post, author: author, pageInformation: pageInformationWithoutDisqus)
+        
+        let context = try XCTUnwrap(viewRenderer.capturedContext as? BlogPostPageContext)
+        XCTAssertNil(context.pageInformation.disqusName)
+    }
+
+    func testTwitterHandleNotPassedToBlogPostPageIfNotPassedIn() throws {
+        let pageInformationWithoutTwitterHandle = BlogGlobalPageInformation(disqusName: "disqus", siteTwitterHandler: nil, googleAnalyticsIdentifier: "google", loggedInUser: author)
+        _ = presenter.postView(on: basicContainer, post: post, author: author, pageInformation: pageInformationWithoutTwitterHandle)
+        
+        let context = try XCTUnwrap(viewRenderer.capturedContext as? BlogPostPageContext)
+        XCTAssertNil(context.pageInformation.siteTwitterHandler)
+    }
+
+    func testGAIdentifierNotPassedToBlogPostPageIfNotPassedIn() throws {
+        let pageInformationWithoutGAIdentifier = BlogGlobalPageInformation(disqusName: "disqus", siteTwitterHandler: "twitter", googleAnalyticsIdentifier: nil, loggedInUser: author)
+        _ = presenter.postView(on: basicContainer, post: post, author: author, pageInformation: pageInformationWithoutGAIdentifier)
+        
+        let context = try XCTUnwrap(viewRenderer.capturedContext as? BlogPostPageContext)
+        XCTAssertNil(context.pageInformation.googleAnalyticsIdentifier)
+    }
 
 }
