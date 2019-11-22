@@ -16,7 +16,7 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - name: Run Bionic Tests
-    - run: swift test --enable-test-discovery --enable-code-coverage
+      run: swift test --enable-test-discovery --enable-code-coverage
     - name: Upload code coveage
       uses: codecov/codecov-action@v1
       with:
