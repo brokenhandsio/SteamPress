@@ -25,4 +25,4 @@ jobs:
       uses: codecov/codecov-action@v1
       with:
         token: ${{ secrets.CODECOV_UPLOAD_KEY }}
-        file: .build/x86_64-unknown-linux/debug/codecov/SteamPress.json
+        file: coverage.lcov
