@@ -17,6 +17,8 @@ jobs:
     - uses: actions/checkout@master
     - name: Run Bionic Tests
       run: swift test --enable-test-discovery --enable-code-coverage
+    - name: Setup container for codecov upload
+      run: apt-get update && apt-get install curl
     - name: Upload code coveage
       uses: codecov/codecov-action@v1
       with:
