@@ -3,7 +3,7 @@ import XCTest
 import Vapor
 
 class BlogViewTests: XCTestCase {
-    
+
     // MARK: - Properties
     var basicContainer: BasicContainer!
     var presenter: ViewBlogPresenter!
@@ -11,9 +11,9 @@ class BlogViewTests: XCTestCase {
     var post: BlogPost!
     var viewRenderer: CapturingViewRenderer!
     var pageInformation: BlogGlobalPageInformation!
-    
+
     // MARK: - Overrides
-    
+
     override func setUp() {
         presenter = ViewBlogPresenter()
         basicContainer = BasicContainer(config: Config.default(), environment: Environment.testing, services: .init(), on: EmbeddedEventLoop())
@@ -26,12 +26,11 @@ class BlogViewTests: XCTestCase {
         post = try! TestDataBuilder.anyPost(author: author)
         pageInformation = BlogGlobalPageInformation(disqusName: "disqusName", siteTwitterHandler: "twitterHandleSomething", googleAnalyticsIdentifier: "GAString....", loggedInUser: author)
     }
-    
+
     // MARK: - Tests
-    
+
     func testBlogPageGetsImageUrlIfOneInPostMarkdown() throws {
-        
-        
+
 //       let (postWithImage, user) = try setupBlogPost()
 //        _ = try viewFactory.blogPostView(uri: postURI, post: postWithImage, author: user, user: nil)
 //
@@ -49,7 +48,7 @@ class BlogViewTests: XCTestCase {
 
     func testBlogPostPageGetsCorrectParameters() throws {
         _ = presenter.postView(on: basicContainer, post: post, author: author, pageInformation: pageInformation)
-        
+
         let context = try XCTUnwrap(viewRenderer.capturedContext as? BlogPostPageContext)
 
         XCTAssertEqual(context.title, post.title)
@@ -95,5 +94,5 @@ class BlogViewTests: XCTestCase {
 //        _ = try viewFactory.blogPostView(uri: postURI, post: postWithImage, author: user, user: nil)
 //        XCTAssertNil(viewRenderer.capturedContext?["google_analytics_identifier"]?.string)
 //    }
-    
+
 }

@@ -87,7 +87,7 @@ struct BlogController: RouteCollection {
             guard let author = user else {
                 throw Abort(.notFound)
             }
-            
+
             let postRepository = try req.make(BlogPostRepository.self)
             return postRepository.getAllPostsSortedByPublishDate(for: author, includeDrafts: false, on: req, count: self.postsPerPage, offset: paginationInformation.offset).flatMap { posts in
                 let presenter = try req.make(BlogPresenter.self)
@@ -117,7 +117,7 @@ struct BlogController: RouteCollection {
         guard let searchTerm = req.query[String.self, at: "term"], !searchTerm.isEmpty else {
             return preseneter.searchView(on: req, posts: nil, searchTerm: nil, pageInformation: try req.pageInformation())
         }
-        
+
         let postRepository = try req.make(BlogPostRepository.self)
         return postRepository.findPublishedPostsOrdered(for: searchTerm, on: req).flatMap { posts in
             return preseneter.searchView(on: req, posts: posts, searchTerm: searchTerm, pageInformation: try req.pageInformation())

@@ -2,11 +2,11 @@ import Vapor
 import Authentication
 
 public struct Provider<P: BlogPresenter, AP: BlogAdminPresenter>: Vapor.Provider {
-    
+
     public static var repositoryName: String {
         return "steampress"
     }
-    
+
     let blogPath: String?
     let feedInformation: FeedInformation
     let postsPerPage: Int
@@ -15,7 +15,7 @@ public struct Provider<P: BlogPresenter, AP: BlogAdminPresenter>: Vapor.Provider
     let blogPresenter: P
     let blogAdminPresenter: AP
     let pathCreator: BlogPathCreator
-    
+
     /**
      Initialiser for SteamPress' Provider to add a blog to your Vapor App. You can pass it an optional
      `blogPath` to add the blog to. For instance, if you pass in "blog", your blog will be accessible
@@ -49,16 +49,16 @@ public struct Provider<P: BlogPresenter, AP: BlogAdminPresenter>: Vapor.Provider
         self.blogAdminPresenter = blogAdminPresenter
         self.pathCreator = BlogPathCreator(blogPath: self.blogPath)
     }
-    
+
     public func register(_ services: inout Services) throws {
         services.register(BlogPresenter.self) { _ in
             return self.blogPresenter
         }
-        
+
         services.register(BlogAdminPresenter.self) { _ in
             return self.blogAdminPresenter
         }
-        
+
         try services.register(AuthenticationProvider())
         services.register([PasswordHasher.self, PasswordVerifier.self]) { _ in
             return BCryptDigest()
@@ -66,18 +66,18 @@ public struct Provider<P: BlogPresenter, AP: BlogAdminPresenter>: Vapor.Provider
         services.register(SteamPressRandomNumberGenerator.self) { _ in
             return RealRandomNumberGenerator()
         }
-        
+
         services.register(BlogRememberMeMiddleware.self)
     }
-    
+
     public func willBoot(_ container: Container) throws -> EventLoopFuture<Void> {
         let router = try container.make(Router.self)
-        
+
         let feedController = FeedController(pathCreator: self.pathCreator, feedInformation: self.feedInformation)
         let apiController = APIController()
         let blogController = BlogController(pathCreator: self.pathCreator, enableAuthorPages: self.enableAuthorPages, enableTagPages: self.enableTagPages, postsPerPage: self.postsPerPage)
         let blogAdminController = BlogAdminController(pathCreator: self.pathCreator)
-        
+
         let blogRoutes: Router
         if let blogPath = blogPath {
             blogRoutes = router.grouped(blogPath)
@@ -90,14 +90,14 @@ public struct Provider<P: BlogPresenter, AP: BlogAdminPresenter>: Vapor.Provider
         let steampressSessions = try SessionsMiddleware(sessions: container.make(), config: steampressSessionsConfig)
         let steampressAuthSessions = BlogAuthSessionsMiddleware()
         let sessionedRoutes = blogRoutes.grouped(steampressSessions, steampressAuthSessions)
-        
+
         try sessionedRoutes.register(collection: feedController)
         try sessionedRoutes.register(collection: apiController)
         try sessionedRoutes.register(collection: blogController)
         try sessionedRoutes.register(collection: blogAdminController)
         return .done(on: container)
     }
-    
+
     public func didBoot(_ container: Container) throws -> EventLoopFuture<Void> {
         let userRepository = try container.make(BlogUserRepository.self)
         return userRepository.getAllUsers(on: container).flatMap { users in
@@ -114,6 +114,5 @@ public struct Provider<P: BlogPresenter, AP: BlogAdminPresenter>: Vapor.Provider
             }
         }
     }
-    
-    
+
 }

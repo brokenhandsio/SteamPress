@@ -33,24 +33,24 @@ struct RSSFeedGenerator {
         let blogRepository = try request.make(BlogPostRepository.self)
         return blogRepository.getAllPostsSortedByPublishDate(includeDrafts: false, on: request).flatMap { posts in
             var xmlFeed = try self.getXMLStart(for: request)
-            
+
             if !posts.isEmpty {
                 let postDate = posts[0].lastEdited ?? posts[0].created
                 xmlFeed += "<pubDate>\(self.rfc822DateFormatter.string(from: postDate))</pubDate>\n"
             }
-            
+
             xmlFeed += "<textinput>\n<description>Search \(self.title)</description>\n<title>Search</title>\n<link>\(self.getRootPath(for: request))/search?</link>\n<name>term</name>\n</textinput>\n"
 
             var postData: [EventLoopFuture<String>] = []
             for post in posts {
                 try postData.append(post.getPostRSSFeed(rootPath: self.getRootPath(for: request), dateFormatter: self.rfc822DateFormatter, for: request))
             }
-            
+
             return postData.flatten(on: request).map { postInformation in
                 for post in postInformation {
                     xmlFeed += post
                 }
-                
+
                 xmlFeed += self.xmlEnd
                 var httpResponse = HTTPResponse(body: xmlFeed)
                 httpResponse.headers.add(name: .contentType, value: "application/rss+xml")
@@ -87,7 +87,7 @@ fileprivate extension BlogPost {
     func getPostRSSFeed(rootPath: String, dateFormatter: DateFormatter, for request: Request) throws -> EventLoopFuture<String> {
         let link = rootPath + "/posts/\(slugUrl)/"
         var postEntry = "<item>\n<title>\n\(title)\n</title>\n<description>\n\(try description())\n</description>\n<link>\n\(link)\n</link>\n"
-        
+
         let tagRepository = try request.make(BlogTagRepository.self)
         return tagRepository.getTags(for: self, on: request).map { tags in
             for tag in tags {
@@ -100,4 +100,3 @@ fileprivate extension BlogPost {
         }
     }
 }
-

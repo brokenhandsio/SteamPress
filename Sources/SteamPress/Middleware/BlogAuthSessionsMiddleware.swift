@@ -14,7 +14,7 @@ public final class BlogAuthSessionsMiddleware: Middleware {
         } else {
             future = .done(on: request)
         }
-        
+
         return future.flatMap {
             return try next.respond(to: request).map { response in
                 if let user = try request.authenticated(BlogUser.self) {
@@ -27,7 +27,6 @@ public final class BlogAuthSessionsMiddleware: Middleware {
         }
     }
 }
-
 
 //if (try request.session()["SteamPressRememberMe"]) != nil {
 //    let oneYear: TimeInterval = 60 * 60 * 24 * 365

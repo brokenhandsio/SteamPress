@@ -23,4 +23,3 @@ extension BlogTag {
         return percentEncodedName
     }
 }
-

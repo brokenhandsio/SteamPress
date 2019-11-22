@@ -3,27 +3,27 @@ import Vapor
 import SteamPress
 
 class AccessControlTests: XCTestCase {
-    
+
     // MARK: - Properties
     private var app: Application!
     private var testWorld: TestWorld!
     private var user: BlogUser!
-    
+
     // MARK: - Overrides
-    
+
     override func setUp() {
         testWorld = try! TestWorld.create(path: "blog")
         user = testWorld.createUser()
     }
-    
+
     // MARK: - Tests
-    
+
     // MARK: - Access restriction tests
-    
+
     func testCannotAccessAdminPageWithoutBeingLoggedIn() throws {
         try assertLoginRequired(method: .GET, path: "")
     }
-    
+
     func testCannotAccessCreateBlogPostPageWithoutBeingLoggedIn() throws {
         try assertLoginRequired(method: .GET, path: "createPost")
     }
@@ -73,9 +73,9 @@ class AccessControlTests: XCTestCase {
     func testCannotSendResetPasswordPageWithoutLogin() throws {
         try assertLoginRequired(method: .POST, path: "resetPassword")
     }
-    
+
     // MARK: - Access Success Tests
-    
+
     func testCanAccessAdminPageWhenLoggedIn() throws {
         let response = try testWorld.getResponse(to: "/blog/admin/", loggedInUser: user)
         XCTAssertEqual(response.http.status, .ok)
@@ -107,14 +107,13 @@ class AccessControlTests: XCTestCase {
         XCTAssertEqual(response.http.status, .ok)
     }
 
-    
     // MARK: - Helpers
-    
+
     private func assertLoginRequired(method: HTTPMethod, path: String) throws {
         let response = try testWorld.getResponse(to: "/blog/admin/\(path)", method: method)
 
         XCTAssertEqual(response.http.status, .seeOther)
         XCTAssertEqual(response.http.headers[.location].first, "/blog/admin/login/?loginRequired")
     }
-    
+
 }

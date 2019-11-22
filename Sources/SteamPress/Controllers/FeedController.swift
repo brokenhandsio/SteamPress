@@ -33,6 +33,3 @@ struct FeedController: RouteCollection {
         router.get("rss.xml", use: rssGenerator.feedHandler)
     }
 }
-
-
-

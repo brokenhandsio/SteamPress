@@ -22,7 +22,7 @@ class RSSFeedTests: XCTestCase {
 
     func testNoPostsReturnsCorrectRSSFeed() throws {
         testWorld = try TestWorld.create()
-        
+
         let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<textinput>\n<description>Search SteamPress Blog</description>\n<title>Search</title>\n<link>/search?</link>\n<name>term</name>\n</textinput>\n</channel>\n\n</rss>"
 
         let actualXmlResponse = try testWorld.getResponseString(to: rssPath)
@@ -178,7 +178,7 @@ class RSSFeedTests: XCTestCase {
     func testCorrectHeaderSetForRSSFeed() throws {
         testWorld = try TestWorld.create()
         let actualXmlResponse = try testWorld.getResponse(to: rssPath)
-        
+
         XCTAssertEqual(actualXmlResponse.http.headers.firstValue(name: .contentType), "application/rss+xml")
     }
 
@@ -207,4 +207,3 @@ class RSSFeedTests: XCTestCase {
     }
 
 }
-

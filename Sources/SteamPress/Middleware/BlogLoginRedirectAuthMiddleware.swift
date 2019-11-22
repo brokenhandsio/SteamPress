@@ -3,7 +3,7 @@ import Vapor
 struct BlogLoginRedirectAuthMiddleware: Middleware {
 
     let pathCreator: BlogPathCreator
-    
+
     func respond(to request: Request, chainingTo next: Responder) throws -> EventLoopFuture<Response> {
         do {
             let user = try request.requireAuthenticated(BlogUser.self)
@@ -22,4 +22,3 @@ struct BlogLoginRedirectAuthMiddleware: Middleware {
         return try next.respond(to: request)
     }
 }
-

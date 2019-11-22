@@ -27,10 +27,10 @@ struct TestDataBuilder {
                 repository.add(postAuthor)
             }
         }
-        
+
         let post: BlogPost
         post = try TestDataBuilder.anyPost(author: postAuthor, title: title, contents: contents, slugUrl: slugUrl, creationDate: createdDate ?? Date(), published: published)
-        
+
         repository.add(post)
 
         if let tags = tags {
@@ -41,13 +41,13 @@ struct TestDataBuilder {
 
         return TestData(post: post, author: postAuthor)
     }
-    
+
     static func createUser(on repository: InMemoryRepository) -> BlogUser {
         let user = TestDataBuilder.anyUser()
         repository.add(user)
         return user
     }
-    
+
     static func createFutureView(on container: Container) -> EventLoopFuture<View> {
         let data = "some HTML".convertToData()
         let view = View(data: data)

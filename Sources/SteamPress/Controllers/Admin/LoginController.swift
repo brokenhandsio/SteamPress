@@ -2,27 +2,27 @@ import Vapor
 import Authentication
 
 struct LoginController: RouteCollection {
-    
+
     // MARK: - Properties
     private let pathCreator: BlogPathCreator
-    
+
     // MARK: - Initialiser
     init(pathCreator: BlogPathCreator) {
         self.pathCreator = pathCreator
     }
-    
+
     // MARK: - Route setup
     func boot(router: Router) throws {
         router.get("login", use: loginHandler)
         router.post("login", use: loginPostHandler)
-        
+
         let redirectMiddleware = BlogLoginRedirectAuthMiddleware(pathCreator: pathCreator)
         let protectedRoutes = router.grouped(redirectMiddleware)
         protectedRoutes.post("logout", use: logoutHandler)
         protectedRoutes.get("resetPassword", use: resetPasswordHandler)
         protectedRoutes.post("resetPassword", use: resetPasswordPostHandler)
     }
-    
+
     // MARK: - Route handlers
     func loginHandler(_ req: Request) throws -> EventLoopFuture<View> {
         let loginRequied = (try? req.query.get(Bool.self, at: "loginRequired")) != nil
@@ -54,13 +54,13 @@ struct LoginController: RouteCollection {
         guard let username = loginData.username, let password = loginData.password else {
             throw Abort(.internalServerError)
         }
-        
+
         if let rememberMe = loginData.rememberMe, rememberMe {
             try req.session()["SteamPressRememberMe"] = "YES"
         } else {
             try req.session()["SteamPressRememberMe"] = nil
         }
-        
+
         let userRepository = try req.make(BlogUserRepository.self)
         return userRepository.getUser(username: username, on: req).flatMap { user in
             let verifier = try req.make(PasswordVerifier.self)
@@ -78,7 +78,7 @@ struct LoginController: RouteCollection {
         try request.unauthenticateBlogUserSession()
         return request.redirect(to: pathCreator.createPath(for: pathCreator.blogPath))
     }
-    
+
     func resetPasswordHandler(_ req: Request) throws -> EventLoopFuture<View> {
         let presenter = try req.make(BlogAdminPresenter.self)
         return presenter.createResetPasswordView(on: req, errors: nil, passwordError: nil, confirmPasswordError: nil)
@@ -90,14 +90,14 @@ struct LoginController: RouteCollection {
         var resetPasswordErrors = [String]()
         var passwordError: Bool?
         var confirmPasswordError: Bool?
-        
+
         guard let password = data.password, let confirmPassword = data.confirmPassword else {
 
             if data.password == nil {
                 resetPasswordErrors.append("You must specify a password")
                 passwordError = true
             }
-            
+
             if data.confirmPassword == nil {
                 resetPasswordErrors.append("You must confirm your password")
                 confirmPasswordError = true
@@ -113,7 +113,7 @@ struct LoginController: RouteCollection {
             passwordError = true
             confirmPasswordError = true
         }
-        
+
         if password.count < 10 {
             passwordError = true
             resetPasswordErrors.append("Your password must be at least 10 characters long")

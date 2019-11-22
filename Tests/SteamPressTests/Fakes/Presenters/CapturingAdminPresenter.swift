@@ -2,14 +2,14 @@ import SteamPress
 import Vapor
 
 class CapturingAdminPresenter: BlogAdminPresenter {
-    
+
     // MARK: - BlogPresenter
     private(set) var adminViewErrors: [String]?
     func createIndexView(on req: Request, errors: [String]?) -> EventLoopFuture<View> {
         self.adminViewErrors = errors
         return createFutureView(on: req)
     }
-    
+
     private(set) var createPostErrors: [String]?
     private(set) var createPostTitle: String?
     private(set) var createPostContents: String?
@@ -29,7 +29,7 @@ class CapturingAdminPresenter: BlogAdminPresenter {
         self.createPostDraft = isDraft
         return createFutureView(on: req)
     }
-    
+
     private(set) var createUserErrors: [String]?
     private(set) var createUserName: String?
     private(set) var createUserUsername: String?
@@ -54,7 +54,7 @@ class CapturingAdminPresenter: BlogAdminPresenter {
         self.createUserTagline = tagline
         return createFutureView(on: req)
     }
-    
+
     private(set) var resetPasswordErrors: [String]?
     private(set) var resetPasswordError: Bool?
     private(set) var resetPasswordConfirmError: Bool?
@@ -64,10 +64,9 @@ class CapturingAdminPresenter: BlogAdminPresenter {
         self.resetPasswordConfirmError = confirmPasswordError
         return createFutureView(on: req)
     }
-    
-    
+
     // MARK: - Helpers
-    
+
     func createFutureView(on req: Request) -> EventLoopFuture<View> {
         let data = "some HTML".convertToData()
         let view = View(data: data)

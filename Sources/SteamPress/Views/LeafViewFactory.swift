@@ -362,8 +362,7 @@ extension URL {
         get {
             if scheme == "https" {
                 return self.description.replacingFirstOccurrence(of: ":443", with: "")
-            }
-            else {
+            } else {
                 return self.description.replacingFirstOccurrence(of: ":80", with: "")
             }
         }
@@ -371,12 +370,10 @@ extension URL {
 }
 
 private extension String {
-    func replacingFirstOccurrence(of target: String, with replaceString: String) -> String
-    {
+    func replacingFirstOccurrence(of target: String, with replaceString: String) -> String {
         if let range = self.range(of: target) {
             return self.replacingCharacters(in: range, with: replaceString)
         }
         return self
     }
 }
-

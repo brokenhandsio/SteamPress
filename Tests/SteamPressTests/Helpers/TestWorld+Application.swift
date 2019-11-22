@@ -27,21 +27,21 @@ extension TestWorld {
         services.register([BlogTagRepository.self, BlogPostRepository.self, BlogUserRepository.self]) { _ in
             return repository
         }
-        
+
         services.register(SteamPressRandomNumberGenerator.self) { _ in
             return randomNumberGenerator
         }
-        
+
         var middlewareConfig = MiddlewareConfig()
         middlewareConfig.use(ErrorMiddleware.self)
         middlewareConfig.use(BlogRememberMeMiddleware.self)
         middlewareConfig.use(SessionsMiddleware.self)
         services.register(middlewareConfig)
-        
+
         var config = Config.default()
-        
+
         config.prefer(StubbedRandomNumberGenerator.self, for: SteamPressRandomNumberGenerator.self)
-        
+
         switch passwordHasherToUse {
         case .real:
             config.prefer(BCryptDigest.self, for: PasswordVerifier.self)
@@ -59,7 +59,7 @@ extension TestWorld {
             config.prefer(ReversedPasswordHasher.self, for: PasswordVerifier.self)
             config.prefer(ReversedPasswordHasher.self, for: PasswordHasher.self)
         }
-        
+
         return try Application(config: config, services: services)
     }
 }

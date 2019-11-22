@@ -12,7 +12,7 @@ struct CreateUserData: Content {
     let resetPasswordOnLogin: Bool?
 }
 
-extension CreateUserData: Validatable , Reflectable{
+extension CreateUserData: Validatable, Reflectable {
     static func validations() throws -> Validations<CreateUserData> {
         var validations = Validations(CreateUserData.self)
         let usernameCharacterSet = CharacterSet(charactersIn: "-_")
