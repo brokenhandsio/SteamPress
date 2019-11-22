@@ -8,11 +8,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
-    - run: swift test --enable-test-discovery
+    - run: swift test --enable-test-discovery --enable-code-coverage
   bionic:
     container: 
       image: vapor/swift:5.1-bionic
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
-    - run: swift test --enable-test-discovery
+    - name: Run Bionic Tests
+    - run: swift test --enable-test-discovery --enable-code-coverage
+    - name: Upload code coveage
+      uses: codecov/codecov-action@v1
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        file: .build/x86_64-unknown-linux/debug/codecov/SteamPress.json
