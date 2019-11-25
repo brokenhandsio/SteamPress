@@ -17,12 +17,20 @@ jobs:
     - uses: actions/checkout@master
     - name: Run Bionic Tests
       run: swift test --enable-test-discovery --enable-code-coverage
-    - name: Setup container for codecov upload
-      run: apt-get update && apt-get install curl
-    - name: Process coverage file
-      run: llvm-cov export .build/x86_64-unknown-linux/debug/SteamPressPackageTests.xctest -instr-profile=.build/x86_64-unknown-linux/debug/codecov/default.profdata > coverage.lcov
-    - name: Upload code coveage
-      uses: codecov/codecov-action@v1
-      with:
-        token: ${{ secrets.CODECOV_UPLOAD_KEY }}
-        file: coverage.lcov
+    #  run: apt-get update && apt-get install curl
+    #- name: Setup container for codecov upload
+    #- name: Process coverage file
+      # run: llvm-cov export .build/x86_64-unknown-linux/debug/SteamPressPackageTests.xctest -instr-profile=.build/x86_64-unknown-linux/debug/codecov/default.profdata > coverage.lcov
+      # xcrun llvm-cov show -use-color -instr-profile "$1" "$dest" > "$_proj_name.$_type.coverage.txt"
+    #- name: Upload code coveage
+    #  uses: codecov/codecov-action@v1
+    #  with:
+    #    token: ${{ secrets.CODECOV_UPLOAD_KEY }}
+    #    file: coverage.lcov
+    macos:
+      runs-on: macos-latest
+      steps:
+      -name: Run Tests
+        run: swift package generate-xcodeproj && xcodebuild test -scheme SteamPress-Package -destination platform="macOS" -enableCodeCoverage YES -derivedDataPath .build/derivedData
+      -name: Upload code coverage
+        run: bash <(curl -s https://codecov.io/bash) -t ${{ secrets.CODECOV_UPLOAD_KEY }}
