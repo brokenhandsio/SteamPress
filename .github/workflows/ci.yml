@@ -27,10 +27,13 @@ jobs:
     #  with:
     #    token: ${{ secrets.CODECOV_UPLOAD_KEY }}
     #    file: coverage.lcov
-    macos:
-      runs-on: macos-latest
-      steps:
-      -name: Run Tests
-        run: swift package generate-xcodeproj && xcodebuild test -scheme SteamPress-Package -destination platform="macOS" -enableCodeCoverage YES -derivedDataPath .build/derivedData
-      -name: Upload code coverage
-        run: bash <(curl -s https://codecov.io/bash) -t ${{ secrets.CODECOV_UPLOAD_KEY }}
+  macos:
+    runs-on: macOS-latest
+    steps:
+    - uses: actions/checkout@master
+    - name: Run Tests
+      run: |
+        swift package generate-xcodeproj 
+        xcodebuild test -scheme SteamPress-Package -destination platform="macOS" -enableCodeCoverage YES -derivedDataPath .build/derivedData
+    - name: Upload code coverage
+      run: bash <(curl -s https://codecov.io/bash) -t ${{ secrets.CODECOV_UPLOAD_KEY }}
