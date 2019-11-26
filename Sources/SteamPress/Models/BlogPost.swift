@@ -51,7 +51,7 @@ extension BlogPost {
         contents = contents.replacingOccurrences(of: "\r\n", with: "\n", options: .regularExpression)
         let lines = contents.components(separatedBy: "\n")
         var snippet = ""
-        for line in lines {
+        for line in lines where line != "" {
             snippet += "\(line)\n"
             if snippet.count > characterLimit {
                 return snippet

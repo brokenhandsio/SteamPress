@@ -21,8 +21,9 @@ public struct ViewBlogPresenter: BlogPresenter {
                     postImageAlt = imageAlt
                 }
             }
+            let shortSnippet = post.shortSnippet()
             
-            let context = BlogPostPageContext(title: post.title, post: post, author: author, pageInformation: pageInformation, postImage: postImage, postImageAlt: postImageAlt)
+            let context = BlogPostPageContext(title: post.title, post: post, author: author, pageInformation: pageInformation, postImage: postImage, postImageAlt: postImageAlt, shortSnippet: shortSnippet)
             return viewRenderer.render("blog/post", context)
         } catch {
             return container.eventLoop.newFailedFuture(error: error)
@@ -63,4 +64,5 @@ struct BlogPostPageContext: Encodable {
     let pageInformation: BlogGlobalPageInformation
     let postImage: String?
     let postImageAlt: String?
+    let shortSnippet: String
 }
