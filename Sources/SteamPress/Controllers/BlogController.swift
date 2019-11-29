@@ -46,8 +46,9 @@ struct BlogController: RouteCollection {
         let paginationInformation = req.getPaginationInformation(postsPerPage: postsPerPage)
         return flatMap(postRepository.getAllPostsSortedByPublishDate(includeDrafts: false, on: req, count: postsPerPage, offset: paginationInformation.offset),
                        tagRepository.getAllTags(on: req),
-                       userRepository.getAllUsers(on: req)) { posts, tags, users in
+                       userRepository.getAllUsers(on: req)) { posts, tags, usersWithPostCount in
             let presenter = try req.make(BlogPresenter.self)
+            let users = usersWithPostCount.map { $0.0 }
             return presenter.indexView(on: req, posts: posts, tags: tags, authors: users, pageInformation: try req.pageInformation())
         }
     }
@@ -107,8 +108,15 @@ struct BlogController: RouteCollection {
     func allAuthorsViewHandler(_ req: Request) throws -> EventLoopFuture<View> {
         let presenter = try req.make(BlogPresenter.self)
         let authorRepository = try req.make(BlogUserRepository.self)
-        return authorRepository.getAllUsers(on: req).flatMap { allUsers in
-            return presenter.allAuthorsView(on: req, authors: allUsers, pageInformation: try req.pageInformation())
+        return authorRepository.getAllUsers(on: req).flatMap { allUsersWithCount in
+            let allUsers = allUsersWithCount.map { $0.0 }
+            let authorCounts = try allUsersWithCount.reduce(into: [Int: Int]()) {
+                guard let userID = $1.0.userID else {
+                    throw SteamPressError(identifier: "BlogController", "User ID not set")
+                }
+                return $0[userID] = $1.1
+            }
+            return presenter.allAuthorsView(on: req, authors: allUsers, authorPostCounts: authorCounts, pageInformation: try req.pageInformation())
         }
     }
 

@@ -232,9 +232,13 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
     func getUser(name: String, on container: Container) -> EventLoopFuture<BlogUser?> {
         return container.future(users.first { $0.name == name })
     }
-
-    func getAllUsers(on container: Container) -> EventLoopFuture<[BlogUser]> {
-        return container.future(users)
+    
+    func getAllUsers(on container: Container) -> EventLoopFuture<[(BlogUser, Int)]> {
+        let usersWithCount = users.map { user -> (BlogUser, Int) in
+            let postCount = posts.filter { $0.author == user.userID }.count
+            return (user, postCount)
+        }
+        return container.future(usersWithCount)
     }
 
     func getUser(username: String, on container: Container) -> EventLoopFuture<BlogUser?> {

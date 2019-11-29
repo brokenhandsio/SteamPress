@@ -28,7 +28,7 @@ public protocol BlogPostRepository {
 }
 
 public protocol BlogUserRepository {
-    func getAllUsers(on container: Container) -> EventLoopFuture<[BlogUser]>
+    func getAllUsers(on container: Container) -> EventLoopFuture<[(BlogUser, Int)]>
     func getUser(id: Int, on container: Container) -> EventLoopFuture<BlogUser?>
     func getUser(name: String, on container: Container) -> EventLoopFuture<BlogUser?>
     func getUser(username: String, on container: Container) -> EventLoopFuture<BlogUser?>

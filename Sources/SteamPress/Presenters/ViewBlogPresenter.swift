@@ -31,10 +31,18 @@ public struct ViewBlogPresenter: BlogPresenter {
 
     }
 
-    public func allAuthorsView(on container: Container, authors: [BlogUser], pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
+    public func allAuthorsView(on container: Container, authors: [BlogUser], authorPostCounts: [Int: Int], pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
         do {
             let viewRenderer = try container.make(ViewRenderer.self)
-            let context = AllAuthorsPageContext(pageInformation: pageInformation, authors: authors)
+            var viewAuthors = try authors.map { user -> ViewBlogAuthor in
+                guard let userID = user.userID else {
+                    throw SteamPressError(identifier: "ViewBlogPresenter", "User ID Was Not Set")
+                }
+                return ViewBlogAuthor(userID: userID, name: user.name, username: user.username, resetPasswordRequired: user.resetPasswordRequired, profilePicture: user.profilePicture, twitterHandle: user.twitterHandle, biography: user.biography, tagline: user.tagline, postCount: authorPostCounts[userID] ?? 0)
+                
+            }
+            viewAuthors.sort { $0.postCount > $1.postCount }
+            let context = AllAuthorsPageContext(pageInformation: pageInformation, authors: viewAuthors)
             return viewRenderer.render("blog/authors", context)
         } catch {
             return container.future(error: error)

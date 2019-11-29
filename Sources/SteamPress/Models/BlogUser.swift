@@ -15,7 +15,8 @@ public final class BlogUser: Codable {
     public var biography: String?
     public var tagline: String?
 
-    public init(name: String, username: String, password: String, profilePicture: String?, twitterHandle: String?, biography: String?, tagline: String?) {
+    public init(userID: Int? = nil, name: String, username: String, password: String, profilePicture: String?, twitterHandle: String?, biography: String?, tagline: String?) {
+        self.userID = userID
         self.name = name
         self.username = username.lowercased()
         self.password = password

@@ -45,6 +45,19 @@ class TagTests: XCTestCase {
         XCTAssertEqual(presenter.tagPosts?.count, 2)
         XCTAssertEqual(presenter.tagPosts?.first?.title, secondPostData.post.title)
     }
+    
+    func testTagsPageGetsPassedAllTagsWithBlogCount() throws {
+//        let user = TestDataBuilder.anyUser()
+//        let tag = BlogTag(name: "test tag")
+//        let post1 = TestDataBuilder.anyPost(author: user)
+//        try post1.save()
+//        try BlogTag.addTag(tag.name, to: post1)
+//
+//        _ = try viewFactory.allTagsView(uri: tagsURI, allTags: [tag], user: nil)
+//        XCTAssertEqual((viewRenderer.capturedContext?["tags"]?.array?.first)?["post_count"], 1)
+        #warning("test")
+    }
+
 
     func testDisabledBlogTagsPath() throws {
         testWorld = try TestWorld.create(enableTagPages: false)

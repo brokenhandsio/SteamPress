@@ -26,10 +26,15 @@ class AuthorTests: XCTestCase {
 
     // MARK: - Tests
 
-    func testAllAuthorsPageGetAllAuthorsAndDoesNotShowAdminUser() throws {
+    func testAllAuthorsPageGetAllAuthors() throws {
+        let newAuthor = testWorld.createUser(username: "han")
+        _ = try testWorld.createPost(author: newAuthor)
+        _ = try testWorld.createPost(author: newAuthor)
         _ = try testWorld.getResponse(to: allAuthorsRequestPath)
-
-        XCTAssertEqual(testWorld.context.blogPresenter.allAuthors?.count, 2)
+        
+        XCTAssertEqual(presenter.allAuthors?.count, 3)
+        XCTAssertEqual(presenter.allAuthorsPostCount?[newAuthor.userID!], 2)
+        XCTAssertEqual(presenter.allAuthorsPostCount?[user.userID!], 1)
         XCTAssertEqual(presenter.allAuthors?.last?.name, user.name)
     }
 
