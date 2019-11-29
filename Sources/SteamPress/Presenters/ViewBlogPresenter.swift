@@ -26,13 +26,19 @@ public struct ViewBlogPresenter: BlogPresenter {
             let context = BlogPostPageContext(title: post.title, post: post, author: author, pageInformation: pageInformation, postImage: postImage, postImageAlt: postImageAlt, shortSnippet: shortSnippet)
             return viewRenderer.render("blog/post", context)
         } catch {
-            return container.eventLoop.newFailedFuture(error: error)
+            return container.future(error: error)
         }
 
     }
 
     public func allAuthorsView(on container: Container, authors: [BlogUser], pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
-        fatalError()
+        do {
+            let viewRenderer = try container.make(ViewRenderer.self)
+            let context = AllAuthorsPageContext(pageInformation: pageInformation)
+            return viewRenderer.render("something", context)
+        } catch {
+            return container.future(error: error)
+        }
     }
 
     public func authorView(on container: Container, author: BlogUser, posts: [BlogPost], pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
@@ -40,7 +46,13 @@ public struct ViewBlogPresenter: BlogPresenter {
     }
 
     public func allTagsView(on container: Container, tags: [BlogTag], pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
-        fatalError()
+        let context = AllTagsPageContext(title: "All Tags", tags: tags, pageInformation: pageInformation)
+        do {
+            let viewRenderer = try container.make(ViewRenderer.self)
+            return viewRenderer.render("blog/tags", context)
+        } catch {
+            return container.future(error: error)
+        }
     }
 
     public func tagView(on container: Container, tag: BlogTag, posts: [BlogPost], pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
@@ -54,15 +66,4 @@ public struct ViewBlogPresenter: BlogPresenter {
     public func loginView(on container: Container, loginWarning: Bool, errors: [String]?, username: String?, usernameError: Bool, passwordError: Bool, pageInformation: BlogGlobalPageInformation) throws -> EventLoopFuture<View> {
         fatalError()
     }
-}
-
-struct BlogPostPageContext: Encodable {
-    let title: String
-    let post: BlogPost
-    let author: BlogUser
-    let blogPostPage = true
-    let pageInformation: BlogGlobalPageInformation
-    let postImage: String?
-    let postImageAlt: String?
-    let shortSnippet: String
 }

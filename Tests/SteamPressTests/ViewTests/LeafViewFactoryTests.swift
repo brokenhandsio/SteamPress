@@ -1,91 +1,14 @@
-//import XCTest
-//import Vapor
-////import URI
-//import Fluent
-//import HTTP
-//import Foundation
-//@testable import SteamPress
-//
-//class LeafViewFactoryTests: XCTestCase {
-//
-//    // MARK: - allTests
-//
-//    static var allTests = [
-//        ("testParametersAreSetCorrectlyOnAllTagsPage", testParametersAreSetCorrectlyOnAllTagsPage),
-//        ("testTagsPageGetsPassedAllTagsWithBlogCount", testTagsPageGetsPassedAllTagsWithBlogCount),
-//        ("testTagsPageGetsPassedTagsSortedByPageCount", testTagsPageGetsPassedTagsSortedByPageCount),
-//        ("testTwitterHandleNotSetOnAllTagsPageIfNotGiven", testTwitterHandleNotSetOnAllTagsPageIfNotGiven),
-//        ("testDisqusNameNotSetOnAllTagsPageIfNotGiven", testDisqusNameNotSetOnAllTagsPageIfNotGiven),
-//        ("testGAIdentifierNotSetOnAllTagsPageIfNotGiven", testGAIdentifierNotSetOnAllTagsPageIfNotGiven),
-//        ("testLoggedInUserSetOnAllTagsPageIfPassedIn", testLoggedInUserSetOnAllTagsPageIfPassedIn),
-//        ("testNoTagsGivenIfEmptyArrayPassedToAllTagsPage", testNoTagsGivenIfEmptyArrayPassedToAllTagsPage),
-//        ("testParametersAreSetCorrectlyOnAllAuthorsPage", testParametersAreSetCorrectlyOnAllAuthorsPage),
-//        ("testAuthorsPageGetsPassedAllAuthorsWithBlogCount", testAuthorsPageGetsPassedAllAuthorsWithBlogCount),
-//        ("testAuthorsPageGetsPassedAuthorsSortedByPageCount", testAuthorsPageGetsPassedAuthorsSortedByPageCount),
-//        ("testTwitterHandleNotSetOnAllAuthorsPageIfNotProvided", testTwitterHandleNotSetOnAllAuthorsPageIfNotProvided),
-//        ("testDisqusNameNotSetOnAllAuthorsPageIfNotProvided", testDisqusNameNotSetOnAllAuthorsPageIfNotProvided),
-//        ("testGAIdentifierNotSetOnAllAuthorsPageIfNotProvided", testGAIdentifierNotSetOnAllAuthorsPageIfNotProvided),
-//        ("testNoLoggedInUserPassedToAllAuthorsPageIfNoneProvided", testNoLoggedInUserPassedToAllAuthorsPageIfNoneProvided),
-//        ("testNoAuthorsGivenToAuthorsPageIfNonePassedToAllAuthorsPage", testNoAuthorsGivenToAuthorsPageIfNonePassedToAllAuthorsPage),
-//        ("testTagPageGetsTagWithCorrectParamsAndPostCount", testTagPageGetsTagWithCorrectParamsAndPostCount),
-//        ("testNoLoggedInUserPassedToTagPageIfNoneProvided", testNoLoggedInUserPassedToTagPageIfNoneProvided),
-//        ("testDisqusNameNotPassedToTagPageIfNotSet", testDisqusNameNotPassedToTagPageIfNotSet),
-//        ("testTwitterHandleNotPassedToTagPageIfNotSet", testTwitterHandleNotPassedToTagPageIfNotSet),
-//        ("testGAIdentifierNotPassedToTagPageIfNotSet", testGAIdentifierNotPassedToTagPageIfNotSet),
-//        ("testBlogPageGetsImageUrlIfOneInPostMarkdown", testBlogPageGetsImageUrlIfOneInPostMarkdown),
-//        ("testDescriptionOnBlogPostPageIsShortSnippetTextCleaned", testDescriptionOnBlogPostPageIsShortSnippetTextCleaned),
-//        ("testBlogPostPageGetsCorrectParameters", testBlogPostPageGetsCorrectParameters),
-//        ("testUserPassedToBlogPostPageIfUserPassedIn", testUserPassedToBlogPostPageIfUserPassedIn),
-//        ("testDisqusNameNotPassedToBlogPostPageIfNotPassedIn", testDisqusNameNotPassedToBlogPostPageIfNotPassedIn),
-//        ("testTwitterHandleNotPassedToBlogPostPageIfNotPassedIn", testTwitterHandleNotPassedToBlogPostPageIfNotPassedIn),
-//        ("testGAIdentifierNotPassedToBlogPostPageIfNotPassedIn", testGAIdentifierNotPassedToBlogPostPageIfNotPassedIn),
-//        ("testBlogIndexPageGivenCorrectParameters", testBlogIndexPageGivenCorrectParameters),
-//        ("testNoPostsPassedIntoBlogIndexIfNoneAvailable", testNoPostsPassedIntoBlogIndexIfNoneAvailable),
-//        ("testNoAuthorsPassedIntoBlogIndexIfNoneCreated", testNoAuthorsPassedIntoBlogIndexIfNoneCreated),
-//        ("testNoTagsPassedIntoBlogIndexIfNoneCreted", testNoTagsPassedIntoBlogIndexIfNoneCreted),
-//        ("testUserPassedToBlogIndexIfUserPassedIn", testUserPassedToBlogIndexIfUserPassedIn),
-//        ("testDisqusNameNotPassedToBlogIndexIfNotPassedIn", testDisqusNameNotPassedToBlogIndexIfNotPassedIn),
-//        ("testTwitterHandleNotPassedToBlogIndexIfNotPassedIn", testTwitterHandleNotPassedToBlogIndexIfNotPassedIn),
-//        ("testGAIdentifierNotPassedToBlogIndexIfNotPassedIn", testGAIdentifierNotPassedToBlogIndexIfNotPassedIn),
-//        ("testAuthorViewHasCorrectParametersSet", testAuthorViewHasCorrectParametersSet),
-//        ("testAuthorViewHasNoPostsSetIfNoneCreated", testAuthorViewHasNoPostsSetIfNoneCreated),
-//        ("testAuthorViewGetsLoggedInUserIfProvider", testAuthorViewGetsLoggedInUserIfProvider),
-//        ("testAuthorViewDoesNotGetDisqusNameIfNotProvided", testAuthorViewDoesNotGetDisqusNameIfNotProvided),
-//        ("testAuthorViewDoesNotGetTwitterHandleIfNotProvided", testAuthorViewDoesNotGetTwitterHandleIfNotProvided),
-//        ("testAuthorViewDoesNotGetGAIdentifierIfNotProvided", testAuthorViewDoesNotGetGAIdentifierIfNotProvided),
-//        ("testPasswordViewGivenCorrectParameters", testPasswordViewGivenCorrectParameters),
-//        ("testPasswordViewHasCorrectParametersWhenError", testPasswordViewHasCorrectParametersWhenError),
-//        ("testLoginViewGetsCorrectParameters", testLoginViewGetsCorrectParameters),
-//        ("testLoginViewWhenErrored", testLoginViewWhenErrored),
-//        ("testLoginPageUsernamePasswordErrorsMarkedWhenNotSuppliedAndErrored", testLoginPageUsernamePasswordErrorsMarkedWhenNotSuppliedAndErrored),
-//        ("testBlogAdminViewGetsCorrectParameters", testBlogAdminViewGetsCorrectParameters),
-//        ("testNoPostsPassedToAdminViewIfNone", testNoPostsPassedToAdminViewIfNone),
-//        ("testAdminPageWithErrors", testAdminPageWithErrors),
-//        ("testCreateUserViewGetsCorrectParameters", testCreateUserViewGetsCorrectParameters),
-//        ("testCreateUserViewWhenErrors", testCreateUserViewWhenErrors),
-//        ("testCreateUserViewWhenNoNameOrUsernameSupplied", testCreateUserViewWhenNoNameOrUsernameSupplied),
-//        ("testCreateUserViewForEditing", testCreateUserViewForEditing),
-//        ("testCreateUserViewThrowsWhenTryingToEditWithoutUserId", testCreateUserViewThrowsWhenTryingToEditWithoutUserId),
-//        ("testCreateBlogPostViewGetsCorrectParameters", testCreateBlogPostViewGetsCorrectParameters),
-//        ("testCreateBlogPostViewWhenEditing", testCreateBlogPostViewWhenEditing),
-//        ("testEditBlogPostViewThrowsWithNoPostToEdit", testEditBlogPostViewThrowsWithNoPostToEdit),
-//        ("testCreateBlogPostViewWithErrorsAndNoTitleOrContentsSupplied", testCreateBlogPostViewWithErrorsAndNoTitleOrContentsSupplied),
-//        ("testDraftPassedThroughWhenEditingABlogPostThatHasNotBeenPublished", testDraftPassedThroughWhenEditingABlogPostThatHasNotBeenPublished),
-//        ("testAuthorViewGetsPostCount", testAuthorViewGetsPostCount),
-//        ("testAuthorViewGetsLongSnippetForPosts", testAuthorViewGetsLongSnippetForPosts),
-//        ("testSiteURIForHTTPDoesNotContainPort", testSiteURIForHTTPDoesNotContainPort),
-//        ("testSearchPageGetsCorrectParameters", testSearchPageGetsCorrectParameters),
-//        ("testSearchPageGetsFlagIfNoSearchTermProvided", testSearchPageGetsFlagIfNoSearchTermProvided),
-//        ("testSearchPageGetsCountIfNoPagesFound", testSearchPageGetsCountIfNoPagesFound),
-//        ]
-//
-//    // MARK: - Properties
-//    private var viewFactory: LeafViewFactory!
-//    private var viewRenderer: CapturingViewRenderer!
-//    private var database: Database!
-//
-//    private let tagsURI = URI(scheme: "https", hostname: "test.com", path: "tags/")
-//    private let authorsURI = URI(scheme: "https", hostname: "test.com", path: "authors/")
+@testable import SteamPress
+import XCTest
+import Vapor
+
+class BlogPresenterTests: XCTestCase {
+
+    // MARK: - Properties
+    var basicContainer: BasicContainer!
+    var presenter: ViewBlogPresenter!
+    var viewRenderer: CapturingViewRenderer!
+
 //    private var authorRequest: Request!
 //    private let tagURI = URI(scheme: "https", hostname: "test.com", path: "tags/tatooine/")
 //    private var tagRequest: Request!
@@ -96,49 +19,56 @@
 //    private let createPostURI = URI(scheme: "https", hostname: "test.com", path: "admin/createPost/")
 //    private let editPostURI = URI(scheme: "https", hostname: "test.com", path: "admin/posts/1/edit/")
 //    private let searchURI = URI(scheme: "https", hostname: "test.com", path: "search", query: "term=Test")
-//
-//    private let siteTwitterHandle = "brokenhandsio"
-//    private let disqusName = "steampress"
-//    private let googleAnalyticsIdentifier = "UA-12345678-1"
-//
-//    // MARK: - Overrides
-//
-//    override func setUp() {
-//        viewRenderer = CapturingViewRenderer()
+    
+    private let allTagsURL = URL(string: "https://brokenhands.io/tags")!
+    private let allAuthorsURL = URL(string: "https://brokenhands.io/authors")!
+
+    private let websiteURL = URL(string: "https://brokenhands.io")!
+    private let siteTwitterHandle = "brokenhandsio"
+    private let disqusName = "steampress"
+    private let googleAnalyticsIdentifier = "UA-12345678-1"
+
+    // MARK: - Overrides
+
+    override func setUp() {
+        presenter = ViewBlogPresenter()
+        basicContainer = BasicContainer(config: Config.default(), environment: Environment.testing, services: .init(), on: EmbeddedEventLoop())
+        basicContainer.services.register(ViewRenderer.self) { _ in
+            return self.viewRenderer
+        }
+        viewRenderer = CapturingViewRenderer(worker: basicContainer)
 //        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: disqusName, siteTwitterHandle: siteTwitterHandle, googleAnalyticsIdentifier: googleAnalyticsIdentifier)
 //        tagRequest = Request(method: .get, uri: tagURI)
 //        authorRequest = Request(method: .get, uri: authorURI)
 //        indexRequest = Request(method: .get, uri: indexURI)
 //        database = try! Database(MemoryDriver())
 //        try! Droplet.prepare(database: database)
-//    }
-//
-//    override func tearDown() {
-//        try! Droplet.teardown(database: database)
-//    }
-//
-//    // MARK: - Tests
-//
-//    // MARK: - All Tags Page
-//
-//    func testParametersAreSetCorrectlyOnAllTagsPage() throws {
-//        let tags = [BlogTag(name: "tag1"), BlogTag(name: "tag2")]
-//        for tag in tags {
-//            try tag.save()
-//        }
-//        _ = try viewFactory.allTagsView(uri: tagsURI, allTags: tags, user: nil)
-//
-//        XCTAssertEqual(viewRenderer.capturedContext?["tags"]?.array?.count, 2)
-//        XCTAssertEqual((viewRenderer.capturedContext?["tags"]?.array?.first)?["name"], "tag1")
-//        XCTAssertEqual((viewRenderer.capturedContext?["tags"]?.array?[1])?["name"], "tag2")
-//        XCTAssertEqual(viewRenderer.capturedContext?["uri"]?.string, "https://test.com/tags/")
-//        XCTAssertEqual(viewRenderer.capturedContext?["site_twitter_handle"]?.string, siteTwitterHandle)
-//        XCTAssertEqual(viewRenderer.capturedContext?["disqus_name"]?.string, disqusName)
-//        XCTAssertEqual(viewRenderer.capturedContext?["google_analytics_identifier"]?.string, googleAnalyticsIdentifier)
-//        XCTAssertNil(viewRenderer.capturedContext?["user"])
-//        XCTAssertEqual(viewRenderer.leafPath, "blog/tags")
-//    }
-//
+    }
+
+    // MARK: - Tests
+
+    // MARK: - All Tags Page
+
+    func testParametersAreSetCorrectlyOnAllTagsPage() throws {
+        let tags = try [BlogTag(name: "tag1"), BlogTag(name: "tag2")]
+        
+        let pageInformation = BlogGlobalPageInformation(disqusName: disqusName, siteTwitterHandler: siteTwitterHandle, googleAnalyticsIdentifier: googleAnalyticsIdentifier, loggedInUser: nil, websiteURL: websiteURL, currentPageURL: allTagsURL)
+        _ = presenter.allTagsView(on: basicContainer, tags: tags, pageInformation: pageInformation)
+        
+        let context = try XCTUnwrap(viewRenderer.capturedContext as? AllTagsPageContext)
+
+        XCTAssertEqual(context.tags.count, 2)
+        XCTAssertEqual(context.tags.first?.name, "tag1")
+        XCTAssertEqual(context.tags[1].name, "tag2")
+        XCTAssertEqual(context.title, "All Tags")
+        XCTAssertEqual(context.pageInformation.currentPageURL.absoluteString, "https://brokenhands.io/tags")
+        XCTAssertEqual(context.pageInformation.siteTwitterHandler, siteTwitterHandle)
+        XCTAssertEqual(context.pageInformation.disqusName, disqusName)
+        XCTAssertEqual(context.pageInformation.googleAnalyticsIdentifier, googleAnalyticsIdentifier)
+        XCTAssertNil(context.pageInformation.loggedInUser)
+        XCTAssertEqual(viewRenderer.templatePath, "blog/tags")
+    }
+
 //    func testTagsPageGetsPassedAllTagsWithBlogCount() throws {
 //        let user = TestDataBuilder.anyUser()
 //        try user.save()
@@ -173,38 +103,47 @@
 //        XCTAssertEqual(viewRenderer.capturedContext?["tags"]?.array?.count, 2)
 //        XCTAssertEqual((viewRenderer.capturedContext?["tags"]?.array?.first)?["name"], "tatooine")
 //    }
-//
-//    func testTwitterHandleNotSetOnAllTagsPageIfNotGiven() throws {
-//        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil, googleAnalyticsIdentifier: nil)
-//        _ = try viewFactory.allTagsView(uri: tagsURI, allTags: [], user: nil)
-//        XCTAssertNil(viewRenderer.capturedContext?["site_twitter_handle"]?.string)
-//    }
-//
-//    func testDisqusNameNotSetOnAllTagsPageIfNotGiven() throws {
-//        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil, googleAnalyticsIdentifier: nil)
-//        _ = try viewFactory.allTagsView(uri: tagsURI, allTags: [], user: nil)
-//        XCTAssertNil(viewRenderer.capturedContext?["disqus_name"]?.string)
-//    }
-//
-//    func testGAIdentifierNotSetOnAllTagsPageIfNotGiven() throws {
-//        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil, googleAnalyticsIdentifier: nil)
-//        _ = try viewFactory.allTagsView(uri: tagsURI, allTags: [], user: nil)
-//        XCTAssertNil(viewRenderer.capturedContext?["google_analytics_identifier"]?.string)
-//    }
-//
-//    func testLoggedInUserSetOnAllTagsPageIfPassedIn() throws {
-//        let user = TestDataBuilder.anyUser()
-//        _ = try viewFactory.allTagsView(uri: tagsURI, allTags: [], user: user)
-//        XCTAssertEqual(viewRenderer.capturedContext?["user"]?["name"]?.string, "Luke")
-//    }
-//
-//    func testNoTagsGivenIfEmptyArrayPassedToAllTagsPage() throws {
-//        _ = try viewFactory.allTagsView(uri: tagsURI, allTags: [], user: nil)
-//        XCTAssertNil(viewRenderer.capturedContext?["tags"])
-//    }
-//
-//    // MARK: - All authors
-//
+
+    func testTwitterHandleNotSetOnAllTagsPageIfNotGiven() throws {
+        let tags = try [BlogTag(name: "tag1"), BlogTag(name: "tag2")]
+        let newPageInformation = BlogGlobalPageInformation(disqusName: disqusName, siteTwitterHandler: nil, googleAnalyticsIdentifier: googleAnalyticsIdentifier, loggedInUser: nil, websiteURL: websiteURL, currentPageURL: allTagsURL)
+        _ = presenter.allTagsView(on: basicContainer, tags: tags, pageInformation: newPageInformation)
+        
+        let context = try XCTUnwrap(viewRenderer.capturedContext as? AllTagsPageContext)
+        XCTAssertNil(context.pageInformation.siteTwitterHandler)
+    }
+
+    func testDisqusNameNotSetOnAllTagsPageIfNotGiven() throws {
+        let tags = try [BlogTag(name: "tag1"), BlogTag(name: "tag2")]
+        let newPageInformation = BlogGlobalPageInformation(disqusName: nil, siteTwitterHandler: siteTwitterHandle, googleAnalyticsIdentifier: googleAnalyticsIdentifier, loggedInUser: nil, websiteURL: websiteURL, currentPageURL: allTagsURL)
+        _ = presenter.allTagsView(on: basicContainer, tags: tags, pageInformation: newPageInformation)
+        
+        let context = try XCTUnwrap(viewRenderer.capturedContext as? AllTagsPageContext)
+        XCTAssertNil(context.pageInformation.disqusName)
+    }
+
+    func testGAIdentifierNotSetOnAllTagsPageIfNotGiven() throws {
+        let tags = try [BlogTag(name: "tag1"), BlogTag(name: "tag2")]
+        let newPageInformation = BlogGlobalPageInformation(disqusName: disqusName, siteTwitterHandler: siteTwitterHandle, googleAnalyticsIdentifier: nil, loggedInUser: nil, websiteURL: websiteURL, currentPageURL: allTagsURL)
+        _ = presenter.allTagsView(on: basicContainer, tags: tags, pageInformation: newPageInformation)
+        
+        let context = try XCTUnwrap(viewRenderer.capturedContext as? AllTagsPageContext)
+        XCTAssertNil(context.pageInformation.googleAnalyticsIdentifier)
+    }
+
+    func testLoggedInUserSetOnAllTagsPageIfPassedIn() throws {
+        let tags = try [BlogTag(name: "tag1"), BlogTag(name: "tag2")]
+        let user = TestDataBuilder.anyUser()
+        let newPageInformation = BlogGlobalPageInformation(disqusName: disqusName, siteTwitterHandler: siteTwitterHandle, googleAnalyticsIdentifier: googleAnalyticsIdentifier, loggedInUser: user, websiteURL: websiteURL, currentPageURL: allTagsURL)
+        _ = presenter.allTagsView(on: basicContainer, tags: tags, pageInformation: newPageInformation)
+        
+        let context = try XCTUnwrap(viewRenderer.capturedContext as? AllTagsPageContext)
+        XCTAssertEqual(context.pageInformation.loggedInUser?.name, user.name)
+        XCTAssertEqual(context.pageInformation.loggedInUser?.username, user.username)
+    }
+
+    // MARK: - All authors
+
 //    func testParametersAreSetCorrectlyOnAllAuthorsPage() throws {
 //        let user1 = TestDataBuilder.anyUser()
 //        try user1.save()
@@ -248,35 +187,41 @@
 //        XCTAssertEqual(viewRenderer.capturedContext?["authors"]?.array?.count, 2)
 //        XCTAssertEqual((viewRenderer.capturedContext?["authors"]?.array?.first)?["name"], "Han")
 //    }
-//
-//    func testTwitterHandleNotSetOnAllAuthorsPageIfNotProvided() throws {
-//        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil, googleAnalyticsIdentifier: nil)
-//        _ = try viewFactory.allAuthorsView(uri: authorsURI, allAuthors: [], user: nil)
-//        XCTAssertNil(viewRenderer.capturedContext?["site_twitter_handle"]?.string)
-//    }
-//
-//    func testDisqusNameNotSetOnAllAuthorsPageIfNotProvided() throws {
-//        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil, googleAnalyticsIdentifier: nil)
-//        _ = try viewFactory.allAuthorsView(uri: authorsURI, allAuthors: [], user: nil)
-//        XCTAssertNil(viewRenderer.capturedContext?["disqus_name"]?.string)
-//    }
-//
-//    func testGAIdentifierNotSetOnAllAuthorsPageIfNotProvided() throws {
-//        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil, googleAnalyticsIdentifier: nil)
-//        _ = try viewFactory.allAuthorsView(uri: authorsURI, allAuthors: [], user: nil)
-//        XCTAssertNil(viewRenderer.capturedContext?["google_analytics_identifier"]?.string)
-//    }
-//
-//    func testNoLoggedInUserPassedToAllAuthorsPageIfNoneProvided() throws {
-//        _ = try viewFactory.allAuthorsView(uri: authorsURI, allAuthors: [], user: nil)
-//        XCTAssertNil(viewRenderer.capturedContext?["user"])
-//    }
-//
-//    func testNoAuthorsGivenToAuthorsPageIfNonePassedToAllAuthorsPage() throws {
-//        _ = try viewFactory.allAuthorsView(uri: authorsURI, allAuthors: [], user: nil)
-//        XCTAssertNil(viewRenderer.capturedContext?["authors"])
-//    }
-//
+
+    func testTwitterHandleNotSetOnAllAuthorsPageIfNotProvided() throws {
+        let newPageInformation = BlogGlobalPageInformation(disqusName: disqusName, siteTwitterHandler: nil, googleAnalyticsIdentifier: googleAnalyticsIdentifier, loggedInUser: nil, websiteURL: websiteURL, currentPageURL: allAuthorsURL)
+        _ = presenter.allAuthorsView(on: basicContainer, authors: [], pageInformation: newPageInformation)
+        
+        let context = try XCTUnwrap(viewRenderer.capturedContext as? AllAuthorsPageContext)
+        XCTAssertNil(context.pageInformation.siteTwitterHandler)
+    }
+
+    func testDisqusNameNotSetOnAllAuthorsPageIfNotProvided() throws {
+        let newPageInformation = BlogGlobalPageInformation(disqusName: nil, siteTwitterHandler: siteTwitterHandle, googleAnalyticsIdentifier: googleAnalyticsIdentifier, loggedInUser: nil, websiteURL: websiteURL, currentPageURL: allAuthorsURL)
+        _ = presenter.allAuthorsView(on: basicContainer, authors: [], pageInformation: newPageInformation)
+        
+        let context = try XCTUnwrap(viewRenderer.capturedContext as? AllAuthorsPageContext)
+        XCTAssertNil(context.pageInformation.disqusName)
+    }
+
+    func testGAIdentifierNotSetOnAllAuthorsPageIfNotProvided() throws {
+        let newPageInformation = BlogGlobalPageInformation(disqusName: disqusName, siteTwitterHandler: siteTwitterHandle, googleAnalyticsIdentifier: nil, loggedInUser: nil, websiteURL: websiteURL, currentPageURL: allAuthorsURL)
+        _ = presenter.allAuthorsView(on: basicContainer, authors: [], pageInformation: newPageInformation)
+        
+        let context = try XCTUnwrap(viewRenderer.capturedContext as? AllAuthorsPageContext)
+        XCTAssertNil(context.pageInformation.googleAnalyticsIdentifier)
+    }
+
+    func testNoLoggedInUserPassedToAllAuthorsPageIfNoneProvided() throws {
+        let user = TestDataBuilder.anyUser()
+        let newPageInformation = BlogGlobalPageInformation(disqusName: disqusName, siteTwitterHandler: siteTwitterHandle, googleAnalyticsIdentifier: googleAnalyticsIdentifier, loggedInUser: user, websiteURL: websiteURL, currentPageURL: allAuthorsURL)
+        _ = presenter.allAuthorsView(on: basicContainer, authors: [], pageInformation: newPageInformation)
+        
+        let context = try XCTUnwrap(viewRenderer.capturedContext as? AllAuthorsPageContext)
+        XCTAssertEqual(context.pageInformation.loggedInUser?.name, user.name)
+        XCTAssertEqual(context.pageInformation.loggedInUser?.username, user.username)
+    }
+
 //    // MARK: - Tag page
 //
 //    func testTagPageGetsTagWithCorrectParamsAndPostCount() throws {
@@ -959,18 +904,5 @@
 //        let paginator = try BlogPost.makeQuery().paginate(for: authorRequest)
 //        return (user, paginator)
 //    }
-//
-//}
-//
-//class CapturingViewRenderer: ViewRenderer {
-//
-//    var shouldCache = false
-//
-//    private(set) var capturedContext: Node? = nil
-//    private(set) var leafPath: String? = nil
-//    func make(_ path: String, _ context: Node) throws -> View {
-//        self.capturedContext = context
-//        self.leafPath = path
-//        return View(data: "Test".makeBytes())
-//    }
-//}
+
+}
