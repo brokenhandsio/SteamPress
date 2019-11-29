@@ -20,6 +20,14 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
     func getAllTags(on container: Container) -> EventLoopFuture<[BlogTag]> {
         return container.future(tags)
     }
+    
+    func getAllTagsWithPostCount(on container: Container) -> EventLoopFuture<[(BlogTag, Int)]> {
+        let tagsWithCount = tags.map { tag -> (BlogTag, Int) in
+            let postCount = postTagLinks.filter { $0.tagID == tag.tagID }.count
+            return (tag, postCount)
+        }
+        return container.future(tagsWithCount)
+    }
 
     func getTags(for post: BlogPost, on container: Container) -> EventLoopFuture<[BlogTag]> {
         var results = [BlogTag]()
@@ -233,7 +241,11 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         return container.future(users.first { $0.name == name })
     }
     
-    func getAllUsers(on container: Container) -> EventLoopFuture<[(BlogUser, Int)]> {
+    func getAllUsers(on container: Container) -> EventLoopFuture<[BlogUser]> {
+        return container.future(users)
+    }
+    
+    func getAllUsersWithPostCount(on container: Container) -> EventLoopFuture<[(BlogUser, Int)]> {
         let usersWithCount = users.map { user -> (BlogUser, Int) in
             let postCount = posts.filter { $0.author == user.userID }.count
             return (user, postCount)

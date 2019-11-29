@@ -47,10 +47,10 @@ class BlogPresenterTests: XCTestCase {
     // MARK: - All Tags Page
 
     func testParametersAreSetCorrectlyOnAllTagsPage() throws {
-        let tags = try [BlogTag(name: "tag1"), BlogTag(name: "tag2")]
+        let tags = try [BlogTag(id: 0, name: "tag1"), BlogTag(id: 1, name: "tag2")]
         
         let pageInformation = buildPageInformation(currentPageURL: allTagsURL)
-        _ = presenter.allTagsView(on: basicContainer, tags: tags, pageInformation: pageInformation)
+        _ = presenter.allTagsView(on: basicContainer, tags: tags, tagPostCounts: [:], pageInformation: pageInformation)
         
         let context = try XCTUnwrap(viewRenderer.capturedContext as? AllTagsPageContext)
 
@@ -65,73 +65,67 @@ class BlogPresenterTests: XCTestCase {
         XCTAssertNil(context.pageInformation.loggedInUser)
         XCTAssertEqual(viewRenderer.templatePath, "blog/tags")
     }
-
-    func testTagsPageGetsPassedAllTagsWithBlogCount() throws {
-    //        let user = TestDataBuilder.anyUser()
-    //        let tag = BlogTag(name: "test tag")
-    //        let post1 = TestDataBuilder.anyPost(author: user)
-    //        try post1.save()
-    //        try BlogTag.addTag(tag.name, to: post1)
-    //
-    //        _ = try viewFactory.allTagsView(uri: tagsURI, allTags: [tag], user: nil)
-    //        XCTAssertEqual((viewRenderer.capturedContext?["tags"]?.array?.first)?["post_count"], 1)
-            #warning("test")
-        }
     
-//    func testTagsPageGetsPassedTagsSortedByPageCount() throws {
-//        let user = TestDataBuilder.anyUser()
-//        try user.save()
-//        let tag = BlogTag(name: "test tag")
-//        let tag2 = BlogTag(name: "tatooine")
-//        try tag.save()
-//        try tag2.save()
-//        let post1 = TestDataBuilder.anyPost(author: user)
-//        try post1.save()
-//        try BlogTag.addTag(tag.name, to: post1)
-//        let post2 = TestDataBuilder.anyPost(author: user)
-//        try post2.save()
-//        try BlogTag.addTag(tag2.name, to: post2)
-//        let post3 = TestDataBuilder.anyLongPost(author: user)
-//        try post3.save()
-//        try BlogTag.addTag(tag2.name, to: post3)
-//
-//        _ = try viewFactory.allTagsView(uri: tagsURI, allTags: [tag, tag2], user: nil)
-//        XCTAssertEqual(viewRenderer.capturedContext?["tags"]?.array?.count, 2)
-//        XCTAssertEqual((viewRenderer.capturedContext?["tags"]?.array?.first)?["name"], "tatooine")
-//    }
+    func testTagsPageGetsPassedTagsSortedByPostCount() throws {
+        let tag1 = try BlogTag(id: 0, name: "Engineering")
+        let tag2 = try BlogTag(id: 1, name: "Tech")
+        let tags = [tag1, tag2]
+        let tagPostCount = [0: 5, 1: 20]
+        let pageInformation = buildPageInformation(currentPageURL: allTagsURL)
+        _ = presenter.allTagsView(on: basicContainer, tags: tags, tagPostCounts: tagPostCount, pageInformation: pageInformation)
+
+        let context = try XCTUnwrap(viewRenderer.capturedContext as? AllTagsPageContext)
+        XCTAssertEqual(context.tags.first?.postCount, 20)
+        XCTAssertEqual(context.tags.first?.tagID, 1)
+        XCTAssertEqual(context.tags[1].tagID, 0)
+        XCTAssertEqual(context.tags[1].postCount, 5)
+    }
+    
+    func testTagsPageHandlesNoPostsForTagsCorrectly() throws {
+        let tag1 = try BlogTag(id: 0, name: "Engineering")
+        let tag2 = try BlogTag(id: 1, name: "Tech")
+        let tags = [tag1, tag2]
+        let tagPostCount = [0: 0, 1: 20]
+        let pageInformation = buildPageInformation(currentPageURL: allTagsURL)
+        _ = presenter.allTagsView(on: basicContainer, tags: tags, tagPostCounts: tagPostCount, pageInformation: pageInformation)
+
+        let context = try XCTUnwrap(viewRenderer.capturedContext as? AllTagsPageContext)
+        XCTAssertEqual(context.tags[1].tagID, 0)
+        XCTAssertEqual(context.tags[1].postCount, 0)
+    }
 
     func testTwitterHandleNotSetOnAllTagsPageIfNotGiven() throws {
-        let tags = try [BlogTag(name: "tag1"), BlogTag(name: "tag2")]
+        let tags = try [BlogTag(id: 0, name: "tag1"), BlogTag(id: 1, name: "tag2")]
         let pageInformation = buildPageInformation(currentPageURL: allTagsURL, siteTwitterHandle: nil)
-        _ = presenter.allTagsView(on: basicContainer, tags: tags, pageInformation: pageInformation)
+        _ = presenter.allTagsView(on: basicContainer, tags: tags, tagPostCounts: [:], pageInformation: pageInformation)
         
         let context = try XCTUnwrap(viewRenderer.capturedContext as? AllTagsPageContext)
         XCTAssertNil(context.pageInformation.siteTwitterHandler)
     }
 
     func testDisqusNameNotSetOnAllTagsPageIfNotGiven() throws {
-        let tags = try [BlogTag(name: "tag1"), BlogTag(name: "tag2")]
+        let tags = try [BlogTag(id: 0, name: "tag1"), BlogTag(id: 1, name: "tag2")]
         let pageInformation = buildPageInformation(currentPageURL: allTagsURL, disqusName: nil)
-        _ = presenter.allTagsView(on: basicContainer, tags: tags, pageInformation: pageInformation)
+        _ = presenter.allTagsView(on: basicContainer, tags: tags, tagPostCounts: [:], pageInformation: pageInformation)
         
         let context = try XCTUnwrap(viewRenderer.capturedContext as? AllTagsPageContext)
         XCTAssertNil(context.pageInformation.disqusName)
     }
 
     func testGAIdentifierNotSetOnAllTagsPageIfNotGiven() throws {
-        let tags = try [BlogTag(name: "tag1"), BlogTag(name: "tag2")]
+        let tags = try [BlogTag(id: 0, name: "tag1"), BlogTag(id: 1, name: "tag2")]
         let pageInformation = buildPageInformation(currentPageURL: allTagsURL, googleAnalyticsIdentifier: nil)
-        _ = presenter.allTagsView(on: basicContainer, tags: tags, pageInformation: pageInformation)
+        _ = presenter.allTagsView(on: basicContainer, tags: tags, tagPostCounts: [:], pageInformation: pageInformation)
         
         let context = try XCTUnwrap(viewRenderer.capturedContext as? AllTagsPageContext)
         XCTAssertNil(context.pageInformation.googleAnalyticsIdentifier)
     }
 
     func testLoggedInUserSetOnAllTagsPageIfPassedIn() throws {
-        let tags = try [BlogTag(name: "tag1"), BlogTag(name: "tag2")]
+        let tags = try [BlogTag(id: 0, name: "tag1"), BlogTag(id: 1, name: "tag2")]
         let user = TestDataBuilder.anyUser()
         let pageInformation = buildPageInformation(currentPageURL: allTagsURL, user: user)
-        _ = presenter.allTagsView(on: basicContainer, tags: tags, pageInformation: pageInformation)
+        _ = presenter.allTagsView(on: basicContainer, tags: tags, tagPostCounts: [:], pageInformation: pageInformation)
         
         let context = try XCTUnwrap(viewRenderer.capturedContext as? AllTagsPageContext)
         XCTAssertEqual(context.pageInformation.loggedInUser?.name, user.name)

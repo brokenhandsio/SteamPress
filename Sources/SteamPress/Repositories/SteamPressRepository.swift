@@ -2,6 +2,7 @@ import Vapor
 
 public protocol BlogTagRepository {
     func getAllTags(on container: Container) -> EventLoopFuture<[BlogTag]>
+    func getAllTagsWithPostCount(on container: Container) -> EventLoopFuture<[(BlogTag, Int)]>
     func getTags(for post: BlogPost, on container: Container) -> EventLoopFuture<[BlogTag]>
     func getTag(_ name: String, on container: Container) -> EventLoopFuture<BlogTag?>
     func save(_ tag: BlogTag, on container: Container) -> EventLoopFuture<BlogTag>
@@ -13,6 +14,7 @@ public protocol BlogTagRepository {
 }
 
 public protocol BlogPostRepository {
+    #warning("Do we need all of these now we'ee paginating")
     func getAllPosts(on container: Container) -> EventLoopFuture<[BlogPost]>
     func getAllPostsSortedByPublishDate(includeDrafts: Bool, on container: Container) -> EventLoopFuture<[BlogPost]>
     func getAllPostsSortedByPublishDate(includeDrafts: Bool, on container: Container, count: Int, offset: Int) -> EventLoopFuture<[BlogPost]>
@@ -28,7 +30,8 @@ public protocol BlogPostRepository {
 }
 
 public protocol BlogUserRepository {
-    func getAllUsers(on container: Container) -> EventLoopFuture<[(BlogUser, Int)]>
+    func getAllUsers(on container: Container) -> EventLoopFuture<[BlogUser]>
+    func getAllUsersWithPostCount(on container: Container) -> EventLoopFuture<[(BlogUser, Int)]>
     func getUser(id: Int, on container: Container) -> EventLoopFuture<BlogUser?>
     func getUser(name: String, on container: Container) -> EventLoopFuture<BlogUser?>
     func getUser(username: String, on container: Container) -> EventLoopFuture<BlogUser?>

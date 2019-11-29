@@ -46,9 +46,8 @@ struct BlogController: RouteCollection {
         let paginationInformation = req.getPaginationInformation(postsPerPage: postsPerPage)
         return flatMap(postRepository.getAllPostsSortedByPublishDate(includeDrafts: false, on: req, count: postsPerPage, offset: paginationInformation.offset),
                        tagRepository.getAllTags(on: req),
-                       userRepository.getAllUsers(on: req)) { posts, tags, usersWithPostCount in
+                       userRepository.getAllUsers(on: req)) { posts, tags, users in
             let presenter = try req.make(BlogPresenter.self)
-            let users = usersWithPostCount.map { $0.0 }
             return presenter.indexView(on: req, posts: posts, tags: tags, authors: users, pageInformation: try req.pageInformation())
         }
     }
@@ -99,16 +98,23 @@ struct BlogController: RouteCollection {
 
     func allTagsViewHandler(_ req: Request) throws -> EventLoopFuture<View> {
         let tagRepository = try req.make(BlogTagRepository.self)
-        return tagRepository.getAllTags(on: req).flatMap { tags in
+        return tagRepository.getAllTagsWithPostCount(on: req).flatMap { tagswithCount in
             let presenter = try req.make(BlogPresenter.self)
-            return presenter.allTagsView(on: req, tags: tags, pageInformation: try req.pageInformation())
+            let allTags = tagswithCount.map { $0.0 }
+            let tagCounts = try tagswithCount.reduce(into: [Int: Int]()) {
+                guard let tagID = $1.0.tagID else {
+                    throw SteamPressError(identifier: "BlogController", "Tag ID not set")
+                }
+                return $0[tagID] = $1.1
+            }
+            return presenter.allTagsView(on: req, tags: allTags, tagPostCounts: tagCounts, pageInformation: try req.pageInformation())
         }
     }
 
     func allAuthorsViewHandler(_ req: Request) throws -> EventLoopFuture<View> {
         let presenter = try req.make(BlogPresenter.self)
         let authorRepository = try req.make(BlogUserRepository.self)
-        return authorRepository.getAllUsers(on: req).flatMap { allUsersWithCount in
+        return authorRepository.getAllUsersWithPostCount(on: req).flatMap { allUsersWithCount in
             let allUsers = allUsersWithCount.map { $0.0 }
             let authorCounts = try allUsersWithCount.reduce(into: [Int: Int]()) {
                 guard let userID = $1.0.userID else {

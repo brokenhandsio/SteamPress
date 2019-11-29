@@ -41,8 +41,10 @@ class CapturingBlogPresenter: BlogPresenter {
     }
 
     private(set) var allTagsPageTags: [BlogTag]?
-    func allTagsView(on container: Container, tags: [BlogTag], pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
+    private(set) var allTagsPagePostCount: [Int: Int]?
+    func allTagsView(on container: Container, tags: [BlogTag], tagPostCounts: [Int: Int], pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
         self.allTagsPageTags = tags
+        self.allTagsPagePostCount = tagPostCounts
         return TestDataBuilder.createFutureView(on: container)
     }
 

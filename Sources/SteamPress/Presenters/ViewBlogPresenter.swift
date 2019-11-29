@@ -53,10 +53,17 @@ public struct ViewBlogPresenter: BlogPresenter {
         fatalError()
     }
 
-    public func allTagsView(on container: Container, tags: [BlogTag], pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
-        let context = AllTagsPageContext(title: "All Tags", tags: tags, pageInformation: pageInformation)
+    public func allTagsView(on container: Container, tags: [BlogTag], tagPostCounts: [Int: Int], pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
         do {
             let viewRenderer = try container.make(ViewRenderer.self)
+            var viewTags = try tags.map { tag -> ViewBlogTag in
+                guard let tagID = tag.tagID else {
+                    throw SteamPressError(identifier: "ViewBlogPresenter", "Tag ID Was Not Set")
+                }
+                return ViewBlogTag(tagID: tagID, name: tag.name, postCount: tagPostCounts[tagID] ?? 0)
+            }
+            viewTags.sort { $0.postCount > $1.postCount }
+            let context = AllTagsPageContext(title: "All Tags", tags: viewTags, pageInformation: pageInformation)
             return viewRenderer.render("blog/tags", context)
         } catch {
             return container.future(error: error)

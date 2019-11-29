@@ -28,10 +28,16 @@ class TagTests: XCTestCase {
     // MARK: - Tests
 
     func testAllTagsPageGetsAllTags() throws {
+        let secondPost = try! testWorld.createPost()
+        let thirdPost = try! testWorld.createPost()
+        let secondTag = try testWorld.createTag("AnotherTag", on: secondPost.post)
+        try testWorld.context.repository.add(secondTag, to: thirdPost.post)
         _ = try testWorld.getResponse(to: allTagsRequestPath)
 
-        XCTAssertEqual(1, presenter.allTagsPageTags?.count)
-        XCTAssertEqual(tag.name, presenter.allTagsPageTags?.first?.name)
+        XCTAssertEqual(presenter.allTagsPageTags?.count, 2)
+        XCTAssertEqual(presenter.allTagsPageTags?.first?.name, tag.name)
+        XCTAssertEqual(presenter.allTagsPagePostCount?[tag.tagID!], 1)
+        XCTAssertEqual(presenter.allTagsPagePostCount?[secondTag.tagID!], 2)
     }
 
     func testTagPageGetsOnlyPublishedPostsInDescendingOrder() throws {
@@ -46,19 +52,6 @@ class TagTests: XCTestCase {
         XCTAssertEqual(presenter.tagPosts?.first?.title, secondPostData.post.title)
     }
     
-    func testTagsPageGetsPassedAllTagsWithBlogCount() throws {
-//        let user = TestDataBuilder.anyUser()
-//        let tag = BlogTag(name: "test tag")
-//        let post1 = TestDataBuilder.anyPost(author: user)
-//        try post1.save()
-//        try BlogTag.addTag(tag.name, to: post1)
-//
-//        _ = try viewFactory.allTagsView(uri: tagsURI, allTags: [tag], user: nil)
-//        XCTAssertEqual((viewRenderer.capturedContext?["tags"]?.array?.first)?["post_count"], 1)
-        #warning("test")
-    }
-
-
     func testDisabledBlogTagsPath() throws {
         testWorld = try TestWorld.create(enableTagPages: false)
         _ = try testWorld.createTag(tagName)
