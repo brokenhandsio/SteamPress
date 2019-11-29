@@ -34,8 +34,8 @@ public struct ViewBlogPresenter: BlogPresenter {
     public func allAuthorsView(on container: Container, authors: [BlogUser], pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
         do {
             let viewRenderer = try container.make(ViewRenderer.self)
-            let context = AllAuthorsPageContext(pageInformation: pageInformation)
-            return viewRenderer.render("something", context)
+            let context = AllAuthorsPageContext(pageInformation: pageInformation, authors: authors)
+            return viewRenderer.render("blog/authors", context)
         } catch {
             return container.future(error: error)
         }
