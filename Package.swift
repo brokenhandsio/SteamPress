@@ -11,11 +11,10 @@ let package = Package(
     	.package(url: "https://github.com/vapor/vapor.git", from: "3.0.0"),
         .package(url: "https://github.com/scinfu/SwiftSoup.git", from: "2.0.0"),
         .package(url: "https://github.com/vapor-community/markdown.git", from: "0.4.0"),
-        .package(url: "https://github.com/vapor/leaf.git", from: "3.0.0"),
         .package(url: "https://github.com/vapor/auth.git", from: "2.0.0"),
     ],
     targets: [
-        .target(name: "SteamPress", dependencies: ["Vapor", "SwiftSoup", "SwiftMarkdown", "Leaf", "Authentication"]),
+        .target(name: "SteamPress", dependencies: ["Vapor", "SwiftSoup", "SwiftMarkdown", "Authentication"]),
         .testTarget(name: "SteamPressTests", dependencies: ["SteamPress"]),
     ]
 )
