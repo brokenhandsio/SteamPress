@@ -9,21 +9,12 @@ class BlogPresenterTests: XCTestCase {
     var presenter: ViewBlogPresenter!
     var viewRenderer: CapturingViewRenderer!
     var testTag: BlogTag!
-
-//    private var authorRequest: Request!
-//    private var tagRequest: Request!
-//    private let postURI = URI(scheme: "https", hostname: "test.com", path: "posts/test-post/")
-//    private let indexURI = URI(scheme: "https", hostname: "test.com", path: "/")
-//    private var indexRequest: Request!
-//    private let authorURI = URI(scheme: "https", hostname: "test.com", path: "authors/luke/")
-//    private let createPostURI = URI(scheme: "https", hostname: "test.com", path: "admin/createPost/")
-//    private let editPostURI = URI(scheme: "https", hostname: "test.com", path: "admin/posts/1/edit/")
-//    private let searchURI = URI(scheme: "https", hostname: "test.com", path: "search", query: "term=Test")
     
     private let allTagsURL = URL(string: "https://brokenhands.io/tags")!
     private let allAuthorsURL = URL(string: "https://brokenhands.io/authors")!
     private let tagURL = URL(string: "https://brokenhands.io/tags/tattoine")!
     private let blogIndexURL = URL(string: "https://brokenhands.io/blog")!
+    private let authorURL = URL(string: "https://brokenhands.io/authors/luke")!
 
     private let websiteURL = URL(string: "https://brokenhands.io")!
     private static let siteTwitterHandle = "brokenhandsio"
@@ -40,8 +31,6 @@ class BlogPresenterTests: XCTestCase {
         }
         viewRenderer = CapturingViewRenderer(worker: basicContainer)
         testTag = try! BlogTag(name: "Tattoine")
-//        authorRequest = Request(method: .get, uri: authorURI)
-//        indexRequest = Request(method: .get, uri: indexURI)
     }
 
     // MARK: - Tests
@@ -349,27 +338,34 @@ class BlogPresenterTests: XCTestCase {
 
     // MARK: - Author page
 
-//    func testAuthorViewHasCorrectParametersSet() throws {
-//        let (author, posts) = try setupAuthorPage()
-//        let _ = try viewFactory.profileView(uri: authorURI, author: author, paginatedPosts: posts, loggedInUser: nil)
-//
-//        XCTAssertEqual(viewRenderer.capturedContext?["author"]?["name"]?.string, author.name)
-//        XCTAssertEqual(viewRenderer.capturedContext?["posts"]?["data"]?.array?.count, posts.total)
-//        XCTAssertEqual((viewRenderer.capturedContext?["posts"]?["data"]?.array?.first)?["title"]?.string, TestDataBuilder.anyPostWithImage(author: TestDataBuilder.anyUser()).title)
-//        XCTAssertEqual(viewRenderer.capturedContext?["uri"]?.string, authorURI.descriptionWithoutPort)
-//        XCTAssertTrue((viewRenderer.capturedContext?["profile_page"]?.bool) ?? false)
-//        XCTAssertNil(viewRenderer.capturedContext?["my_profile"])
-//        XCTAssertNil(viewRenderer.capturedContext?["user"])
-//        XCTAssertEqual(viewRenderer.capturedContext?["disqus_name"]?.string, disqusName)
-//        XCTAssertEqual(viewRenderer.capturedContext?["site_twitter_handle"]?.string, siteTwitterHandle)
-//        XCTAssertEqual(viewRenderer.capturedContext?["google_analytics_identifier"]?.string, googleAnalyticsIdentifier)
-//        XCTAssertEqual(viewRenderer.capturedContext?["author"]?["tagline"]?.string, author.tagline)
-//        XCTAssertEqual(viewRenderer.capturedContext?["author"]?["twitter_handle"]?.string, author.twitterHandle)
-//        XCTAssertEqual(viewRenderer.capturedContext?["author"]?["biography"]?.string, author.biography)
-//        XCTAssertEqual(viewRenderer.capturedContext?["author"]?["profile_picture"]?.string, author.profilePicture?.description)
-//        XCTAssertEqual(viewRenderer.leafPath, "blog/profile")
-//    }
-//
+    func testAuthorViewHasCorrectParametersSet() throws {
+        let author = TestDataBuilder.anyUser(id: 0)
+        let post1 = try TestDataBuilder.anyPost(author: author)
+        let post2 = try TestDataBuilder.anyPost(author: author, title: "Another Post", slugUrl: "another-post")
+        
+        let pageInformation = buildPageInformation(currentPageURL: authorURL)
+        _ = presenter.authorView(on: basicContainer, author: author, posts: [post1, post2], pageInformation: pageInformation)
+
+        let context = try XCTUnwrap(viewRenderer.capturedContext as? AuthorPageContext)
+        XCTAssertEqual(context.author.name, author.name)
+        XCTAssertEqual(context.author.tagline, author.tagline)
+        XCTAssertEqual(context.author.twitterHandle, author.twitterHandle)
+        XCTAssertEqual(context.author.profilePicture, author.profilePicture)
+        XCTAssertEqual(context.author.biography, author.biography)
+        XCTAssertEqual(context.posts.count, 2)
+        XCTAssertEqual(context.posts.first?.title, post1.title)
+        XCTAssertEqual(context.posts.last?.title, post2.title)
+        XCTAssertFalse(context.myProfile)
+        XCTAssertTrue(context.profilePage)
+        XCTAssertEqual(context.pageInformation.currentPageURL.absoluteString, "https://brokenhands.io/authors/luke")
+        XCTAssertEqual(context.pageInformation.websiteURL.absoluteString, "https://brokenhands.io")
+        XCTAssertNil(context.pageInformation.loggedInUser)
+        XCTAssertEqual(context.pageInformation.disqusName, BlogPresenterTests.disqusName)
+        XCTAssertEqual(context.pageInformation.googleAnalyticsIdentifier, BlogPresenterTests.googleAnalyticsIdentifier)
+        XCTAssertEqual(context.pageInformation.siteTwitterHandler, BlogPresenterTests.siteTwitterHandle)
+        XCTAssertEqual(viewRenderer.templatePath, "blog/profile")
+    }
+
 //    func testAuthorViewHasNoPostsSetIfNoneCreated() throws {
 //        let (author, _) = try setupAuthorPage()
 //        let emptyPosts = try BlogPost.makeQuery().filter("title", "Some non-existing query").paginate(for: authorRequest)
