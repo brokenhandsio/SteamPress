@@ -5,7 +5,12 @@ import SwiftMarkdown
 public struct ViewBlogPresenter: BlogPresenter {
 
     public func indexView(on container: Container, posts: [BlogPost], tags: [BlogTag], authors: [BlogUser], pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
-        fatalError()
+        do {
+            let viewRenderer = try container.make(ViewRenderer.self)
+            return viewRenderer.render("something")
+        } catch {
+            return container.future(error: error)
+        }
     }
 
     public func postView(on container: Container, post: BlogPost, author: BlogUser, pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
@@ -50,7 +55,12 @@ public struct ViewBlogPresenter: BlogPresenter {
     }
 
     public func authorView(on container: Container, author: BlogUser, posts: [BlogPost], pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
-        fatalError()
+        do {
+            let viewRenderer = try container.make(ViewRenderer.self)
+            return viewRenderer.render("something")
+        } catch {
+            return container.future(error: error)
+        }
     }
 
     public func allTagsView(on container: Container, tags: [BlogTag], tagPostCounts: [Int: Int], pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
@@ -71,14 +81,30 @@ public struct ViewBlogPresenter: BlogPresenter {
     }
 
     public func tagView(on container: Container, tag: BlogTag, posts: [BlogPost], pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
-        fatalError()
+        do {
+            let viewRenderer = try container.make(ViewRenderer.self)
+            let context = TagPageContext(tag: tag, pageInformation: pageInformation, posts: posts)
+            return viewRenderer.render("blog/tag", context)
+        } catch {
+            return container.future(error: error)
+        }
     }
 
     public func searchView(on container: Container, posts: [BlogPost]?, searchTerm: String?, pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
-        fatalError()
+        do {
+            let viewRenderer = try container.make(ViewRenderer.self)
+            return viewRenderer.render("something")
+        } catch {
+            return container.future(error: error)
+        }
     }
 
     public func loginView(on container: Container, loginWarning: Bool, errors: [String]?, username: String?, usernameError: Bool, passwordError: Bool, pageInformation: BlogGlobalPageInformation) throws -> EventLoopFuture<View> {
-        fatalError()
+        do {
+            let viewRenderer = try container.make(ViewRenderer.self)
+            return viewRenderer.render("something")
+        } catch {
+            return container.future(error: error)
+        }
     }
 }

@@ -8,9 +8,9 @@ class BlogPresenterTests: XCTestCase {
     var basicContainer: BasicContainer!
     var presenter: ViewBlogPresenter!
     var viewRenderer: CapturingViewRenderer!
+    var testTag: BlogTag!
 
 //    private var authorRequest: Request!
-//    private let tagURI = URI(scheme: "https", hostname: "test.com", path: "tags/tatooine/")
 //    private var tagRequest: Request!
 //    private let postURI = URI(scheme: "https", hostname: "test.com", path: "posts/test-post/")
 //    private let indexURI = URI(scheme: "https", hostname: "test.com", path: "/")
@@ -22,6 +22,7 @@ class BlogPresenterTests: XCTestCase {
     
     private let allTagsURL = URL(string: "https://brokenhands.io/tags")!
     private let allAuthorsURL = URL(string: "https://brokenhands.io/authors")!
+    private let tagURL = URL(string: "https://brokenhands.io/tags/tattoine")!
 
     private let websiteURL = URL(string: "https://brokenhands.io")!
     private static let siteTwitterHandle = "brokenhandsio"
@@ -37,7 +38,7 @@ class BlogPresenterTests: XCTestCase {
             return self.viewRenderer
         }
         viewRenderer = CapturingViewRenderer(worker: basicContainer)
-//        tagRequest = Request(method: .get, uri: tagURI)
+        testTag = try! BlogTag(name: "Tattoine")
 //        authorRequest = Request(method: .get, uri: authorURI)
 //        indexRequest = Request(method: .get, uri: indexURI)
     }
@@ -215,53 +216,69 @@ class BlogPresenterTests: XCTestCase {
         XCTAssertEqual(context.pageInformation.loggedInUser?.username, user.username)
     }
 
-//    // MARK: - Tag page
-//
-//    func testTagPageGetsTagWithCorrectParamsAndPostCount() throws {
-//        let testTag = try setupTagPage()
-//        _ = try viewFactory.tagView(uri: tagURI, tag: testTag, paginatedPosts: try testTag.sortedPosts().paginate(for: tagRequest), user: TestDataBuilder.anyUser(name: "Luke"))
-//        XCTAssertEqual((viewRenderer.capturedContext?["tag"])?["post_count"], 1)
-//        XCTAssertEqual((viewRenderer.capturedContext?["tag"])?["name"], "tatooine")
-//        XCTAssertEqual(viewRenderer.capturedContext?["posts"]?["data"]?.array?.count, 1)
-//        XCTAssertEqual((viewRenderer.capturedContext?["posts"]?["data"]?.array?.first)?["title"]?.string, TestDataBuilder.anyPost(author: TestDataBuilder.anyUser()).title)
-//        XCTAssertEqual(viewRenderer.capturedContext?["uri"]?.string, "https://test.com/tags/tatooine/")
-//        XCTAssertEqual(viewRenderer.capturedContext?["tag_page"]?.bool, true)
-//        XCTAssertEqual(viewRenderer.capturedContext?["user"]?["name"]?.string, "Luke")
-//        XCTAssertEqual(viewRenderer.capturedContext?["site_twitter_handle"]?.string, siteTwitterHandle)
-//        XCTAssertEqual(viewRenderer.capturedContext?["disqus_name"]?.string, disqusName)
-//        XCTAssertEqual(viewRenderer.capturedContext?["google_analytics_identifier"]?.string, googleAnalyticsIdentifier)
-//        XCTAssertEqual(viewRenderer.leafPath, "blog/tag")
-//    }
-//
-//    func testNoLoggedInUserPassedToTagPageIfNoneProvided() throws {
-//        let testTag = try setupTagPage()
-//        _ = try viewFactory.tagView(uri: tagURI, tag: testTag, paginatedPosts: try testTag.sortedPosts().paginate(for: tagRequest), user: nil)
-//        XCTAssertNil(viewRenderer.capturedContext?["user"])
-//    }
-//
-//    func testDisqusNameNotPassedToTagPageIfNotSet() throws {
-//        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil, googleAnalyticsIdentifier: nil)
-//        let testTag = try setupTagPage()
-//        _ = try viewFactory.tagView(uri: tagURI, tag: testTag, paginatedPosts: try testTag.sortedPosts().paginate(for: tagRequest), user: nil)
-//        XCTAssertNil(viewRenderer.capturedContext?["disqus_name"]?.string)
-//    }
-//
-//    func testTwitterHandleNotPassedToTagPageIfNotSet() throws {
-//        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil, googleAnalyticsIdentifier: nil)
-//        let testTag = try setupTagPage()
-//        _ = try viewFactory.tagView(uri: tagURI, tag: testTag, paginatedPosts: try testTag.sortedPosts().paginate(for: tagRequest), user: nil)
-//        XCTAssertNil(viewRenderer.capturedContext?["site_twitter_handle"]?.string)
-//    }
-//
-//    func testGAIdentifierNotPassedToTagPageIfNotSet() throws {
-//        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil, googleAnalyticsIdentifier: nil)
-//        let testTag = try setupTagPage()
-//        _ = try viewFactory.tagView(uri: tagURI, tag: testTag, paginatedPosts: try testTag.sortedPosts().paginate(for: tagRequest), user: nil)
-//        XCTAssertNil(viewRenderer.capturedContext?["google_analytics_identifier"]?.string)
-//    }
-//
-//    // MARK: - Blog Index
-//
+    // MARK: - Tag page
+
+    func testTagPageGetsTagWithCorrectParamsAndPostCount() throws {
+        let user = TestDataBuilder.anyUser(id: 3)
+        let post1 = try TestDataBuilder.anyPost(author: user)
+        let post2 = try TestDataBuilder.anyPost(author: user)
+        let posts = [post1, post2]
+        let pageInformation = buildPageInformation(currentPageURL: tagURL, user: user)
+        
+        _ = presenter.tagView(on: basicContainer, tag: testTag, posts: posts, pageInformation: pageInformation)
+        
+        let context = try XCTUnwrap(viewRenderer.capturedContext as? TagPageContext)
+        XCTAssertEqual(context.tag.name, testTag.name)
+        XCTAssertEqual(context.posts.count, 2)
+        XCTAssertEqual(context.posts.first?.title, post1.title)
+        XCTAssertEqual(context.posts.first?.blogID, post1.blogID)
+        XCTAssertEqual(context.posts.last?.title, post2.title)
+        XCTAssertEqual(context.posts.last?.blogID, post2.blogID)
+        XCTAssertTrue(context.tagPage)
+        XCTAssertEqual(context.pageInformation.loggedInUser?.name, user.name)
+        XCTAssertEqual(context.pageInformation.loggedInUser?.username, user.username)
+        XCTAssertEqual(context.pageInformation.googleAnalyticsIdentifier, BlogPresenterTests.googleAnalyticsIdentifier)
+        XCTAssertEqual(context.pageInformation.siteTwitterHandler, BlogPresenterTests.siteTwitterHandle)
+        XCTAssertEqual(context.pageInformation.disqusName, BlogPresenterTests.disqusName)
+        XCTAssertEqual(context.pageInformation.websiteURL.absoluteString, "https://brokenhands.io")
+        XCTAssertEqual(context.pageInformation.currentPageURL.absoluteString, "https://brokenhands.io/tags/tattoine")
+        XCTAssertEqual(viewRenderer.templatePath, "blog/tag")
+    }
+
+    func testNoLoggedInUserPassedToTagPageIfNoneProvided() throws {
+        let pageInformation = buildPageInformation(currentPageURL: tagURL)
+        _ = presenter.tagView(on: basicContainer, tag: testTag, posts: [], pageInformation: pageInformation)
+        
+        let context = try XCTUnwrap(viewRenderer.capturedContext as? TagPageContext)
+        XCTAssertNil(context.pageInformation.loggedInUser)
+    }
+
+    func testDisqusNameNotPassedToTagPageIfNotSet() throws {
+        let pageInformation = buildPageInformation(currentPageURL: tagURL, disqusName: nil)
+        _ = presenter.tagView(on: basicContainer, tag: testTag, posts: [], pageInformation: pageInformation)
+        
+        let context = try XCTUnwrap(viewRenderer.capturedContext as? TagPageContext)
+        XCTAssertNil(context.pageInformation.disqusName)
+    }
+
+    func testTwitterHandleNotPassedToTagPageIfNotSet() throws {
+        let pageInformation = buildPageInformation(currentPageURL: tagURL, siteTwitterHandle: nil)
+        _ = presenter.tagView(on: basicContainer, tag: testTag, posts: [], pageInformation: pageInformation)
+        
+        let context = try XCTUnwrap(viewRenderer.capturedContext as? TagPageContext)
+        XCTAssertNil(context.pageInformation.siteTwitterHandler)
+    }
+
+    func testGAIdentifierNotPassedToTagPageIfNotSet() throws {
+        let pageInformation = buildPageInformation(currentPageURL: tagURL, googleAnalyticsIdentifier: nil)
+        _ = presenter.tagView(on: basicContainer, tag: testTag, posts: [], pageInformation: pageInformation)
+        
+        let context = try XCTUnwrap(viewRenderer.capturedContext as? TagPageContext)
+        XCTAssertNil(context.pageInformation.googleAnalyticsIdentifier)
+    }
+
+    // MARK: - Blog Index
+
 //    func testBlogIndexPageGivenCorrectParameters() throws {
 //        let (posts, tags, authors) = try setupBlogIndex()
 //        _ = try viewFactory.blogIndexView(uri: indexURI, paginatedPosts: posts, tags: tags, authors: authors, loggedInUser: nil)
