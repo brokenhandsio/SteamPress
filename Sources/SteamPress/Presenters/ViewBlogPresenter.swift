@@ -7,7 +7,8 @@ public struct ViewBlogPresenter: BlogPresenter {
     public func indexView(on container: Container, posts: [BlogPost], tags: [BlogTag], authors: [BlogUser], pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
         do {
             let viewRenderer = try container.make(ViewRenderer.self)
-            return viewRenderer.render("something")
+            let context = BlogIndexPageContext(posts: posts, tags: tags, authors: authors, pageInformation: pageInformation)
+            return viewRenderer.render("blog/blog", context)
         } catch {
             return container.future(error: error)
         }

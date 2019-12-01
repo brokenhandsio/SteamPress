@@ -23,6 +23,7 @@ class BlogPresenterTests: XCTestCase {
     private let allTagsURL = URL(string: "https://brokenhands.io/tags")!
     private let allAuthorsURL = URL(string: "https://brokenhands.io/authors")!
     private let tagURL = URL(string: "https://brokenhands.io/tags/tattoine")!
+    private let blogIndexURL = URL(string: "https://brokenhands.io/blog")!
 
     private let websiteURL = URL(string: "https://brokenhands.io")!
     private static let siteTwitterHandle = "brokenhandsio"
@@ -279,73 +280,75 @@ class BlogPresenterTests: XCTestCase {
 
     // MARK: - Blog Index
 
-//    func testBlogIndexPageGivenCorrectParameters() throws {
-//        let (posts, tags, authors) = try setupBlogIndex()
-//        _ = try viewFactory.blogIndexView(uri: indexURI, paginatedPosts: posts, tags: tags, authors: authors, loggedInUser: nil)
-//
-//        XCTAssertEqual(viewRenderer.capturedContext?["uri"]?.string, indexURI.descriptionWithoutPort)
-//        XCTAssertTrue((viewRenderer.capturedContext?["blog_index_page"]?.bool) ?? false)
-//
-//        XCTAssertEqual(viewRenderer.capturedContext?["posts"]?["data"]?.array?.count, posts.total)
-//        XCTAssertEqual((viewRenderer.capturedContext?["posts"]?["data"]?.array?.first)?["title"]?.string, posts.data.first?.title)
-//        XCTAssertEqual(viewRenderer.capturedContext?["tags"]?.array?.count, tags.count)
-//        XCTAssertEqual((viewRenderer.capturedContext?["tags"]?.array?.first)?["name"]?.string, tags.first?.name)
-//        XCTAssertEqual(viewRenderer.capturedContext?["authors"]?.array?.count, authors.count)
-//        XCTAssertEqual((viewRenderer.capturedContext?["authors"]?.array?.first)?["name"]?.string, authors.first?.name)
-//        XCTAssertEqual(viewRenderer.leafPath, "blog/blog")
-//        XCTAssertEqual(viewRenderer.capturedContext?["disqus_name"]?.string, disqusName)
-//        XCTAssertEqual(viewRenderer.capturedContext?["site_twitter_handle"]?.string, siteTwitterHandle)
-//        XCTAssertEqual(viewRenderer.capturedContext?["google_analytics_identifier"]?.string, googleAnalyticsIdentifier)
-//    }
-//
-//    func testNoPostsPassedIntoBlogIndexIfNoneAvailable() throws {
-//        let (_, tags, authors) = try setupBlogIndex()
-//        let emptyBlogPosts = try BlogPost.makeQuery().filter("title", "A non existent title").paginate(for: indexRequest)
-//        _ = try viewFactory.blogIndexView(uri: indexURI, paginatedPosts: emptyBlogPosts, tags: tags, authors: authors, loggedInUser: nil)
-//        XCTAssertNil(viewRenderer.capturedContext?["posts"])
-//    }
-//
-//    func testNoAuthorsPassedIntoBlogIndexIfNoneCreated() throws {
-//        let (posts, _, authors) = try setupBlogIndex()
-//        _ = try viewFactory.blogIndexView(uri: indexURI, paginatedPosts: posts, tags: [], authors: authors, loggedInUser: nil)
-//        XCTAssertNil(viewRenderer.capturedContext?["tags"])
-//    }
-//
-//    func testNoTagsPassedIntoBlogIndexIfNoneCreted() throws {
-//        let (posts, tags, _) = try setupBlogIndex()
-//        _ = try viewFactory.blogIndexView(uri: indexURI, paginatedPosts: posts, tags: tags, authors: [], loggedInUser: nil)
-//        XCTAssertNil(viewRenderer.capturedContext?["authors"])
-//    }
-//
-//    func testUserPassedToBlogIndexIfUserPassedIn() throws {
-//        let (posts, tags, authors) = try setupBlogIndex()
-//        _ = try viewFactory.blogIndexView(uri: indexURI, paginatedPosts: posts, tags: tags, authors: authors, loggedInUser: authors[0])
-//        XCTAssertEqual(viewRenderer.capturedContext?["user"]?["name"]?.string, authors.first?.name)
-//    }
-//
-//    func testDisqusNameNotPassedToBlogIndexIfNotPassedIn() throws {
-//        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil, googleAnalyticsIdentifier: nil)
-//        let (posts, tags, authors) = try setupBlogIndex()
-//        _ = try viewFactory.blogIndexView(uri: indexURI, paginatedPosts: posts, tags: tags, authors: authors, loggedInUser: nil)
-//        XCTAssertNil(viewRenderer.capturedContext?["disqus_name"]?.string)
-//    }
-//
-//    func testTwitterHandleNotPassedToBlogIndexIfNotPassedIn() throws {
-//        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil, googleAnalyticsIdentifier: nil)
-//        let (posts, tags, authors) = try setupBlogIndex()
-//        _ = try viewFactory.blogIndexView(uri: indexURI, paginatedPosts: posts, tags: tags, authors: authors, loggedInUser: nil)
-//        XCTAssertNil(viewRenderer.capturedContext?["site_twitter_handle"]?.string)
-//    }
-//
-//    func testGAIdentifierNotPassedToBlogIndexIfNotPassedIn() throws {
-//        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil, googleAnalyticsIdentifier: nil)
-//        let (posts, tags, authors) = try setupBlogIndex()
-//        _ = try viewFactory.blogIndexView(uri: indexURI, paginatedPosts: posts, tags: tags, authors: authors, loggedInUser: nil)
-//        XCTAssertNil(viewRenderer.capturedContext?["google_analytics_identifier"]?.string)
-//    }
-//
-//    // MARK: - Author page
-//
+    func testBlogIndexPageGivenCorrectParameters() throws {
+        let author1 = TestDataBuilder.anyUser(id: 0)
+        let author2 = TestDataBuilder.anyUser(id: 1, username: "darth")
+        let post = try TestDataBuilder.anyPost(author: author1)
+        let post2 = try TestDataBuilder.anyPost(author: author2, title: "Another Title")
+        let tag1 = try BlogTag(name: "Engineering")
+        let tag2 = try BlogTag(name: "Fun")
+        let tags = [tag1, tag2]
+        
+        let pageInformation = buildPageInformation(currentPageURL: blogIndexURL)
+        _ = presenter.indexView(on: basicContainer, posts: [post, post2], tags: tags, authors: [author1, author2], pageInformation: pageInformation)
+
+        let context = try XCTUnwrap(viewRenderer.capturedContext as? BlogIndexPageContext)
+        XCTAssertEqual(context.title, "Blog")
+        XCTAssertEqual(context.posts.count, 2)
+        XCTAssertEqual(context.posts.first?.title, post.title)
+        XCTAssertEqual(context.posts.last?.title, post2.title)
+        XCTAssertEqual(context.tags.count, 2)
+        XCTAssertEqual(context.tags.first?.name, tag1.name)
+        XCTAssertEqual(context.tags.last?.name, tag2.name)
+        XCTAssertEqual(context.authors.count, 2)
+        XCTAssertEqual(context.authors.first?.username, author1.username)
+        XCTAssertEqual(context.authors.last?.username, author2.username)
+        XCTAssertTrue(context.blogIndexPage)
+        XCTAssertEqual(viewRenderer.templatePath, "blog/blog")
+        XCTAssertEqual(context.pageInformation.currentPageURL.absoluteString, "https://brokenhands.io/blog")
+        XCTAssertEqual(context.pageInformation.websiteURL.absoluteString, "https://brokenhands.io")
+        XCTAssertEqual(context.pageInformation.googleAnalyticsIdentifier, BlogPresenterTests.googleAnalyticsIdentifier)
+        XCTAssertEqual(context.pageInformation.siteTwitterHandler, BlogPresenterTests.siteTwitterHandle)
+        XCTAssertEqual(context.pageInformation.disqusName, BlogPresenterTests.disqusName)
+        XCTAssertNil(context.pageInformation.loggedInUser)
+    }
+    
+    func testUserPassedToBlogIndexIfUserPassedIn() throws {
+        let user = TestDataBuilder.anyUser()
+        let pageInformation = buildPageInformation(currentPageURL: blogIndexURL, user: user)
+        _ = presenter.indexView(on: basicContainer, posts: [], tags: [], authors: [], pageInformation: pageInformation)
+        
+        let context = try XCTUnwrap(viewRenderer.capturedContext as? BlogIndexPageContext)
+        XCTAssertEqual(context.pageInformation.loggedInUser?.name, user.name)
+        XCTAssertEqual(context.pageInformation.loggedInUser?.username, user.username)
+    }
+
+    func testDisqusNameNotPassedToBlogIndexIfNotPassedIn() throws {
+        let pageInformation = buildPageInformation(currentPageURL: blogIndexURL, disqusName: nil)
+        _ = presenter.indexView(on: basicContainer, posts: [], tags: [], authors: [], pageInformation: pageInformation)
+        
+        let context = try XCTUnwrap(viewRenderer.capturedContext as? BlogIndexPageContext)
+        XCTAssertNil(context.pageInformation.disqusName)
+    }
+
+    func testTwitterHandleNotPassedToBlogIndexIfNotPassedIn() throws {
+        let pageInformation = buildPageInformation(currentPageURL: blogIndexURL, siteTwitterHandle: nil)
+        _ = presenter.indexView(on: basicContainer, posts: [], tags: [], authors: [], pageInformation: pageInformation)
+        
+        let context = try XCTUnwrap(viewRenderer.capturedContext as? BlogIndexPageContext)
+        XCTAssertNil(context.pageInformation.siteTwitterHandler)
+    }
+
+    func testGAIdentifierNotPassedToBlogIndexIfNotPassedIn() throws {
+        let pageInformation = buildPageInformation(currentPageURL: blogIndexURL, googleAnalyticsIdentifier: nil)
+        _ = presenter.indexView(on: basicContainer, posts: [], tags: [], authors: [], pageInformation: pageInformation)
+        
+        let context = try XCTUnwrap(viewRenderer.capturedContext as? BlogIndexPageContext)
+        XCTAssertNil(context.pageInformation.googleAnalyticsIdentifier)
+    }
+
+    // MARK: - Author page
+
 //    func testAuthorViewHasCorrectParametersSet() throws {
 //        let (author, posts) = try setupAuthorPage()
 //        let _ = try viewFactory.profileView(uri: authorURI, author: author, paginatedPosts: posts, loggedInUser: nil)
