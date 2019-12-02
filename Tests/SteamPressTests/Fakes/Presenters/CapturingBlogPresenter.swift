@@ -34,9 +34,11 @@ class CapturingBlogPresenter: BlogPresenter {
 
     private(set) var author: BlogUser?
     private(set) var authorPosts: [BlogPost]?
-    func authorView(on container: Container, author: BlogUser, posts: [BlogPost], pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
+    private(set) var authorPostCount: Int?
+    func authorView(on container: Container, author: BlogUser, posts: [BlogPost], postCount: Int, pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
         self.author = author
         self.authorPosts = posts
+        self.authorPostCount = postCount
         return TestDataBuilder.createFutureView(on: container)
     }
 

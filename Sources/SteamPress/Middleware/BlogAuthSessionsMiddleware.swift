@@ -27,10 +27,3 @@ public final class BlogAuthSessionsMiddleware: Middleware {
         }
     }
 }
-
-//if (try request.session()["SteamPressRememberMe"]) != nil {
-//    let oneYear: TimeInterval = 60 * 60 * 24 * 365
-//    response.http.cookies["steampress-session"]?.expires = Date().addingTimeInterval(oneYear)
-//    try request.session()["SteamPressRememberMe"] = nil
-//}
-// Otherwsie set exprity to nil

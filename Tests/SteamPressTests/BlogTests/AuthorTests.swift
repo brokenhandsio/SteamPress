@@ -81,4 +81,11 @@ class AuthorTests: XCTestCase {
         XCTAssertEqual(presenter.authorPosts?.count, 2)
     }
 
+    func testAuthorViewGetsAuthorsTotalPostsEvenIfPaginated() throws {
+        let totalPosts = 15
+        try testWorld.createPosts(count: totalPosts, author: user)
+        _ = try testWorld.getResponse(to: authorsRequestPath)
+        // One post created in setup
+        XCTAssertEqual(presenter.authorPostCount, totalPosts + 1)
+    }
 }

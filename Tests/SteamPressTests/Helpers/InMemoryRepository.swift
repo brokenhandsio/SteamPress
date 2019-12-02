@@ -142,6 +142,10 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         let endIndex = min(offset + count, sortedPosts.count)
         return container.future(Array(sortedPosts[startIndex..<endIndex]))
     }
+    
+    func getPostCount(for user: BlogUser, on container: Container) -> EventLoopFuture<Int> {
+        return container.future(posts.filter { $0.author == user.userID }.count)
+    }
 
     func getPost(slug: String, on container: Container) -> EventLoopFuture<BlogPost?> {
         return container.future(posts.first { $0.slugUrl == slug })

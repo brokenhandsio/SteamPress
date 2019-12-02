@@ -55,7 +55,7 @@ public struct ViewBlogPresenter: BlogPresenter {
         }
     }
 
-    public func authorView(on container: Container, author: BlogUser, posts: [BlogPost], pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
+    public func authorView(on container: Container, author: BlogUser, posts: [BlogPost], postCount: Int, pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
         do {
             let viewRenderer = try container.make(ViewRenderer.self)
             let myProfile: Bool
@@ -64,7 +64,8 @@ public struct ViewBlogPresenter: BlogPresenter {
             } else {
                 myProfile = false
             }
-            let context = AuthorPageContext(author: author, posts: posts, pageInformation: pageInformation, myProfile: myProfile)
+            let viewPosts = posts.map { $0.toViewPost() }
+            let context = AuthorPageContext(author: author, posts: viewPosts, pageInformation: pageInformation, myProfile: myProfile, postCount: postCount)
             return viewRenderer.render("blog/profile", context)
         } catch {
             return container.future(error: error)

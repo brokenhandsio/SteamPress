@@ -344,7 +344,7 @@ class BlogPresenterTests: XCTestCase {
         let post2 = try TestDataBuilder.anyPost(author: author, title: "Another Post", slugUrl: "another-post")
         
         let pageInformation = buildPageInformation(currentPageURL: authorURL)
-        _ = presenter.authorView(on: basicContainer, author: author, posts: [post1, post2], pageInformation: pageInformation)
+        _ = presenter.authorView(on: basicContainer, author: author, posts: [post1, post2], postCount: 2, pageInformation: pageInformation)
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? AuthorPageContext)
         XCTAssertEqual(context.author.name, author.name)
@@ -366,51 +366,75 @@ class BlogPresenterTests: XCTestCase {
         XCTAssertEqual(viewRenderer.templatePath, "blog/profile")
     }
 
-//    func testAuthorViewHasNoPostsSetIfNoneCreated() throws {
-//        let (author, _) = try setupAuthorPage()
-//        let emptyPosts = try BlogPost.makeQuery().filter("title", "Some non-existing query").paginate(for: authorRequest)
-//        let _ = try viewFactory.profileView(uri: authorURI, author: author, paginatedPosts: emptyPosts, loggedInUser: nil)
-//        XCTAssertNil(viewRenderer.capturedContext?["posts"])
-//    }
-//
-//    func testAuthorViewGetsLoggedInUserIfProvider() throws {
-//        let (author, posts) = try setupAuthorPage()
-//        let _ = try viewFactory.profileView(uri: authorURI, author: author, paginatedPosts: posts, loggedInUser: author)
-//        XCTAssertEqual(viewRenderer.capturedContext?["user"]?["name"]?.string, author.name)
-//    }
-//
-//    func testAuthorViewDoesNotGetDisqusNameIfNotProvided() throws {
-//        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil, googleAnalyticsIdentifier: nil)
-//        let (author, posts) = try setupAuthorPage()
-//        let _ = try viewFactory.profileView(uri: authorURI, author: author, paginatedPosts: posts, loggedInUser: nil)
-//        XCTAssertNil(viewRenderer.capturedContext?["disqus_name"]?.string)
-//    }
-//
-//    func testAuthorViewDoesNotGetTwitterHandleIfNotProvided() throws {
-//        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil, googleAnalyticsIdentifier: nil)
-//        let (author, posts) = try setupAuthorPage()
-//        let _ = try viewFactory.profileView(uri: authorURI, author: author, paginatedPosts: posts, loggedInUser: nil)
-//        XCTAssertNil(viewRenderer.capturedContext?["site_twitter_handle"]?.string)
-//    }
-//
-//    func testAuthorViewDoesNotGetGAIdentifierIfNotProvided() throws {
-//        viewFactory = LeafViewFactory(viewRenderer: viewRenderer, disqusName: nil, siteTwitterHandle: nil, googleAnalyticsIdentifier: nil)
-//        let (author, posts) = try setupAuthorPage()
-//        let _ = try viewFactory.profileView(uri: authorURI, author: author, paginatedPosts: posts, loggedInUser: nil)
-//        XCTAssertNil(viewRenderer.capturedContext?["google_analytics_identifier"]?.string)
-//    }
-//
-//    func testAuthorViewGetsPostCount() throws {
-//        let (author, posts) = try setupAuthorPage()
-//        _ = try viewFactory.profileView(uri: authorURI, author: author, paginatedPosts: posts, loggedInUser: nil)
-//        XCTAssertEqual(viewRenderer.capturedContext?["author"]?["post_count"]?.int, 2)
-//    }
-//
-//    func testAuthorViewGetsLongSnippetForPosts() throws {
-//        let (author, posts) = try setupAuthorPage()
-//        _ = try viewFactory.profileView(uri: authorURI, author: author, paginatedPosts: posts, loggedInUser: nil)
-//        XCTAssertNotNil(viewRenderer.capturedContext?["posts"]?["data"]?.array?.first?["long_snippet"]?.string)
-//    }
+    func testAuthorViewGetsLoggedInUserIfProvider() throws {
+        let author = TestDataBuilder.anyUser(id: 0)
+        let user = TestDataBuilder.anyUser(id: 1, username: "hans")
+        let pageInformation = buildPageInformation(currentPageURL: authorURL, user: user)
+        _ = presenter.authorView(on: basicContainer, author: author, posts: [], postCount: 0, pageInformation: pageInformation)
+        
+        let context = try XCTUnwrap(viewRenderer.capturedContext as? AuthorPageContext)
+        XCTAssertEqual(context.pageInformation.loggedInUser?.userID, user.userID)
+        XCTAssertEqual(context.pageInformation.loggedInUser?.username, user.username)
+    }
+    
+    func testMyProfileFlagSetIfLoggedInUserIsTheSameAsAuthorOnAuthorView() throws {
+        let author = TestDataBuilder.anyUser(id: 0)
+        let pageInformation = buildPageInformation(currentPageURL: authorURL, user: author)
+        _ = presenter.authorView(on: basicContainer, author: author, posts: [], postCount: 0, pageInformation: pageInformation)
+        
+        let context = try XCTUnwrap(viewRenderer.capturedContext as? AuthorPageContext)
+        XCTAssertTrue(context.myProfile)
+    }
+
+    func testAuthorViewDoesNotGetDisqusNameIfNotProvided() throws {
+        let author = TestDataBuilder.anyUser()
+        let pageInformation = buildPageInformation(currentPageURL: authorURL, disqusName: nil)
+        _ = presenter.authorView(on: basicContainer, author: author, posts: [], postCount: 0, pageInformation: pageInformation)
+        
+        let context = try XCTUnwrap(viewRenderer.capturedContext as? AuthorPageContext)
+        XCTAssertNil(context.pageInformation.disqusName)
+    }
+
+    func testAuthorViewDoesNotGetTwitterHandleIfNotProvided() throws {
+        let author = TestDataBuilder.anyUser()
+        let pageInformation = buildPageInformation(currentPageURL: authorURL, siteTwitterHandle: nil)
+        _ = presenter.authorView(on: basicContainer, author: author, posts: [], postCount: 0, pageInformation: pageInformation)
+        
+        let context = try XCTUnwrap(viewRenderer.capturedContext as? AuthorPageContext)
+        XCTAssertNil(context.pageInformation.siteTwitterHandler)
+    }
+
+    func testAuthorViewDoesNotGetGAIdentifierIfNotProvided() throws {
+        let author = TestDataBuilder.anyUser()
+        let pageInformation = buildPageInformation(currentPageURL: authorURL, googleAnalyticsIdentifier: nil)
+        _ = presenter.authorView(on: basicContainer, author: author, posts: [], postCount: 0, pageInformation: pageInformation)
+        
+        let context = try XCTUnwrap(viewRenderer.capturedContext as? AuthorPageContext)
+        XCTAssertNil(context.pageInformation.googleAnalyticsIdentifier)
+    }
+
+    func testAuthorViewGetsPostCount() throws {
+        let author = TestDataBuilder.anyUser(id: 0)
+        let post1 = try TestDataBuilder.anyPost(author: author)
+        let post2 = try TestDataBuilder.anyPost(author: author)
+        let post3 = try TestDataBuilder.anyPost(author: author)
+        let pageInformation = buildPageInformation(currentPageURL: authorURL)
+        _ = presenter.authorView(on: basicContainer, author: author, posts: [post1, post2, post3], postCount: 3, pageInformation: pageInformation)
+        
+        let context = try XCTUnwrap(viewRenderer.capturedContext as? AuthorPageContext)
+        XCTAssertEqual(context.postCount, 3)
+    }
+
+    func testAuthorViewGetsLongSnippetForPosts() throws {
+        let author = TestDataBuilder.anyUser(id: 0)
+        let post1 = try TestDataBuilder.anyPost(author: author, contents: TestDataBuilder.longContents)
+        let pageInformation = buildPageInformation(currentPageURL: authorURL)
+        _ = presenter.authorView(on: basicContainer, author: author, posts: [post1], postCount: 1, pageInformation: pageInformation)
+        
+        let context = try XCTUnwrap(viewRenderer.capturedContext as? AuthorPageContext)
+        let characterCount = try XCTUnwrap(context.posts.first?.longSnippet.count)
+        XCTAssertGreaterThan(characterCount, 900)
+    }
 
     // MARK: - Helpers
 

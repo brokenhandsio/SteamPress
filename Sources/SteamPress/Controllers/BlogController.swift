@@ -89,9 +89,11 @@ struct BlogController: RouteCollection {
             }
 
             let postRepository = try req.make(BlogPostRepository.self)
-            return postRepository.getAllPostsSortedByPublishDate(for: author, includeDrafts: false, on: req, count: self.postsPerPage, offset: paginationInformation.offset).flatMap { posts in
+            let authorPostQuery = postRepository.getAllPostsSortedByPublishDate(for: author, includeDrafts: false, on: req, count: self.postsPerPage, offset: paginationInformation.offset)
+            let authorPostCountQuery = postRepository.getPostCount(for: author, on: req)
+            return flatMap(authorPostQuery, authorPostCountQuery) { posts, postCount in
                 let presenter = try req.make(BlogPresenter.self)
-                return presenter.authorView(on: req, author: author, posts: posts, pageInformation: try req.pageInformation())
+                return presenter.authorView(on: req, author: author, posts: posts, postCount: postCount, pageInformation: try req.pageInformation())
             }
         }
     }
