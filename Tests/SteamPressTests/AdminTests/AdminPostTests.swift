@@ -468,18 +468,6 @@ class AdminPostTests: XCTestCase {
     }
 
     #warning("Move to Leaf tests")
-//    func testShortSnippet() {
-//        let post = TestDataBuilder.anyLongPost(author: TestDataBuilder.anyUser())
-//        let shortSnippet = post.shortSnippet()
-//        XCTAssertLessThan(shortSnippet.count, 500)
-//    }
-//
-//    func testLongSnippet() {
-//        let post = TestDataBuilder.anyLongPost(author: TestDataBuilder.anyUser())
-//        let shortSnippet = post.longSnippet()
-//        XCTAssertLessThan(shortSnippet.count, 1500)
-//    }
-//
 //
 //    func testCreatedAndEditedDateInISOFormForAllContext() throws {
 //        let created = Date(timeIntervalSince1970: 1.0)
