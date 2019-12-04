@@ -9,6 +9,14 @@ class BlogAdminPresenterTests: XCTestCase {
     var presenter: ViewBlogAdminPresenter!
     var viewRenderer: CapturingViewRenderer!
     
+    private let currentUser = TestDataBuilder.anyUser()
+    private let websiteURL = URL(string: "https://brokenhands.io")!
+    private let resetPasswordURL = URL(string: "https://brokenhands.io/blog/admin/resetPassword")!
+    
+    private static let siteTwitterHandle = "brokenhandsio"
+    private static let disqusName = "steampress"
+    private static let googleAnalyticsIdentifier = "UA-12345678-1"
+    
     // MARK: - Overrides
     
     override func setUp() {
@@ -22,16 +30,20 @@ class BlogAdminPresenterTests: XCTestCase {
     
     // MARK: - Tests
     
-    //    func testPasswordViewGivenCorrectParameters() throws {
-    //        let user = TestDataBuilder.anyUser()
-    //        let _ = try viewFactory.createResetPasswordView(errors: nil, passwordError: nil, confirmPasswordError: nil, user: user)
-    //        XCTAssertNil(viewRenderer.capturedContext?["errors"])
-    //        XCTAssertNil(viewRenderer.capturedContext?["password_error"])
-    //        XCTAssertNil(viewRenderer.capturedContext?["confirm_password_error"])
-    //        XCTAssertEqual(viewRenderer.capturedContext?["user"]?["name"]?.string, user.name)
-    //        XCTAssertEqual(viewRenderer.leafPath, "blog/admin/resetPassword")
-    //    }
-    //
+        func testPasswordViewGivenCorrectParameters() throws {
+            let pageInformation = buildPageInformation(currentPageURL: resetPasswordURL)
+            _ = presenter.createResetPasswordView(on: basicContainer, errors: nil, passwordError: nil, confirmPasswordError: nil, pageInformation: pageInformation)
+            
+            let context = try XCTUnwrap(viewRenderer.capturedContext as? ResetPasswordPageContext)
+            XCTAssertNil(context.errors)
+            XCTAssertNil(context.passwordError)
+            XCTAssertNil(context.confirmPasswordError)
+            XCTAssertEqual(context.pageInformation.loggedInUser.username, currentUser.username)
+            XCTAssertEqual(context.pageInformation.websiteURL.absoluteString, "https://brokenhands.io")
+            XCTAssertEqual(context.pageInformation.currentPageURL.absoluteString, "https://brokenhands.io/blog/admin/resetPassword")
+            XCTAssertEqual(viewRenderer.templatePath, "blog/admin/resetPassword")
+        }
+    
     //    func testPasswordViewHasCorrectParametersWhenError() throws {
     //        let user = TestDataBuilder.anyUser()
     //        let expectedError = "Passwords do not match"
@@ -475,4 +487,14 @@ class BlogAdminPresenterTests: XCTestCase {
     //    }
     
     // MARK: - Helpers
+    
+    private func buildPageInformation(currentPageURL: URL, user: BlogUser? = nil) -> BlogAdminPageInformation {
+        let loggedInUser: BlogUser
+        if let user = user {
+            loggedInUser = user
+        } else {
+            loggedInUser = currentUser
+        }
+        return BlogAdminPageInformation(loggedInUser: loggedInUser, websiteURL: websiteURL, currentPageURL: currentPageURL)
+    }
 }

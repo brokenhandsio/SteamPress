@@ -5,7 +5,7 @@ class CapturingAdminPresenter: BlogAdminPresenter {
 
     // MARK: - BlogPresenter
     private(set) var adminViewErrors: [String]?
-    func createIndexView(on container: Container, errors: [String]?) -> EventLoopFuture<View> {
+    func createIndexView(on container: Container, errors: [String]?, pageInformation: BlogAdminPageInformation) -> EventLoopFuture<View> {
         self.adminViewErrors = errors
         return createFutureView(on: container)
     }
@@ -18,7 +18,8 @@ class CapturingAdminPresenter: BlogAdminPresenter {
     private(set) var createPostPost: BlogPost?
     private(set) var createPostDraft: Bool?
     private(set) var createPostSlugURL: String?
-    func createPostView(on container: Container, errors: [String]?, title: String?, contents: String?, slugURL: String?, tags: [String]?, isEditing: Bool, post: BlogPost?, isDraft: Bool?) -> EventLoopFuture<View> {
+    #warning("Test page information for all functions in this")
+    func createPostView(on container: Container, errors: [String]?, title: String?, contents: String?, slugURL: String?, tags: [String]?, isEditing: Bool, post: BlogPost?, isDraft: Bool?, pageInformation: BlogAdminPageInformation) -> EventLoopFuture<View> {
         self.createPostErrors = errors
         self.createPostTitle = title
         self.createPostContents = contents
@@ -41,7 +42,7 @@ class CapturingAdminPresenter: BlogAdminPresenter {
     private(set) var createUserTwitterHandle: String?
     private(set) var createUserBiography: String?
     private(set) var createUserTagline: String?
-    func createUserView(on container: Container, errors: [String]?, name: String?, username: String?, passwordError: Bool, confirmPasswordError: Bool, userID: Int?, profilePicture: String?, twitterHandle: String?, biography: String?, tagline: String?) -> EventLoopFuture<View> {
+    func createUserView(on container: Container, errors: [String]?, name: String?, username: String?, passwordError: Bool, confirmPasswordError: Bool, userID: Int?, profilePicture: String?, twitterHandle: String?, biography: String?, tagline: String?, pageInformation: BlogAdminPageInformation) -> EventLoopFuture<View> {
         self.createUserErrors = errors
         self.createUserName = name
         self.createUserUsername = username
@@ -58,7 +59,7 @@ class CapturingAdminPresenter: BlogAdminPresenter {
     private(set) var resetPasswordErrors: [String]?
     private(set) var resetPasswordError: Bool?
     private(set) var resetPasswordConfirmError: Bool?
-    func createResetPasswordView(on container: Container, errors: [String]?, passwordError: Bool?, confirmPasswordError: Bool?) -> EventLoopFuture<View> {
+    func createResetPasswordView(on container: Container, errors: [String]?, passwordError: Bool?, confirmPasswordError: Bool?, pageInformation: BlogAdminPageInformation) -> EventLoopFuture<View> {
         self.resetPasswordErrors = errors
         self.resetPasswordError = passwordError
         self.resetPasswordConfirmError = confirmPasswordError

@@ -22,7 +22,7 @@ struct PostAdminController: RouteCollection {
     // MARK: - Route handlers
     func createPostHandler(_ req: Request) throws -> EventLoopFuture<View> {
         let presenter = try req.make(BlogAdminPresenter.self)
-        return presenter.createPostView(on: req, errors: nil, title: nil, contents: nil, slugURL: nil, tags: nil, isEditing: false, post: nil, isDraft: nil)
+        return try presenter.createPostView(on: req, errors: nil, title: nil, contents: nil, slugURL: nil, tags: nil, isEditing: false, post: nil, isDraft: nil, pageInformation: req.adminPageInfomation())
     }
 
     func createPostPostHandler(_ req: Request) throws -> EventLoopFuture<Response> {
@@ -35,7 +35,7 @@ struct PostAdminController: RouteCollection {
 
         if let createPostErrors = validatePostCreation(data) {
             let presenter = try req.make(BlogAdminPresenter.self)
-            let view = presenter.createPostView(on: req, errors: createPostErrors, title: data.title, contents: data.contents, slugURL: nil, tags: data.tags, isEditing: false, post: nil, isDraft: nil)
+            let view = try presenter.createPostView(on: req, errors: createPostErrors, title: data.title, contents: data.contents, slugURL: nil, tags: data.tags, isEditing: false, post: nil, isDraft: nil, pageInformation: req.adminPageInfomation())
             return try view.encode(for: req)
         }
 
@@ -97,7 +97,7 @@ struct PostAdminController: RouteCollection {
             let tagsRepository = try req.make(BlogTagRepository.self)
             return tagsRepository.getTags(for: post, on: req).flatMap { tags in
                 let presenter = try req.make(BlogAdminPresenter.self)
-                return presenter.createPostView(on: req, errors: nil, title: post.title, contents: post.contents, slugURL: post.slugUrl, tags: tags.map { $0.name }, isEditing: true, post: post, isDraft: !post.published)
+                return try presenter.createPostView(on: req, errors: nil, title: post.title, contents: post.contents, slugURL: post.slugUrl, tags: tags.map { $0.name }, isEditing: true, post: post, isDraft: !post.published, pageInformation: req.adminPageInfomation())
             }
         }
     }
@@ -107,7 +107,7 @@ struct PostAdminController: RouteCollection {
         return try req.parameters.next(BlogPost.self).flatMap { post in
             if let errors = self.validatePostCreation(data) {
                 let presenter = try req.make(BlogAdminPresenter.self)
-                return try presenter.createPostView(on: req, errors: errors, title: data.title, contents: data.contents, slugURL: post.slugUrl, tags: data.tags, isEditing: true, post: post, isDraft: !post.published).encode(for: req)
+                return try presenter.createPostView(on: req, errors: errors, title: data.title, contents: data.contents, slugURL: post.slugUrl, tags: data.tags, isEditing: true, post: post, isDraft: !post.published, pageInformation: req.adminPageInfomation()).encode(for: req)
             }
 
             guard let title = data.title, let contents = data.contents else {

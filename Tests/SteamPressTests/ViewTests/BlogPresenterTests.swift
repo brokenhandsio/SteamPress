@@ -15,8 +15,8 @@ class BlogPresenterTests: XCTestCase {
     private let tagURL = URL(string: "https://brokenhands.io/tags/tattoine")!
     private let blogIndexURL = URL(string: "https://brokenhands.io/blog")!
     private let authorURL = URL(string: "https://brokenhands.io/authors/luke")!
-
     private let websiteURL = URL(string: "https://brokenhands.io")!
+    
     private static let siteTwitterHandle = "brokenhandsio"
     private static let disqusName = "steampress"
     private static let googleAnalyticsIdentifier = "UA-12345678-1"

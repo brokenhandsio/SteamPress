@@ -81,7 +81,7 @@ struct LoginController: RouteCollection {
 
     func resetPasswordHandler(_ req: Request) throws -> EventLoopFuture<View> {
         let presenter = try req.make(BlogAdminPresenter.self)
-        return presenter.createResetPasswordView(on: req, errors: nil, passwordError: nil, confirmPasswordError: nil)
+        return try presenter.createResetPasswordView(on: req, errors: nil, passwordError: nil, confirmPasswordError: nil, pageInformation: req.adminPageInfomation())
     }
 
     func resetPasswordPostHandler(_ req: Request) throws -> EventLoopFuture<Response> {
@@ -104,7 +104,7 @@ struct LoginController: RouteCollection {
             }
 
             let presenter = try req.make(BlogAdminPresenter.self)
-            let view = presenter.createResetPasswordView(on: req, errors: resetPasswordErrors, passwordError: passwordError, confirmPasswordError: confirmPasswordError)
+            let view = try presenter.createResetPasswordView(on: req, errors: resetPasswordErrors, passwordError: passwordError, confirmPasswordError: confirmPasswordError, pageInformation: req.adminPageInfomation())
             return try view.encode(for: req)
         }
 
@@ -121,7 +121,7 @@ struct LoginController: RouteCollection {
 
         guard resetPasswordErrors.isEmpty else {
             let presenter = try req.make(BlogAdminPresenter.self)
-            let view = presenter.createResetPasswordView(on: req, errors: resetPasswordErrors, passwordError: passwordError, confirmPasswordError: confirmPasswordError)
+            let view = try presenter.createResetPasswordView(on: req, errors: resetPasswordErrors, passwordError: passwordError, confirmPasswordError: confirmPasswordError, pageInformation: req.adminPageInfomation())
             return try view.encode(for: req)
         }
 

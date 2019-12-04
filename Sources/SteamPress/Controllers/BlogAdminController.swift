@@ -29,7 +29,7 @@ struct BlogAdminController: RouteCollection {
 
     // MARK: Admin Handler
     func adminHandler(_ req: Request) throws -> EventLoopFuture<View> {
-        return try req.make(BlogAdminPresenter.self).createIndexView(on: req, errors: nil)
+        return try req.make(BlogAdminPresenter.self).createIndexView(on: req, errors: nil, pageInformation: req.adminPageInfomation())
     }
 
 }
