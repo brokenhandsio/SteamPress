@@ -6,13 +6,13 @@ class BlogAdminPresenterTests: XCTestCase {
     
     // MARK: - Properties
     var basicContainer: BasicContainer!
-    //    var presenter: ViewBlogAdminPresenter!
+    var presenter: ViewBlogAdminPresenter!
     var viewRenderer: CapturingViewRenderer!
     
     // MARK: - Overrides
     
     override func setUp() {
-//        presenter = ViewBlogAdminPresenter()
+        presenter = ViewBlogAdminPresenter()
         basicContainer = BasicContainer(config: Config.default(), environment: Environment.testing, services: .init(), on: EmbeddedEventLoop())
         basicContainer.services.register(ViewRenderer.self) { _ in
             return self.viewRenderer

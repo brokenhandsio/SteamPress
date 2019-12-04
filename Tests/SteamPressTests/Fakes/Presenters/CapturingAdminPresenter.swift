@@ -5,9 +5,9 @@ class CapturingAdminPresenter: BlogAdminPresenter {
 
     // MARK: - BlogPresenter
     private(set) var adminViewErrors: [String]?
-    func createIndexView(on req: Request, errors: [String]?) -> EventLoopFuture<View> {
+    func createIndexView(on container: Container, errors: [String]?) -> EventLoopFuture<View> {
         self.adminViewErrors = errors
-        return createFutureView(on: req)
+        return createFutureView(on: container)
     }
 
     private(set) var createPostErrors: [String]?
@@ -18,7 +18,7 @@ class CapturingAdminPresenter: BlogAdminPresenter {
     private(set) var createPostPost: BlogPost?
     private(set) var createPostDraft: Bool?
     private(set) var createPostSlugURL: String?
-    func createPostView(on req: Request, errors: [String]?, title: String?, contents: String?, slugURL: String?, tags: [String]?, isEditing: Bool, post: BlogPost?, isDraft: Bool?) -> EventLoopFuture<View> {
+    func createPostView(on container: Container, errors: [String]?, title: String?, contents: String?, slugURL: String?, tags: [String]?, isEditing: Bool, post: BlogPost?, isDraft: Bool?) -> EventLoopFuture<View> {
         self.createPostErrors = errors
         self.createPostTitle = title
         self.createPostContents = contents
@@ -27,7 +27,7 @@ class CapturingAdminPresenter: BlogAdminPresenter {
         self.createPostIsEditing = isEditing
         self.createPostPost = post
         self.createPostDraft = isDraft
-        return createFutureView(on: req)
+        return createFutureView(on: container)
     }
 
     private(set) var createUserErrors: [String]?
@@ -41,7 +41,7 @@ class CapturingAdminPresenter: BlogAdminPresenter {
     private(set) var createUserTwitterHandle: String?
     private(set) var createUserBiography: String?
     private(set) var createUserTagline: String?
-    func createUserView(on req: Request, errors: [String]?, name: String?, username: String?, passwordError: Bool, confirmPasswordError: Bool, userID: Int?, profilePicture: String?, twitterHandle: String?, biography: String?, tagline: String?) -> EventLoopFuture<View> {
+    func createUserView(on container: Container, errors: [String]?, name: String?, username: String?, passwordError: Bool, confirmPasswordError: Bool, userID: Int?, profilePicture: String?, twitterHandle: String?, biography: String?, tagline: String?) -> EventLoopFuture<View> {
         self.createUserErrors = errors
         self.createUserName = name
         self.createUserUsername = username
@@ -52,24 +52,24 @@ class CapturingAdminPresenter: BlogAdminPresenter {
         self.createUserTwitterHandle = twitterHandle
         self.createUserBiography = biography
         self.createUserTagline = tagline
-        return createFutureView(on: req)
+        return createFutureView(on: container)
     }
 
     private(set) var resetPasswordErrors: [String]?
     private(set) var resetPasswordError: Bool?
     private(set) var resetPasswordConfirmError: Bool?
-    func createResetPasswordView(on req: Request, errors: [String]?, passwordError: Bool?, confirmPasswordError: Bool?) -> EventLoopFuture<View> {
+    func createResetPasswordView(on container: Container, errors: [String]?, passwordError: Bool?, confirmPasswordError: Bool?) -> EventLoopFuture<View> {
         self.resetPasswordErrors = errors
         self.resetPasswordError = passwordError
         self.resetPasswordConfirmError = confirmPasswordError
-        return createFutureView(on: req)
+        return createFutureView(on: container)
     }
 
     // MARK: - Helpers
 
-    func createFutureView(on req: Request) -> EventLoopFuture<View> {
+    func createFutureView(on container: Container) -> EventLoopFuture<View> {
         let data = "some HTML".convertToData()
         let view = View(data: data)
-        return req.future(view)
+        return container.future(view)
     }
 }
