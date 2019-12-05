@@ -108,10 +108,11 @@ public struct ViewBlogPresenter: BlogPresenter {
         }
     }
 
-    public func loginView(on container: Container, loginWarning: Bool, errors: [String]?, username: String?, usernameError: Bool, passwordError: Bool, pageInformation: BlogGlobalPageInformation) throws -> EventLoopFuture<View> {
+    public func loginView(on container: Container, loginWarning: Bool, errors: [String]?, username: String?, usernameError: Bool, passwordError: Bool, pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
         do {
             let viewRenderer = try container.make(ViewRenderer.self)
-            return viewRenderer.render("something")
+            let context = LoginPageContext(errors: errors, loginWarning: loginWarning, username: username, usernameError: usernameError, passwordError: passwordError, pageInformation: pageInformation)
+            return viewRenderer.render("blog/admin/login", context)
         } catch {
             return container.future(error: error)
         }

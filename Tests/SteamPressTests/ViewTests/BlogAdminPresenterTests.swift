@@ -44,44 +44,20 @@ class BlogAdminPresenterTests: XCTestCase {
             XCTAssertEqual(viewRenderer.templatePath, "blog/admin/resetPassword")
         }
     
-    //    func testPasswordViewHasCorrectParametersWhenError() throws {
-    //        let user = TestDataBuilder.anyUser()
-    //        let expectedError = "Passwords do not match"
-    //        let _ = try viewFactory.createResetPasswordView(errors: [expectedError], passwordError: true, confirmPasswordError: true, user: user)
-    //        XCTAssertEqual(viewRenderer.capturedContext?["errors"]?.array?.count, 1)
-    //        XCTAssertEqual((viewRenderer.capturedContext?["errors"]?.array?.first)?.string, expectedError)
-    //        XCTAssertTrue((viewRenderer.capturedContext?["password_error"]?.bool) ?? false)
-    //        XCTAssertTrue((viewRenderer.capturedContext?["confirm_password_error"]?.bool) ?? false)
-    //        XCTAssertEqual(viewRenderer.capturedContext?["user"]?["name"]?.string, user.name)
-    //    }
-    //
-    //    func testLoginViewGetsCorrectParameters() throws {
-    //        let _ = try viewFactory.createLoginView(loginWarning: false, errors: nil, username: nil, password: nil)
-    //        XCTAssertFalse((viewRenderer.capturedContext?["username_error"]?.bool) ?? true)
-    //        XCTAssertFalse((viewRenderer.capturedContext?["password_error"]?.bool) ?? true)
-    //        XCTAssertNil(viewRenderer.capturedContext?["username_supplied"])
-    //        XCTAssertNil(viewRenderer.capturedContext?["errors"])
-    //        XCTAssertNil(viewRenderer.capturedContext?["login_warning"])
-    //        XCTAssertEqual(viewRenderer.leafPath, "blog/admin/login")
-    //    }
-    //
-    //    func testLoginViewWhenErrored() throws {
-    //        let expectedError = "Username/password incorrect"
-    //        let _ = try viewFactory.createLoginView(loginWarning: true, errors: [expectedError], username: "tim", password: "password")
-    //        XCTAssertFalse((viewRenderer.capturedContext?["username_error"]?.bool) ?? true)
-    //        XCTAssertFalse((viewRenderer.capturedContext?["password_error"]?.bool) ?? true)
-    //        XCTAssertEqual(viewRenderer.capturedContext?["username_supplied"]?.string, "tim")
-    //        XCTAssertTrue((viewRenderer.capturedContext?["login_warning"]?.bool) ?? false)
-    //        XCTAssertEqual(viewRenderer.capturedContext?["errors"]?.array?.first?.string, expectedError)
-    //    }
-    //
-    //    func testLoginPageUsernamePasswordErrorsMarkedWhenNotSuppliedAndErrored() throws {
-    //        let expectedError = "Username/password incorrect"
-    //        let _ = try viewFactory.createLoginView(loginWarning: true, errors: [expectedError], username: nil, password: nil)
-    //        XCTAssertTrue((viewRenderer.capturedContext?["username_error"]?.bool) ?? false)
-    //        XCTAssertTrue((viewRenderer.capturedContext?["password_error"]?.bool) ?? false)
-    //    }
-    //
+        func testPasswordViewHasCorrectParametersWhenError() throws {
+            let expectedError = "Passwords do not match"
+            let pageInformation = buildPageInformation(currentPageURL: resetPasswordURL)
+            _ = presenter.createResetPasswordView(on: basicContainer, errors: [expectedError], passwordError: true, confirmPasswordError: true, pageInformation: pageInformation)
+            
+            let context = try XCTUnwrap(viewRenderer.capturedContext as? ResetPasswordPageContext)
+            XCTAssertEqual(context.errors?.count, 1)
+            XCTAssertEqual(context.errors?.first, expectedError)
+            let passwordError = try XCTUnwrap(context.passwordError)
+            let confirmPasswordError = try XCTUnwrap(context.confirmPasswordError)
+            XCTAssertTrue(passwordError)
+            XCTAssertTrue(confirmPasswordError)
+        }
+    
     //    func testBlogAdminViewGetsCorrectParameters() throws {
     //        // Add some stuff to the database
     //        let (posts, _, users) = try setupBlogIndex()

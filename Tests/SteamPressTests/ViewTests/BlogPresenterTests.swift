@@ -15,6 +15,7 @@ class BlogPresenterTests: XCTestCase {
     private let tagURL = URL(string: "https://brokenhands.io/tags/tattoine")!
     private let blogIndexURL = URL(string: "https://brokenhands.io/blog")!
     private let authorURL = URL(string: "https://brokenhands.io/authors/luke")!
+    private let loginURL = URL(string: "https://brokenhands.io/admin/login")!
     private let websiteURL = URL(string: "https://brokenhands.io")!
     
     private static let siteTwitterHandle = "brokenhandsio"
@@ -434,6 +435,36 @@ class BlogPresenterTests: XCTestCase {
         let context = try XCTUnwrap(viewRenderer.capturedContext as? AuthorPageContext)
         let characterCount = try XCTUnwrap(context.posts.first?.longSnippet.count)
         XCTAssertGreaterThan(characterCount, 900)
+    }
+    
+    func testLoginViewGetsCorrectParameters() throws {
+        let pageInformation = buildPageInformation(currentPageURL: loginURL)
+        _ = presenter.loginView(on: basicContainer, loginWarning: false, errors: nil, username: nil, usernameError: false, passwordError: false, pageInformation: pageInformation)
+        
+        let context = try XCTUnwrap(viewRenderer.capturedContext as? LoginPageContext)
+        XCTAssertNil(context.errors)
+        XCTAssertFalse(context.loginWarning)
+        XCTAssertNil(context.username)
+        XCTAssertFalse(context.usernameError)
+        XCTAssertFalse(context.passwordError)
+        XCTAssertEqual(context.title, "Log In")
+        
+        XCTAssertEqual(context.pageInformation.currentPageURL.absoluteString, "https://brokenhands.io/admin/login")
+        XCTAssertEqual(viewRenderer.templatePath, "blog/admin/login")
+    }
+
+    func testLoginViewWhenErrored() throws {
+        let expectedError = "Username/password incorrect"
+        let pageInformation = buildPageInformation(currentPageURL: loginURL)
+        _ = presenter.loginView(on: basicContainer, loginWarning: true, errors: [expectedError], username: "tim", usernameError: true, passwordError: true, pageInformation: pageInformation)
+        
+        let context = try XCTUnwrap(viewRenderer.capturedContext as? LoginPageContext)
+        XCTAssertEqual(context.errors?.count, 1)
+        XCTAssertEqual(context.errors?.first, expectedError)
+        XCTAssertTrue(context.loginWarning)
+        XCTAssertEqual(context.username, "tim")
+        XCTAssertTrue(context.usernameError)
+        XCTAssertTrue(context.passwordError)
     }
 
     // MARK: - Helpers
