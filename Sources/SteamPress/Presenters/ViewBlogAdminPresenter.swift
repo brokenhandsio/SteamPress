@@ -1,10 +1,13 @@
 import Vapor
 
 public struct ViewBlogAdminPresenter: BlogAdminPresenter {
-    public func createIndexView(on container: Container, errors: [String]?, pageInformation: BlogAdminPageInformation) -> EventLoopFuture<View> {
+    public func createIndexView(on container: Container, posts: [BlogPost], users: [BlogUser], errors: [String]?, pageInformation: BlogAdminPageInformation) -> EventLoopFuture<View> {
         do {
             let viewRenderer = try container.make(ViewRenderer.self)
-            return viewRenderer.render("something")
+            let publishedPosts = posts.filter { $0.published }
+            let draftPosts = posts.filter { !$0.published }
+            let context = AdminPageContext(errors: errors, publishedPosts: publishedPosts, draftPosts: draftPosts, users: users, pageInformation: pageInformation)
+            return viewRenderer.render("blog/admin/index", context)
         } catch {
             return container.future(error: error)
         }

@@ -104,14 +104,16 @@ struct UserAdminController: RouteCollection {
         return try flatMap(req.parameters.next(BlogUser.self), userRepository.getUsersCount(on: req)) { user, userCount in
             guard userCount > 1 else {
                 let presenter = try req.make(BlogAdminPresenter.self)
-                let view = try presenter.createIndexView(on: req, errors: ["You cannot delete the last user"], pageInformation: req.adminPageInfomation())
+                #warning("Test posts and users")
+                let view = try presenter.createIndexView(on: req, posts: [], users: [], errors: ["You cannot delete the last user"], pageInformation: req.adminPageInfomation())
                 return try view.encode(for: req)
             }
 
             let loggedInUser = try req.requireAuthenticated(BlogUser.self)
             guard loggedInUser.userID != user.userID else {
                 let presenter = try req.make(BlogAdminPresenter.self)
-                let view = try presenter.createIndexView(on: req, errors: ["You cannot delete yourself whilst logged in"], pageInformation: req.adminPageInfomation())
+                #warning("Test posts and users")
+                let view = try presenter.createIndexView(on: req, posts: [], users: [], errors: ["You cannot delete yourself whilst logged in"], pageInformation: req.adminPageInfomation())
                 return try view.encode(for: req)
             }
 
