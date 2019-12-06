@@ -99,10 +99,11 @@ public struct ViewBlogPresenter: BlogPresenter {
         }
     }
 
-    public func searchView(on container: Container, posts: [BlogPost]?, searchTerm: String?, pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
+    public func searchView(on container: Container, posts: [BlogPost], searchTerm: String?, pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
         do {
             let viewRenderer = try container.make(ViewRenderer.self)
-            return viewRenderer.render("something")
+            let context = SearchPageContext(searchTerm: searchTerm, posts: posts, pageInformation: pageInformation)
+            return viewRenderer.render("blog/search", context)
         } catch {
             return container.future(error: error)
         }

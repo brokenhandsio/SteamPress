@@ -34,7 +34,7 @@ class SearchTests: XCTestCase {
         let response = try testWorld.getResponse(to: "/search?term=")
 
         XCTAssertEqual(response.http.status, .ok)
-        XCTAssertNil(presenter.searchPosts)
+        XCTAssertEqual(presenter.searchPosts?.count, 0)
         XCTAssertNil(presenter.searchTerm)
     }
 
@@ -42,7 +42,7 @@ class SearchTests: XCTestCase {
         let response = try testWorld.getResponse(to: "/search")
 
         XCTAssertEqual(response.http.status, .ok)
-        XCTAssertNil(presenter.searchPosts)
+        XCTAssertEqual(presenter.searchPosts?.count, 0)
         XCTAssertNil(presenter.searchTerm)
     }
 }

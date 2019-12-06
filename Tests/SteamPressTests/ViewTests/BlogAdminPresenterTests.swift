@@ -252,37 +252,6 @@ class BlogAdminPresenterTests: XCTestCase {
 //
 //        XCTAssertEqual(viewRenderer.capturedContext?["site_uri"]?.string, "http://test.com/")
 //    }
-//
-//    func testSearchPageGetsCorrectParameters() throws {
-//        let (posts, _, users) = try setupBlogIndex()
-//        _ = try viewFactory.searchView(uri: searchURI, searchTerm: "Test", foundPosts: posts, emptySearch: false, user: users[0])
-//
-//        XCTAssertEqual(viewRenderer.capturedContext?["uri"]?.string, searchURI.descriptionWithoutPort)
-//
-//        XCTAssertEqual(viewRenderer.capturedContext?["posts"]?["data"]?.array?.count, posts.total)
-//        XCTAssertEqual((viewRenderer.capturedContext?["posts"]?["data"]?.array?.first)?["title"]?.string, posts.data.first?.title)
-//        XCTAssertEqual(viewRenderer.capturedContext?["user"]?["name"]?.string, users.first?.name)
-//        XCTAssertEqual(viewRenderer.leafPath, "blog/search")
-//        XCTAssertNil(viewRenderer.capturedContext?["emptySearch"]?.bool)
-//        XCTAssertEqual(viewRenderer.capturedContext?["searchTerm"]?.string, "Test")
-//        XCTAssertEqual(viewRenderer.capturedContext?["searchCount"]?.int, 2)
-//        XCTAssertEqual(viewRenderer.capturedContext?["disqus_name"]?.string, disqusName)
-//        XCTAssertEqual(viewRenderer.capturedContext?["site_twitter_handle"]?.string, siteTwitterHandle)
-//        XCTAssertEqual(viewRenderer.capturedContext?["google_analytics_identifier"]?.string, googleAnalyticsIdentifier)
-//    }
-//
-//    func testSearchPageGetsFlagIfNoSearchTermProvided() throws {
-//        _ = try viewFactory.searchView(uri: searchURI, searchTerm: nil, foundPosts: nil, emptySearch: true, user: nil)
-//
-//        XCTAssertTrue(viewRenderer.capturedContext?["emptySearch"]?.bool ?? false)
-//        XCTAssertNil(viewRenderer.capturedContext?["posts"])
-//    }
-//
-//    func testSearchPageGetsCountIfNoPagesFound() throws {
-//        _ = try viewFactory.searchView(uri: searchURI, searchTerm: "Test", foundPosts: BlogPost.makeQuery().paginate(for: indexRequest), emptySearch: false, user: nil)
-//
-//        XCTAssertEqual(viewRenderer.capturedContext?["searchCount"]?.int, 0)
-//    }
 
 //func testTagPageGetsUri() throws {
 //    _ = try testWorld.getResponse(to: tagRequestPath)

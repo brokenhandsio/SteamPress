@@ -17,6 +17,7 @@ class BlogPresenterTests: XCTestCase {
     private let authorURL = URL(string: "https://brokenhands.io/authors/luke")!
     private let loginURL = URL(string: "https://brokenhands.io/admin/login")!
     private let websiteURL = URL(string: "https://brokenhands.io")!
+    private let searchURL = URL(string: "https://brokenhands.io/search?term=vapor")!
     
     private static let siteTwitterHandle = "brokenhandsio"
     private static let disqusName = "steampress"
@@ -465,6 +466,37 @@ class BlogPresenterTests: XCTestCase {
         XCTAssertEqual(context.username, "tim")
         XCTAssertTrue(context.usernameError)
         XCTAssertTrue(context.passwordError)
+    }
+    
+    func testSearchPageGetsCorrectParameters() throws {
+        let author = TestDataBuilder.anyUser(id: 0)
+        let post1 = try TestDataBuilder.anyPost(author: author, title: "Vapor 1")
+        let post2 = try TestDataBuilder.anyPost(author: author, title: "Vapor 2")
+        let pageInformation = buildPageInformation(currentPageURL: searchURL)
+        
+        _ = presenter.searchView(on: basicContainer, posts: [post1, post2], searchTerm: "vapor", pageInformation: pageInformation)
+        
+        let context = try XCTUnwrap(viewRenderer.capturedContext as? SearchPageContext)
+        XCTAssertEqual(context.searchTerm, "vapor")
+        XCTAssertEqual(context.posts.count, 2)
+        XCTAssertEqual(context.posts.first?.title, "Vapor 1")
+        XCTAssertEqual(context.posts.last?.title, "Vapor 2")
+        
+        XCTAssertEqual(viewRenderer.templatePath, "blog/search")
+        XCTAssertEqual(context.pageInformation.disqusName, BlogPresenterTests.disqusName)
+        XCTAssertEqual(context.pageInformation.googleAnalyticsIdentifier, BlogPresenterTests.googleAnalyticsIdentifier)
+        XCTAssertEqual(context.pageInformation.siteTwitterHandler, BlogPresenterTests.siteTwitterHandle)
+        XCTAssertNil(context.pageInformation.loggedInUser)
+        XCTAssertEqual(context.pageInformation.websiteURL.absoluteString, "https://brokenhands.io")
+        XCTAssertEqual(context.pageInformation.currentPageURL.absoluteString, "https://brokenhands.io/search?term=vapor")
+    }
+
+    func testSearchPageGetsNilIfNoSearchTermProvided() throws {
+        let pageInformation = buildPageInformation(currentPageURL: searchURL)
+        _ = presenter.searchView(on: basicContainer, posts: [], searchTerm: nil, pageInformation: pageInformation)
+
+        let context = try XCTUnwrap(viewRenderer.capturedContext as? SearchPageContext)
+        XCTAssertNil(context.searchTerm)
     }
 
     // MARK: - Helpers

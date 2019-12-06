@@ -131,7 +131,7 @@ struct BlogController: RouteCollection {
     func searchHandler(_ req: Request) throws -> EventLoopFuture<View> {
         let preseneter = try req.make(BlogPresenter.self)
         guard let searchTerm = req.query[String.self, at: "term"], !searchTerm.isEmpty else {
-            return preseneter.searchView(on: req, posts: nil, searchTerm: nil, pageInformation: try req.pageInformation())
+            return preseneter.searchView(on: req, posts: [], searchTerm: nil, pageInformation: try req.pageInformation())
         }
 
         let postRepository = try req.make(BlogPostRepository.self)
