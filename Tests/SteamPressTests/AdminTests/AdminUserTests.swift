@@ -21,6 +21,31 @@ class AdminUserTests: XCTestCase {
     }
 
     // MARK: - User Creation
+    
+    func testPresenterGetsCorrectValuesForCreateUserPage() throws {
+        _ = try testWorld.getResponse(to: createUserPath, loggedInUser: user)
+        
+        XCTAssertNil(presenter.createUserErrors)
+        XCTAssertNil(presenter.createUserName)
+        XCTAssertNil(presenter.createUserUsername)
+        let passwordError = try XCTUnwrap(presenter.createUserPasswordError)
+        XCTAssertFalse(passwordError)
+        let confirmPasswordError = try XCTUnwrap(presenter.createUserPasswordError)
+        XCTAssertFalse(confirmPasswordError)
+        let resetPasswordRequired = try XCTUnwrap(presenter.createUserResetPasswordRequired)
+        XCTAssertFalse(resetPasswordRequired)
+        XCTAssertNil(presenter.createUserUserID)
+        XCTAssertNil(presenter.createUserProfilePicture)
+        XCTAssertNil(presenter.createUserTwitterHandle)
+        XCTAssertNil(presenter.createUserBiography)
+        XCTAssertNil(presenter.createUserTagline)
+        let editing = try XCTUnwrap(presenter.createUserEditing)
+        XCTAssertFalse(editing)
+        let nameError = try XCTUnwrap(presenter.createUserNameError)
+        XCTAssertFalse(nameError)
+        let usernameError = try XCTUnwrap(presenter.createUserUsernameError)
+        XCTAssertFalse(usernameError)
+    }
 
     func testUserCanBeCreatedSuccessfully() throws {
         struct CreateUserData: Content {
@@ -85,6 +110,8 @@ class AdminUserTests: XCTestCase {
 
         let viewErrors = try XCTUnwrap(presenter.createUserErrors)
         XCTAssertTrue(viewErrors.contains("You must specify a name"))
+        let nameError = try XCTUnwrap(presenter.createUserNameError)
+        XCTAssertTrue(nameError)
     }
 
     func testUserCannotBeCreatedWithoutUsername() throws {
@@ -100,6 +127,8 @@ class AdminUserTests: XCTestCase {
 
         let viewErrors = try XCTUnwrap(presenter.createUserErrors)
         XCTAssertTrue(viewErrors.contains("You must specify a username"))
+        let usernameError = try XCTUnwrap(presenter.createUserUsernameError)
+        XCTAssertTrue(usernameError)
     }
 
     func testUserCannotBeCreatedWithUsernameThatAlreadyExists() throws {
@@ -116,6 +145,8 @@ class AdminUserTests: XCTestCase {
 
         let viewErrors = try XCTUnwrap(presenter.createUserErrors)
         XCTAssertTrue(viewErrors.contains("Sorry that username has already been taken"))
+        let usernameError = try XCTUnwrap(presenter.createUserUsernameError)
+        XCTAssertTrue(usernameError)
     }
 
     func testUserCannotBeCreatedWithUsernameThatAlreadyExistsIgnoringCase() throws {
@@ -132,6 +163,8 @@ class AdminUserTests: XCTestCase {
 
         let viewErrors = try XCTUnwrap(presenter.createUserErrors)
         XCTAssertTrue(viewErrors.contains("Sorry that username has already been taken"))
+        let usernameError = try XCTUnwrap(presenter.createUserUsernameError)
+        XCTAssertTrue(usernameError)
     }
 
     func testUserCannotBeCreatedWithoutPassword() throws {
@@ -239,6 +272,8 @@ class AdminUserTests: XCTestCase {
 
         let viewErrors = try XCTUnwrap(presenter.createUserErrors)
         XCTAssertTrue(viewErrors.contains("You must specify a name"))
+        let nameError = try XCTUnwrap(presenter.createUserNameError)
+        XCTAssertTrue(nameError)
     }
 
     func testUserCannotBeCreatedWithEmptyUsername() throws {
@@ -255,6 +290,8 @@ class AdminUserTests: XCTestCase {
 
         let viewErrors = try XCTUnwrap(presenter.createUserErrors)
         XCTAssertTrue(viewErrors.contains("You must specify a username"))
+        let usernameError = try XCTUnwrap(presenter.createUserUsernameError)
+        XCTAssertTrue(usernameError)
     }
 
     func testUserCannotBeCreatedWithInvalidUsername() throws {
@@ -271,6 +308,8 @@ class AdminUserTests: XCTestCase {
 
         let viewErrors = try XCTUnwrap(presenter.createUserErrors)
         XCTAssertTrue(viewErrors.contains("The username provided is not valid"))
+        let usernameError = try XCTUnwrap(presenter.createUserUsernameError)
+        XCTAssertTrue(usernameError)
     }
 
     func testPasswordIsActuallyHashedWhenCreatingAUser() throws {
@@ -305,6 +344,19 @@ class AdminUserTests: XCTestCase {
         XCTAssertEqual(presenter.createUserTwitterHandle, user.twitterHandle)
         XCTAssertEqual(presenter.createUserBiography, user.biography)
         XCTAssertEqual(presenter.createUserTagline, user.tagline)
+        XCTAssertNil(presenter.createUserErrors)
+        let passwordError = try XCTUnwrap(presenter.createUserPasswordError)
+        XCTAssertFalse(passwordError)
+        let confirmPasswordError = try XCTUnwrap(presenter.createUserPasswordError)
+        XCTAssertFalse(confirmPasswordError)
+        let resetPasswordRequired = try XCTUnwrap(presenter.createUserResetPasswordRequired)
+        XCTAssertEqual(resetPasswordRequired, user.resetPasswordRequired)
+        let editing = try XCTUnwrap(presenter.createUserEditing)
+        XCTAssertTrue(editing)
+        let nameError = try XCTUnwrap(presenter.createUserNameError)
+        XCTAssertFalse(nameError)
+        let usernameError = try XCTUnwrap(presenter.createUserUsernameError)
+        XCTAssertFalse(usernameError)
     }
 
     func testUserCanBeUpdated() throws {

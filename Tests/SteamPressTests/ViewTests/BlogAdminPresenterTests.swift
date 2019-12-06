@@ -13,6 +13,8 @@ class BlogAdminPresenterTests: XCTestCase {
     private let websiteURL = URL(string: "https://brokenhands.io")!
     private let resetPasswordURL = URL(string: "https://brokenhands.io/blog/admin/resetPassword")!
     private let adminPageURL = URL(string: "https://brokenhands.io/blog/admin")!
+    private let createUserPageURL = URL(string: "https://brokenhands.io/blog/admin/createUser")!
+    private let editUserPageURL = URL(string: "https://brokenhands.io/blog/admin/users/0/edit")!
     
     private static let siteTwitterHandle = "brokenhandsio"
     private static let disqusName = "steampress"
@@ -97,83 +99,116 @@ class BlogAdminPresenterTests: XCTestCase {
         XCTAssertEqual(context.errors?.first, expectedError)
     }
     
-    // MARK: - Create User Page
+    // MARK: - Create/Edit User Page
 
-//    func testCreateUserViewGetsCorrectParameters() throws {
-//        let user = TestDataBuilder.anyUser()
-//        let _ = try viewFactory.createUserView(loggedInUser: user)
-//        XCTAssertFalse((viewRenderer.capturedContext?["name_error"]?.bool) ?? true)
-//        XCTAssertFalse((viewRenderer.capturedContext?["username_error"]?.bool) ?? true)
-//        XCTAssertNil(viewRenderer.capturedContext?["errors"])
-//        XCTAssertNil(viewRenderer.capturedContext?["name_supplied"])
-//        XCTAssertNil(viewRenderer.capturedContext?["username_supplied"])
-//        XCTAssertNil(viewRenderer.capturedContext?["password_error"])
-//        XCTAssertNil(viewRenderer.capturedContext?["confirm_password_error"])
-//        XCTAssertNil(viewRenderer.capturedContext?["reset_password_on_login_supplied"])
-//        XCTAssertNil(viewRenderer.capturedContext?["editing"])
-//        XCTAssertNil(viewRenderer.capturedContext?["user_id"])
-//        XCTAssertNil(viewRenderer.capturedContext?["twitter_handle_supplied"])
-//        XCTAssertNil(viewRenderer.capturedContext?["profile_picture_supplied"])
-//        XCTAssertNil(viewRenderer.capturedContext?["biography_supplied"])
-//        XCTAssertNil(viewRenderer.capturedContext?["tagline_supplied"])
-//        XCTAssertEqual(viewRenderer.leafPath, "blog/admin/createUser")
-//        XCTAssertEqual(viewRenderer.capturedContext?["user"]?["name"]?.string, user.name)
-//    }
-//
-//    func testCreateUserViewWhenErrors() throws {
-//        let user = TestDataBuilder.anyUser()
-//        let expectedError = "Not valid password"
-//        let _ = try viewFactory.createUserView(errors: [expectedError], name: "Luke", username: "luke", passwordError: true, confirmPasswordError: true, resetPasswordRequired: true, profilePicture: "https://static.brokenhands.io/steampress/images/authors/luke.png", twitterHandle: "luke", biography: "The last Jedi in the Galaxy", tagline: "A son without a father", loggedInUser: user)
-//        XCTAssertFalse((viewRenderer.capturedContext?["name_error"]?.bool) ?? true)
-//        XCTAssertFalse((viewRenderer.capturedContext?["username_error"]?.bool) ?? true)
-//        XCTAssertEqual(viewRenderer.capturedContext?["errors"]?.array?.first?.string, expectedError)
-//        XCTAssertEqual(viewRenderer.capturedContext?["name_supplied"]?.string, "Luke")
-//        XCTAssertEqual(viewRenderer.capturedContext?["username_supplied"]?.string, "luke")
-//        XCTAssertTrue((viewRenderer.capturedContext?["password_error"]?.bool) ?? false)
-//        XCTAssertTrue((viewRenderer.capturedContext?["confirm_password_error"]?.bool) ?? false)
-//        XCTAssertTrue((viewRenderer.capturedContext?["reset_password_on_login_supplied"]?.bool) ?? false)
-//        XCTAssertEqual(viewRenderer.capturedContext?["profile_picture_supplied"]?.string, "https://static.brokenhands.io/steampress/images/authors/luke.png")
-//        XCTAssertEqual(viewRenderer.capturedContext?["twitter_handle_supplied"]?.string, "luke")
-//        XCTAssertEqual(viewRenderer.capturedContext?["tagline_supplied"]?.string, "A son without a father")
-//        XCTAssertEqual(viewRenderer.capturedContext?["biography_supplied"]?.string, "The last Jedi in the Galaxy")
-//        XCTAssertEqual(viewRenderer.capturedContext?["user"]?["name"]?.string, user.name)
-//    }
-//
-//    func testCreateUserViewWhenNoNameOrUsernameSupplied() throws {
-//        let user = TestDataBuilder.anyUser()
-//        let expectedError = "No name supplied"
-//        let _ = try viewFactory.createUserView(errors: [expectedError], name: nil, username: nil, passwordError: true, confirmPasswordError: true, resetPasswordRequired: true, loggedInUser: user)
-//        XCTAssertTrue((viewRenderer.capturedContext?["name_error"]?.bool) ?? false)
-//        XCTAssertTrue((viewRenderer.capturedContext?["username_error"]?.bool) ?? false)
-//        XCTAssertEqual(viewRenderer.capturedContext?["user"]?["name"]?.string, user.name)
-//    }
-//
-//    func testCreateUserViewForEditing() throws {
-//        let user = TestDataBuilder.anyUser()
-//        let _ = try viewFactory.createUserView(editing: true, errors: nil, name: "Luke", username: "luke", userId: Identifier(StructuredData.number(1), in: nil), profilePicture: "https://static.brokenhands.io/steampress/images/authors/luke.png", twitterHandle: "luke", biography: "The last Jedi in the Galaxy", tagline: "A son without a father", loggedInUser: user)
-//        XCTAssertEqual(viewRenderer.capturedContext?["name_supplied"]?.string, "Luke")
-//        XCTAssertEqual(viewRenderer.capturedContext?["username_supplied"]?.string, "luke")
-//        XCTAssertTrue((viewRenderer.capturedContext?["editing"]?.bool) ?? false)
-//        XCTAssertEqual(viewRenderer.capturedContext?["user_id"]?.int, 1)
-//        XCTAssertEqual(viewRenderer.capturedContext?["profile_picture_supplied"]?.string, "https://static.brokenhands.io/steampress/images/authors/luke.png")
-//        XCTAssertEqual(viewRenderer.capturedContext?["twitter_handle_supplied"]?.string, "luke")
-//        XCTAssertEqual(viewRenderer.capturedContext?["tagline_supplied"]?.string, "A son without a father")
-//        XCTAssertEqual(viewRenderer.capturedContext?["biography_supplied"]?.string, "The last Jedi in the Galaxy")
-//        XCTAssertEqual(viewRenderer.leafPath, "blog/admin/createUser")
-//        XCTAssertEqual(viewRenderer.capturedContext?["user"]?["name"]?.string, user.name)
-//    }
-//
-//    func testCreateUserViewThrowsWhenTryingToEditWithoutUserId() throws {
-//        var errored = false
-//        do {
-//            let _ = try viewFactory.createUserView(editing: true, errors: nil, name: "Luke", username: "luke", userId: nil, loggedInUser: TestDataBuilder.anyUser())
-//        } catch {
-//            errored = true
-//        }
-//
-//        XCTAssertTrue(errored)
-//    }
-//
+    func testCreateUserViewGetsCorrectParameters() throws {
+        let pageInformation = buildPageInformation(currentPageURL: createUserPageURL)
+        _ = presenter.createUserView(on: basicContainer, editing: false, errors: nil, name: nil, nameError: false, username: nil, usernameErorr: false, passwordError: false, confirmPasswordError: false, resetPasswordOnLogin: false, userID: nil, profilePicture: nil, twitterHandle: nil, biography: nil, tagline: nil, pageInformation: pageInformation)
+        
+        let context = try XCTUnwrap(viewRenderer.capturedContext as? CreateUserPageContext)
+        
+        XCTAssertEqual(context.title, "Create User")
+        XCTAssertFalse(context.editing)
+        XCTAssertNil(context.errors)
+        XCTAssertNil(context.nameSupplied)
+        XCTAssertFalse(context.nameError)
+        XCTAssertNil(context.usernameSupplied)
+        XCTAssertFalse(context.usernameError)
+        XCTAssertFalse(context.passwordError)
+        XCTAssertFalse(context.confirmPasswordError)
+        XCTAssertFalse(context.resetPasswordOnLoginSupplied)
+        XCTAssertNil(context.userID)
+        XCTAssertNil(context.twitterHandleSupplied)
+        XCTAssertNil(context.profilePictureSupplied)
+        XCTAssertNil(context.taglineSupplied)
+        XCTAssertNil(context.biographySupplied)
+        XCTAssertEqual(viewRenderer.templatePath, "blog/admin/createUser")
+        
+        XCTAssertEqual(context.pageInformation.currentPageURL.absoluteString, "https://brokenhands.io/blog/admin/createUser")
+        XCTAssertEqual(context.pageInformation.websiteURL.absoluteString, "https://brokenhands.io")
+        XCTAssertEqual(context.pageInformation.loggedInUser.name, currentUser.name)
+    }
+
+    func testCreateUserViewWhenErrors() throws {
+        let expectedError = "Not valid password"
+        let expectedName = "Luke"
+        let expectedUsername = "luke"
+        let expectedProfilePicture = "https://static.brokenhands.io/steampress/images/authors/luke.png"
+        let expectedTwitterHandler = "luke"
+        let expectedBiography = "The last Jedi in the Galaxy"
+        let expectedTagline = "A son without a father"
+        let pageInformation = buildPageInformation(currentPageURL: createUserPageURL)
+        
+        _ = presenter.createUserView(on: basicContainer, editing: false, errors: [expectedError], name: expectedName, nameError: false, username: expectedUsername, usernameErorr: false, passwordError: true, confirmPasswordError: true, resetPasswordOnLogin: true, userID: nil, profilePicture: expectedProfilePicture, twitterHandle: expectedTwitterHandler, biography: expectedBiography, tagline: expectedTagline, pageInformation: pageInformation)
+       
+        let context = try XCTUnwrap(viewRenderer.capturedContext as? CreateUserPageContext)
+        XCTAssertEqual(context.errors?.count, 1)
+        XCTAssertEqual(context.errors?.first, expectedError)
+        XCTAssertEqual(context.nameSupplied, expectedName)
+        XCTAssertFalse(context.nameError)
+        XCTAssertEqual(context.usernameSupplied, expectedUsername)
+        XCTAssertFalse(context.usernameError)
+        XCTAssertTrue(context.passwordError)
+        XCTAssertTrue(context.confirmPasswordError)
+        XCTAssertTrue(context.resetPasswordOnLoginSupplied)
+        XCTAssertEqual(context.profilePictureSupplied, expectedProfilePicture)
+        XCTAssertEqual(context.twitterHandleSupplied, expectedTwitterHandler)
+        XCTAssertEqual(context.taglineSupplied, expectedTagline)
+        XCTAssertEqual(context.biographySupplied, expectedBiography)
+    }
+
+    func testCreateUserViewWhenNoNameOrUsernameSupplied() throws {
+        let expectedError = "No name supplied"
+        let pageInformation = buildPageInformation(currentPageURL: createUserPageURL)
+        
+        _ = presenter.createUserView(on: basicContainer, editing: false, errors: [expectedError], name: nil, nameError: true, username: nil, usernameErorr: true, passwordError: false, confirmPasswordError: false, resetPasswordOnLogin: true, userID: nil, profilePicture: nil, twitterHandle: nil, biography: nil, tagline: nil, pageInformation: pageInformation)
+        
+        let context = try XCTUnwrap(viewRenderer.capturedContext as? CreateUserPageContext)
+        XCTAssertNil(context.nameSupplied)
+        XCTAssertTrue(context.nameError)
+        XCTAssertNil(context.usernameSupplied)
+        XCTAssertTrue(context.usernameError)
+    }
+
+    func testCreateUserViewForEditing() throws {
+        let pageInformation = buildPageInformation(currentPageURL: editUserPageURL)
+        _ = presenter.createUserView(on: basicContainer, editing: true, errors: nil, name: currentUser.name, nameError: false, username: currentUser.username, usernameErorr: false, passwordError: false, confirmPasswordError: false, resetPasswordOnLogin: false, userID: currentUser.userID, profilePicture: currentUser.profilePicture, twitterHandle: currentUser.twitterHandle, biography: currentUser.biography, tagline: currentUser.tagline, pageInformation: pageInformation)
+        let context = try XCTUnwrap(viewRenderer.capturedContext as? CreateUserPageContext)
+        XCTAssertEqual(context.nameSupplied, currentUser.name)
+        XCTAssertFalse(context.nameError)
+        XCTAssertEqual(context.usernameSupplied, currentUser.username)
+        XCTAssertFalse(context.usernameError)
+        XCTAssertFalse(context.passwordError)
+        XCTAssertFalse(context.confirmPasswordError)
+        XCTAssertFalse(context.resetPasswordOnLoginSupplied)
+        XCTAssertEqual(context.profilePictureSupplied, currentUser.profilePicture)
+        XCTAssertEqual(context.twitterHandleSupplied, currentUser.twitterHandle)
+        XCTAssertEqual(context.taglineSupplied, currentUser.tagline)
+        XCTAssertEqual(context.biographySupplied, currentUser.biography)
+        XCTAssertEqual(context.userID, currentUser.userID)
+        XCTAssertTrue(context.editing)
+        
+        XCTAssertEqual(viewRenderer.templatePath, "blog/admin/createUser")
+        XCTAssertEqual(context.pageInformation.loggedInUser.name, currentUser.name)
+        XCTAssertEqual(context.pageInformation.websiteURL.absoluteString, "https://brokenhands.io")
+        XCTAssertEqual(context.pageInformation.currentPageURL.absoluteString, "https://brokenhands.io/blog/admin/users/0/edit")
+    }
+
+    func testCreateUserViewThrowsWhenTryingToEditWithoutUserId() throws {
+        let pageInformation = buildPageInformation(currentPageURL: editUserPageURL)
+        var errored = false
+        
+        do {
+            _ = try presenter.createUserView(on: basicContainer, editing: true, errors: [], name: currentUser.name, nameError: false, username: currentUser.username, usernameErorr: false, passwordError: false, confirmPasswordError: false, resetPasswordOnLogin: false, userID: nil, profilePicture: currentUser.profilePicture, twitterHandle: currentUser.twitterHandle, biography: currentUser.biography, tagline: currentUser.tagline, pageInformation: pageInformation).wait()
+        } catch {
+            errored = true
+        }
+        XCTAssertTrue(errored)
+    }
+
+    
+    // MARK: - Create/Edit Blog Post
+    
 //    func testCreateBlogPostViewGetsCorrectParameters() throws {
 //        let user = TestDataBuilder.anyUser()
 //        let _ = try viewFactory.createBlogPostView(uri: createPostURI, user: user)

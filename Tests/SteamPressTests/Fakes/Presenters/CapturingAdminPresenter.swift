@@ -42,7 +42,11 @@ class CapturingAdminPresenter: BlogAdminPresenter {
     private(set) var createUserTwitterHandle: String?
     private(set) var createUserBiography: String?
     private(set) var createUserTagline: String?
-    func createUserView(on container: Container, errors: [String]?, name: String?, username: String?, passwordError: Bool, confirmPasswordError: Bool, userID: Int?, profilePicture: String?, twitterHandle: String?, biography: String?, tagline: String?, pageInformation: BlogAdminPageInformation) -> EventLoopFuture<View> {
+    private(set) var createUserEditing: Bool?
+    private(set) var createUserNameError: Bool?
+    private(set) var createUserUsernameError: Bool?
+    func createUserView(on container: Container, editing: Bool, errors: [String]?, name: String?, nameError: Bool, username: String?, usernameErorr: Bool, passwordError: Bool, confirmPasswordError: Bool, resetPasswordOnLogin: Bool, userID: Int?, profilePicture: String?, twitterHandle: String?, biography: String?, tagline: String?, pageInformation: BlogAdminPageInformation) -> EventLoopFuture<View> {
+        self.createUserEditing = editing
         self.createUserErrors = errors
         self.createUserName = name
         self.createUserUsername = username
@@ -53,6 +57,9 @@ class CapturingAdminPresenter: BlogAdminPresenter {
         self.createUserTwitterHandle = twitterHandle
         self.createUserBiography = biography
         self.createUserTagline = tagline
+        self.createUserNameError = nameError
+        self.createUserUsernameError = usernameErorr
+        self.createUserResetPasswordRequired = resetPasswordOnLogin
         return createFutureView(on: container)
     }
 

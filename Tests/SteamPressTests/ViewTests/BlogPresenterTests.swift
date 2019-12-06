@@ -477,6 +477,7 @@ class BlogPresenterTests: XCTestCase {
         _ = presenter.searchView(on: basicContainer, posts: [post1, post2], searchTerm: "vapor", pageInformation: pageInformation)
         
         let context = try XCTUnwrap(viewRenderer.capturedContext as? SearchPageContext)
+        XCTAssertEqual(context.title, "Search Blog")
         XCTAssertEqual(context.searchTerm, "vapor")
         XCTAssertEqual(context.posts.count, 2)
         XCTAssertEqual(context.posts.first?.title, "Vapor 1")

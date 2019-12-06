@@ -22,10 +22,17 @@ public struct ViewBlogAdminPresenter: BlogAdminPresenter {
         }
     }
     
-    public func createUserView(on container: Container, errors: [String]?, name: String?, username: String?, passwordError: Bool, confirmPasswordError: Bool, userID: Int?, profilePicture: String?, twitterHandle: String?, biography: String?, tagline: String?, pageInformation: BlogAdminPageInformation) -> EventLoopFuture<View> {
+    public func createUserView(on container: Container, editing: Bool, errors: [String]?, name: String?, nameError: Bool, username: String?, usernameErorr: Bool, passwordError: Bool, confirmPasswordError: Bool, resetPasswordOnLogin: Bool, userID: Int?, profilePicture: String?, twitterHandle: String?, biography: String?, tagline: String?, pageInformation: BlogAdminPageInformation) -> EventLoopFuture<View> {
         do {
+            if editing {
+                guard userID != nil else {
+                    return container.future(error: SteamPressError(identifier: "ViewBlogAdminPresenter", "User ID is nil whilst editing"))
+                }
+            }
+            
             let viewRenderer = try container.make(ViewRenderer.self)
-            return viewRenderer.render("something")
+            let context = CreateUserPageContext(editing: editing, errors: errors, nameSupplied: name, nameError: nameError, usernameSupplied: username, usernameError: usernameErorr, passwordError: passwordError, confirmPasswordError: confirmPasswordError, resetPasswordOnLoginSupplied: resetPasswordOnLogin, userID: userID, twitterHandleSupplied: twitterHandle, profilePictureSupplied: profilePicture, biographySupplied: biography, taglineSupplied: tagline, pageInformation: pageInformation)
+            return viewRenderer.render("blog/admin/createUser", context)
         } catch {
             return container.future(error: error)
         }

@@ -23,7 +23,7 @@ struct UserAdminController: RouteCollection {
     // MARK: - Route handlers
     func createUserHandler(_ req: Request) throws -> EventLoopFuture<View> {
         let presenter = try req.make(BlogAdminPresenter.self)
-        return try presenter.createUserView(on: req, errors: nil, name: nil, username: nil, passwordError: false, confirmPasswordError: false, userID: nil, profilePicture: nil, twitterHandle: nil, biography: nil, tagline: nil, pageInformation: req.adminPageInfomation())
+        return try presenter.createUserView(on: req, editing: false, errors: nil, name: nil, nameError: false, username: nil, usernameErorr: false, passwordError: false, confirmPasswordError: false, resetPasswordOnLogin: false, userID: nil, profilePicture: nil, twitterHandle: nil, biography: nil, tagline: nil, pageInformation: req.adminPageInfomation())
     }
 
     func createUserPostHandler(_ req: Request) throws -> EventLoopFuture<Response> {
@@ -32,7 +32,7 @@ struct UserAdminController: RouteCollection {
         return try validateUserCreation(data, on: req).flatMap { createUserErrors in
             if let errors = createUserErrors {
                 let presenter = try req.make(BlogAdminPresenter.self)
-                let view = try presenter.createUserView(on: req, errors: errors.errors, name: data.name, username: data.username, passwordError: errors.passwordError, confirmPasswordError: errors.confirmPasswordError, userID: nil, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline, pageInformation: req.adminPageInfomation())
+                let view = try presenter.createUserView(on: req, editing: true, errors: errors.errors, name: data.name, nameError: errors.nameError, username: data.username, usernameErorr: errors.usernameError, passwordError: errors.passwordError, confirmPasswordError: errors.confirmPasswordError, resetPasswordOnLogin: data.resetPasswordOnLogin ?? false, userID: nil, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline, pageInformation: req.adminPageInfomation())
                 return try view.encode(for: req)
             }
 
@@ -57,7 +57,7 @@ struct UserAdminController: RouteCollection {
     func editUserHandler(_ req: Request) throws -> EventLoopFuture<View> {
         return try req.parameters.next(BlogUser.self).flatMap { user in
             let presenter = try req.make(BlogAdminPresenter.self)
-            return try presenter.createUserView(on: req, errors: nil, name: user.name, username: user.username, passwordError: false, confirmPasswordError: false, userID: user.userID, profilePicture: user.profilePicture, twitterHandle: user.twitterHandle, biography: user.biography, tagline: user.tagline, pageInformation: req.adminPageInfomation())
+            return try presenter.createUserView(on: req, editing: true, errors: nil, name: user.name, nameError: false, username: user.username, usernameErorr: false, passwordError: false, confirmPasswordError: false, resetPasswordOnLogin: user.resetPasswordRequired, userID: user.userID, profilePicture: user.profilePicture, twitterHandle: user.twitterHandle, biography: user.biography, tagline: user.tagline, pageInformation: req.adminPageInfomation())
         }
     }
 
@@ -72,7 +72,8 @@ struct UserAdminController: RouteCollection {
             return try self.validateUserCreation(data, editing: true, on: req).flatMap { errors in
                 if let editUserErrors = errors {
                     let presenter = try req.make(BlogAdminPresenter.self)
-                    let view = try presenter.createUserView(on: req, errors: editUserErrors.errors, name: data.name, username: data.username, passwordError: editUserErrors.passwordError, confirmPasswordError: editUserErrors.confirmPasswordError, userID: nil, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline, pageInformation: req.adminPageInfomation())
+                    #warning("Test editing and name error and username error and reset password on login")
+                    let view = try presenter.createUserView(on: req, editing: true, errors: editUserErrors.errors, name: data.name, nameError: false, username: data.username, usernameErorr: false, passwordError: editUserErrors.passwordError, confirmPasswordError: editUserErrors.confirmPasswordError, resetPasswordOnLogin: data.resetPasswordOnLogin ?? false, userID: nil, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline, pageInformation: req.adminPageInfomation())
                     return try view.encode(for: req)
                 }
 
@@ -127,13 +128,17 @@ struct UserAdminController: RouteCollection {
         var createUserErrors = [String]()
         var passwordError = false
         var confirmPasswordError = false
+        var nameErorr = false
+        var usernameError = false
 
         if data.name.isEmptyOrWhitespace() {
             createUserErrors.append("You must specify a name")
+            nameErorr = true
         }
 
         if data.username.isEmptyOrWhitespace() {
             createUserErrors.append("You must specify a username")
+            usernameError = true
         }
 
         if !editing || data.password != nil {
@@ -165,6 +170,7 @@ struct UserAdminController: RouteCollection {
             try data.validate()
         } catch {
             createUserErrors.append("The username provided is not valid")
+            usernameError = true
         }
 
         var usernameUniqueError: EventLoopFuture<String?>
@@ -182,15 +188,16 @@ struct UserAdminController: RouteCollection {
             usernameUniqueError = req.future(nil)
         }
 
-        return usernameUniqueError.map { usernameError in
-            if let uniqueError = usernameError {
+        return usernameUniqueError.map { usernameErrorOccurred in
+            if let uniqueError = usernameErrorOccurred {
                 createUserErrors.append(uniqueError)
+                usernameError = true
             }
             if createUserErrors.count == 0 {
                 return nil
             }
 
-            let errors = CreateUserErrors(errors: createUserErrors, passwordError: passwordError, confirmPasswordError: confirmPasswordError)
+            let errors = CreateUserErrors(errors: createUserErrors, passwordError: passwordError, confirmPasswordError: confirmPasswordError, nameError: nameErorr, usernameError: usernameError)
 
             return errors
 
