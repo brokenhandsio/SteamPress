@@ -508,6 +508,7 @@ class AdminUserTests: XCTestCase {
             let username = "lukes"
             let password = ""
             let confirmPassword = ""
+            let resetPasswordOnLogin = true
         }
 
         let editData = EditUserData()
@@ -520,6 +521,8 @@ class AdminUserTests: XCTestCase {
         let confirmPasswordError = try XCTUnwrap(presenter.createUserConfirmPasswordError)
         XCTAssertTrue(passwordError)
         XCTAssertTrue(confirmPasswordError)
+        let resetPasswordOnLogin = try XCTUnwrap(presenter.createUserResetPasswordRequired)
+        XCTAssertTrue(resetPasswordOnLogin)
     }
 
     func testPasswordIsActuallyHashedWhenEditingAUser() throws {
@@ -541,6 +544,42 @@ class AdminUserTests: XCTestCase {
 
         let updatedUser = try XCTUnwrap(testWorld.context.repository.users.last)
         XCTAssertEqual(updatedUser.password, String(editData.password.reversed()))
+    }
+    
+    func testNameMustBeSetWhenEditingAUser() throws {
+        struct EditUserData: Content {
+            static let defaultContentType = MediaType.urlEncodedForm
+            let name = ""
+            let username = "darth_vader"
+            let password = "somenewpassword"
+            let confirmPassword = "somenewpassword"
+        }
+        
+        let editData = EditUserData()
+        _ = try testWorld.getResponse(to: "/admin/users/\(user.userID!)/edit", body: editData, loggedInUser: user)
+        
+        let editErrors = try XCTUnwrap(presenter.createUserErrors)
+        XCTAssertTrue(editErrors.contains("You must specify a name"))
+        let nameError = try XCTUnwrap(presenter.createUserNameError)
+        XCTAssertTrue(nameError)
+    }
+    
+    func testUsernameMustBeSetWhenEditingAUser() throws {
+        struct EditUserData: Content {
+            static let defaultContentType = MediaType.urlEncodedForm
+            let name = "Darth Vader"
+            let username = ""
+            let password = "somenewpassword"
+            let confirmPassword = "somenewpassword"
+        }
+        
+        let editData = EditUserData()
+        _ = try testWorld.getResponse(to: "/admin/users/\(user.userID!)/edit", body: editData, loggedInUser: user)
+        
+        let editErrors = try XCTUnwrap(presenter.createUserErrors)
+        XCTAssertTrue(editErrors.contains("You must specify a username"))
+        let usernameError = try XCTUnwrap(presenter.createUserUsernameError)
+        XCTAssertTrue(usernameError)
     }
 
     // MARK: - Delete users

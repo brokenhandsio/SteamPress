@@ -72,8 +72,7 @@ struct UserAdminController: RouteCollection {
             return try self.validateUserCreation(data, editing: true, on: req).flatMap { errors in
                 if let editUserErrors = errors {
                     let presenter = try req.make(BlogAdminPresenter.self)
-                    #warning("Test editing and name error and username error and reset password on login")
-                    let view = try presenter.createUserView(on: req, editing: true, errors: editUserErrors.errors, name: data.name, nameError: false, username: data.username, usernameErorr: false, passwordError: editUserErrors.passwordError, confirmPasswordError: editUserErrors.confirmPasswordError, resetPasswordOnLogin: data.resetPasswordOnLogin ?? false, userID: nil, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline, pageInformation: req.adminPageInfomation())
+                    let view = try presenter.createUserView(on: req, editing: true, errors: editUserErrors.errors, name: data.name, nameError: errors?.nameError ?? false, username: data.username, usernameErorr: errors?.usernameError ?? false, passwordError: editUserErrors.passwordError, confirmPasswordError: editUserErrors.confirmPasswordError, resetPasswordOnLogin: data.resetPasswordOnLogin ?? false, userID: nil, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline, pageInformation: req.adminPageInfomation())
                     return try view.encode(for: req)
                 }
 
