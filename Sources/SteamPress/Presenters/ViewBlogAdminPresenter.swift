@@ -1,6 +1,9 @@
 import Vapor
 
 public struct ViewBlogAdminPresenter: BlogAdminPresenter {
+    
+    let pathCreator: BlogPathCreator
+    
     public func createIndexView(on container: Container, posts: [BlogPost], users: [BlogUser], errors: [String]?, pageInformation: BlogAdminPageInformation) -> EventLoopFuture<View> {
         do {
             let viewRenderer = try container.make(ViewRenderer.self)
@@ -13,11 +16,13 @@ public struct ViewBlogAdminPresenter: BlogAdminPresenter {
         }
     }
     
-    public func createPostView(on container: Container, errors: [String]?, title: String?, contents: String?, slugURL: String?, tags: [String]?, isEditing: Bool, post: BlogPost?, isDraft: Bool?, pageInformation: BlogAdminPageInformation) -> EventLoopFuture<View> {
+    public func createPostView(on container: Container, errors: [String]?, title: String?, contents: String?, slugURL: String?, tags: [String]?, isEditing: Bool, post: BlogPost?, isDraft: Bool?, titleError: Bool, contentsError: Bool, pageInformation: BlogAdminPageInformation) -> EventLoopFuture<View> {
         do {
             let viewRenderer = try container.make(ViewRenderer.self)
-            let context = CreatePostPageContext()
-            return viewRenderer.render("something", context)
+            let postPathSuffix = pathCreator.createPath(for: "posts")
+            let postPathPrefix = pageInformation.websiteURL.appendingPathComponent(postPathSuffix)
+            let context = CreatePostPageContext(editing: isEditing, post: post, draft: isDraft ?? false, errors: errors, titleSupplied: title, contentsSupplied: contents, tagsSupplied: tags, slugURLSupplied: slugURL, titleError: titleError, contentsError: contentsError, postPathPrefix: postPathPrefix.absoluteString, pageInformation: pageInformation)
+            return viewRenderer.render("blog/admin/createPost", context)
         } catch {
             return container.future(error: error)
         }

@@ -24,7 +24,7 @@ class BlogAdminPresenterTests: XCTestCase {
     // MARK: - Overrides
     
     override func setUp() {
-        presenter = ViewBlogAdminPresenter()
+        presenter = ViewBlogAdminPresenter(pathCreator: BlogPathCreator(blogPath: "blog"))
         basicContainer = BasicContainer(config: Config.default(), environment: Environment.testing, services: .init(), on: EmbeddedEventLoop())
         basicContainer.services.register(ViewRenderer.self) { _ in
             return self.viewRenderer
@@ -211,30 +211,29 @@ class BlogAdminPresenterTests: XCTestCase {
     // MARK: - Create/Edit Blog Post
     
     func testCreateBlogPostViewGetsCorrectParameters() throws {
-//        let user = TestDataBuilder.anyUser()
-//        let _ = try viewFactory.createBlogPostView(uri: createPostURI, user: user)
-        
         let pageInformation = buildPageInformation(currentPageURL: createBlogPageURL)
-        _ = presenter.createPostView(on: basicContainer, errors: nil, title: nil, contents: nil, slugURL: nil, tags: nil, isEditing: false, post: nil, isDraft: nil, pageInformation: pageInformation)
+        _ = presenter.createPostView(on: basicContainer, errors: nil, title: nil, contents: nil, slugURL: nil, tags: nil, isEditing: false, post: nil, isDraft: nil, titleError: false, contentsError: false, pageInformation: pageInformation)
         
         let context = try XCTUnwrap(viewRenderer.capturedContext as? CreatePostPageContext)
         
         XCTAssertEqual(context.title, "Create Blog Post")
+        XCTAssertFalse(context.editing)
+        XCTAssertNil(context.post)
+        XCTAssertFalse(context.draft)
+        XCTAssertNil(context.tagsSupplied)
+        XCTAssertNil(context.errors)
+        XCTAssertNil(context.titleSupplied)
+        XCTAssertNil(context.contentsSupplied)
+        XCTAssertNil(context.slugURLSupplied)
+        XCTAssertFalse(context.titleError)
+        XCTAssertFalse(context.contentsError)
+        XCTAssertEqual(context.postPathPrefix, "https://brokenhands.io/blog/posts/")
         
+        XCTAssertEqual(context.pageInformation.websiteURL.absoluteString, "https://brokenhands.io")
+        XCTAssertEqual(context.pageInformation.currentPageURL.absoluteString, "https://brokenhands.io/blog/admin/createPost")
+        XCTAssertEqual(context.pageInformation.loggedInUser.name, currentUser.name)
         
-//        XCTAssertEqual(viewRenderer.capturedContext?["post_path_prefix"]?.string, "https://test.com/posts/")
-//        XCTAssertFalse((viewRenderer.capturedContext?["title_error"]?.bool) ?? true)
-//        XCTAssertFalse((viewRenderer.capturedContext?["contents_error"]?.bool) ?? true)
-//        XCTAssertNil(viewRenderer.capturedContext?["errors"])
-//        XCTAssertNil(viewRenderer.capturedContext?["title_supplied"])
-//        XCTAssertNil(viewRenderer.capturedContext?["contents_supplied"])
-//        XCTAssertNil(viewRenderer.capturedContext?["slug_url_supplied"])
-//        XCTAssertNil(viewRenderer.capturedContext?["tags_supplied"])
-//        XCTAssertEqual(viewRenderer.leafPath, "blog/admin/createPost")
-//        XCTAssertTrue((viewRenderer.capturedContext?["create_blog_post_page"]?.bool) ?? false)
-//        XCTAssertTrue((viewRenderer.capturedContext?["draft"]?.bool) ?? false)
-//        XCTAssertNil(viewRenderer.capturedContext?["editing"])
-//        XCTAssertEqual(viewRenderer.capturedContext?["user"]?["name"]?.string, user.name)
+        XCTAssertEqual(viewRenderer.templatePath, "blog/admin/createPost")
     }
 
 //    func testCreateBlogPostViewWhenEditing() throws {
