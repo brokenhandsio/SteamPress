@@ -15,6 +15,7 @@ class BlogAdminPresenterTests: XCTestCase {
     private let adminPageURL = URL(string: "https://brokenhands.io/blog/admin")!
     private let createUserPageURL = URL(string: "https://brokenhands.io/blog/admin/createUser")!
     private let editUserPageURL = URL(string: "https://brokenhands.io/blog/admin/users/0/edit")!
+    private let createBlogPageURL = URL(string: "https://brokenhands.io/blog/admin/createPost")!
     
     private static let siteTwitterHandle = "brokenhandsio"
     private static let disqusName = "steampress"
@@ -209,9 +210,18 @@ class BlogAdminPresenterTests: XCTestCase {
     
     // MARK: - Create/Edit Blog Post
     
-//    func testCreateBlogPostViewGetsCorrectParameters() throws {
+    func testCreateBlogPostViewGetsCorrectParameters() throws {
 //        let user = TestDataBuilder.anyUser()
 //        let _ = try viewFactory.createBlogPostView(uri: createPostURI, user: user)
+        
+        let pageInformation = buildPageInformation(currentPageURL: createBlogPageURL)
+        _ = presenter.createPostView(on: basicContainer, errors: nil, title: nil, contents: nil, slugURL: nil, tags: nil, isEditing: false, post: nil, isDraft: nil, pageInformation: pageInformation)
+        
+        let context = try XCTUnwrap(viewRenderer.capturedContext as? CreatePostPageContext)
+        
+        XCTAssertEqual(context.title, "Create Blog Post")
+        
+        
 //        XCTAssertEqual(viewRenderer.capturedContext?["post_path_prefix"]?.string, "https://test.com/posts/")
 //        XCTAssertFalse((viewRenderer.capturedContext?["title_error"]?.bool) ?? true)
 //        XCTAssertFalse((viewRenderer.capturedContext?["contents_error"]?.bool) ?? true)
@@ -225,8 +235,8 @@ class BlogAdminPresenterTests: XCTestCase {
 //        XCTAssertTrue((viewRenderer.capturedContext?["draft"]?.bool) ?? false)
 //        XCTAssertNil(viewRenderer.capturedContext?["editing"])
 //        XCTAssertEqual(viewRenderer.capturedContext?["user"]?["name"]?.string, user.name)
-//    }
-//
+    }
+
 //    func testCreateBlogPostViewWhenEditing() throws {
 //        let author = TestDataBuilder.anyUser()
 //        try author.save()

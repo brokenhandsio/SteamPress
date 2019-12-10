@@ -16,7 +16,8 @@ public struct ViewBlogAdminPresenter: BlogAdminPresenter {
     public func createPostView(on container: Container, errors: [String]?, title: String?, contents: String?, slugURL: String?, tags: [String]?, isEditing: Bool, post: BlogPost?, isDraft: Bool?, pageInformation: BlogAdminPageInformation) -> EventLoopFuture<View> {
         do {
             let viewRenderer = try container.make(ViewRenderer.self)
-            return viewRenderer.render("something")
+            let context = CreatePostPageContext()
+            return viewRenderer.render("something", context)
         } catch {
             return container.future(error: error)
         }
