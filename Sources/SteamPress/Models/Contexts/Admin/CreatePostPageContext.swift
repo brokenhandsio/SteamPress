@@ -1,5 +1,5 @@
 struct CreatePostPageContext: Encodable {
-    let title = "Create Blog Post"
+    let title: String
     let editing: Bool
     let post: BlogPost?
     let draft: Bool

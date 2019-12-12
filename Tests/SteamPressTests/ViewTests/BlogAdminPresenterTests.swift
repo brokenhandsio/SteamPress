@@ -255,27 +255,36 @@ class BlogAdminPresenterTests: XCTestCase {
         XCTAssertEqual(context.pageInformation.loggedInUser.name, currentUser.name)
     }
 
-//    func testCreateBlogPostViewWhenEditing() throws {
-//        let author = TestDataBuilder.anyUser()
-//        try author.save()
-//        let postToEdit = TestDataBuilder.anyPost(author: author)
-//        try postToEdit.save()
-//        let _ = try viewFactory.createBlogPostView(uri: editPostURI, title: postToEdit.title, contents: postToEdit.contents, slugUrl: postToEdit.slugUrl, tags: [Node(node: "test")], isEditing: true, postToEdit: postToEdit, user: author)
-//        XCTAssertEqual(viewRenderer.capturedContext?["post_path_prefix"]?.string, "https://test.com/posts/")
-//        XCTAssertFalse((viewRenderer.capturedContext?["title_error"]?.bool) ?? true)
-//        XCTAssertFalse((viewRenderer.capturedContext?["contents_error"]?.bool) ?? true)
-//        XCTAssertNil(viewRenderer.capturedContext?["errors"])
-//        XCTAssertEqual(viewRenderer.capturedContext?["title_supplied"]?.string, postToEdit.title)
-//        XCTAssertEqual(viewRenderer.capturedContext?["contents_supplied"]?.string, postToEdit.contents)
-//        XCTAssertEqual(viewRenderer.capturedContext?["slug_url_supplied"]?.string, postToEdit.slugUrl)
-//        XCTAssertEqual(viewRenderer.capturedContext?["tags_supplied"]?.array?.count, 1)
-//        XCTAssertEqual(viewRenderer.capturedContext?["tags_supplied"]?.array?.first?.string, "test")
-//        XCTAssertTrue((viewRenderer.capturedContext?["editing"]?.bool) ?? false)
-//        XCTAssertEqual(viewRenderer.capturedContext?["post"]?["title"]?.string, postToEdit.title)
-//        XCTAssertNil(viewRenderer.capturedContext?["create_blog_post_page"])
-//        XCTAssertEqual(viewRenderer.capturedContext?["post"]?["published"]?.bool, true)
-//        XCTAssertEqual(viewRenderer.capturedContext?["user"]?["name"]?.string, author.name)
-//    }
+    func testCreateBlogPostViewWhenEditing() throws {
+        let postToEdit = try TestDataBuilder.anyPost(author: currentUser)
+        let tag = "Engineering"
+        let pageInformation = buildPageInformation(currentPageURL: editPostPageURL)
+        
+        _ = presenter.createPostView(on: basicContainer, errors: nil, title: postToEdit.title, contents: postToEdit.contents, slugURL: postToEdit.slugUrl, tags: [tag], isEditing: true, post: postToEdit, isDraft: false, titleError: false, contentsError: false, pageInformation: pageInformation)
+        
+        let context = try XCTUnwrap(viewRenderer.capturedContext as? CreatePostPageContext)
+        
+        XCTAssertEqual(context.title, "Edit Blog Post")
+        XCTAssertTrue(context.editing)
+        XCTAssertEqual(context.titleSupplied, postToEdit.title)
+        XCTAssertEqual(context.contentsSupplied, postToEdit.contents)
+        XCTAssertEqual(context.slugURLSupplied, postToEdit.slugUrl)
+        XCTAssertEqual(context.post?.title, postToEdit.title)
+        XCTAssertEqual(context.post?.blogID, postToEdit.blogID)
+        XCTAssertFalse(context.draft)
+        XCTAssertEqual(context.tagsSupplied?.count, 1)
+        XCTAssertEqual(context.tagsSupplied?.first, tag)
+        XCTAssertNil(context.errors)
+        XCTAssertFalse(context.titleError)
+        XCTAssertFalse(context.contentsError)
+        XCTAssertEqual(context.postPathPrefix, "https://brokenhands.io/blog/posts/")
+        
+        XCTAssertEqual(context.pageInformation.websiteURL.absoluteString, "https://brokenhands.io")
+        XCTAssertEqual(context.pageInformation.currentPageURL.absoluteString, "https://brokenhands.io/blog/admin/posts/0/edit")
+        XCTAssertEqual(context.pageInformation.loggedInUser.name, currentUser.name)
+        
+        XCTAssertEqual(viewRenderer.templatePath, "blog/admin/createPost")
+    }
 
     func testEditBlogPostViewThrowsWithNoPostToEdit() throws {
         var errored = false
@@ -289,213 +298,15 @@ class BlogAdminPresenterTests: XCTestCase {
         XCTAssertTrue(errored)
     }
 
-//
-//    func testDraftPassedThroughWhenEditingABlogPostThatHasNotBeenPublished() throws {
-//        let author = TestDataBuilder.anyUser()
-//        try author.save()
-//        let postToEdit = TestDataBuilder.anyPost(author: author, published: false)
-//        try postToEdit.save()
-//        let _ = try viewFactory.createBlogPostView(uri: editPostURI, title: postToEdit.title, contents: postToEdit.contents, slugUrl: postToEdit.slugUrl, tags: [Node(node: "test")], isEditing: true, postToEdit: postToEdit, user: TestDataBuilder.anyUser())
-//        XCTAssertEqual(viewRenderer.capturedContext?["post"]?["published"]?.bool, false)
-//    }
-//
-//    func testSiteURIForHTTPDoesNotContainPort() throws {
-//        let (postWithImage, user) = try setupBlogPost()
-//        let httpURI = URI(scheme: "http", hostname: "test.com", path: "posts/test-post/")
-//        _ = try viewFactory.blogPostView(uri: httpURI, post: postWithImage, author: user, user: nil)
-//
-//        XCTAssertEqual(viewRenderer.capturedContext?["site_uri"]?.string, "http://test.com/")
-//    }
-
-//func testTagPageGetsUri() throws {
-//    _ = try testWorld.getResponse(to: tagRequestPath)
-//    XCTAssertEqual(presenter.tagURL?.description, tagRequestPath)
-//}
-//
-//func testTagPageGetsHTTPSUriFromReverseProxy() throws {
-    //            try setupDrop()
-    //
-    //            let httpsReverseProxyRequest = Request(method: .get, uri: "http://geeks.brokenhands.io\(tagPath)")
-    //            httpsReverseProxyRequest.headers["X-Forwarded-Proto"] = "https"
-    //
-    //            _ = try drop.respond(to: httpsReverseProxyRequest)
-    //
-    //            XCTAssertEqual("https://geeks.brokenhands.io/tags/tatooine/", viewFactory.tagURI?.descriptionWithoutPort)
-//    #warning("Implement")
-//}
-//
-//func testAllTagsPageGetsUri() throws {
-//    _ = try testWorld.getResponse(to: allTagsRequestPath)
-//    XCTAssertEqual(presenter.allTagsURL?.description, allTagsRequestPath)
-//}
-//
-//func testAllTagsPageGetsHTTPSUriFromReverseProxy() throws {
-    //            try setupDrop()
-    //
-    //            let httpsReverseProxyRequest = Request(method: .get, uri: "http://geeks.brokenhands.io\(allTagsPath)")
-    //            httpsReverseProxyRequest.headers["X-Forwarded-Proto"] = "https"
-    //
-    //            _ = try drop.respond(to: httpsReverseProxyRequest)
-    //
-    //            XCTAssertEqual("https://geeks.brokenhands.io/tags/", viewFactory.allTagsURI?.descriptionWithoutPort)
-//    #warning("Implement")
-//}
-//func testAllAuthorsPageGetsUri() throws {
-//    _ = try testWorld.getResponse(to: allAuthorsRequestPath)
-//    XCTAssertEqual(presenter.allAuthorsURL?.description, allAuthorsRequestPath)
-//}
-//
-//func testAllAuthorsPageGetsHTTPSUriFromReverseProxy() throws {
-//    //        try setupDrop()
-//    //
-//    //        let httpsReverseProxyRequest = Request(method: .get, uri: "http://geeks.brokenhands.io\(allAuthorsPath)")
-//    //        httpsReverseProxyRequest.headers["X-Forwarded-Proto"] = "https"
-//    //
-//    //        _ = try drop.respond(to: httpsReverseProxyRequest)
-//    //
-//    //        XCTAssertEqual("https://geeks.brokenhands.io/authors/", viewFactory.allAuthorsURI?.descriptionWithoutPort)
-//    XCTFail("Implement")
-//}
-//func testProfilePageGetsUri() throws {
-//    _ = try testWorld.getResponse(to: authorsRequestPath)
-//
-//    XCTAssertEqual(presenter.authorURL?.description, authorsRequestPath)
-//}
-//
-//func testProfilePageGetsHTTPSUriFromReverseProxy() throws {
-//    //        try setupDrop()
-//    //
-//    //        let httpsReverseProxyRequest = Request(method: .get, uri: "http://geeks.brokenhands.io\(authorPath)")
-//    //        httpsReverseProxyRequest.headers["X-Forwarded-Proto"] = "https"
-//    //
-//    //        _ = try drop.respond(to: httpsReverseProxyRequest)
-//    //
-//    //        XCTAssertEqual("https://geeks.brokenhands.io/authors/luke/", viewFactory.authorURI?.descriptionWithoutPort)
-//    #warning("Implement")
-//}
-//func testIndexPageGetsUri() throws {
-//        try setupDrop()
-//
-//        _ = try drop.respond(to: blogIndexRequest)
-//
-//        XCTAssertEqual(blogIndexPath, viewFactory.blogIndexURI?.description)
-//    }
-//
-//    func testIndexPageGetsHTTPSUriFromReverseProxy() throws {
-//        try setupDrop()
-//
-//        let httpsReverseProxyRequest = Request(method: .get, uri: "http://geeks.brokenhands.io\(blogIndexPath)")
-//        httpsReverseProxyRequest.headers["X-Forwarded-Proto"] = "https"
-//
-//        _ = try drop.respond(to: httpsReverseProxyRequest)
-//
-//        XCTAssertEqual("https://geeks.brokenhands.io/", viewFactory.blogIndexURI?.descriptionWithoutPort)
-//    }
-//
-//    func testBlogPageGetsUri() throws {
-//        try setupDrop()
-//
-//        _ = try drop.respond(to: blogPostRequest)
-//
-//        XCTAssertEqual(blogPostPath, viewFactory.blogPostURI?.description)
-//    }
-//
-//    func testHTTPSPassedThroughToBlogPageURI() throws {
-//        try setupDrop()
-//
-//        let httpsRequest = Request(method: .get, uri: "https://localhost\(blogPostPath)")
-//        _ = try drop.respond(to: httpsRequest)
-//
-//        XCTAssertEqual("https://localhost/posts/test-path/", viewFactory.blogPostURI?.descriptionWithoutPort)
-//    }
-//
-//    func testHTTPSURIPassedThroughAsBlogPageURIIfAccessingViaReverseProxyOverHTTPS() throws {
-//        try setupDrop()
-//
-//        let httpsReverseProxyRequest = Request(method: .get, uri: "http://geeks.brokenhands.io\(blogPostPath)")
-//        httpsReverseProxyRequest.headers["X-Forwarded-Proto"] = "https"
-//
-//        _ = try drop.respond(to: httpsReverseProxyRequest)
-//
-//        XCTAssertEqual("https://geeks.brokenhands.io/posts/test-path/", viewFactory.blogPostURI?.descriptionWithoutPort)
-//    }
-//
-//    func testBlogPostPageGetHTPSURIFromReverseProxyLowerCase() throws {
-//        try setupDrop()
-//
-//        let httpsReverseProxyRequest = Request(method: .get, uri: "http://geeks.brokenhands.io\(blogPostPath)")
-//        httpsReverseProxyRequest.headers["x-forwarded-proto"] = "https"
-//
-//        _ = try drop.respond(to: httpsReverseProxyRequest)
-//
-//        XCTAssertEqual("https://geeks.brokenhands.io/posts/test-path/", viewFactory.blogPostURI?.descriptionWithoutPort)
-//    }
-//    func testAdminPageGetsLoggedInUser() throws {
-//        let request = try createLoggedInRequest(method: .get, path: "", for: user)
-//        _ = try drop.respond(to: request)
-//
-//        XCTAssertEqual(user.name, capturingViewFactory.adminUser?.name)
-//    }
-//
-//    func testCreatePostPageGetsLoggedInUser() throws {
-//        let request = try createLoggedInRequest(method: .get, path: "createPost", for: user)
-//        _ = try drop.respond(to: request)
-//
-//        XCTAssertEqual(user.name, capturingViewFactory.createBlogPostUser?.name)
-//    }
-//
-//    func testEditPostPageGetsLoggedInUser() throws {
-//        let user = TestDataBuilder.anyUser()
-//        try user.save()
-//        let post = TestDataBuilder.anyPost(author: user)
-//        try post.save()
-//        let request = try createLoggedInRequest(method: .get, path: "posts/\(post.id!.string!)/edit", for: user)
-//        _ = try drop.respond(to: request)
-//
-//        XCTAssertEqual(user.name, capturingViewFactory.createBlogPostUser?.name)
-//    }
-//
-//    func testCreateUserPageGetsLoggedInUser() throws {
-//        let request = try createLoggedInRequest(method: .get, path: "createUser", for: user)
-//        _ = try drop.respond(to: request)
-//
-//        XCTAssertEqual(user.name, capturingViewFactory.createUserLoggedInUser?.name)
-//    }
-//
-//    func testEditUserPageGetsLoggedInUser() throws {
-//        let user = TestDataBuilder.anyUser()
-//        try user.save()
-//        let request = try createLoggedInRequest(method: .get, path: "users/\(user.id!.string!)/edit", for: user)
-//        _ = try drop.respond(to: request)
-//
-//        XCTAssertEqual(user.name, capturingViewFactory.createUserLoggedInUser?.name)
-//    }
-//
-//    func testResetPasswordPageGetsLoggedInUser() throws {
-//        let request = try createLoggedInRequest(method: .get, path: "resetPassword", for: user)
-//        _ = try drop.respond(to: request)
-//
-//        XCTAssertEqual(user.name, capturingViewFactory.resetPasswordUser?.name)
-//    }
-//
-//    func testCreatePostPageGetsURI() throws {
-//        let request = try createLoggedInRequest(method: .get, path: "createPost")
-//        _ = try drop.respond(to: request)
-//
-//        XCTAssertEqual(capturingViewFactory.createPostURI?.descriptionWithoutPort, "/blog/admin/createPost/")
-//    }
-//
-//    func testCreatePostPageGetsHTTPSURIIfFromReverseProxy() throws {
-//        let request = Request(method: .get, uri: "http://geeks.brokenhands.io/blog/admin/createPost/")
-//        let user = TestDataBuilder.anyUser()
-//        try user.save()
-//        request.storage["auth-authenticated"] = user
-//        request.headers["X-Forwarded-Proto"] = "https"
-//
-//        _ = try drop.respond(to: request)
-//
-//        XCTAssertEqual(capturingViewFactory.createPostURI?.descriptionWithoutPort, "https://geeks.brokenhands.io/blog/admin/createPost/")
-//    }
+    func testDraftPassedThroughWhenEditingABlogPostThatHasNotBeenPublished() throws {
+        let draftPost = try TestDataBuilder.anyPost(author: currentUser, published: false)
+        let pageInformation = buildPageInformation(currentPageURL: editPostPageURL)
+        
+        _ = presenter.createPostView(on: basicContainer, errors: nil, title: draftPost.title, contents: draftPost.contents, slugURL: draftPost.slugUrl, tags: nil, isEditing: true, post: draftPost, isDraft: true, titleError: false, contentsError: false, pageInformation: pageInformation)
+        let context = try XCTUnwrap(viewRenderer.capturedContext as? CreatePostPageContext)
+        
+        XCTAssertTrue(context.draft)
+    }
     
     // MARK: - Helpers
     
