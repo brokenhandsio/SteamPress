@@ -16,6 +16,7 @@ class BlogAdminPresenterTests: XCTestCase {
     private let createUserPageURL = URL(string: "https://brokenhands.io/blog/admin/createUser")!
     private let editUserPageURL = URL(string: "https://brokenhands.io/blog/admin/users/0/edit")!
     private let createBlogPageURL = URL(string: "https://brokenhands.io/blog/admin/createPost")!
+    private let editPostPageURL = URL(string: "https://brokenhands.io/blog/admin/posts/0/edit")!
     
     private static let siteTwitterHandle = "brokenhandsio"
     private static let disqusName = "steampress"
@@ -235,6 +236,24 @@ class BlogAdminPresenterTests: XCTestCase {
         
         XCTAssertEqual(viewRenderer.templatePath, "blog/admin/createPost")
     }
+    
+    func testCreateBlogPostViewWithErrorsAndNoTitleOrContentsSupplied() throws {
+        let expectedError = "Please enter a title"
+        
+        let pageInformation = buildPageInformation(currentPageURL: createBlogPageURL)
+        _ = presenter.createPostView(on: basicContainer, errors: [expectedError], title: nil, contents: nil, slugURL: nil, tags: nil, isEditing: false, post: nil, isDraft: nil, titleError: true, contentsError: true, pageInformation: pageInformation)
+        
+        let context = try XCTUnwrap(viewRenderer.capturedContext as? CreatePostPageContext)
+
+        XCTAssertTrue(context.titleError)
+        XCTAssertTrue(context.contentsError)
+        XCTAssertEqual(context.errors?.count, 1)
+        XCTAssertEqual(context.errors?.first, expectedError)
+        
+        XCTAssertEqual(context.pageInformation.websiteURL.absoluteString, "https://brokenhands.io")
+        XCTAssertEqual(context.pageInformation.currentPageURL.absoluteString, "https://brokenhands.io/blog/admin/createPost")
+        XCTAssertEqual(context.pageInformation.loggedInUser.name, currentUser.name)
+    }
 
 //    func testCreateBlogPostViewWhenEditing() throws {
 //        let author = TestDataBuilder.anyUser()
@@ -257,28 +276,19 @@ class BlogAdminPresenterTests: XCTestCase {
 //        XCTAssertEqual(viewRenderer.capturedContext?["post"]?["published"]?.bool, true)
 //        XCTAssertEqual(viewRenderer.capturedContext?["user"]?["name"]?.string, author.name)
 //    }
-//
-//    func testEditBlogPostViewThrowsWithNoPostToEdit() throws {
-//        var errored = false
-//        do {
-//            let _ = try viewFactory.createBlogPostView(uri: createPostURI, isEditing: true, postToEdit: nil, user: TestDataBuilder.anyUser())
-//        } catch {
-//            errored = true
-//        }
-//
-//        XCTAssertTrue(errored)
-//    }
-//
-//    func testCreateBlogPostViewWithErrorsAndNoTitleOrContentsSupplied() throws {
-//        let expectedError = "Please enter a title"
-//        let user = TestDataBuilder.anyUser()
-//        let _ = try viewFactory.createBlogPostView(uri: createPostURI, errors: [expectedError], title: nil, contents: nil, slugUrl: nil, tags: nil, isEditing: false, user: user)
-//        XCTAssertTrue((viewRenderer.capturedContext?["title_error"]?.bool) ?? false)
-//        XCTAssertTrue((viewRenderer.capturedContext?["contents_error"]?.bool) ?? false)
-//        XCTAssertEqual(viewRenderer.capturedContext?["errors"]?.array?.count, 1)
-//        XCTAssertEqual(viewRenderer.capturedContext?["errors"]?.array?.first?.string, expectedError)
-//        XCTAssertEqual(viewRenderer.capturedContext?["user"]?["name"]?.string, user.name)
-//    }
+
+    func testEditBlogPostViewThrowsWithNoPostToEdit() throws {
+        var errored = false
+        do {
+            let pageInformation = buildPageInformation(currentPageURL: editPostPageURL)
+            _ = try presenter.createPostView(on: basicContainer, errors: nil, title: nil, contents: nil, slugURL: nil, tags: nil, isEditing: true, post: nil, isDraft: nil, titleError: false, contentsError: false, pageInformation: pageInformation).wait()
+        } catch {
+            errored = true
+        }
+
+        XCTAssertTrue(errored)
+    }
+
 //
 //    func testDraftPassedThroughWhenEditingABlogPostThatHasNotBeenPublished() throws {
 //        let author = TestDataBuilder.anyUser()

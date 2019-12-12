@@ -18,6 +18,11 @@ public struct ViewBlogAdminPresenter: BlogAdminPresenter {
     
     public func createPostView(on container: Container, errors: [String]?, title: String?, contents: String?, slugURL: String?, tags: [String]?, isEditing: Bool, post: BlogPost?, isDraft: Bool?, titleError: Bool, contentsError: Bool, pageInformation: BlogAdminPageInformation) -> EventLoopFuture<View> {
         do {
+            if isEditing {
+                guard post != nil else {
+                    return container.future(error: SteamPressError(identifier: "ViewBlogAdminPresenter", "Blog Post is empty whilst editing"))
+                }
+            }
             let viewRenderer = try container.make(ViewRenderer.self)
             let postPathSuffix = pathCreator.createPath(for: "posts")
             let postPathPrefix = pageInformation.websiteURL.appendingPathComponent(postPathSuffix)
