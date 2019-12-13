@@ -19,9 +19,7 @@ extension TestWorld {
                                              feedInformation: feedInformation,
                                              postsPerPage: postsPerPage,
                                              enableAuthorPages: enableAuthorPages,
-                                             enableTagPages: enableTagPages,
-                                             blogPresenter: blogPresenter,
-                                             blogAdminPresenter: adminPresenter)
+                                             enableTagPages: enableTagPages)
         try services.register(steampress)
 
         services.register([BlogTagRepository.self, BlogPostRepository.self, BlogUserRepository.self]) { _ in
@@ -30,6 +28,14 @@ extension TestWorld {
 
         services.register(SteamPressRandomNumberGenerator.self) { _ in
             return randomNumberGenerator
+        }
+        
+        services.register(BlogPresenter.self) { _ in
+            return blogPresenter
+        }
+        
+        services.register(BlogAdminPresenter.self) { _ in
+            return adminPresenter
         }
 
         var middlewareConfig = MiddlewareConfig()
@@ -40,6 +46,8 @@ extension TestWorld {
 
         var config = Config.default()
 
+        config.prefer(CapturingBlogPresenter.self, for: BlogPresenter.self)
+        config.prefer(CapturingAdminPresenter.self, for: BlogAdminPresenter.self)
         config.prefer(StubbedRandomNumberGenerator.self, for: SteamPressRandomNumberGenerator.self)
 
         switch passwordHasherToUse {
