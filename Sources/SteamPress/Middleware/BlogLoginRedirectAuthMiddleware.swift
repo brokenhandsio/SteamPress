@@ -1,19 +1,23 @@
-import HTTP
 import Vapor
 
 struct BlogLoginRedirectAuthMiddleware: Middleware {
 
     let pathCreator: BlogPathCreator
 
-    public func respond(to request: Request, chainingTo next: Responder) throws -> Response {
+    func respond(to request: Request, chainingTo next: Responder) throws -> EventLoopFuture<Response> {
         do {
-            let user = try request.user()
-            if user.resetPasswordRequired && request.uri.path != pathCreator.createPath(for: "admin/resetPassword") {
-                return Response(redirect: pathCreator.createPath(for: "admin/resetPassword"))
+            let user = try request.requireAuthenticated(BlogUser.self)
+            let resetPasswordPath = pathCreator.createPath(for: "admin/resetPassword")
+            var requestPath = request.http.urlString
+            if !requestPath.hasSuffix("/") {
+                requestPath = requestPath + "/"
             }
-
+            if user.resetPasswordRequired && requestPath != resetPasswordPath {
+                let redirect = request.redirect(to: resetPasswordPath)
+                return request.future(redirect)
+            }
         } catch {
-            return Response(redirect: pathCreator.createPath(for: "admin/login", query: "loginRequired"))
+            return request.future(request.redirect(to: pathCreator.createPath(for: "admin/login", query: "loginRequired")))
         }
         return try next.respond(to: request)
     }

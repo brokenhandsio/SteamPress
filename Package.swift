@@ -1,14 +1,20 @@
+// swift-tools-version:5.1
+
 import PackageDescription
 
 let package = Package(
     name: "SteamPress",
+    products: [
+        .library(name: "SteamPress", targets: ["SteamPress"]),
+    ],
     dependencies: [
-    	.Package(url: "https://github.com/vapor/vapor.git", majorVersion: 2),
-    	.Package(url: "https://github.com/scinfu/SwiftSoup.git", majorVersion: 1),
-    	.Package(url: "https://github.com/vapor-community/markdown-provider.git", majorVersion: 1),
-    	.Package(url: "https://github.com/vapor/leaf-provider.git", majorVersion: 1),
-    	.Package(url: "https://github.com/vapor/fluent-provider.git", majorVersion: 1),
-    	.Package(url: "https://github.com/vapor/auth-provider.git", majorVersion: 1),
-    	.Package(url: "https://github.com/vapor/validation.git", majorVersion: 1),
+    	.package(url: "https://github.com/vapor/vapor.git", from: "3.0.0"),
+        .package(url: "https://github.com/scinfu/SwiftSoup.git", from: "2.0.0"),
+        .package(url: "https://github.com/vapor-community/markdown.git", from: "0.4.0"),
+        .package(url: "https://github.com/vapor/auth.git", from: "2.0.0"),
+    ],
+    targets: [
+        .target(name: "SteamPress", dependencies: ["Vapor", "SwiftSoup", "SwiftMarkdown", "Authentication"]),
+        .testTarget(name: "SteamPressTests", dependencies: ["SteamPress"]),
     ]
 )
