@@ -81,6 +81,16 @@ class LoginTests: XCTestCase {
         testWorld = try TestWorld.create()
         XCTAssertEqual(testWorld.context.repository.users.count, 1)
     }
+    
+    func testPresenterGetsCorrectInformationForResetPasswordPage() throws {
+        _ = try testWorld.getResponse(to: "/blog/admin/resetPassword", loggedInUser: user)
+        XCTAssertNil(presenter.resetPasswordErrors)
+        XCTAssertNil(presenter.resetPasswordError)
+        XCTAssertNil(presenter.resetPasswordConfirmError)
+        XCTAssertEqual(presenter.resetPasswordPageInformation?.loggedInUser.username, user.username)
+        XCTAssertEqual(presenter.resetPasswordPageInformation?.websiteURL.absoluteString, "")
+        XCTAssertEqual(presenter.resetPasswordPageInformation?.currentPageURL.absoluteString, "/blog/admin/resetPassword")
+    }
 
     func testUserCanResetPassword() throws {
         struct ResetPasswordData: Content {
@@ -115,6 +125,9 @@ class LoginTests: XCTestCase {
         XCTAssertTrue(passwordErrors.contains("Your passwords must match!"))
         XCTAssertTrue(resetPasswordError)
         XCTAssertTrue(confirmPasswordError)
+        XCTAssertEqual(presenter.resetPasswordPageInformation?.loggedInUser.username, user.username)
+        XCTAssertEqual(presenter.resetPasswordPageInformation?.websiteURL.absoluteString, "")
+        XCTAssertEqual(presenter.resetPasswordPageInformation?.currentPageURL.absoluteString, "/blog/admin/resetPassword")
     }
 
     func testUserCannotResetPasswordWithoutPassword() throws {

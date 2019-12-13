@@ -5,5 +5,3 @@ public struct BlogAdminPageInformation: Codable {
     public let websiteURL: URL
     public let currentPageURL: URL
 }
-
-#warning("Test this gets set correctly in route handler")

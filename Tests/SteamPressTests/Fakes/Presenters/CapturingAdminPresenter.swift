@@ -9,7 +9,6 @@ class CapturingAdminPresenter: BlogAdminPresenter {
     private(set) var adminViewUsers: [BlogUser]?
     private(set) var adminViewPageInformation: BlogAdminPageInformation?
     func createIndexView(on container: Container, posts: [BlogPost], users: [BlogUser], errors: [String]?, pageInformation: BlogAdminPageInformation) -> EventLoopFuture<View> {
-        #warning("Test this is set up when getting the admin page")
         self.adminViewErrors = errors
         self.adminViewPosts = posts
         self.adminViewUsers = users
@@ -28,7 +27,6 @@ class CapturingAdminPresenter: BlogAdminPresenter {
     private(set) var createPostTitleError: Bool?
     private(set) var createPostContentsError: Bool?
     private(set) var createPostPageInformation: BlogAdminPageInformation?
-    #warning("Test page information for all functions in this")
     func createPostView(on container: Container, errors: [String]?, title: String?, contents: String?, slugURL: String?, tags: [String]?, isEditing: Bool, post: BlogPost?, isDraft: Bool?, titleError: Bool, contentsError: Bool, pageInformation: BlogAdminPageInformation) -> EventLoopFuture<View> {
         self.createPostErrors = errors
         self.createPostTitle = title
@@ -79,10 +77,12 @@ class CapturingAdminPresenter: BlogAdminPresenter {
     private(set) var resetPasswordErrors: [String]?
     private(set) var resetPasswordError: Bool?
     private(set) var resetPasswordConfirmError: Bool?
+    private(set) var resetPasswordPageInformation: BlogAdminPageInformation?
     func createResetPasswordView(on container: Container, errors: [String]?, passwordError: Bool?, confirmPasswordError: Bool?, pageInformation: BlogAdminPageInformation) -> EventLoopFuture<View> {
         self.resetPasswordErrors = errors
         self.resetPasswordError = passwordError
         self.resetPasswordConfirmError = confirmPasswordError
+        self.resetPasswordPageInformation = pageInformation
         return createFutureView(on: container)
     }
 
