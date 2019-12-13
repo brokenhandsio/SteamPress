@@ -40,6 +40,9 @@ There is an example of how it can work in a site (and what it requires in terms 
 
 # How to Use
 
+
+## DOC UPDATES COMING SOON
+
 **Note:** the `Production` environment will only work on HTTPS for security reasons.
 
 ## Integration
