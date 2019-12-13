@@ -95,4 +95,42 @@ class IndexTests: XCTestCase {
         _ = try testWorld.getResponse(to: "/?page=three")
         XCTAssertEqual(presenter.indexPosts?.count, postsPerPage)
     }
+    
+    // MARK: - Page Information
+    
+    func testIndexGetsCorrectPageInformation() throws {
+        _ = try testWorld.getResponse(to: blogIndexPath)
+        XCTAssertNil(presenter.indexPageInformation?.disqusName)
+        XCTAssertNil(presenter.indexPageInformation?.googleAnalyticsIdentifier)
+        XCTAssertNil(presenter.indexPageInformation?.siteTwitterHandler)
+        XCTAssertNil(presenter.indexPageInformation?.loggedInUser)
+        XCTAssertEqual(presenter.indexPageInformation?.currentPageURL.absoluteString, "/")
+        XCTAssertEqual(presenter.indexPageInformation?.websiteURL.absoluteString, "")
+    }
+    
+    func testIndexPageCurrentPageWhenAtSubPath() throws {
+        testWorld = try TestWorld.create(path: "blog")
+        _ = try testWorld.getResponse(to: "/blog")
+        XCTAssertEqual(presenter.indexPageInformation?.currentPageURL.absoluteString, "/blog")
+        XCTAssertEqual(presenter.indexPageInformation?.websiteURL.absoluteString, "")
+    }
+    
+    func testIndexPageInformationGetsLoggedInUser() throws {
+        let user = testWorld.createUser()
+        _ = try testWorld.getResponse(to: blogIndexPath, loggedInUser: user)
+        XCTAssertEqual(presenter.indexPageInformation?.loggedInUser?.username, user.username)
+    }
+    
+    func testSettingEnvVarsWithPageInformation() throws {
+        let googleAnalytics = "ABDJIODJWOIJIWO"
+        let twitterHandle = "3483209fheihgifffe"
+        let disqusName = "34829u48932fgvfbrtewerg"
+        setenv("BLOG_GOOGLE_ANALYTICS_IDENTIFIER", googleAnalytics, 1)
+        setenv("BLOG_SITE_TWITTER_HANDLER", twitterHandle, 1)
+        setenv("BLOG_DISQUS_NAME", disqusName, 1)
+        _ = try testWorld.getResponse(to: blogIndexPath)
+        XCTAssertEqual(presenter.indexPageInformation?.disqusName, disqusName)
+        XCTAssertEqual(presenter.indexPageInformation?.googleAnalyticsIdentifier, googleAnalytics)
+        XCTAssertEqual(presenter.indexPageInformation?.siteTwitterHandler, twitterHandle)
+    }
 }

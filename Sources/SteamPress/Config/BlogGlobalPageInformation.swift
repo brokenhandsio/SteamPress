@@ -1,12 +1,12 @@
 import Foundation
 
 public struct BlogGlobalPageInformation: Encodable {
-    let disqusName: String?
-    let siteTwitterHandler: String?
-    let googleAnalyticsIdentifier: String?
-    let loggedInUser: BlogUser?
-    let websiteURL: URL
-    let currentPageURL: URL
+    public let disqusName: String?
+    public let siteTwitterHandler: String?
+    public let googleAnalyticsIdentifier: String?
+    public let loggedInUser: BlogUser?
+    public let websiteURL: URL
+    public let currentPageURL: URL
 }
 
 #warning("Test this gets set correctly in route handler")
