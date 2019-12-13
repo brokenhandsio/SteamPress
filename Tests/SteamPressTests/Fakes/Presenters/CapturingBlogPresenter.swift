@@ -21,7 +21,6 @@ class CapturingBlogPresenter: BlogPresenter {
     private(set) var post: BlogPost?
     private(set) var postAuthor: BlogUser?
     private(set) var postPageInformation: BlogGlobalPageInformation?
-    #warning("Page Info")
     func postView(on container: Container, post: BlogPost, author: BlogUser, pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
         self.post = post
         self.postAuthor = author
@@ -31,21 +30,23 @@ class CapturingBlogPresenter: BlogPresenter {
 
     private(set) var allAuthors: [BlogUser]?
     private(set) var allAuthorsPostCount: [Int: Int]?
-    #warning("Page Info")
+    private(set) var allAuthorsPageInformation: BlogGlobalPageInformation?
     func allAuthorsView(on container: Container, authors: [BlogUser], authorPostCounts: [Int: Int], pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
         self.allAuthors = authors
         self.allAuthorsPostCount = authorPostCounts
+        self.allAuthorsPageInformation = pageInformation
         return TestDataBuilder.createFutureView(on: container)
     }
 
     private(set) var author: BlogUser?
     private(set) var authorPosts: [BlogPost]?
     private(set) var authorPostCount: Int?
-    #warning("Page Info")
+    private(set) var authorPageInformation: BlogGlobalPageInformation?
     func authorView(on container: Container, author: BlogUser, posts: [BlogPost], postCount: Int, pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
         self.author = author
         self.authorPosts = posts
         self.authorPostCount = postCount
+        self.authorPageInformation = pageInformation
         return TestDataBuilder.createFutureView(on: container)
     }
 

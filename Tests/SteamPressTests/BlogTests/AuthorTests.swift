@@ -67,6 +67,65 @@ class AuthorTests: XCTestCase {
         XCTAssertEqual(presenter.authorPosts?.first?.title, postData.post.title)
         XCTAssertEqual(presenter.authorPosts?.first?.contents, postData.post.contents)
     }
+    
+    func testAuthorPageGetsCorrectPageInformation() throws {
+        _ = try testWorld.getResponse(to: authorsRequestPath)
+        XCTAssertNil(presenter.authorPageInformation?.disqusName)
+        XCTAssertNil(presenter.authorPageInformation?.googleAnalyticsIdentifier)
+        XCTAssertNil(presenter.authorPageInformation?.siteTwitterHandler)
+        XCTAssertNil(presenter.authorPageInformation?.loggedInUser)
+        XCTAssertEqual(presenter.authorPageInformation?.currentPageURL.absoluteString, authorsRequestPath)
+        XCTAssertEqual(presenter.authorPageInformation?.websiteURL.absoluteString, "")
+    }
+    
+    func testAuthorPageInformationGetsLoggedInUser() throws {
+        let user = testWorld.createUser()
+        _ = try testWorld.getResponse(to: authorsRequestPath, loggedInUser: user)
+        XCTAssertEqual(presenter.authorPageInformation?.loggedInUser?.username, user.username)
+    }
+    
+    func testSettingEnvVarsWithPageInformation() throws {
+        let googleAnalytics = "ABDJIODJWOIJIWO"
+        let twitterHandle = "3483209fheihgifffe"
+        let disqusName = "34829u48932fgvfbrtewerg"
+        setenv("BLOG_GOOGLE_ANALYTICS_IDENTIFIER", googleAnalytics, 1)
+        setenv("BLOG_SITE_TWITTER_HANDLER", twitterHandle, 1)
+        setenv("BLOG_DISQUS_NAME", disqusName, 1)
+        _ = try testWorld.getResponse(to: authorsRequestPath)
+        XCTAssertEqual(presenter.authorPageInformation?.disqusName, disqusName)
+        XCTAssertEqual(presenter.authorPageInformation?.googleAnalyticsIdentifier, googleAnalytics)
+        XCTAssertEqual(presenter.authorPageInformation?.siteTwitterHandler, twitterHandle)
+    }
+    
+    func testCorrectPageInformationForAllAuthors() throws {
+        _ = try testWorld.getResponse(to: allAuthorsRequestPath)
+        XCTAssertNil(presenter.allAuthorsPageInformation?.disqusName)
+        XCTAssertNil(presenter.allAuthorsPageInformation?.googleAnalyticsIdentifier)
+        XCTAssertNil(presenter.allAuthorsPageInformation?.siteTwitterHandler)
+        XCTAssertNil(presenter.allAuthorsPageInformation?.loggedInUser)
+        XCTAssertEqual(presenter.allAuthorsPageInformation?.currentPageURL.absoluteString, allAuthorsRequestPath)
+        XCTAssertEqual(presenter.allAuthorsPageInformation?.websiteURL.absoluteString, "")
+    }
+    
+    func testPageInformationGetsLoggedInUserForAllAuthors() throws {
+        let user = testWorld.createUser()
+        _ = try testWorld.getResponse(to: allAuthorsRequestPath, loggedInUser: user)
+        XCTAssertEqual(presenter.allAuthorsPageInformation?.loggedInUser?.username, user.username)
+    }
+    
+    func testSettingEnvVarsWithPageInformationForAllAuthors() throws {
+        let googleAnalytics = "ABDJIODJWOIJIWO"
+        let twitterHandle = "3483209fheihgifffe"
+        let disqusName = "34829u48932fgvfbrtewerg"
+        setenv("BLOG_GOOGLE_ANALYTICS_IDENTIFIER", googleAnalytics, 1)
+        setenv("BLOG_SITE_TWITTER_HANDLER", twitterHandle, 1)
+        setenv("BLOG_DISQUS_NAME", disqusName, 1)
+        _ = try testWorld.getResponse(to: allAuthorsRequestPath)
+        XCTAssertEqual(presenter.allAuthorsPageInformation?.disqusName, disqusName)
+        XCTAssertEqual(presenter.allAuthorsPageInformation?.googleAnalyticsIdentifier, googleAnalytics)
+        XCTAssertEqual(presenter.allAuthorsPageInformation?.siteTwitterHandler, twitterHandle)
+    }
+    
 
     // MARK: - Pagination Tests
     func testAuthorViewOnlyGetsTheSpecifiedNumberOfPosts() throws {
