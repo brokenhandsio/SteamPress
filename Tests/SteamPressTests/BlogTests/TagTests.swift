@@ -84,7 +84,6 @@ class TagTests: XCTestCase {
 
         XCTAssertEqual(response.http.status, .ok)
         XCTAssertEqual(presenter.tag?.name.removingPercentEncoding, tagName)
-        #warning("Test that this is URL decoded in the Leaf presenter")
     }
 
     // MARK: - Pagination Tests
