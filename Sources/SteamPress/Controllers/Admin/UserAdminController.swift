@@ -103,18 +103,22 @@ struct UserAdminController: RouteCollection {
         let userRepository = try req.make(BlogUserRepository.self)
         return try flatMap(req.parameters.next(BlogUser.self), userRepository.getUsersCount(on: req)) { user, userCount in
             guard userCount > 1 else {
-                let presenter = try req.make(BlogAdminPresenter.self)
-                #warning("Test posts and users")
-                let view = try presenter.createIndexView(on: req, posts: [], users: [], errors: ["You cannot delete the last user"], pageInformation: req.adminPageInfomation())
-                return try view.encode(for: req)
+                let postRepository = try req.make(BlogPostRepository.self)
+                return flatMap(postRepository.getAllPostsSortedByPublishDate(includeDrafts: true, on: req), userRepository.getAllUsers(on: req)) { posts, users in
+                    let presenter = try req.make(BlogAdminPresenter.self)
+                    let view = try presenter.createIndexView(on: req, posts: posts, users: users, errors: ["You cannot delete the last user"], pageInformation: req.adminPageInfomation())
+                    return try view.encode(for: req)
+                }
             }
 
             let loggedInUser = try req.requireAuthenticated(BlogUser.self)
             guard loggedInUser.userID != user.userID else {
-                let presenter = try req.make(BlogAdminPresenter.self)
-                #warning("Test posts and users")
-                let view = try presenter.createIndexView(on: req, posts: [], users: [], errors: ["You cannot delete yourself whilst logged in"], pageInformation: req.adminPageInfomation())
-                return try view.encode(for: req)
+                let postRepository = try req.make(BlogPostRepository.self)
+                return flatMap(postRepository.getAllPostsSortedByPublishDate(includeDrafts: true, on: req), userRepository.getAllUsers(on: req)) { posts, users in
+                    let presenter = try req.make(BlogAdminPresenter.self)
+                    let view = try presenter.createIndexView(on: req, posts: posts, users: users, errors: ["You cannot delete yourself whilst logged in"], pageInformation: req.adminPageInfomation())
+                    return try view.encode(for: req)
+                }
             }
 
             let redirect = req.redirect(to: self.pathCreator.createPath(for: "admin"))

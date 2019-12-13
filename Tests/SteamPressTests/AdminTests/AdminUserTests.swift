@@ -597,22 +597,34 @@ class AdminUserTests: XCTestCase {
 
     func testCannotDeleteSelf() throws {
         let user2 = testWorld.createUser(name: "Han", username: "han")
+        let testData = try testWorld.createPost(author: user2)
 
         _ = try testWorld.getResponse(to: "/admin/users/\(user2.userID!)/delete", body: EmptyContent(), loggedInUser: user2)
 
         let viewErrors = try XCTUnwrap(presenter.adminViewErrors)
         XCTAssertTrue(viewErrors.contains("You cannot delete yourself whilst logged in"))
         XCTAssertEqual(testWorld.context.repository.users.count, 3)
+        
+        XCTAssertEqual(presenter.adminViewPosts?.count, 1)
+        XCTAssertEqual(presenter.adminViewPosts?.first?.title, testData.post.title)
+        XCTAssertEqual(presenter.adminViewUsers?.count, 3)
+        XCTAssertEqual(presenter.adminViewUsers?.last?.username, user2.username)
     }
 
     func testCannotDeleteLastUser() throws {
         testWorld = try TestWorld.create()
         let adminUser = try XCTUnwrap(testWorld.context.repository.users.first)
+        let testData = try testWorld.createPost(author: adminUser)
         _ = try testWorld.getResponse(to: "/admin/users/\(adminUser.userID!)/delete", body: EmptyContent(), loggedInUser: adminUser)
 
         let viewErrors = try XCTUnwrap(presenter.adminViewErrors)
         XCTAssertTrue(viewErrors.contains("You cannot delete the last user"))
         XCTAssertEqual(testWorld.context.repository.users.count, 1)
+        
+        XCTAssertEqual(presenter.adminViewPosts?.count, 1)
+        XCTAssertEqual(presenter.adminViewPosts?.first?.title, testData.post.title)
+        XCTAssertEqual(presenter.adminViewUsers?.count, 1)
+        XCTAssertEqual(presenter.adminViewUsers?.first?.username, adminUser.username)
     }
 
 }

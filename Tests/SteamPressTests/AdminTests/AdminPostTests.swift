@@ -467,22 +467,6 @@ class AdminPostTests: XCTestCase {
         XCTAssertEqual(expectedSlugUrl, post.slugUrl)
     }
 
-    #warning("Move to Leaf tests")
-//
-//    func testCreatedAndEditedDateInISOFormForAllContext() throws {
-//        let created = Date(timeIntervalSince1970: 1.0)
-//        let lastEdited = Date(timeIntervalSince1970: 10.0)
-//        let author = TestDataBuilder.anyUser()
-//        try author.save()
-//        let post = TestDataBuilder.anyPost(author: author, creationDate: created)
-//        post.lastEdited = lastEdited
-//        try post.save()
-//        let node = try post.makeNode(in: BlogPostContext.all)
-//
-//        XCTAssertEqual(node["created_date_iso8601"]?.string, "1970-01-01T00:00:01+0000")
-//        XCTAssertEqual(node["last_edited_date_iso8601"]?.string, "1970-01-01T00:00:10+0000")
-//    }
-
     // MARK: - Helpers
 
     private func createPostViaRequest(title: String) throws -> BlogPost {

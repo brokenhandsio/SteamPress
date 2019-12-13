@@ -5,8 +5,15 @@ class CapturingAdminPresenter: BlogAdminPresenter {
 
     // MARK: - BlogPresenter
     private(set) var adminViewErrors: [String]?
+    private(set) var adminViewPosts: [BlogPost]?
+    private(set) var adminViewUsers: [BlogUser]?
+    private(set) var adminViewPageInformation: BlogAdminPageInformation?
     func createIndexView(on container: Container, posts: [BlogPost], users: [BlogUser], errors: [String]?, pageInformation: BlogAdminPageInformation) -> EventLoopFuture<View> {
+        #warning("Test this is set up when getting the admin page")
         self.adminViewErrors = errors
+        self.adminViewPosts = posts
+        self.adminViewUsers = users
+        self.adminViewPageInformation = pageInformation
         return createFutureView(on: container)
     }
 
