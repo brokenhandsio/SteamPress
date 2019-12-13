@@ -85,6 +85,64 @@ class TagTests: XCTestCase {
         XCTAssertEqual(response.http.status, .ok)
         XCTAssertEqual(presenter.tag?.name.removingPercentEncoding, tagName)
     }
+    
+    func testTagPageGetsCorrectPageInformation() throws {
+        _ = try testWorld.getResponse(to: tagRequestPath)
+        XCTAssertNil(presenter.tagPageInformation?.disqusName)
+        XCTAssertNil(presenter.tagPageInformation?.googleAnalyticsIdentifier)
+        XCTAssertNil(presenter.tagPageInformation?.siteTwitterHandler)
+        XCTAssertNil(presenter.tagPageInformation?.loggedInUser)
+        XCTAssertEqual(presenter.tagPageInformation?.currentPageURL.absoluteString, tagRequestPath)
+        XCTAssertEqual(presenter.tagPageInformation?.websiteURL.absoluteString, "")
+    }
+    
+    func testTagPageInformationGetsLoggedInUser() throws {
+        let user = testWorld.createUser()
+        _ = try testWorld.getResponse(to: tagRequestPath, loggedInUser: user)
+        XCTAssertEqual(presenter.tagPageInformation?.loggedInUser?.username, user.username)
+    }
+    
+    func testSettingEnvVarsWithPageInformation() throws {
+        let googleAnalytics = "ABDJIODJWOIJIWO"
+        let twitterHandle = "3483209fheihgifffe"
+        let disqusName = "34829u48932fgvfbrtewerg"
+        setenv("BLOG_GOOGLE_ANALYTICS_IDENTIFIER", googleAnalytics, 1)
+        setenv("BLOG_SITE_TWITTER_HANDLER", twitterHandle, 1)
+        setenv("BLOG_DISQUS_NAME", disqusName, 1)
+        _ = try testWorld.getResponse(to: tagRequestPath)
+        XCTAssertEqual(presenter.tagPageInformation?.disqusName, disqusName)
+        XCTAssertEqual(presenter.tagPageInformation?.googleAnalyticsIdentifier, googleAnalytics)
+        XCTAssertEqual(presenter.tagPageInformation?.siteTwitterHandler, twitterHandle)
+    }
+    
+    func testCorrectPageInformationForAllTags() throws {
+        _ = try testWorld.getResponse(to: allTagsRequestPath)
+        XCTAssertNil(presenter.allTagsPageInformation?.disqusName)
+        XCTAssertNil(presenter.allTagsPageInformation?.googleAnalyticsIdentifier)
+        XCTAssertNil(presenter.allTagsPageInformation?.siteTwitterHandler)
+        XCTAssertNil(presenter.allTagsPageInformation?.loggedInUser)
+        XCTAssertEqual(presenter.allTagsPageInformation?.currentPageURL.absoluteString, allTagsRequestPath)
+        XCTAssertEqual(presenter.allTagsPageInformation?.websiteURL.absoluteString, "")
+    }
+    
+    func testPageInformationGetsLoggedInUserForAllTags() throws {
+        let user = testWorld.createUser()
+        _ = try testWorld.getResponse(to: allTagsRequestPath, loggedInUser: user)
+        XCTAssertEqual(presenter.allTagsPageInformation?.loggedInUser?.username, user.username)
+    }
+    
+    func testSettingEnvVarsWithPageInformationForAllTags() throws {
+        let googleAnalytics = "ABDJIODJWOIJIWO"
+        let twitterHandle = "3483209fheihgifffe"
+        let disqusName = "34829u48932fgvfbrtewerg"
+        setenv("BLOG_GOOGLE_ANALYTICS_IDENTIFIER", googleAnalytics, 1)
+        setenv("BLOG_SITE_TWITTER_HANDLER", twitterHandle, 1)
+        setenv("BLOG_DISQUS_NAME", disqusName, 1)
+        _ = try testWorld.getResponse(to: allTagsRequestPath)
+        XCTAssertEqual(presenter.allTagsPageInformation?.disqusName, disqusName)
+        XCTAssertEqual(presenter.allTagsPageInformation?.googleAnalyticsIdentifier, googleAnalytics)
+        XCTAssertEqual(presenter.allTagsPageInformation?.siteTwitterHandler, twitterHandle)
+    }
 
     // MARK: - Pagination Tests
     func testTagViewOnlyGetsTheSpecifiedNumberOfPosts() throws {

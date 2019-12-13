@@ -25,17 +25,20 @@ extension URL {
 
 extension Request {
     func urlWithHTTPSIfReverseProxy() throws -> URL {
-        if self.http.headers["X-Forwarded-Proto"].first == "https" {
-            guard var componets = URLComponents(url: self.http.url, resolvingAgainstBaseURL: false) else {
-                throw SteamPressError(identifier: "SteamPressError", "Failed to get componets of url from \(self.http.url.absoluteString)")
-            }
-            componets.scheme = "https"
-            guard let url = componets.url else {
-                throw SteamPressError(identifier: "SteamPressError", "Failed to convert components to URL")
-            }
-            return url
+        guard var componets = URLComponents(url: self.http.url, resolvingAgainstBaseURL: false) else {
+            throw SteamPressError(identifier: "SteamPressError", "Failed to get componets of url from \(self.http.url.absoluteString)")
         }
-        return self.http.url
+        
+        if self.http.headers["X-Forwarded-Proto"].first == "https" {
+            componets.scheme = "https"
+        }
+        
+        componets.query = nil
+        
+        guard let url = componets.url else {
+            throw SteamPressError(identifier: "SteamPressError", "Failed to convert components to URL")
+        }
+        return url
     }
 }
 

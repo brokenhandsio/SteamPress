@@ -278,4 +278,27 @@ class LoginTests: XCTestCase {
 
         XCTAssertEqual(loginResponse.http.cookies["steampress-session"]?.expires, response.http.cookies["steampress-session"]?.expires)
     }
+    
+    func testCorrectPageInformationForLogin() throws {
+        _ = try testWorld.getResponse(to: "/blog/admin/login")
+        XCTAssertNil(blogPresenter.loginPageInformation?.disqusName)
+        XCTAssertNil(blogPresenter.loginPageInformation?.googleAnalyticsIdentifier)
+        XCTAssertNil(blogPresenter.loginPageInformation?.siteTwitterHandler)
+        XCTAssertNil(blogPresenter.loginPageInformation?.loggedInUser)
+        XCTAssertEqual(blogPresenter.loginPageInformation?.currentPageURL.absoluteString, "/blog/admin/login")
+        XCTAssertEqual(blogPresenter.loginPageInformation?.websiteURL.absoluteString, "")
+    }
+
+    func testSettingEnvVarsWithPageInformationForLoginPage() throws {
+        let googleAnalytics = "ABDJIODJWOIJIWO"
+        let twitterHandle = "3483209fheihgifffe"
+        let disqusName = "34829u48932fgvfbrtewerg"
+        setenv("BLOG_GOOGLE_ANALYTICS_IDENTIFIER", googleAnalytics, 1)
+        setenv("BLOG_SITE_TWITTER_HANDLER", twitterHandle, 1)
+        setenv("BLOG_DISQUS_NAME", disqusName, 1)
+        _ = try testWorld.getResponse(to: "/blog/admin/login")
+        XCTAssertEqual(blogPresenter.loginPageInformation?.disqusName, disqusName)
+        XCTAssertEqual(blogPresenter.loginPageInformation?.googleAnalyticsIdentifier, googleAnalytics)
+        XCTAssertEqual(blogPresenter.loginPageInformation?.siteTwitterHandler, twitterHandle)
+    }
 }
