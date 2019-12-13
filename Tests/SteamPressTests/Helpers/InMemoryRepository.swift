@@ -20,7 +20,7 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
     func getAllTags(on container: Container) -> EventLoopFuture<[BlogTag]> {
         return container.future(tags)
     }
-    
+
     func getAllTagsWithPostCount(on container: Container) -> EventLoopFuture<[(BlogTag, Int)]> {
         let tagsWithCount = tags.map { tag -> (BlogTag, Int) in
             let postCount = postTagLinks.filter { $0.tagID == tag.tagID }.count
@@ -142,7 +142,7 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         let endIndex = min(offset + count, sortedPosts.count)
         return container.future(Array(sortedPosts[startIndex..<endIndex]))
     }
-    
+
     func getPostCount(for user: BlogUser, on container: Container) -> EventLoopFuture<Int> {
         return container.future(posts.filter { $0.author == user.userID }.count)
     }
@@ -215,11 +215,11 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
     func getUser(name: String, on container: Container) -> EventLoopFuture<BlogUser?> {
         return container.future(users.first { $0.name == name })
     }
-    
+
     func getAllUsers(on container: Container) -> EventLoopFuture<[BlogUser]> {
         return container.future(users)
     }
-    
+
     func getAllUsersWithPostCount(on container: Container) -> EventLoopFuture<[(BlogUser, Int)]> {
         let usersWithCount = users.map { user -> (BlogUser, Int) in
             let postCount = posts.filter { $0.author == user.userID }.count

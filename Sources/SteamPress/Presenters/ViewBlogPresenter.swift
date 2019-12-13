@@ -17,9 +17,9 @@ public struct ViewBlogPresenter: BlogPresenter {
     public func postView(on container: Container, post: BlogPost, author: BlogUser, pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
         do {
             let viewRenderer = try container.make(ViewRenderer.self)
-            
-            var postImage: String? = nil
-            var postImageAlt: String? = nil
+
+            var postImage: String?
+            var postImageAlt: String?
             if let image = try SwiftSoup.parse(markdownToHTML(post.contents)).select("img").first() {
                 postImage = try image.attr("src")
                 let imageAlt = try image.attr("alt")
@@ -28,7 +28,7 @@ public struct ViewBlogPresenter: BlogPresenter {
                 }
             }
             let shortSnippet = post.shortSnippet()
-            
+
             let context = BlogPostPageContext(title: post.title, post: post, author: author, pageInformation: pageInformation, postImage: postImage, postImageAlt: postImageAlt, shortSnippet: shortSnippet)
             return viewRenderer.render("blog/post", context)
         } catch {
@@ -45,7 +45,7 @@ public struct ViewBlogPresenter: BlogPresenter {
                     throw SteamPressError(identifier: "ViewBlogPresenter", "User ID Was Not Set")
                 }
                 return ViewBlogAuthor(userID: userID, name: user.name, username: user.username, resetPasswordRequired: user.resetPasswordRequired, profilePicture: user.profilePicture, twitterHandle: user.twitterHandle, biography: user.biography, tagline: user.tagline, postCount: authorPostCounts[userID] ?? 0)
-                
+
             }
             viewAuthors.sort { $0.postCount > $1.postCount }
             let context = AllAuthorsPageContext(pageInformation: pageInformation, authors: viewAuthors)

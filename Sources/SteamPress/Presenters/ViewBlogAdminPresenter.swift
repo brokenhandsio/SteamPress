@@ -1,9 +1,9 @@
 import Vapor
 
 public struct ViewBlogAdminPresenter: BlogAdminPresenter {
-    
+
     let pathCreator: BlogPathCreator
-    
+
     public func createIndexView(on container: Container, posts: [BlogPost], users: [BlogUser], errors: [String]?, pageInformation: BlogAdminPageInformation) -> EventLoopFuture<View> {
         do {
             let viewRenderer = try container.make(ViewRenderer.self)
@@ -15,7 +15,7 @@ public struct ViewBlogAdminPresenter: BlogAdminPresenter {
             return container.future(error: error)
         }
     }
-    
+
     public func createPostView(on container: Container, errors: [String]?, title: String?, contents: String?, slugURL: String?, tags: [String]?, isEditing: Bool, post: BlogPost?, isDraft: Bool?, titleError: Bool, contentsError: Bool, pageInformation: BlogAdminPageInformation) -> EventLoopFuture<View> {
         do {
             if isEditing {
@@ -33,7 +33,7 @@ public struct ViewBlogAdminPresenter: BlogAdminPresenter {
             return container.future(error: error)
         }
     }
-    
+
     public func createUserView(on container: Container, editing: Bool, errors: [String]?, name: String?, nameError: Bool, username: String?, usernameErorr: Bool, passwordError: Bool, confirmPasswordError: Bool, resetPasswordOnLogin: Bool, userID: Int?, profilePicture: String?, twitterHandle: String?, biography: String?, tagline: String?, pageInformation: BlogAdminPageInformation) -> EventLoopFuture<View> {
         do {
             if editing {
@@ -41,7 +41,7 @@ public struct ViewBlogAdminPresenter: BlogAdminPresenter {
                     return container.future(error: SteamPressError(identifier: "ViewBlogAdminPresenter", "User ID is nil whilst editing"))
                 }
             }
-            
+
             let viewRenderer = try container.make(ViewRenderer.self)
             let context = CreateUserPageContext(editing: editing, errors: errors, nameSupplied: name, nameError: nameError, usernameSupplied: username, usernameError: usernameErorr, passwordError: passwordError, confirmPasswordError: confirmPasswordError, resetPasswordOnLoginSupplied: resetPasswordOnLogin, userID: userID, twitterHandleSupplied: twitterHandle, profilePictureSupplied: profilePicture, biographySupplied: biography, taglineSupplied: tagline, pageInformation: pageInformation)
             return viewRenderer.render("blog/admin/createUser", context)
@@ -49,7 +49,7 @@ public struct ViewBlogAdminPresenter: BlogAdminPresenter {
             return container.future(error: error)
         }
     }
-    
+
     public func createResetPasswordView(on container: Container, errors: [String]?, passwordError: Bool?, confirmPasswordError: Bool?, pageInformation: BlogAdminPageInformation) -> EventLoopFuture<View> {
         do {
             let viewRenderer = try container.make(ViewRenderer.self)
@@ -59,6 +59,5 @@ public struct ViewBlogAdminPresenter: BlogAdminPresenter {
             return container.future(error: error)
         }
     }
-    
-    
+
 }

@@ -66,7 +66,7 @@ class BlogViewTests: XCTestCase {
     func testDisqusNameNotPassedToBlogPostPageIfNotPassedIn() throws {
         let pageInformationWithoutDisqus = BlogGlobalPageInformation(disqusName: nil, siteTwitterHandler: "twitter", googleAnalyticsIdentifier: "google", loggedInUser: author, websiteURL: websiteURL, currentPageURL: currentPageURL)
         _ = presenter.postView(on: basicContainer, post: post, author: author, pageInformation: pageInformationWithoutDisqus)
-        
+
         let context = try XCTUnwrap(viewRenderer.capturedContext as? BlogPostPageContext)
         XCTAssertNil(context.pageInformation.disqusName)
     }
@@ -74,7 +74,7 @@ class BlogViewTests: XCTestCase {
     func testTwitterHandleNotPassedToBlogPostPageIfNotPassedIn() throws {
         let pageInformationWithoutTwitterHandle = BlogGlobalPageInformation(disqusName: "disqus", siteTwitterHandler: nil, googleAnalyticsIdentifier: "google", loggedInUser: author, websiteURL: websiteURL, currentPageURL: currentPageURL)
         _ = presenter.postView(on: basicContainer, post: post, author: author, pageInformation: pageInformationWithoutTwitterHandle)
-        
+
         let context = try XCTUnwrap(viewRenderer.capturedContext as? BlogPostPageContext)
         XCTAssertNil(context.pageInformation.siteTwitterHandler)
     }
@@ -82,7 +82,7 @@ class BlogViewTests: XCTestCase {
     func testGAIdentifierNotPassedToBlogPostPageIfNotPassedIn() throws {
         let pageInformationWithoutGAIdentifier = BlogGlobalPageInformation(disqusName: "disqus", siteTwitterHandler: "twitter", googleAnalyticsIdentifier: nil, loggedInUser: author, websiteURL: websiteURL, currentPageURL: currentPageURL)
         _ = presenter.postView(on: basicContainer, post: post, author: author, pageInformation: pageInformationWithoutGAIdentifier)
-        
+
         let context = try XCTUnwrap(viewRenderer.capturedContext as? BlogPostPageContext)
         XCTAssertNil(context.pageInformation.googleAnalyticsIdentifier)
     }

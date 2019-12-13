@@ -51,7 +51,7 @@ class TagTests: XCTestCase {
         XCTAssertEqual(presenter.tagPosts?.count, 2)
         XCTAssertEqual(presenter.tagPosts?.first?.title, secondPostData.post.title)
     }
-    
+
     func testDisabledBlogTagsPath() throws {
         testWorld = try TestWorld.create(enableTagPages: false)
         _ = try testWorld.createTag(tagName)
