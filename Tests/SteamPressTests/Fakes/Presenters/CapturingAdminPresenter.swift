@@ -27,6 +27,7 @@ class CapturingAdminPresenter: BlogAdminPresenter {
     private(set) var createPostSlugURL: String?
     private(set) var createPostTitleError: Bool?
     private(set) var createPostContentsError: Bool?
+    private(set) var createPostPageInformation: BlogAdminPageInformation?
     #warning("Test page information for all functions in this")
     func createPostView(on container: Container, errors: [String]?, title: String?, contents: String?, slugURL: String?, tags: [String]?, isEditing: Bool, post: BlogPost?, isDraft: Bool?, titleError: Bool, contentsError: Bool, pageInformation: BlogAdminPageInformation) -> EventLoopFuture<View> {
         self.createPostErrors = errors
@@ -39,6 +40,7 @@ class CapturingAdminPresenter: BlogAdminPresenter {
         self.createPostDraft = isDraft
         self.createPostTitleError = titleError
         self.createPostContentsError = contentsError
+        self.createPostPageInformation = pageInformation
         return createFutureView(on: container)
     }
 

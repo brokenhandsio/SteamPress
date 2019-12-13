@@ -22,7 +22,6 @@ struct PostAdminController: RouteCollection {
     // MARK: - Route handlers
     func createPostHandler(_ req: Request) throws -> EventLoopFuture<View> {
         let presenter = try req.make(BlogAdminPresenter.self)
-        #warning("Test title error and contents error")
         return try presenter.createPostView(on: req, errors: nil, title: nil, contents: nil, slugURL: nil, tags: nil, isEditing: false, post: nil, isDraft: nil, titleError: false, contentsError: false, pageInformation: req.adminPageInfomation())
     }
 
@@ -36,8 +35,7 @@ struct PostAdminController: RouteCollection {
 
         if let createPostErrors = validatePostCreation(data) {
             let presenter = try req.make(BlogAdminPresenter.self)
-            #warning("Test title error and contents error")
-            let view = try presenter.createPostView(on: req, errors: createPostErrors, title: data.title, contents: data.contents, slugURL: nil, tags: data.tags, isEditing: false, post: nil, isDraft: nil, titleError: false, contentsError: false, pageInformation: req.adminPageInfomation())
+            let view = try presenter.createPostView(on: req, errors: createPostErrors.errors, title: data.title, contents: data.contents, slugURL: nil, tags: data.tags, isEditing: false, post: nil, isDraft: nil, titleError: createPostErrors.titleError, contentsError: createPostErrors.contentsError, pageInformation: req.adminPageInfomation())
             return try view.encode(for: req)
         }
 
@@ -99,7 +97,6 @@ struct PostAdminController: RouteCollection {
             let tagsRepository = try req.make(BlogTagRepository.self)
             return tagsRepository.getTags(for: post, on: req).flatMap { tags in
                 let presenter = try req.make(BlogAdminPresenter.self)
-                #warning("Test title error and contents error")
                 return try presenter.createPostView(on: req, errors: nil, title: post.title, contents: post.contents, slugURL: post.slugUrl, tags: tags.map { $0.name }, isEditing: true, post: post, isDraft: !post.published, titleError: false, contentsError: false, pageInformation: req.adminPageInfomation())
             }
         }
@@ -110,8 +107,7 @@ struct PostAdminController: RouteCollection {
         return try req.parameters.next(BlogPost.self).flatMap { post in
             if let errors = self.validatePostCreation(data) {
                 let presenter = try req.make(BlogAdminPresenter.self)
-                #warning("Test title error and contents error")
-                return try presenter.createPostView(on: req, errors: errors, title: data.title, contents: data.contents, slugURL: post.slugUrl, tags: data.tags, isEditing: true, post: post, isDraft: !post.published, titleError: false, contentsError: false, pageInformation: req.adminPageInfomation()).encode(for: req)
+                return try presenter.createPostView(on: req, errors: errors.errors, title: data.title, contents: data.contents, slugURL: post.slugUrl, tags: data.tags, isEditing: true, post: post, isDraft: !post.published, titleError: errors.titleError, contentsError: errors.contentsError, pageInformation: req.adminPageInfomation()).encode(for: req)
             }
 
             guard let title = data.title, let contents = data.contents else {
@@ -183,22 +179,26 @@ struct PostAdminController: RouteCollection {
     }
 
     // MARK: - Validators
-    private func validatePostCreation(_ data: CreatePostData) -> [String]? {
+    private func validatePostCreation(_ data: CreatePostData) -> CreatePostErrors? {
         var createPostErrors = [String]()
+        var titleError = false
+        var contentsError = false
 
         if data.title.isEmptyOrWhitespace() {
             createPostErrors.append("You must specify a blog post title")
+            titleError = true
         }
 
         if data.contents.isEmptyOrWhitespace() {
             createPostErrors.append("You must have some content in your blog post")
+            contentsError = true
         }
 
         if createPostErrors.count == 0 {
             return nil
         }
 
-        return createPostErrors
+        return CreatePostErrors(errors: createPostErrors, titleError: titleError, contentsError: contentsError)
     }
 
 }

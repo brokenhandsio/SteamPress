@@ -141,16 +141,3 @@ struct BlogController: RouteCollection {
     }
 
 }
-
-#warning("Move")
-import Foundation
-
-extension Request {
-    func urlWithHTTPSIfReverseProxy() -> URL {
-        if http.headers["X-Forwarded-Proto"].first == "https" {
-//            let uri = URI(scheme: "https", userInfo: self.http.uri.userInfo, hostname: self.http.uri.hostname, port: nil, path: self.http.uri.path, query: self.http.uri.query, fragment: self.http.uri.fragment)
-            //            return uri
-        }
-        return self.http.url
-    }
-}

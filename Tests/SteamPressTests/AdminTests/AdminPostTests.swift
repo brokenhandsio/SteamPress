@@ -78,7 +78,21 @@ class AdminPostTests: XCTestCase {
         _ = try testWorld.getResponse(to: createPostPath, loggedInUser: user)
 
         let isEditing = try XCTUnwrap(presenter.createPostIsEditing)
+        let titleError = try XCTUnwrap(presenter.createPostTitleError)
+        let contentsError = try XCTUnwrap(presenter.createPostContentsError)
+        XCTAssertNil(presenter.createPostErrors)
+        XCTAssertNil(presenter.createPostTitle)
+        XCTAssertNil(presenter.createPostContents)
+        XCTAssertNil(presenter.createPostSlugURL)
+        XCTAssertNil(presenter.createPostTags)
         XCTAssertFalse(isEditing)
+        XCTAssertNil(presenter.createPostPost)
+        XCTAssertNil(presenter.createPostDraft)
+        XCTAssertFalse(titleError)
+        XCTAssertFalse(contentsError)
+        XCTAssertEqual(presenter.createPostPageInformation?.loggedInUser.username, user.username)
+        XCTAssertEqual(presenter.createPostPageInformation?.currentPageURL.absoluteString, "/admin/createPost/")
+        XCTAssertEqual(presenter.createPostPageInformation?.websiteURL.absoluteString, "")
     }
 
     func testPostCannotBeCreatedIfDraftAndPublishNotSet() throws {
@@ -106,7 +120,14 @@ class AdminPostTests: XCTestCase {
         _ = try testWorld.getResponse(to: createPostPath, body: createData, loggedInUser: user)
 
         let createPostErrors = try XCTUnwrap(presenter.createPostErrors)
+        let titleError = try XCTUnwrap(presenter.createPostTitleError)
+        let contentsError = try XCTUnwrap(presenter.createPostContentsError)
         XCTAssertTrue(createPostErrors.contains("You must specify a blog post title"))
+        XCTAssertTrue(titleError)
+        XCTAssertFalse(contentsError)
+        XCTAssertEqual(presenter.createPostPageInformation?.loggedInUser.username, user.username)
+        XCTAssertEqual(presenter.createPostPageInformation?.currentPageURL.absoluteString, "/admin/createPost/")
+        XCTAssertEqual(presenter.createPostPageInformation?.websiteURL.absoluteString, "")
     }
 
     func testCreatePostMustIncludeContents() throws {
@@ -120,7 +141,11 @@ class AdminPostTests: XCTestCase {
         _ = try testWorld.getResponse(to: createPostPath, body: createData, loggedInUser: user)
 
         let createPostErrors = try XCTUnwrap(presenter.createPostErrors)
+        let titleError = try XCTUnwrap(presenter.createPostTitleError)
+        let contentsError = try XCTUnwrap(presenter.createPostContentsError)
         XCTAssertTrue(createPostErrors.contains("You must have some content in your blog post"))
+        XCTAssertFalse(titleError)
+        XCTAssertTrue(contentsError)
     }
 
     func testPresenterGetsDataIfValidationOfDataFails() throws {
@@ -135,10 +160,14 @@ class AdminPostTests: XCTestCase {
         _ = try testWorld.getResponse(to: createPostPath, body: createData, loggedInUser: user)
 
         let createPostErrors = try XCTUnwrap(presenter.createPostErrors)
+        let titleError = try XCTUnwrap(presenter.createPostTitleError)
+        let contentsError = try XCTUnwrap(presenter.createPostContentsError)
         XCTAssertTrue(createPostErrors.contains("You must have some content in your blog post"))
         XCTAssertEqual(presenter.createPostTags, createData.tags)
         XCTAssertEqual(presenter.createPostContents, createData.contents)
         XCTAssertEqual(presenter.createPostTitle, createData.title)
+        XCTAssertFalse(titleError)
+        XCTAssertTrue(contentsError)
     }
 
     func testCreatePostWithDraftDoesNotPublishPost() throws {
@@ -244,6 +273,13 @@ class AdminPostTests: XCTestCase {
         let postTags = try XCTUnwrap(presenter.createPostTags)
         XCTAssertTrue(postTags.contains(tag1Name))
         XCTAssertTrue(postTags.contains(tag2Name))
+        let titleError = try XCTUnwrap(presenter.createPostTitleError)
+        let contentsError = try XCTUnwrap(presenter.createPostContentsError)
+        XCTAssertFalse(titleError)
+        XCTAssertFalse(contentsError)
+        XCTAssertEqual(presenter.createPostPageInformation?.loggedInUser.username, user.username)
+        XCTAssertEqual(presenter.createPostPageInformation?.currentPageURL.absoluteString, "/admin/posts/1/edit")
+        XCTAssertEqual(presenter.createPostPageInformation?.websiteURL.absoluteString, "")
     }
 
     func testThatEditingPostGetsRedirectToPostPage() throws {
@@ -398,6 +434,35 @@ class AdminPostTests: XCTestCase {
         XCTAssertEqual(presenter.createPostDraft, false)
         let createPostErrors = try XCTUnwrap(presenter.createPostErrors)
         XCTAssertTrue(createPostErrors.contains("You must specify a blog post title"))
+        let titleError = try XCTUnwrap(presenter.createPostTitleError)
+        let contentsError = try XCTUnwrap(presenter.createPostContentsError)
+        XCTAssertTrue(titleError)
+        XCTAssertFalse(contentsError)
+        XCTAssertEqual(presenter.createPostPageInformation?.loggedInUser.username, user.username)
+        XCTAssertEqual(presenter.createPostPageInformation?.currentPageURL.absoluteString, "/admin/posts/1/edit")
+        XCTAssertEqual(presenter.createPostPageInformation?.websiteURL.absoluteString, "")
+    }
+    
+    func testEditingPageWithInvalidContentsDataPassesExistingDataToPresenter() throws {
+        struct UpdatePostData: Content {
+            static let defaultContentType = MediaType.urlEncodedForm
+            let title = "A new title"
+            let contents = ""
+            let tags = ["First Tag", "Second Tag"]
+        }
+
+        let testData = try testWorld.createPost(title: "Initial title", contents: "Some initial contents", slugUrl: "initial-title")
+        let updateData = UpdatePostData()
+
+        let updatePostPath = "/admin/posts/\(testData.post.blogID!)/edit"
+        _ = try testWorld.getResponse(to: updatePostPath, body: updateData, loggedInUser: user)
+
+        let createPostErrors = try XCTUnwrap(presenter.createPostErrors)
+        XCTAssertTrue(createPostErrors.contains("You must have some content in your blog post"))
+        let titleError = try XCTUnwrap(presenter.createPostTitleError)
+        let contentsError = try XCTUnwrap(presenter.createPostContentsError)
+        XCTAssertTrue(contentsError)
+        XCTAssertFalse(titleError)
     }
 
     // MARK: - Post Deletion

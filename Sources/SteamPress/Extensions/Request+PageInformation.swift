@@ -7,7 +7,6 @@ extension Request {
     }
 
     func adminPageInfomation() throws -> BlogAdminPageInformation {
-        #warning("Fix website URL")
-        return try BlogAdminPageInformation(loggedInUser: requireAuthenticated(BlogUser.self), websiteURL: self.urlWithHTTPSIfReverseProxy(), currentPageURL: self.urlWithHTTPSIfReverseProxy())
+        return try BlogAdminPageInformation(loggedInUser: requireAuthenticated(BlogUser.self), websiteURL: self.urlWithHTTPSIfReverseProxy().getRootUrl(), currentPageURL: self.urlWithHTTPSIfReverseProxy())
     }
 }
