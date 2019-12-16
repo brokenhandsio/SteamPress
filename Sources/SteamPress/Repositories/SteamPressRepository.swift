@@ -30,7 +30,6 @@ public protocol BlogUserRepository {
     func getAllUsers(on container: Container) -> EventLoopFuture<[BlogUser]>
     func getAllUsersWithPostCount(on container: Container) -> EventLoopFuture<[(BlogUser, Int)]>
     func getUser(id: Int, on container: Container) -> EventLoopFuture<BlogUser?>
-    func getUser(name: String, on container: Container) -> EventLoopFuture<BlogUser?>
     func getUser(username: String, on container: Container) -> EventLoopFuture<BlogUser?>
     func save(_ user: BlogUser, on container: Container) -> EventLoopFuture<BlogUser>
     func delete(_ user: BlogUser, on container: Container) -> EventLoopFuture<Void>

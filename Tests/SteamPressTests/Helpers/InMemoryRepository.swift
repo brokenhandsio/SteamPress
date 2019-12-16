@@ -212,10 +212,6 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         return container.future(users.first { $0.userID == id })
     }
 
-    func getUser(name: String, on container: Container) -> EventLoopFuture<BlogUser?> {
-        return container.future(users.first { $0.name == name })
-    }
-
     func getAllUsers(on container: Container) -> EventLoopFuture<[BlogUser]> {
         return container.future(users)
     }
