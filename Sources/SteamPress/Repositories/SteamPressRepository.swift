@@ -10,7 +10,7 @@ public protocol BlogTagRepository {
     // tags that have no posts associated with a tag
     func deleteTags(for post: BlogPost, on container: Container) -> EventLoopFuture<Void>
     func remove(_ tag: BlogTag, from post: BlogPost, on container: Container) -> EventLoopFuture<Void>
-    func add(_ tag: BlogTag, to post: BlogPost, on conainter: Container) -> EventLoopFuture<Void>
+    func add(_ tag: BlogTag, to post: BlogPost, on container: Container) -> EventLoopFuture<Void>
 }
 
 public protocol BlogPostRepository {
