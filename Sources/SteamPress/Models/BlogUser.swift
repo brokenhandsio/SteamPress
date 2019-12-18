@@ -8,7 +8,7 @@ public final class BlogUser: Codable {
     public var userID: Int?
     public var name: String
     public var username: String
-    var password: String
+    public var password: String
     public var resetPasswordRequired: Bool = false
     public var profilePicture: String?
     public var twitterHandle: String?

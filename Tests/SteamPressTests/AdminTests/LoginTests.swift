@@ -1,6 +1,6 @@
 import XCTest
 import Vapor
-@testable import SteamPress
+import SteamPress
 import Foundation
 import Authentication
 

@@ -12,13 +12,16 @@ struct TestWorld {
         unsetenv("BLOG_GOOGLE_ANALYTICS_IDENTIFIER")
         unsetenv("BLOG_SITE_TWITTER_HANDLER")
         unsetenv("BLOG_DISQUS_NAME")
+        print("Building test world")
         return TestWorld(context: context)
     }
 
     let context: Context
 
     init(context: Context) {
+        print("Setting context")
         self.context = context
+        print("Context set")
     }
 
     struct Context {
