@@ -3,10 +3,6 @@ import Authentication
 
 public struct Provider: Vapor.Provider {
 
-    public static var repositoryName: String {
-        return "steampress"
-    }
-
     let blogPath: String?
     let feedInformation: FeedInformation
     let postsPerPage: Int
