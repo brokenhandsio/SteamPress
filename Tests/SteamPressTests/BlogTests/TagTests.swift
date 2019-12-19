@@ -52,18 +52,6 @@ class TagTests: XCTestCase {
         XCTAssertEqual(presenter.tagPosts?.first?.title, secondPostData.post.title)
     }
 
-    func testDisabledBlogTagsPath() throws {
-        print("Setting up test world")
-        testWorld = try TestWorld.create(enableTagPages: false)
-        print("Will now create tag")
-        _ = try testWorld.createTag(tagName)
-        let tagResponse = try testWorld.getResponse(to: tagRequestPath)
-        let allTagsResponse = try testWorld.getResponse(to: allTagsRequestPath)
-
-        XCTAssertEqual(.notFound, tagResponse.http.status)
-        XCTAssertEqual(.notFound, allTagsResponse.http.status)
-    }
-
     func testTagView() throws {
         _ = try testWorld.getResponse(to: tagRequestPath)
 
