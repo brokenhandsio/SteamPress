@@ -17,6 +17,10 @@ class AtomFeedTests: XCTestCase {
         dateFormatter.locale = Locale(identifier: "en_US_POSIX")
         dateFormatter.timeZone = TimeZone(secondsFromGMT: 0)
     }
+    
+    override func tearDown() {
+        XCTAssertNoThrow(try testWorld.tryAsHardAsWeCanToShutdownApplication())
+    }
 
     // MARK: - Tests
 

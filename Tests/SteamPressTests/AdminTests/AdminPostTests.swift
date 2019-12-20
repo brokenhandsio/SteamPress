@@ -19,6 +19,10 @@ class AdminPostTests: XCTestCase {
         testWorld = try! TestWorld.create()
         user = testWorld.createUser(username: "leia")
     }
+    
+    override func tearDown() {
+        XCTAssertNoThrow(try testWorld.tryAsHardAsWeCanToShutdownApplication())
+    }
 
     // MARK: - Post Creation
 

@@ -19,6 +19,10 @@ class SearchTests: XCTestCase {
         testWorld = try! TestWorld.create()
         firstData = try! testWorld.createPost(title: "Test Path", slugUrl: "test-path")
     }
+    
+    override func tearDown() {
+        XCTAssertNoThrow(try testWorld.tryAsHardAsWeCanToShutdownApplication())
+    }
 
     // MARK: - Tests
 
@@ -44,5 +48,34 @@ class SearchTests: XCTestCase {
         XCTAssertEqual(response.http.status, .ok)
         XCTAssertEqual(presenter.searchPosts?.count, 0)
         XCTAssertNil(presenter.searchTerm)
+    }
+    
+    func testCorrectPageInformationForSearch() throws {
+        _ = try testWorld.getResponse(to: "/search?term=Test")
+        XCTAssertNil(presenter.searchPageInformation?.disqusName)
+        XCTAssertNil(presenter.searchPageInformation?.googleAnalyticsIdentifier)
+        XCTAssertNil(presenter.searchPageInformation?.siteTwitterHandler)
+        XCTAssertNil(presenter.searchPageInformation?.loggedInUser)
+        XCTAssertEqual(presenter.searchPageInformation?.currentPageURL.absoluteString, "/search")
+        XCTAssertEqual(presenter.searchPageInformation?.websiteURL.absoluteString, "")
+    }
+    
+    func testPageInformationGetsLoggedInUserForSearch() throws {
+        let user = testWorld.createUser()
+        _ = try testWorld.getResponse(to: "/search?term=Test", loggedInUser: user)
+        XCTAssertEqual(presenter.searchPageInformation?.loggedInUser?.username, user.username)
+    }
+    
+    func testSettingEnvVarsWithPageInformationForSearch() throws {
+        let googleAnalytics = "ABDJIODJWOIJIWO"
+        let twitterHandle = "3483209fheihgifffe"
+        let disqusName = "34829u48932fgvfbrtewerg"
+        setenv("BLOG_GOOGLE_ANALYTICS_IDENTIFIER", googleAnalytics, 1)
+        setenv("BLOG_SITE_TWITTER_HANDLER", twitterHandle, 1)
+        setenv("BLOG_DISQUS_NAME", disqusName, 1)
+        _ = try testWorld.getResponse(to: "/search?term=Test")
+        XCTAssertEqual(presenter.searchPageInformation?.disqusName, disqusName)
+        XCTAssertEqual(presenter.searchPageInformation?.googleAnalyticsIdentifier, googleAnalytics)
+        XCTAssertEqual(presenter.searchPageInformation?.siteTwitterHandler, twitterHandle)
     }
 }

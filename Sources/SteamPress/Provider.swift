@@ -1,19 +1,13 @@
 import Vapor
 import Authentication
 
-public struct Provider<P: BlogPresenter, AP: BlogAdminPresenter>: Vapor.Provider {
-
-    public static var repositoryName: String {
-        return "steampress"
-    }
+public struct Provider: Vapor.Provider {
 
     let blogPath: String?
     let feedInformation: FeedInformation
     let postsPerPage: Int
     let enableAuthorPages: Bool
     let enableTagPages: Bool
-    let blogPresenter: P
-    let blogAdminPresenter: AP
     let pathCreator: BlogPathCreator
 
     /**
@@ -28,35 +22,28 @@ public struct Provider<P: BlogPresenter, AP: BlogAdminPresenter>: Vapor.Provider
      or not. Defaults to true.
      - Parameter enableTagsPages: Flag used to determine whether to publicy expose the tags endpoints or not.
      Defaults to true.
-     - Parameter blogPresenter: The presenter to generate templates with. Defaults to LeafBlogPresenter.
-     - Parameter blogAdminPresenter: The presenter to generate templates for the admin section. Defaults to LeadBlogAdminPresenter.
      */
     public init(
         blogPath: String? = nil,
         feedInformation: FeedInformation = FeedInformation(),
         postsPerPage: Int = 10,
         enableAuthorPages: Bool = true,
-        enableTagPages: Bool = true,
-        blogPresenter: P,
-        blogAdminPresenter: AP) {
+        enableTagPages: Bool = true) {
         self.blogPath = blogPath
         self.feedInformation = feedInformation
         self.postsPerPage = postsPerPage
-        #warning("Default to sensible ones in the constructor")
         self.enableAuthorPages = enableAuthorPages
         self.enableTagPages = enableTagPages
-        self.blogPresenter = blogPresenter
-        self.blogAdminPresenter = blogAdminPresenter
         self.pathCreator = BlogPathCreator(blogPath: self.blogPath)
     }
 
     public func register(_ services: inout Services) throws {
         services.register(BlogPresenter.self) { _ in
-            return self.blogPresenter
+            return ViewBlogPresenter()
         }
 
         services.register(BlogAdminPresenter.self) { _ in
-            return self.blogAdminPresenter
+            return ViewBlogAdminPresenter(pathCreator: self.pathCreator)
         }
 
         try services.register(AuthenticationProvider())

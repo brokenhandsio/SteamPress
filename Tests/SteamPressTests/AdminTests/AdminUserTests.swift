@@ -19,6 +19,10 @@ class AdminUserTests: XCTestCase {
         testWorld = try! TestWorld.create()
         user = testWorld.createUser(name: "Leia", username: "leia")
     }
+    
+    override func tearDown() {
+        XCTAssertNoThrow(try testWorld.tryAsHardAsWeCanToShutdownApplication())
+    }
 
     // MARK: - User Creation
 

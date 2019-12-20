@@ -15,6 +15,10 @@ class AccessControlTests: XCTestCase {
         testWorld = try! TestWorld.create(path: "blog")
         user = testWorld.createUser()
     }
+    
+    override func tearDown() {
+        XCTAssertNoThrow(try testWorld.tryAsHardAsWeCanToShutdownApplication())
+    }
 
     // MARK: - Tests
 

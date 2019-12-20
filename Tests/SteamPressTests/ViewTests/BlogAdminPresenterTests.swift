@@ -32,6 +32,10 @@ class BlogAdminPresenterTests: XCTestCase {
         }
         viewRenderer = CapturingViewRenderer(worker: basicContainer)
     }
+    
+    override func tearDown() {
+        try! basicContainer.syncShutdownGracefully()
+    }
 
     // MARK: - Tests
 

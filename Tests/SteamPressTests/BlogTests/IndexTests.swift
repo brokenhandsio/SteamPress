@@ -21,6 +21,10 @@ class IndexTests: XCTestCase {
         testWorld = try! TestWorld.create(postsPerPage: postsPerPage)
         firstData = try! testWorld.createPost(title: "Test Path", slugUrl: "test-path")
     }
+    
+    override func tearDown() {
+        XCTAssertNoThrow(try testWorld.tryAsHardAsWeCanToShutdownApplication())
+    }
 
     // MARK: - Tests
 

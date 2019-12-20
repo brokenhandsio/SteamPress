@@ -20,6 +20,10 @@ class PostTests: XCTestCase {
         testWorld = try! TestWorld.create()
         firstData = try! testWorld.createPost(title: "Test Path", slugUrl: "test-path")
     }
+    
+    override func tearDown() {
+        XCTAssertNoThrow(try testWorld.tryAsHardAsWeCanToShutdownApplication())
+    }
 
     // MARK: - Tests
 
@@ -32,7 +36,7 @@ class PostTests: XCTestCase {
         XCTAssertEqual(presenter.postAuthor?.username, firstData.author.username)
     }
     
-    func testIndexGetsCorrectPageInformation() throws {
+    func testPostPageGetsCorrectPageInformation() throws {
         _ = try testWorld.getResponse(to: blogPostPath)
         XCTAssertNil(presenter.postPageInformation?.disqusName)
         XCTAssertNil(presenter.postPageInformation?.googleAnalyticsIdentifier)
@@ -42,7 +46,7 @@ class PostTests: XCTestCase {
         XCTAssertEqual(presenter.postPageInformation?.websiteURL.absoluteString, "")
     }
     
-    func testIndexPageInformationGetsLoggedInUser() throws {
+    func testPostPageInformationGetsLoggedInUser() throws {
         let user = testWorld.createUser()
         _ = try testWorld.getResponse(to: blogPostPath, loggedInUser: user)
         XCTAssertEqual(presenter.postPageInformation?.loggedInUser?.username, user.username)
