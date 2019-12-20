@@ -31,6 +31,10 @@ struct TestWorld {
     
     // To work around Vapor 3 dodgy lifecycle mess
     mutating func tryAsHardAsWeCanToShutdownApplication() throws {
+        if let threadPool = try context.app?.make(BlockingIOThreadPool.self) {
+            try threadPool.syncShutdownGracefully()
+        }
+        
         struct ApplicationDidNotGoAway: Error {
             var description: String
         }
