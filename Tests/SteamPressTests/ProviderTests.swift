@@ -20,13 +20,15 @@ class ProviderTests: XCTestCase {
         
         let app = try Application(services: services)
         
-        let numberGenerator = try app.make(SteamPressRandomNumberGenerator.self)
-        XCTAssertTrue(type(of: numberGenerator) == RealRandomNumberGenerator.self)
-        
-        let blogPresenter = try app.make(BlogPresenter.self)
-        XCTAssertTrue(type(of: blogPresenter) == ViewBlogPresenter.self)
-        
-        let blogAdminPresenter = try app.make(BlogAdminPresenter.self)
-        XCTAssertTrue(type(of: blogAdminPresenter) == ViewBlogAdminPresenter.self)
+        try withExtendedLifetime(app) {
+            let numberGenerator = try app.make(SteamPressRandomNumberGenerator.self)
+            XCTAssertTrue(type(of: numberGenerator) == RealRandomNumberGenerator.self)
+            
+            let blogPresenter = try app.make(BlogPresenter.self)
+            XCTAssertTrue(type(of: blogPresenter) == ViewBlogPresenter.self)
+            
+            let blogAdminPresenter = try app.make(BlogAdminPresenter.self)
+            XCTAssertTrue(type(of: blogAdminPresenter) == ViewBlogAdminPresenter.self)
+        }
     }
 }
