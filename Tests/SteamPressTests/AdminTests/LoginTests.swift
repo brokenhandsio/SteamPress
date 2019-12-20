@@ -25,6 +25,10 @@ class LoginTests: XCTestCase {
         testWorld = try! TestWorld.create(path: "blog")
         user = testWorld.createUser()
     }
+    
+    override func tearDown() {
+        XCTAssertNoThrow(try testWorld.tryAsHardAsWeCanToShutdownApplication())
+    }
 
     // MARK: - Tests
 
@@ -43,7 +47,7 @@ class LoginTests: XCTestCase {
         let sessionCookie = loginResponse.http.cookies["steampress-session"]
         var adminRequest = HTTPRequest(method: .GET, url: URL(string: "/blog/admin")!)
         adminRequest.cookies["steampress-session"] = sessionCookie
-        let wrappedAdminRequest = Request(http: adminRequest, using: testWorld.context.app)
+        let wrappedAdminRequest = Request(http: adminRequest, using: testWorld.context.app!)
 
         let adminResponse = try testWorld.getResponse(to: wrappedAdminRequest)
 
@@ -51,7 +55,7 @@ class LoginTests: XCTestCase {
 
         var logoutRequest = HTTPRequest(method: .POST, url: URL(string: "/blog/admin/logout")!)
         logoutRequest.cookies["steampress-session"] = sessionCookie
-        let wrappedLogoutRequest = Request(http: logoutRequest, using: testWorld.context.app)
+        let wrappedLogoutRequest = Request(http: logoutRequest, using: testWorld.context.app!)
         let logoutResponse = try testWorld.getResponse(to: wrappedLogoutRequest)
 
         XCTAssertEqual(logoutResponse.http.status, .seeOther)
@@ -59,7 +63,7 @@ class LoginTests: XCTestCase {
 
         var secondAdminRequest = HTTPRequest(method: .GET, url: URL(string: "/blog/admin")!)
         secondAdminRequest.cookies["steampress-session"] = sessionCookie
-        let wrappedSecondRequest = Request(http: secondAdminRequest, using: testWorld.context.app)
+        let wrappedSecondRequest = Request(http: secondAdminRequest, using: testWorld.context.app!)
         let loggedOutAdminResponse = try testWorld.getResponse(to: wrappedSecondRequest)
 
         XCTAssertEqual(loggedOutAdminResponse.http.status, .seeOther)
@@ -273,7 +277,7 @@ class LoginTests: XCTestCase {
         let cookie = loginResponse.http.cookies["steampress-session"]
         var adminRequest = HTTPRequest(method: .GET, url: URL(string: "/blog/admin")!)
         adminRequest.cookies["steampress-session"] = cookie
-        let wrappedAdminRequest = Request(http: adminRequest, using: testWorld.context.app)
+        let wrappedAdminRequest = Request(http: adminRequest, using: testWorld.context.app!)
         let response = try testWorld.getResponse(to: wrappedAdminRequest)
 
         XCTAssertEqual(loginResponse.http.cookies["steampress-session"]?.expires, response.http.cookies["steampress-session"]?.expires)

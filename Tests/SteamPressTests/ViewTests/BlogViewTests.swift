@@ -30,6 +30,10 @@ class BlogViewTests: XCTestCase {
         currentPageURL = websiteURL.appendingPathComponent("blog").appendingPathComponent("posts").appendingPathComponent("test-post")
         pageInformation = BlogGlobalPageInformation(disqusName: "disqusName", siteTwitterHandler: "twitterHandleSomething", googleAnalyticsIdentifier: "GAString....", loggedInUser: author, websiteURL: websiteURL, currentPageURL: currentPageURL)
     }
+    
+    override func tearDown() {
+        try! basicContainer.syncShutdownGracefully()
+    }
 
     // MARK: - Tests
 

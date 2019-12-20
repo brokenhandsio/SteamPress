@@ -19,6 +19,10 @@ class SearchTests: XCTestCase {
         testWorld = try! TestWorld.create()
         firstData = try! testWorld.createPost(title: "Test Path", slugUrl: "test-path")
     }
+    
+    override func tearDown() {
+        XCTAssertNoThrow(try testWorld.tryAsHardAsWeCanToShutdownApplication())
+    }
 
     // MARK: - Tests
 

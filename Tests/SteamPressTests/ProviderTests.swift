@@ -18,17 +18,25 @@ class ProviderTests: XCTestCase {
             return InMemoryRepository()
         }
         
-        let app = try Application(services: services)
+        let app: Application? = try Application(services: services)
         
-        try withExtendedLifetime(app) {
-            let numberGenerator = try app.make(SteamPressRandomNumberGenerator.self)
-            XCTAssertTrue(type(of: numberGenerator) == RealRandomNumberGenerator.self)
-            
-            let blogPresenter = try app.make(BlogPresenter.self)
-            XCTAssertTrue(type(of: blogPresenter) == ViewBlogPresenter.self)
-            
-            let blogAdminPresenter = try app.make(BlogAdminPresenter.self)
-            XCTAssertTrue(type(of: blogAdminPresenter) == ViewBlogAdminPresenter.self)
+        let numberGenerator = try app!.make(SteamPressRandomNumberGenerator.self)
+        XCTAssertTrue(type(of: numberGenerator) == RealRandomNumberGenerator.self)
+        
+        let blogPresenter = try app!.make(BlogPresenter.self)
+        XCTAssertTrue(type(of: blogPresenter) == ViewBlogPresenter.self)
+        
+        let blogAdminPresenter = try app!.make(BlogAdminPresenter.self)
+        XCTAssertTrue(type(of: blogAdminPresenter) == ViewBlogAdminPresenter.self)
+        
+        // Work around Vapor 3 lifecycle mess
+        weak var weakApp: Application? = app
+        weakApp = nil
+        var tries = 0
+        while weakApp != nil && tries < 10 {
+            Thread.sleep(forTimeInterval: 0.1)
+            tries += 1
         }
+        XCTAssertNil(weakApp, "application leak: \(weakApp.debugDescription)")
     }
 }

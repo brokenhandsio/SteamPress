@@ -34,6 +34,10 @@ class BlogPresenterTests: XCTestCase {
         viewRenderer = CapturingViewRenderer(worker: basicContainer)
         testTag = try! BlogTag(name: "Tattoine")
     }
+    
+    override func tearDown() {
+        try! basicContainer.syncShutdownGracefully()
+    }
 
     // MARK: - Tests
 

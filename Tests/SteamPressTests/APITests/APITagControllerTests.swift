@@ -7,7 +7,7 @@ class APITagControllerTests: XCTestCase {
     // MARK: - Tests
 
     func testThatAllTagsAreReturnedFromAPI() throws {
-        let testWorld = try TestWorld.create()
+        var testWorld = try TestWorld.create()
 
         let tag1 = try testWorld.context.repository.addTag(name: "Vapor3")
         let tag2 = try testWorld.context.repository.addTag(name: "Engineering")
@@ -16,7 +16,10 @@ class APITagControllerTests: XCTestCase {
 
         XCTAssertEqual(tags[0].name, tag1.name)
         XCTAssertEqual(tags[1].name, tag2.name)
+        
+        XCTAssertNoThrow(try testWorld.tryAsHardAsWeCanToShutdownApplication())
     }
+    
 }
 
 struct BlogTagJSON: Content {

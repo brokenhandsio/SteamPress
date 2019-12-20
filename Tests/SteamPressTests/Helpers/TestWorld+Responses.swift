@@ -27,7 +27,10 @@ extension TestWorld {
         var request = HTTPRequest(method: method, url: URL(string: path)!, headers: headers)
         request.cookies["steampress-session"] = try setLoginCookie(for: loggedInUser, password: passwordToLoginWith)
 
-        return Request(http: request, using: context.app)
+        guard let app = context.app else {
+            fatalError("App has already been deinitiliased")
+        }
+        return Request(http: request, using: app)
     }
 
     func setLoginCookie(for user: BlogUser?, password: String? = nil) throws -> HTTPCookieValue? {
@@ -46,7 +49,10 @@ extension TestWorld {
     }
 
     func getResponse(to request: Request) throws -> Response {
-        let responder = try context.app.make(Responder.self)
+        guard let app = context.app else {
+            fatalError("App has already been deinitiliased")
+        }
+        let responder = try app.make(Responder.self)
         return try responder.respond(to: request).wait()
     }
 }

@@ -24,6 +24,10 @@ class TagTests: XCTestCase {
         postData = try! testWorld.createPost()
         tag = try! testWorld.createTag(tagName, on: postData.post)
     }
+    
+    override func tearDown() {
+        XCTAssertNoThrow(try testWorld.tryAsHardAsWeCanToShutdownApplication())
+    }
 
     // MARK: - Tests
 

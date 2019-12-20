@@ -23,6 +23,10 @@ class AuthorTests: XCTestCase {
         user = testWorld.createUser(username: "leia")
         postData = try! testWorld.createPost(author: user)
     }
+    
+    override func tearDown() {
+        XCTAssertNoThrow(try testWorld.tryAsHardAsWeCanToShutdownApplication())
+    }
 
     // MARK: - Tests
 
