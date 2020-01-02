@@ -61,9 +61,8 @@ class SearchTests: XCTestCase {
     }
     
     func testPageInformationGetsLoggedInUserForSearch() throws {
-        let user = testWorld.createUser()
-        _ = try testWorld.getResponse(to: "/search?term=Test", loggedInUser: user)
-        XCTAssertEqual(presenter.searchPageInformation?.loggedInUser?.username, user.username)
+        _ = try testWorld.getResponse(to: "/search?term=Test", loggedInUser: firstData.author)
+        XCTAssertEqual(presenter.searchPageInformation?.loggedInUser?.username, firstData.author.username)
     }
     
     func testSettingEnvVarsWithPageInformationForSearch() throws {

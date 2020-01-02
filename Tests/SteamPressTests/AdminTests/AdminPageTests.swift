@@ -17,7 +17,7 @@ class AdminPageTests: XCTestCase {
         XCTAssertEqual(presenter.adminViewPosts?.count, 2)
         XCTAssertEqual(presenter.adminViewPosts?.first?.title, testData2.post.title)
         XCTAssertEqual(presenter.adminViewPosts?.last?.title, testData1.post.title)
-        XCTAssertEqual(presenter.adminViewUsers?.count, 2)
+        XCTAssertEqual(presenter.adminViewUsers?.count, 1)
         XCTAssertEqual(presenter.adminViewUsers?.last?.username, user.username)
         
         XCTAssertEqual(presenter.adminViewPageInformation?.loggedInUser.username, user.username)

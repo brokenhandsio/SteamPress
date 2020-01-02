@@ -91,9 +91,8 @@ class TagTests: XCTestCase {
     }
     
     func testTagPageInformationGetsLoggedInUser() throws {
-        let user = testWorld.createUser()
-        _ = try testWorld.getResponse(to: tagRequestPath, loggedInUser: user)
-        XCTAssertEqual(presenter.tagPageInformation?.loggedInUser?.username, user.username)
+        _ = try testWorld.getResponse(to: tagRequestPath, loggedInUser: postData.author)
+        XCTAssertEqual(presenter.tagPageInformation?.loggedInUser?.username, postData.author.username)
     }
     
     func testSettingEnvVarsWithPageInformation() throws {
@@ -120,9 +119,8 @@ class TagTests: XCTestCase {
     }
     
     func testPageInformationGetsLoggedInUserForAllTags() throws {
-        let user = testWorld.createUser()
-        _ = try testWorld.getResponse(to: allTagsRequestPath, loggedInUser: user)
-        XCTAssertEqual(presenter.allTagsPageInformation?.loggedInUser?.username, user.username)
+        _ = try testWorld.getResponse(to: allTagsRequestPath, loggedInUser: postData.author)
+        XCTAssertEqual(presenter.allTagsPageInformation?.loggedInUser?.username, postData.author.username)
     }
     
     func testSettingEnvVarsWithPageInformationForAllTags() throws {
