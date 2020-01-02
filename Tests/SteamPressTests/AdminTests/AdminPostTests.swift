@@ -535,6 +535,12 @@ class AdminPostTests: XCTestCase {
         let post = try createPostViaRequest(title: title)
         XCTAssertEqual(expectedSlugUrl, post.slugUrl)
     }
+    
+    func testRandomStringHelperDoesntProduceTheSameStringKinda() throws {
+        let string1 = try String.random()
+        let string2 = try String.random()
+        XCTAssertNotEqual(string1, string2)
+    }
 
     // MARK: - Helpers
 
