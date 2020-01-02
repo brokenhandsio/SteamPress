@@ -47,9 +47,8 @@ class PostTests: XCTestCase {
     }
     
     func testPostPageInformationGetsLoggedInUser() throws {
-        let user = testWorld.createUser()
-        _ = try testWorld.getResponse(to: blogPostPath, loggedInUser: user)
-        XCTAssertEqual(presenter.postPageInformation?.loggedInUser?.username, user.username)
+        _ = try testWorld.getResponse(to: blogPostPath, loggedInUser: firstData.author)
+        XCTAssertEqual(presenter.postPageInformation?.loggedInUser?.username, firstData.author.username)
     }
     
     func testSettingEnvVarsWithPageInformation() throws {

@@ -67,8 +67,8 @@ class AdminUserTests: XCTestCase {
         let createData = CreateUserData()
         let response = try testWorld.getResponse(to: createUserPath, body: createData, loggedInUser: user)
 
-        // First is admin user, next is user created in setup, final is one just created
-        XCTAssertEqual(testWorld.context.repository.users.count, 3)
+        // First is user created in setup, final is one just created
+        XCTAssertEqual(testWorld.context.repository.users.count, 2)
         let user = try XCTUnwrap(testWorld.context.repository.users.last)
         XCTAssertEqual(user.username, createData.username)
         XCTAssertEqual(user.name, createData.name)
@@ -141,8 +141,10 @@ class AdminUserTests: XCTestCase {
             let name = "Luke"
             let password = "password"
             let confirmPassword = "password"
-            let username = "admin"
+            let username = "lukes"
         }
+        
+        _ = testWorld.createUser(username: "lukes")
 
         let createData = CreateUserData()
         _ = try testWorld.getResponse(to: createUserPath, body: createData, loggedInUser: user)
@@ -159,8 +161,10 @@ class AdminUserTests: XCTestCase {
             let name = "Luke"
             let password = "password"
             let confirmPassword = "password"
-            let username = "Admin"
+            let username = "Lukes"
         }
+        
+        _ = testWorld.createUser(username: "lukes")
 
         let createData = CreateUserData()
         _ = try testWorld.getResponse(to: createUserPath, body: createData, loggedInUser: user)
@@ -373,7 +377,7 @@ class AdminUserTests: XCTestCase {
         let editData = EditUserData()
         let response = try testWorld.getResponse(to: "/admin/users/\(user.userID!)/edit", body: editData, loggedInUser: user)
 
-        XCTAssertEqual(testWorld.context.repository.users.count, 2)
+        XCTAssertEqual(testWorld.context.repository.users.count, 1)
         let updatedUser = try XCTUnwrap(testWorld.context.repository.users.last)
         XCTAssertEqual(updatedUser.username, editData.username)
         XCTAssertEqual(updatedUser.name, editData.name)
@@ -396,7 +400,7 @@ class AdminUserTests: XCTestCase {
         let editData = EditUserData()
         let response = try testWorld.getResponse(to: "/admin/users/\(user.userID!)/edit", body: editData, loggedInUser: user)
 
-        XCTAssertEqual(testWorld.context.repository.users.count, 2)
+        XCTAssertEqual(testWorld.context.repository.users.count, 1)
         let updatedUser = try XCTUnwrap(testWorld.context.repository.users.last)
         XCTAssertEqual(updatedUser.username, editData.username)
         XCTAssertEqual(updatedUser.name, editData.name)
@@ -420,7 +424,7 @@ class AdminUserTests: XCTestCase {
         let editData = EditUserData()
         let response = try testWorld.getResponse(to: "/admin/users/\(user.userID!)/edit", body: editData, loggedInUser: user)
 
-        XCTAssertEqual(testWorld.context.repository.users.count, 2)
+        XCTAssertEqual(testWorld.context.repository.users.count, 1)
         let updatedUser = try XCTUnwrap(testWorld.context.repository.users.last)
         XCTAssertTrue(updatedUser.resetPasswordRequired)
         XCTAssertEqual(updatedUser.userID, user.userID)
@@ -439,7 +443,7 @@ class AdminUserTests: XCTestCase {
         let editData = EditUserData()
         let response = try testWorld.getResponse(to: "/admin/users/\(user.userID!)/edit", body: editData, loggedInUser: user)
 
-        XCTAssertEqual(testWorld.context.repository.users.count, 2)
+        XCTAssertEqual(testWorld.context.repository.users.count, 1)
         let updatedUser = try XCTUnwrap(testWorld.context.repository.users.last)
         XCTAssertFalse(updatedUser.resetPasswordRequired)
         XCTAssertEqual(updatedUser.userID, user.userID)
@@ -459,7 +463,7 @@ class AdminUserTests: XCTestCase {
         let editData = EditUserData()
         let response = try testWorld.getResponse(to: "/admin/users/\(user.userID!)/edit", body: editData, loggedInUser: user)
 
-        XCTAssertEqual(testWorld.context.repository.users.count, 2)
+        XCTAssertEqual(testWorld.context.repository.users.count, 1)
         let updatedUser = try XCTUnwrap(testWorld.context.repository.users.last)
         XCTAssertEqual(updatedUser.password, editData.password)
         XCTAssertEqual(updatedUser.userID, user.userID)
@@ -595,7 +599,7 @@ class AdminUserTests: XCTestCase {
 
         XCTAssertEqual(response.http.status, .seeOther)
         XCTAssertEqual(response.http.headers[.location].first, "/admin/")
-        XCTAssertEqual(testWorld.context.repository.users.count, 2)
+        XCTAssertEqual(testWorld.context.repository.users.count, 1)
         XCTAssertNotEqual(testWorld.context.repository.users.last?.name, "Han")
     }
 
@@ -607,17 +611,17 @@ class AdminUserTests: XCTestCase {
 
         let viewErrors = try XCTUnwrap(presenter.adminViewErrors)
         XCTAssertTrue(viewErrors.contains("You cannot delete yourself whilst logged in"))
-        XCTAssertEqual(testWorld.context.repository.users.count, 3)
+        XCTAssertEqual(testWorld.context.repository.users.count, 2)
         
         XCTAssertEqual(presenter.adminViewPosts?.count, 1)
         XCTAssertEqual(presenter.adminViewPosts?.first?.title, testData.post.title)
-        XCTAssertEqual(presenter.adminViewUsers?.count, 3)
+        XCTAssertEqual(presenter.adminViewUsers?.count, 2)
         XCTAssertEqual(presenter.adminViewUsers?.last?.username, user2.username)
     }
 
     func testCannotDeleteLastUser() throws {
         testWorld = try TestWorld.create()
-        let adminUser = try XCTUnwrap(testWorld.context.repository.users.first)
+        let adminUser = testWorld.createUser(name: "Admin", username: "admin")
         let testData = try testWorld.createPost(author: adminUser)
         _ = try testWorld.getResponse(to: "/admin/users/\(adminUser.userID!)/delete", body: EmptyContent(), loggedInUser: adminUser)
 

@@ -36,7 +36,7 @@ class AuthorTests: XCTestCase {
         _ = try testWorld.createPost(author: newAuthor)
         _ = try testWorld.getResponse(to: allAuthorsRequestPath)
 
-        XCTAssertEqual(presenter.allAuthors?.count, 3)
+        XCTAssertEqual(presenter.allAuthors?.count, 2)
         XCTAssertEqual(presenter.allAuthorsPostCount?[newAuthor.userID!], 2)
         XCTAssertEqual(presenter.allAuthorsPostCount?[user.userID!], 1)
         XCTAssertEqual(presenter.allAuthors?.last?.name, user.name)

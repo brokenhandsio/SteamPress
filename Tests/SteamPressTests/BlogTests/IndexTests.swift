@@ -120,9 +120,8 @@ class IndexTests: XCTestCase {
     }
     
     func testIndexPageInformationGetsLoggedInUser() throws {
-        let user = testWorld.createUser()
-        _ = try testWorld.getResponse(to: blogIndexPath, loggedInUser: user)
-        XCTAssertEqual(presenter.indexPageInformation?.loggedInUser?.username, user.username)
+        _ = try testWorld.getResponse(to: blogIndexPath, loggedInUser: firstData.author)
+        XCTAssertEqual(presenter.indexPageInformation?.loggedInUser?.username, firstData.author.username)
     }
     
     func testSettingEnvVarsWithPageInformation() throws {

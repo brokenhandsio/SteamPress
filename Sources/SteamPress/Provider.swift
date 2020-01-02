@@ -84,22 +84,9 @@ public struct Provider: Vapor.Provider {
         try sessionedRoutes.register(collection: blogAdminController)
         return .done(on: container)
     }
-
+    
     public func didBoot(_ container: Container) throws -> EventLoopFuture<Void> {
-        let userRepository = try container.make(BlogUserRepository.self)
-        return userRepository.getAllUsers(on: container).flatMap { users in
-            if users.count == 0 {
-                let passwordHasher = try container.make(PasswordHasher.self)
-                let password = try String.random()
-                let logger = try container.make(Logger.self)
-                logger.info("Admin's password is \(password)")
-                let passwordHash = try passwordHasher.hash(password)
-                let adminUser = BlogUser(name: "Admin", username: "admin", password: passwordHash, profilePicture: nil, twitterHandle: nil, biography: nil, tagline: nil)
-                return userRepository.save(adminUser, on: container).transform(to: ())
-            } else {
-                return .done(on: container)
-            }
-        }
+        return .done(on: container)
     }
 
 }

@@ -80,11 +80,6 @@ class LoginTests: XCTestCase {
         let loginWarning = try XCTUnwrap(blogPresenter.loginWarning)
         XCTAssertTrue(loginWarning)
     }
-
-    func testAdminUserCreatedOnFirstBootIfSpecified() throws {
-        testWorld = try TestWorld.create()
-        XCTAssertEqual(testWorld.context.repository.users.count, 1)
-    }
     
     func testPresenterGetsCorrectInformationForResetPasswordPage() throws {
         _ = try testWorld.getResponse(to: "/blog/admin/resetPassword", loggedInUser: user)
