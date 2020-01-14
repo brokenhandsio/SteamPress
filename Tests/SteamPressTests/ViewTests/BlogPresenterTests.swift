@@ -444,7 +444,7 @@ class BlogPresenterTests: XCTestCase {
 
     func testLoginViewGetsCorrectParameters() throws {
         let pageInformation = buildPageInformation(currentPageURL: loginURL)
-        _ = presenter.loginView(on: basicContainer, loginWarning: false, errors: nil, username: nil, usernameError: false, passwordError: false, pageInformation: pageInformation)
+        _ = presenter.loginView(on: basicContainer, loginWarning: false, errors: nil, username: nil, usernameError: false, passwordError: false, rememberMe: false, pageInformation: pageInformation)
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? LoginPageContext)
         XCTAssertNil(context.errors)
@@ -453,7 +453,7 @@ class BlogPresenterTests: XCTestCase {
         XCTAssertFalse(context.usernameError)
         XCTAssertFalse(context.passwordError)
         XCTAssertEqual(context.title, "Log In")
-
+        XCTAssertFalse(context.rememberMe)
         XCTAssertEqual(context.pageInformation.currentPageURL.absoluteString, "https://brokenhands.io/admin/login")
         XCTAssertEqual(viewRenderer.templatePath, "blog/admin/login")
     }
@@ -461,7 +461,7 @@ class BlogPresenterTests: XCTestCase {
     func testLoginViewWhenErrored() throws {
         let expectedError = "Username/password incorrect"
         let pageInformation = buildPageInformation(currentPageURL: loginURL)
-        _ = presenter.loginView(on: basicContainer, loginWarning: true, errors: [expectedError], username: "tim", usernameError: true, passwordError: true, pageInformation: pageInformation)
+        _ = presenter.loginView(on: basicContainer, loginWarning: true, errors: [expectedError], username: "tim", usernameError: true, passwordError: true, rememberMe: true, pageInformation: pageInformation)
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? LoginPageContext)
         XCTAssertEqual(context.errors?.count, 1)
@@ -470,6 +470,7 @@ class BlogPresenterTests: XCTestCase {
         XCTAssertEqual(context.username, "tim")
         XCTAssertTrue(context.usernameError)
         XCTAssertTrue(context.passwordError)
+        XCTAssertTrue(context.rememberMe)
     }
 
     func testSearchPageGetsCorrectParameters() throws {

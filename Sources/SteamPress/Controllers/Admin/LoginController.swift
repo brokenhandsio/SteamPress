@@ -27,7 +27,7 @@ struct LoginController: RouteCollection {
     func loginHandler(_ req: Request) throws -> EventLoopFuture<View> {
         let loginRequied = (try? req.query.get(Bool.self, at: "loginRequired")) != nil
         let presenter = try req.make(BlogPresenter.self)
-        return try presenter.loginView(on: req, loginWarning: loginRequied, errors: nil, username: nil, usernameError: false, passwordError: false, pageInformation: req.pageInformation())
+        return try presenter.loginView(on: req, loginWarning: loginRequied, errors: nil, username: nil, usernameError: false, passwordError: false, rememberMe: false, pageInformation: req.pageInformation())
     }
 
     func loginPostHandler(_ req: Request) throws -> EventLoopFuture<Response> {
@@ -48,7 +48,7 @@ struct LoginController: RouteCollection {
 
         if !loginErrors.isEmpty {
             let presenter = try req.make(BlogPresenter.self)
-            return try presenter.loginView(on: req, loginWarning: false, errors: loginErrors, username: loginData.username, usernameError: usernameError, passwordError: passwordError, pageInformation: req.pageInformation()).encode(for: req)
+            return try presenter.loginView(on: req, loginWarning: false, errors: loginErrors, username: loginData.username, usernameError: usernameError, passwordError: passwordError, rememberMe: loginData.rememberMe ?? false, pageInformation: req.pageInformation()).encode(for: req)
         }
 
         guard let username = loginData.username, let password = loginData.password else {
@@ -67,7 +67,7 @@ struct LoginController: RouteCollection {
             guard let user = user, try verifier.verify(password, created: user.password) else {
                 let loginError = ["Your username or password is incorrect"]
                 let presenter = try req.make(BlogPresenter.self)
-                return try presenter.loginView(on: req, loginWarning: false, errors: loginError, username: loginData.username, usernameError: false, passwordError: false, pageInformation: req.pageInformation()).encode(for: req)
+                return try presenter.loginView(on: req, loginWarning: false, errors: loginError, username: loginData.username, usernameError: false, passwordError: false, rememberMe: loginData.rememberMe ?? false, pageInformation: req.pageInformation()).encode(for: req)
             }
             try user.authenticateSession(on: req)
             return req.future(req.redirect(to: self.pathCreator.createPath(for: "admin")))

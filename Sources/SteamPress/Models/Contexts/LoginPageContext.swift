@@ -5,5 +5,6 @@ struct LoginPageContext: Encodable {
     let username: String?
     let usernameError: Bool
     let passwordError: Bool
+    let rememberMe: Bool
     let pageInformation: BlogGlobalPageInformation
 }

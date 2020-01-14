@@ -86,13 +86,15 @@ class CapturingBlogPresenter: BlogPresenter {
     private(set) var loginUsernameError: Bool?
     private(set) var loginPasswordError: Bool?
     private(set) var loginPageInformation: BlogGlobalPageInformation?
-    func loginView(on container: Container, loginWarning: Bool, errors: [String]?, username: String?, usernameError: Bool, passwordError: Bool, pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
+    private(set) var loginPageRememberMe: Bool?
+    func loginView(on container: Container, loginWarning: Bool, errors: [String]?, username: String?, usernameError: Bool, passwordError: Bool, rememberMe: Bool, pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
         self.loginWarning = loginWarning
         self.loginErrors = errors
         self.loginUsername = username
         self.loginUsernameError = usernameError
         self.loginPasswordError = passwordError
         self.loginPageInformation = pageInformation
+        self.loginPageRememberMe = rememberMe
         return TestDataBuilder.createFutureView(on: container)
     }
 }
