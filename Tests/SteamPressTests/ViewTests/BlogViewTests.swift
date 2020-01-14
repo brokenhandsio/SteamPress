@@ -22,6 +22,7 @@ class BlogViewTests: XCTestCase {
         basicContainer.services.register(ViewRenderer.self) { _ in
             return self.viewRenderer
         }
+        basicContainer.services.register(PostDateFormatter.self)
         viewRenderer = CapturingViewRenderer(worker: basicContainer)
         author = TestDataBuilder.anyUser()
         author.userID = 1
