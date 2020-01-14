@@ -1,6 +1,6 @@
 struct BlogPostPageContext: Encodable {
     let title: String
-    let post: BlogPost
+    let post: ViewBlogPost
     let author: BlogUser
     let blogPostPage = true
     let pageInformation: BlogGlobalPageInformation

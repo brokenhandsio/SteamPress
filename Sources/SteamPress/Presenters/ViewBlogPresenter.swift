@@ -28,8 +28,11 @@ public struct ViewBlogPresenter: BlogPresenter {
                 }
             }
             let shortSnippet = post.shortSnippet()
+            #warning("test")
+            let formatter = try container.make(PostDateFormatter.self)
+            let viewPost = post.toViewPost(formatter: formatter.formatter)
 
-            let context = BlogPostPageContext(title: post.title, post: post, author: author, pageInformation: pageInformation, postImage: postImage, postImageAlt: postImageAlt, shortSnippet: shortSnippet)
+            let context = BlogPostPageContext(title: post.title, post: viewPost, author: author, pageInformation: pageInformation, postImage: postImage, postImageAlt: postImageAlt, shortSnippet: shortSnippet)
             return viewRenderer.render("blog/post", context)
         } catch {
             return container.future(error: error)
@@ -64,7 +67,8 @@ public struct ViewBlogPresenter: BlogPresenter {
             } else {
                 myProfile = false
             }
-            let viewPosts = posts.map { $0.toViewPost() }
+            let formatter = try container.make(PostDateFormatter.self)
+            let viewPosts = posts.map { $0.toViewPost(formatter: formatter.formatter) }
             let context = AuthorPageContext(author: author, posts: viewPosts, pageInformation: pageInformation, myProfile: myProfile, postCount: postCount)
             return viewRenderer.render("blog/profile", context)
         } catch {
