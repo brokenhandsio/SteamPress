@@ -28,7 +28,7 @@ class BlogViewTests: XCTestCase {
         post = try! TestDataBuilder.anyPost(author: author, contents: TestDataBuilder.longContents)
         websiteURL = URL(string: "https://www.brokenhands.io")!
         currentPageURL = websiteURL.appendingPathComponent("blog").appendingPathComponent("posts").appendingPathComponent("test-post")
-        pageInformation = BlogGlobalPageInformation(disqusName: "disqusName", siteTwitterHandler: "twitterHandleSomething", googleAnalyticsIdentifier: "GAString....", loggedInUser: author, websiteURL: websiteURL, currentPageURL: currentPageURL)
+        pageInformation = BlogGlobalPageInformation(disqusName: "disqusName", siteTwitterHandle: "twitterHandleSomething", googleAnalyticsIdentifier: "GAString....", loggedInUser: author, websiteURL: websiteURL, currentPageURL: currentPageURL)
     }
     
     override func tearDown() {
@@ -57,7 +57,7 @@ class BlogViewTests: XCTestCase {
         XCTAssertEqual(context.author.name, author.name)
         XCTAssertTrue(context.blogPostPage)
         XCTAssertEqual(context.pageInformation.disqusName, pageInformation.disqusName)
-        XCTAssertEqual(context.pageInformation.siteTwitterHandler, pageInformation.siteTwitterHandler)
+        XCTAssertEqual(context.pageInformation.siteTwitterHandle, pageInformation.siteTwitterHandle)
         XCTAssertEqual(context.pageInformation.googleAnalyticsIdentifier, pageInformation.googleAnalyticsIdentifier)
         XCTAssertEqual(context.pageInformation.loggedInUser?.username, pageInformation.loggedInUser?.username)
         XCTAssertEqual(context.postImage, "https://user-images.githubusercontent.com/9938337/29742058-ed41dcc0-8a6f-11e7-9cfc-680501cdfb97.png")
@@ -68,7 +68,7 @@ class BlogViewTests: XCTestCase {
     }
 
     func testDisqusNameNotPassedToBlogPostPageIfNotPassedIn() throws {
-        let pageInformationWithoutDisqus = BlogGlobalPageInformation(disqusName: nil, siteTwitterHandler: "twitter", googleAnalyticsIdentifier: "google", loggedInUser: author, websiteURL: websiteURL, currentPageURL: currentPageURL)
+        let pageInformationWithoutDisqus = BlogGlobalPageInformation(disqusName: nil, siteTwitterHandle: "twitter", googleAnalyticsIdentifier: "google", loggedInUser: author, websiteURL: websiteURL, currentPageURL: currentPageURL)
         _ = presenter.postView(on: basicContainer, post: post, author: author, pageInformation: pageInformationWithoutDisqus)
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? BlogPostPageContext)
@@ -76,15 +76,15 @@ class BlogViewTests: XCTestCase {
     }
 
     func testTwitterHandleNotPassedToBlogPostPageIfNotPassedIn() throws {
-        let pageInformationWithoutTwitterHandle = BlogGlobalPageInformation(disqusName: "disqus", siteTwitterHandler: nil, googleAnalyticsIdentifier: "google", loggedInUser: author, websiteURL: websiteURL, currentPageURL: currentPageURL)
+        let pageInformationWithoutTwitterHandle = BlogGlobalPageInformation(disqusName: "disqus", siteTwitterHandle: nil, googleAnalyticsIdentifier: "google", loggedInUser: author, websiteURL: websiteURL, currentPageURL: currentPageURL)
         _ = presenter.postView(on: basicContainer, post: post, author: author, pageInformation: pageInformationWithoutTwitterHandle)
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? BlogPostPageContext)
-        XCTAssertNil(context.pageInformation.siteTwitterHandler)
+        XCTAssertNil(context.pageInformation.siteTwitterHandle)
     }
 
     func testGAIdentifierNotPassedToBlogPostPageIfNotPassedIn() throws {
-        let pageInformationWithoutGAIdentifier = BlogGlobalPageInformation(disqusName: "disqus", siteTwitterHandler: "twitter", googleAnalyticsIdentifier: nil, loggedInUser: author, websiteURL: websiteURL, currentPageURL: currentPageURL)
+        let pageInformationWithoutGAIdentifier = BlogGlobalPageInformation(disqusName: "disqus", siteTwitterHandle: "twitter", googleAnalyticsIdentifier: nil, loggedInUser: author, websiteURL: websiteURL, currentPageURL: currentPageURL)
         _ = presenter.postView(on: basicContainer, post: post, author: author, pageInformation: pageInformationWithoutGAIdentifier)
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? BlogPostPageContext)

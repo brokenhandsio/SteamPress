@@ -84,7 +84,7 @@ class TagTests: XCTestCase {
         _ = try testWorld.getResponse(to: tagRequestPath)
         XCTAssertNil(presenter.tagPageInformation?.disqusName)
         XCTAssertNil(presenter.tagPageInformation?.googleAnalyticsIdentifier)
-        XCTAssertNil(presenter.tagPageInformation?.siteTwitterHandler)
+        XCTAssertNil(presenter.tagPageInformation?.siteTwitterHandle)
         XCTAssertNil(presenter.tagPageInformation?.loggedInUser)
         XCTAssertEqual(presenter.tagPageInformation?.currentPageURL.absoluteString, tagRequestPath)
         XCTAssertEqual(presenter.tagPageInformation?.websiteURL.absoluteString, "")
@@ -100,19 +100,19 @@ class TagTests: XCTestCase {
         let twitterHandle = "3483209fheihgifffe"
         let disqusName = "34829u48932fgvfbrtewerg"
         setenv("BLOG_GOOGLE_ANALYTICS_IDENTIFIER", googleAnalytics, 1)
-        setenv("BLOG_SITE_TWITTER_HANDLER", twitterHandle, 1)
+        setenv("BLOG_SITE_TWITTER_HANDLE", twitterHandle, 1)
         setenv("BLOG_DISQUS_NAME", disqusName, 1)
         _ = try testWorld.getResponse(to: tagRequestPath)
         XCTAssertEqual(presenter.tagPageInformation?.disqusName, disqusName)
         XCTAssertEqual(presenter.tagPageInformation?.googleAnalyticsIdentifier, googleAnalytics)
-        XCTAssertEqual(presenter.tagPageInformation?.siteTwitterHandler, twitterHandle)
+        XCTAssertEqual(presenter.tagPageInformation?.siteTwitterHandle, twitterHandle)
     }
     
     func testCorrectPageInformationForAllTags() throws {
         _ = try testWorld.getResponse(to: allTagsRequestPath)
         XCTAssertNil(presenter.allTagsPageInformation?.disqusName)
         XCTAssertNil(presenter.allTagsPageInformation?.googleAnalyticsIdentifier)
-        XCTAssertNil(presenter.allTagsPageInformation?.siteTwitterHandler)
+        XCTAssertNil(presenter.allTagsPageInformation?.siteTwitterHandle)
         XCTAssertNil(presenter.allTagsPageInformation?.loggedInUser)
         XCTAssertEqual(presenter.allTagsPageInformation?.currentPageURL.absoluteString, allTagsRequestPath)
         XCTAssertEqual(presenter.allTagsPageInformation?.websiteURL.absoluteString, "")
@@ -128,12 +128,12 @@ class TagTests: XCTestCase {
         let twitterHandle = "3483209fheihgifffe"
         let disqusName = "34829u48932fgvfbrtewerg"
         setenv("BLOG_GOOGLE_ANALYTICS_IDENTIFIER", googleAnalytics, 1)
-        setenv("BLOG_SITE_TWITTER_HANDLER", twitterHandle, 1)
+        setenv("BLOG_SITE_TWITTER_HANDLE", twitterHandle, 1)
         setenv("BLOG_DISQUS_NAME", disqusName, 1)
         _ = try testWorld.getResponse(to: allTagsRequestPath)
         XCTAssertEqual(presenter.allTagsPageInformation?.disqusName, disqusName)
         XCTAssertEqual(presenter.allTagsPageInformation?.googleAnalyticsIdentifier, googleAnalytics)
-        XCTAssertEqual(presenter.allTagsPageInformation?.siteTwitterHandler, twitterHandle)
+        XCTAssertEqual(presenter.allTagsPageInformation?.siteTwitterHandle, twitterHandle)
     }
 
     // MARK: - Pagination Tests

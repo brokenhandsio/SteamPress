@@ -54,7 +54,7 @@ class SearchTests: XCTestCase {
         _ = try testWorld.getResponse(to: "/search?term=Test")
         XCTAssertNil(presenter.searchPageInformation?.disqusName)
         XCTAssertNil(presenter.searchPageInformation?.googleAnalyticsIdentifier)
-        XCTAssertNil(presenter.searchPageInformation?.siteTwitterHandler)
+        XCTAssertNil(presenter.searchPageInformation?.siteTwitterHandle)
         XCTAssertNil(presenter.searchPageInformation?.loggedInUser)
         XCTAssertEqual(presenter.searchPageInformation?.currentPageURL.absoluteString, "/search")
         XCTAssertEqual(presenter.searchPageInformation?.websiteURL.absoluteString, "")
@@ -70,11 +70,11 @@ class SearchTests: XCTestCase {
         let twitterHandle = "3483209fheihgifffe"
         let disqusName = "34829u48932fgvfbrtewerg"
         setenv("BLOG_GOOGLE_ANALYTICS_IDENTIFIER", googleAnalytics, 1)
-        setenv("BLOG_SITE_TWITTER_HANDLER", twitterHandle, 1)
+        setenv("BLOG_SITE_TWITTER_HANDLE", twitterHandle, 1)
         setenv("BLOG_DISQUS_NAME", disqusName, 1)
         _ = try testWorld.getResponse(to: "/search?term=Test")
         XCTAssertEqual(presenter.searchPageInformation?.disqusName, disqusName)
         XCTAssertEqual(presenter.searchPageInformation?.googleAnalyticsIdentifier, googleAnalytics)
-        XCTAssertEqual(presenter.searchPageInformation?.siteTwitterHandler, twitterHandle)
+        XCTAssertEqual(presenter.searchPageInformation?.siteTwitterHandle, twitterHandle)
     }
 }

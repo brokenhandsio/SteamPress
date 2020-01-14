@@ -10,7 +10,7 @@ struct TestWorld {
         let application = try TestWorld.getSteamPressApp(repository: repository, path: path, postsPerPage: postsPerPage, feedInformation: feedInformation, blogPresenter: blogPresenter, adminPresenter: blogAdminPresenter, enableAuthorPages: enableAuthorPages, enableTagPages: enableTagPages, passwordHasherToUse: passwordHasherToUse, randomNumberGenerator: randomNumberGenerator)
         let context = Context(app: application, repository: repository, blogPresenter: blogPresenter, blogAdminPresenter: blogAdminPresenter, path: path)
         unsetenv("BLOG_GOOGLE_ANALYTICS_IDENTIFIER")
-        unsetenv("BLOG_SITE_TWITTER_HANDLER")
+        unsetenv("BLOG_SITE_TWITTER_HANDLE")
         unsetenv("BLOG_DISQUS_NAME")
         return TestWorld(context: context)
     }
