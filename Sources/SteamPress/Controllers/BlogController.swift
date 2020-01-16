@@ -131,12 +131,15 @@ struct BlogController: RouteCollection {
     func searchHandler(_ req: Request) throws -> EventLoopFuture<View> {
         let preseneter = try req.make(BlogPresenter.self)
         guard let searchTerm = req.query[String.self, at: "term"], !searchTerm.isEmpty else {
-            return preseneter.searchView(on: req, posts: [], searchTerm: nil, pageInformation: try req.pageInformation())
+            return preseneter.searchView(on: req, posts: [], authors: [], searchTerm: nil, pageInformation: try req.pageInformation())
         }
 
         let postRepository = try req.make(BlogPostRepository.self)
-        return postRepository.findPublishedPostsOrdered(for: searchTerm, on: req).flatMap { posts in
-            return preseneter.searchView(on: req, posts: posts, searchTerm: searchTerm, pageInformation: try req.pageInformation())
+        let authorRepository = try req.make(BlogUserRepository.self)
+        let postsQuery = postRepository.findPublishedPostsOrdered(for: searchTerm, on: req)
+        let userQuery = authorRepository.getAllUsers(on: req)
+        return flatMap(postsQuery, userQuery) { posts, users in
+            return preseneter.searchView(on: req, posts: posts, authors: users, searchTerm: searchTerm, pageInformation: try req.pageInformation())
         }
     }
 

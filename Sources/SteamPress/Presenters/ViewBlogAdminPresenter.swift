@@ -10,13 +10,13 @@ public struct ViewBlogAdminPresenter: BlogAdminPresenter {
             let longFormatter = try container.make(LongPostDateFormatter.self)
             let numericFormatter = try container.make(NumericPostDateFormatter.self)
             let publishedPosts = posts.filter { $0.published }.map { post -> ViewBlogPost in
-                let name = getAuthorName(from: users, id: post.author)
-                let username = getAuthorUsername(from: users, id: post.author)
+                let name = users.getAuthorName(id: post.author)
+                let username = users.getAuthorUsername(id: post.author)
                 return post.toViewPost(authorName: name, authorUsername: username, longFormatter: longFormatter, numericFormatter: numericFormatter)
             }
             let draftPosts = posts.filter { !$0.published }.map { post -> ViewBlogPost in
-                let name = getAuthorName(from: users, id: post.author)
-                let username = getAuthorUsername(from: users, id: post.author)
+                let name = users.getAuthorName(id: post.author)
+                let username = users.getAuthorUsername(id: post.author)
                 return post.toViewPost(authorName: name, authorUsername: username, longFormatter: longFormatter, numericFormatter: numericFormatter)
             }
             let context = AdminPageContext(errors: errors, publishedPosts: publishedPosts, draftPosts: draftPosts, users: users, pageInformation: pageInformation)
@@ -68,14 +68,6 @@ public struct ViewBlogAdminPresenter: BlogAdminPresenter {
         } catch {
             return container.future(error: error)
         }
-    }
-    
-    func getAuthorName(from users: [BlogUser], id: Int) -> String {
-        return users.filter { $0.userID == id }.first?.name ?? ""
-    }
-    
-    func getAuthorUsername(from users: [BlogUser], id: Int) -> String {
-        return users.filter { $0.userID == id }.first?.username ?? ""
     }
 
 }
