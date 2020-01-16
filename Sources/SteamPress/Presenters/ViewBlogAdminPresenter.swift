@@ -9,8 +9,10 @@ public struct ViewBlogAdminPresenter: BlogAdminPresenter {
             let viewRenderer = try container.make(ViewRenderer.self)
             let longFormatter = try container.make(LongPostDateFormatter.self)
             let numericFormatter = try container.make(NumericPostDateFormatter.self)
-            let publishedPosts = posts.filter { $0.published }.map { $0.toViewPost(longFormatter: longFormatter, numericFormatter: numericFormatter)}
-            let draftPosts = posts.filter { !$0.published }.map { $0.toViewPost(longFormatter: longFormatter, numericFormatter: numericFormatter)}
+            let publishedPosts = posts.filter { $0.published }.map {
+                $0.toViewPost(authorName: getAuthorName(from: users, id: $0.author), longFormatter: longFormatter, numericFormatter: numericFormatter)
+            }
+            let draftPosts = posts.filter { !$0.published }.map { $0.toViewPost(authorName: getAuthorName(from: users, id: $0.author), longFormatter: longFormatter, numericFormatter: numericFormatter)}
             let context = AdminPageContext(errors: errors, publishedPosts: publishedPosts, draftPosts: draftPosts, users: users, pageInformation: pageInformation)
             return viewRenderer.render("blog/admin/index", context)
         } catch {
@@ -60,6 +62,10 @@ public struct ViewBlogAdminPresenter: BlogAdminPresenter {
         } catch {
             return container.future(error: error)
         }
+    }
+    
+    func getAuthorName(from users: [BlogUser], id: Int) -> String {
+        return users.filter { $0.userID == id }.first?.name ?? ""
     }
 
 }

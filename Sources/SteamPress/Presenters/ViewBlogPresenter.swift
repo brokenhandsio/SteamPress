@@ -31,7 +31,7 @@ public struct ViewBlogPresenter: BlogPresenter {
             #warning("test")
             let longFormatter = try container.make(LongPostDateFormatter.self)
             let numericFormatter = try container.make(NumericPostDateFormatter.self)
-            let viewPost = post.toViewPost(longFormatter: longFormatter, numericFormatter: numericFormatter)
+            let viewPost = post.toViewPost(authorName: author.name, longFormatter: longFormatter, numericFormatter: numericFormatter)
 
             let context = BlogPostPageContext(title: post.title, post: viewPost, author: author, pageInformation: pageInformation, postImage: postImage, postImageAlt: postImageAlt, shortSnippet: shortSnippet)
             return viewRenderer.render("blog/post", context)
@@ -70,7 +70,7 @@ public struct ViewBlogPresenter: BlogPresenter {
             }
             let longFormatter = try container.make(LongPostDateFormatter.self)
             let numericFormatter = try container.make(NumericPostDateFormatter.self)
-            let viewPosts = posts.map { $0.toViewPost(longFormatter: longFormatter, numericFormatter: numericFormatter) }
+            let viewPosts = posts.map { $0.toViewPost(authorName: author.name, longFormatter: longFormatter, numericFormatter: numericFormatter) }
             let context = AuthorPageContext(author: author, posts: viewPosts, pageInformation: pageInformation, myProfile: myProfile, postCount: postCount)
             return viewRenderer.render("blog/profile", context)
         } catch {
