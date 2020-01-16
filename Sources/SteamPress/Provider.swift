@@ -55,7 +55,8 @@ public struct Provider: Vapor.Provider {
         }
 
         services.register(BlogRememberMeMiddleware.self)
-        services.register(PostDateFormatter.self)
+        services.register(LongPostDateFormatter.self)
+        services.register(NumericPostDateFormatter.self)
     }
 
     public func willBoot(_ container: Container) throws -> EventLoopFuture<Void> {

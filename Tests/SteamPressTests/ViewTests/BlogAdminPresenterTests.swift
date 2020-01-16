@@ -30,6 +30,8 @@ class BlogAdminPresenterTests: XCTestCase {
         basicContainer.services.register(ViewRenderer.self) { _ in
             return self.viewRenderer
         }
+        basicContainer.services.register(LongPostDateFormatter.self)
+        basicContainer.services.register(NumericPostDateFormatter.self)
         viewRenderer = CapturingViewRenderer(worker: basicContainer)
     }
     

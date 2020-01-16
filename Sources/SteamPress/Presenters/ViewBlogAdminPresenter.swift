@@ -7,8 +7,10 @@ public struct ViewBlogAdminPresenter: BlogAdminPresenter {
     public func createIndexView(on container: Container, posts: [BlogPost], users: [BlogUser], errors: [String]?, pageInformation: BlogAdminPageInformation) -> EventLoopFuture<View> {
         do {
             let viewRenderer = try container.make(ViewRenderer.self)
-            let publishedPosts = posts.filter { $0.published }
-            let draftPosts = posts.filter { !$0.published }
+            let longFormatter = try container.make(LongPostDateFormatter.self)
+            let numericFormatter = try container.make(NumericPostDateFormatter.self)
+            let publishedPosts = posts.filter { $0.published }.map { $0.toViewPost(longFormatter: longFormatter, numericFormatter: numericFormatter)}
+            let draftPosts = posts.filter { !$0.published }.map { $0.toViewPost(longFormatter: longFormatter, numericFormatter: numericFormatter)}
             let context = AdminPageContext(errors: errors, publishedPosts: publishedPosts, draftPosts: draftPosts, users: users, pageInformation: pageInformation)
             return viewRenderer.render("blog/admin/index", context)
         } catch {

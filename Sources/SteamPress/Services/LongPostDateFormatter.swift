@@ -1,8 +1,8 @@
 import Foundation
 import Vapor
 
-struct PostDateFormatter: ServiceType {
-    static func makeService(for container: Container) throws -> PostDateFormatter {
+struct LongPostDateFormatter: ServiceType {
+    static func makeService(for container: Container) throws -> LongPostDateFormatter {
         return .init()
     }
     

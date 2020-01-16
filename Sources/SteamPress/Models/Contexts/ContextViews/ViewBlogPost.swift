@@ -11,13 +11,13 @@ struct ViewBlogPost: Encodable {
     var published: Bool
     var longSnippet: String
     var createdDateLong: String
+    var createdDateNumeric: String
     #warning("Need authorUsername")
-    #warning("Need createdDate")
     #warning("Need authorName")
 }
 
 extension BlogPost {
-    func toViewPost(formatter: DateFormatter) -> ViewBlogPost {
-        ViewBlogPost(blogID: self.blogID, title: self.title, contents: self.contents, author: self.author, created: self.created, lastEdited: self.lastEdited, slugUrl: self.slugUrl, published: self.published, longSnippet: self.longSnippet(), createdDateLong: formatter.string(from: self.created))
+    func toViewPost(longFormatter: LongPostDateFormatter, numericFormatter: NumericPostDateFormatter) -> ViewBlogPost {
+        ViewBlogPost(blogID: self.blogID, title: self.title, contents: self.contents, author: self.author, created: self.created, lastEdited: self.lastEdited, slugUrl: self.slugUrl, published: self.published, longSnippet: self.longSnippet(), createdDateLong: longFormatter.formatter.string(from: self.created), createdDateNumeric: numericFormatter.formatter.string(from: self.created))
     }
 }

@@ -31,7 +31,8 @@ class BlogPresenterTests: XCTestCase {
         basicContainer.services.register(ViewRenderer.self) { _ in
             return self.viewRenderer
         }
-        basicContainer.services.register(PostDateFormatter.self)
+        basicContainer.services.register(LongPostDateFormatter.self)
+        basicContainer.services.register(NumericPostDateFormatter.self)
         viewRenderer = CapturingViewRenderer(worker: basicContainer)
         testTag = try! BlogTag(name: "Tattoine")
     }
