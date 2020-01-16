@@ -15,10 +15,11 @@ struct ViewBlogPost: Encodable {
     var lastEditedDateNumeric: String?
     var lastEditedDateLong: String?
     var authorName: String
+    var authorUsername: String
 }
 
 extension BlogPost {
-    func toViewPost(authorName: String, longFormatter: LongPostDateFormatter, numericFormatter: NumericPostDateFormatter) -> ViewBlogPost {
+    func toViewPost(authorName: String, authorUsername: String, longFormatter: LongPostDateFormatter, numericFormatter: NumericPostDateFormatter) -> ViewBlogPost {
         let lastEditedNumeric: String?
         let lastEditedDateLong: String?
         if let lastEdited = self.lastEdited {
@@ -28,6 +29,6 @@ extension BlogPost {
             lastEditedNumeric = nil
             lastEditedDateLong = nil
         }
-        return ViewBlogPost(blogID: self.blogID, title: self.title, contents: self.contents, author: self.author, created: self.created, lastEdited: self.lastEdited, slugUrl: self.slugUrl, published: self.published, longSnippet: self.longSnippet(), createdDateLong: longFormatter.formatter.string(from: self.created), createdDateNumeric: numericFormatter.formatter.string(from: self.created), lastEditedDateNumeric: lastEditedNumeric, lastEditedDateLong: lastEditedDateLong, authorName: authorName)
+        return ViewBlogPost(blogID: self.blogID, title: self.title, contents: self.contents, author: self.author, created: self.created, lastEdited: self.lastEdited, slugUrl: self.slugUrl, published: self.published, longSnippet: self.longSnippet(), createdDateLong: longFormatter.formatter.string(from: self.created), createdDateNumeric: numericFormatter.formatter.string(from: self.created), lastEditedDateNumeric: lastEditedNumeric, lastEditedDateLong: lastEditedDateLong, authorName: authorName, authorUsername: authorUsername)
     }
 }
