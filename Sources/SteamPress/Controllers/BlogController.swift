@@ -78,7 +78,7 @@ struct BlogController: RouteCollection {
             return flatMap(postsQuery, postCountQuery) { posts, totalPosts in
                 let presenter = try req.make(BlogPresenter.self)
                 let paginationTagInfo = self.getPaginationInformation(currentPage: paginationInformation.page, totalPosts: totalPosts, currentQuery: req.http.url.query)
-                return presenter.tagView(on: req, tag: tag, posts: posts, pageInformation: try req.pageInformation(), paginationTagInfo: paginationTagInfo)
+                return presenter.tagView(on: req, tag: tag, posts: posts, totalPosts: totalPosts, pageInformation: try req.pageInformation(), paginationTagInfo: paginationTagInfo)
             }
         }
     }

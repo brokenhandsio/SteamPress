@@ -5,5 +5,5 @@ struct BlogIndexPageContext: Encodable {
     let pageInformation: BlogGlobalPageInformation
     let title = "Blog"
     let blogIndexPage = true
-    let paginationInformation: PaginationTagInformation
+    let paginationTagInformation: PaginationTagInformation
 }

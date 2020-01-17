@@ -226,7 +226,7 @@ class BlogPresenterTests: XCTestCase {
         let totalPages = 10
         let currentQuery = "?page=2"
 
-        _ = presenter.tagView(on: basicContainer, tag: testTag, posts: posts, pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation(currentPage: currentPage, totalPages: totalPages, currentQuery: currentQuery))
+        _ = presenter.tagView(on: basicContainer, tag: testTag, posts: posts, totalPosts: 3, pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation(currentPage: currentPage, totalPages: totalPages, currentQuery: currentQuery))
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? TagPageContext)
         XCTAssertEqual(context.tag.name, testTag.name)
@@ -244,14 +244,15 @@ class BlogPresenterTests: XCTestCase {
         XCTAssertEqual(context.pageInformation.websiteURL.absoluteString, "https://brokenhands.io")
         XCTAssertEqual(context.pageInformation.currentPageURL.absoluteString, "https://brokenhands.io/tags/tattoine")
         XCTAssertEqual(viewRenderer.templatePath, "blog/tag")
-        XCTAssertEqual(context.paginationInformation.currentPage, currentPage)
-        XCTAssertEqual(context.paginationInformation.totalPages, totalPages)
-        XCTAssertEqual(context.paginationInformation.currentQuery, currentQuery)
+        XCTAssertEqual(context.paginationTagInformation.currentPage, currentPage)
+        XCTAssertEqual(context.paginationTagInformation.totalPages, totalPages)
+        XCTAssertEqual(context.paginationTagInformation.currentQuery, currentQuery)
+        XCTAssertEqual(context.postCount, 3)
     }
 
     func testNoLoggedInUserPassedToTagPageIfNoneProvided() throws {
         let pageInformation = buildPageInformation(currentPageURL: tagURL)
-        _ = presenter.tagView(on: basicContainer, tag: testTag, posts: [], pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation())
+        _ = presenter.tagView(on: basicContainer, tag: testTag, posts: [], totalPosts: 0, pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation())
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? TagPageContext)
         XCTAssertNil(context.pageInformation.loggedInUser)
@@ -259,7 +260,7 @@ class BlogPresenterTests: XCTestCase {
 
     func testDisqusNameNotPassedToTagPageIfNotSet() throws {
         let pageInformation = buildPageInformation(currentPageURL: tagURL, disqusName: nil)
-        _ = presenter.tagView(on: basicContainer, tag: testTag, posts: [], pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation())
+        _ = presenter.tagView(on: basicContainer, tag: testTag, posts: [], totalPosts: 0, pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation())
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? TagPageContext)
         XCTAssertNil(context.pageInformation.disqusName)
@@ -267,7 +268,7 @@ class BlogPresenterTests: XCTestCase {
 
     func testTwitterHandleNotPassedToTagPageIfNotSet() throws {
         let pageInformation = buildPageInformation(currentPageURL: tagURL, siteTwitterHandle: nil)
-        _ = presenter.tagView(on: basicContainer, tag: testTag, posts: [], pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation())
+        _ = presenter.tagView(on: basicContainer, tag: testTag, posts: [], totalPosts: 0, pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation())
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? TagPageContext)
         XCTAssertNil(context.pageInformation.siteTwitterHandle)
@@ -275,7 +276,7 @@ class BlogPresenterTests: XCTestCase {
 
     func testGAIdentifierNotPassedToTagPageIfNotSet() throws {
         let pageInformation = buildPageInformation(currentPageURL: tagURL, googleAnalyticsIdentifier: nil)
-        _ = presenter.tagView(on: basicContainer, tag: testTag, posts: [], pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation())
+        _ = presenter.tagView(on: basicContainer, tag: testTag, posts: [], totalPosts: 0, pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation())
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? TagPageContext)
         XCTAssertNil(context.pageInformation.googleAnalyticsIdentifier)
@@ -317,9 +318,9 @@ class BlogPresenterTests: XCTestCase {
         XCTAssertEqual(context.pageInformation.siteTwitterHandle, BlogPresenterTests.siteTwitterHandle)
         XCTAssertEqual(context.pageInformation.disqusName, BlogPresenterTests.disqusName)
         XCTAssertNil(context.pageInformation.loggedInUser)
-        XCTAssertEqual(context.paginationInformation.currentPage, currentPage)
-        XCTAssertEqual(context.paginationInformation.totalPages, totalPages)
-        XCTAssertEqual(context.paginationInformation.currentQuery, currentQuery)
+        XCTAssertEqual(context.paginationTagInformation.currentPage, currentPage)
+        XCTAssertEqual(context.paginationTagInformation.totalPages, totalPages)
+        XCTAssertEqual(context.paginationTagInformation.currentQuery, currentQuery)
     }
 
     func testUserPassedToBlogIndexIfUserPassedIn() throws {
@@ -387,9 +388,9 @@ class BlogPresenterTests: XCTestCase {
         XCTAssertEqual(context.pageInformation.googleAnalyticsIdentifier, BlogPresenterTests.googleAnalyticsIdentifier)
         XCTAssertEqual(context.pageInformation.siteTwitterHandle, BlogPresenterTests.siteTwitterHandle)
         XCTAssertEqual(viewRenderer.templatePath, "blog/profile")
-        XCTAssertEqual(context.paginationInformation.currentPage, page)
-        XCTAssertEqual(context.paginationInformation.totalPages, totalPages)
-        XCTAssertEqual(context.paginationInformation.currentQuery, query)
+        XCTAssertEqual(context.paginationTagInformation.currentPage, page)
+        XCTAssertEqual(context.paginationTagInformation.totalPages, totalPages)
+        XCTAssertEqual(context.paginationTagInformation.currentQuery, query)
     }
 
     func testAuthorViewGetsLoggedInUserIfProvider() throws {

@@ -7,7 +7,7 @@ public struct ViewBlogPresenter: BlogPresenter {
     public func indexView(on container: Container, posts: [BlogPost], tags: [BlogTag], authors: [BlogUser], pageInformation: BlogGlobalPageInformation, paginationTagInfo: PaginationTagInformation) -> EventLoopFuture<View> {
         do {
             let viewRenderer = try container.make(ViewRenderer.self)
-            let context = BlogIndexPageContext(posts: posts, tags: tags, authors: authors, pageInformation: pageInformation, paginationInformation: paginationTagInfo)
+            let context = BlogIndexPageContext(posts: posts, tags: tags, authors: authors, pageInformation: pageInformation, paginationTagInformation: paginationTagInfo)
             return viewRenderer.render("blog/blog", context)
         } catch {
             return container.future(error: error)
@@ -71,7 +71,7 @@ public struct ViewBlogPresenter: BlogPresenter {
             let longFormatter = try container.make(LongPostDateFormatter.self)
             let numericFormatter = try container.make(NumericPostDateFormatter.self)
             let viewPosts = posts.map { $0.toViewPost(authorName: author.name, authorUsername: author.username, longFormatter: longFormatter, numericFormatter: numericFormatter) }
-            let context = AuthorPageContext(author: author, posts: viewPosts, pageInformation: pageInformation, myProfile: myProfile, postCount: postCount, paginationInformation: paginationTagInfo)
+            let context = AuthorPageContext(author: author, posts: viewPosts, pageInformation: pageInformation, myProfile: myProfile, postCount: postCount, paginationTagInformation: paginationTagInfo)
             return viewRenderer.render("blog/profile", context)
         } catch {
             return container.future(error: error)
@@ -95,10 +95,10 @@ public struct ViewBlogPresenter: BlogPresenter {
         }
     }
 
-    public func tagView(on container: Container, tag: BlogTag, posts: [BlogPost], pageInformation: BlogGlobalPageInformation, paginationTagInfo: PaginationTagInformation) -> EventLoopFuture<View> {
+    public func tagView(on container: Container, tag: BlogTag, posts: [BlogPost], totalPosts: Int, pageInformation: BlogGlobalPageInformation, paginationTagInfo: PaginationTagInformation) -> EventLoopFuture<View> {
         do {
             let viewRenderer = try container.make(ViewRenderer.self)
-            let context = TagPageContext(tag: tag, pageInformation: pageInformation, posts: posts, paginationInformation: paginationTagInfo)
+            let context = TagPageContext(tag: tag, pageInformation: pageInformation, posts: posts, postCount: totalPosts, paginationTagInformation: paginationTagInfo)
             return viewRenderer.render("blog/tag", context)
         } catch {
             return container.future(error: error)

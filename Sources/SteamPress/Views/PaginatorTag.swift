@@ -54,7 +54,11 @@ extension PaginatorTag {
     
     func buildButtonLink(currentQuery: String?, pageNumber: Int) -> String {
         var urlComponents = URLComponents()
-        urlComponents.query = currentQuery
+        if currentQuery == nil {
+            urlComponents.queryItems = []
+        } else {
+            urlComponents.query = currentQuery
+        }
         if (urlComponents.queryItems?.contains { $0.name == "page" }) ?? false {
             urlComponents.queryItems?.removeAll { $0.name == "page" }
         }

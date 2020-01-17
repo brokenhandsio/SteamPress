@@ -5,5 +5,5 @@ struct AuthorPageContext: Encodable {
     let myProfile: Bool
     let profilePage = true
     let postCount: Int
-    let paginationInformation: PaginationTagInformation
+    let paginationTagInformation: PaginationTagInformation
 }

@@ -3,5 +3,6 @@ struct TagPageContext: Encodable {
     let pageInformation: BlogGlobalPageInformation
     let posts: [BlogPost]
     let tagPage = true
-    let paginationInformation: PaginationTagInformation
+    let postCount: Int
+    let paginationTagInformation: PaginationTagInformation
 }
