@@ -131,6 +131,14 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         let endIndex = min(offset + count, sortedPosts.count)
         return container.future(Array(sortedPosts[startIndex..<endIndex]))
     }
+    
+    func getAllPostsCount(includeDrafts: Bool, on container: Container) -> EventLoopFuture<Int> {
+        var sortedPosts = posts.sorted { $0.created > $1.created }
+        if !includeDrafts {
+            sortedPosts = sortedPosts.filter { $0.published }
+        }
+        return container.future(sortedPosts.count)
+    }
 
     func getAllPostsSortedByPublishDate(for user: BlogUser, includeDrafts: Bool, on container: Container, count: Int, offset: Int) -> EventLoopFuture<[BlogPost]> {
         let authorsPosts = posts.filter { $0.author == user.userID }
@@ -171,6 +179,22 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         let startIndex = min(offset, sortedPosts.count)
         let endIndex = min(offset + count, sortedPosts.count)
         return container.future(Array(sortedPosts[startIndex..<endIndex]))
+    }
+    
+    func getPublishedPostCount(for tag: BlogTag, on container: Container) -> EventLoopFuture<Int> {
+        var results = [BlogPost]()
+        guard let tagID = tag.tagID else {
+            fatalError("Tag doesn't exist when it should")
+        }
+        for link in postTagLinks where link.tagID == tagID {
+            let foundPost = posts.first { $0.blogID == link.postID }
+            guard let post =  foundPost else {
+                fatalError("Post doesn't exist when it should")
+            }
+            results.append(post)
+        }
+        let sortedPosts = results.sorted { $0.created > $1.created }.filter { $0.published }
+        return container.future(sortedPosts.count)
     }
     
     func getPublishedPostCount(for searchTerm: String, on container: Container) -> EventLoopFuture<Int> {

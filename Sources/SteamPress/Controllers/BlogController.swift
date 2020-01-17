@@ -46,9 +46,10 @@ struct BlogController: RouteCollection {
         let paginationInformation = req.getPaginationInformation(postsPerPage: postsPerPage)
         return flatMap(postRepository.getAllPostsSortedByPublishDate(includeDrafts: false, on: req, count: postsPerPage, offset: paginationInformation.offset),
                        tagRepository.getAllTags(on: req),
-                       userRepository.getAllUsers(on: req)) { posts, tags, users in
+                       userRepository.getAllUsers(on: req),
+                       postRepository.getAllPostsCount(includeDrafts: false, on: req)) { posts, tags, users, totalPostCount in
             let presenter = try req.make(BlogPresenter.self)
-            return presenter.indexView(on: req, posts: posts, tags: tags, authors: users, pageInformation: try req.pageInformation())
+                        return presenter.indexView(on: req, posts: posts, tags: tags, authors: users, pageInformation: try req.pageInformation(), paginationTagInfo: self.getPaginationInformation(currentPage: paginationInformation.page, totalPosts: totalPostCount, currentQuery: req.http.url.query))
         }
     }
 
@@ -72,9 +73,12 @@ struct BlogController: RouteCollection {
         return try req.parameters.next(BlogTag.self).flatMap { tag in
             let postRepository = try req.make(BlogPostRepository.self)
             let paginationInformation = req.getPaginationInformation(postsPerPage: self.postsPerPage)
-            return postRepository.getSortedPublishedPosts(for: tag, on: req, count: self.postsPerPage, offset: paginationInformation.offset).flatMap { posts in
+            let postsQuery = postRepository.getSortedPublishedPosts(for: tag, on: req, count: self.postsPerPage, offset: paginationInformation.offset)
+            let postCountQuery = postRepository.getPublishedPostCount(for: tag, on: req)
+            return flatMap(postsQuery, postCountQuery) { posts, totalPosts in
                 let presenter = try req.make(BlogPresenter.self)
-                return presenter.tagView(on: req, tag: tag, posts: posts, pageInformation: try req.pageInformation())
+                let paginationTagInfo = self.getPaginationInformation(currentPage: paginationInformation.page, totalPosts: totalPosts, currentQuery: req.http.url.query)
+                return presenter.tagView(on: req, tag: tag, posts: posts, pageInformation: try req.pageInformation(), paginationTagInfo: paginationTagInfo)
             }
         }
     }
@@ -93,7 +97,8 @@ struct BlogController: RouteCollection {
             let authorPostCountQuery = postRepository.getPostCount(for: author, on: req)
             return flatMap(authorPostQuery, authorPostCountQuery) { posts, postCount in
                 let presenter = try req.make(BlogPresenter.self)
-                return presenter.authorView(on: req, author: author, posts: posts, postCount: postCount, pageInformation: try req.pageInformation())
+                let paginationTagInfo = self.getPaginationInformation(currentPage: paginationInformation.page, totalPosts: postCount, currentQuery: req.http.url.query)
+                return presenter.authorView(on: req, author: author, posts: posts, postCount: postCount, pageInformation: try req.pageInformation(), paginationTagInfo: paginationTagInfo)
             }
         }
     }

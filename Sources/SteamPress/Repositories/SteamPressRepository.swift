@@ -15,12 +15,14 @@ public protocol BlogTagRepository {
 
 public protocol BlogPostRepository {
     func getAllPostsSortedByPublishDate(includeDrafts: Bool, on container: Container) -> EventLoopFuture<[BlogPost]>
+    func getAllPostsCount(includeDrafts: Bool, on container: Container) -> EventLoopFuture<Int>
     func getAllPostsSortedByPublishDate(includeDrafts: Bool, on container: Container, count: Int, offset: Int) -> EventLoopFuture<[BlogPost]>
     func getAllPostsSortedByPublishDate(for user: BlogUser, includeDrafts: Bool, on container: Container, count: Int, offset: Int) -> EventLoopFuture<[BlogPost]>
     func getPostCount(for user: BlogUser, on container: Container) -> EventLoopFuture<Int>
     func getPost(slug: String, on container: Container) -> EventLoopFuture<BlogPost?>
     func getPost(id: Int, on container: Container) -> EventLoopFuture<BlogPost?>
     func getSortedPublishedPosts(for tag: BlogTag, on container: Container, count: Int, offset: Int) -> EventLoopFuture<[BlogPost]>
+    func getPublishedPostCount(for tag: BlogTag, on container: Container) -> EventLoopFuture<Int>
     func findPublishedPostsOrdered(for searchTerm: String, on container: Container, count: Int, offset: Int) -> EventLoopFuture<[BlogPost]>
     func getPublishedPostCount(for searchTerm: String, on container: Container) -> EventLoopFuture<Int>
     func save(_ post: BlogPost, on container: Container) -> EventLoopFuture<BlogPost>
