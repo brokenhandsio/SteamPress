@@ -7,4 +7,5 @@ public struct BlogGlobalPageInformation: Encodable {
     public let loggedInUser: BlogUser?
     public let websiteURL: URL
     public let currentPageURL: URL
+    public let currentPageEncodedURL: String
 }

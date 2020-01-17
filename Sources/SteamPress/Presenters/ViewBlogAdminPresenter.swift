@@ -7,18 +7,8 @@ public struct ViewBlogAdminPresenter: BlogAdminPresenter {
     public func createIndexView(on container: Container, posts: [BlogPost], users: [BlogUser], errors: [String]?, pageInformation: BlogAdminPageInformation) -> EventLoopFuture<View> {
         do {
             let viewRenderer = try container.make(ViewRenderer.self)
-            let longFormatter = try container.make(LongPostDateFormatter.self)
-            let numericFormatter = try container.make(NumericPostDateFormatter.self)
-            let publishedPosts = posts.filter { $0.published }.map { post -> ViewBlogPost in
-                let name = users.getAuthorName(id: post.author)
-                let username = users.getAuthorUsername(id: post.author)
-                return post.toViewPost(authorName: name, authorUsername: username, longFormatter: longFormatter, numericFormatter: numericFormatter)
-            }
-            let draftPosts = posts.filter { !$0.published }.map { post -> ViewBlogPost in
-                let name = users.getAuthorName(id: post.author)
-                let username = users.getAuthorUsername(id: post.author)
-                return post.toViewPost(authorName: name, authorUsername: username, longFormatter: longFormatter, numericFormatter: numericFormatter)
-            }
+            let publishedPosts = try posts.filter { $0.published }.convertToViewBlogPostsWithoutTags(authors: users, on: container)
+            let draftPosts = try posts.filter { !$0.published }.convertToViewBlogPostsWithoutTags(authors: users, on: container)
             let context = AdminPageContext(errors: errors, publishedPosts: publishedPosts, draftPosts: draftPosts, users: users, pageInformation: pageInformation)
             return viewRenderer.render("blog/admin/index", context)
         } catch {

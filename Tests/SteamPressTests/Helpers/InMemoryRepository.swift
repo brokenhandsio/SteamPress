@@ -28,6 +28,16 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         }
         return container.future(tagsWithCount)
     }
+    
+    func getTagsForAllPosts(on container: Container) -> EventLoopFuture<[Int : [BlogTag]]> {
+        var dict = [Int: [BlogTag]]()
+        for tag in tags {
+            postTagLinks.filter { $0.tagID == tag.tagID }.forEach { link in
+                dict[link.postID]?.append(tag)
+            }
+        }
+        return container.future(dict)
+    }
 
     func getTags(for post: BlogPost, on container: Container) -> EventLoopFuture<[BlogTag]> {
         var results = [BlogTag]()

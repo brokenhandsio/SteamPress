@@ -1,7 +1,7 @@
 struct AdminPageContext: Encodable {
     let errors: [String]?
-    let publishedPosts: [ViewBlogPost]
-    let draftPosts: [ViewBlogPost]
+    let publishedPosts: [ViewBlogPostWithoutTags]
+    let draftPosts: [ViewBlogPostWithoutTags]
     let users: [BlogUser]
     let pageInformation: BlogAdminPageInformation
     let blogAdminPage = true
