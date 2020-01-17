@@ -149,10 +149,12 @@ class RSSFeedTests: XCTestCase {
 
         let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>http://geeks.brokenhands.io/blog-path/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n<textinput>\n<description>Search SteamPress Blog</description>\n<title>Search</title>\n<link>http://geeks.brokenhands.io/blog-path/search?</link>\n<name>term</name>\n</textinput>\n<item>\n<title>\n\(post.title)\n</title>\n<description>\n\(try post.description())\n</description>\n<link>\nhttp://geeks.brokenhands.io/blog-path/posts/\(post.slugUrl)/\n</link>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n</item>\n</channel>\n\n</rss>"
 
-        let fullPath = "http://geeks.brokenhands.io/blog-path/rss.xml"
-        let actualXmlResponse = try testWorld.getResponseString(to: fullPath)
-//        XCTAssertEqual(actualXmlResponse, expectedXML)
-        #warning("Fix")
+        let fullPath = "/blog-path/rss.xml"
+        let actualXmlResponse = try testWorld.getResponseString(to: fullPath, headers: [
+            "X-Forwarded-Proto": "http",
+            "X-Forwarded-For": "geeks.brokenhands.io"
+        ])
+        XCTAssertEqual(actualXmlResponse, expectedXML)
     }
 
     func testThatLinksSpecifyHTTPSWhenComingFromReverseProxy() throws {
@@ -162,10 +164,12 @@ class RSSFeedTests: XCTestCase {
 
         let expectedXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>SteamPress Blog</title>\n<link>https://geeks.brokenhands.io/blog-path/</link>\n<description>SteamPress is an open-source blogging engine written for Vapor in Swift</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n<textinput>\n<description>Search SteamPress Blog</description>\n<title>Search</title>\n<link>https://geeks.brokenhands.io/blog-path/search?</link>\n<name>term</name>\n</textinput>\n<item>\n<title>\n\(post.title)\n</title>\n<description>\n\(try post.description())\n</description>\n<link>\nhttps://geeks.brokenhands.io/blog-path/posts/\(post.slugUrl)/\n</link>\n<pubDate>\(dateFormatter.string(from: post.created))</pubDate>\n</item>\n</channel>\n\n</rss>"
 
-        let fullPath = "http://geeks.brokenhands.io/blog-path/rss.xml"
-        let actualXmlResponse = try testWorld.getResponseString(to: fullPath, headers: ["X-Forwarded-Proto": "https"])
-        #warning("Fix")
-//        XCTAssertEqual(actualXmlResponse, expectedXML)
+        let fullPath = "/blog-path/rss.xml"
+        let actualXmlResponse = try testWorld.getResponseString(to: fullPath, headers: [
+            "X-Forwarded-Proto": "https",
+            "X-Forwarded-For": "geeks.brokenhands.io"
+        ])
+        XCTAssertEqual(actualXmlResponse, expectedXML)
     }
 
     func testImageIsProvidedIfSupplied() throws {

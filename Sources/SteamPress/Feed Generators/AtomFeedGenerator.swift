@@ -32,7 +32,7 @@ struct AtomFeedGenerator {
 
         let blogRepository = try request.make(BlogPostRepository.self)
         return blogRepository.getAllPostsSortedByPublishDate(includeDrafts: false, on: request).flatMap { posts in
-            var feed = try self.getFeedStart(for: request)
+            var feed = self.getFeedStart(for: request)
 
             if !posts.isEmpty {
                 let postDate = posts[0].lastEdited ?? posts[0].created
@@ -69,14 +69,16 @@ struct AtomFeedGenerator {
 
     // MARK: - Private functions
 
-    private func getFeedStart(for request: Request) throws -> String {
-        let blogLink = try getRootPath(for: request) + "/"
+    private func getFeedStart(for request: Request) -> String {
+        let blogLink = getRootPath(for: request) + "/"
         let feedLink = blogLink + "atom.xml"
         return "\(xmlDeclaration)\n\(feedStart)\n\n<title>\(title)</title>\n<subtitle>\(description)</subtitle>\n<id>\(blogLink)</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"\(blogLink)\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"\(feedLink)\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n"
     }
 
-    private func getRootPath(for request: Request) throws -> String {
-        return try request.urlWithHTTPSIfReverseProxy().descriptionWithoutPort.replacingOccurrences(of: "/atom.xml", with: "")
+    private func getRootPath(for request: Request) -> String {
+        let hostname = request.http.remotePeer.description
+        let path = request.http.url.path
+        return "\(hostname)\(path.replacingOccurrences(of: "/atom.xml", with: ""))"
     }
 }
 

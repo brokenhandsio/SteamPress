@@ -95,8 +95,8 @@ class AdminPostTests: XCTestCase {
         XCTAssertFalse(titleError)
         XCTAssertFalse(contentsError)
         XCTAssertEqual(presenter.createPostPageInformation?.loggedInUser.username, user.username)
-        XCTAssertEqual(presenter.createPostPageInformation?.currentPageURL.absoluteString, "/admin/createPost/")
-        XCTAssertEqual(presenter.createPostPageInformation?.websiteURL.absoluteString, "")
+        XCTAssertEqual(presenter.createPostPageInformation?.currentPageURL.absoluteString, "/admin/createPost")
+        XCTAssertEqual(presenter.createPostPageInformation?.websiteURL.absoluteString, "/")
     }
 
     func testPostCannotBeCreatedIfDraftAndPublishNotSet() throws {
@@ -130,8 +130,8 @@ class AdminPostTests: XCTestCase {
         XCTAssertTrue(titleError)
         XCTAssertFalse(contentsError)
         XCTAssertEqual(presenter.createPostPageInformation?.loggedInUser.username, user.username)
-        XCTAssertEqual(presenter.createPostPageInformation?.currentPageURL.absoluteString, "/admin/createPost/")
-        XCTAssertEqual(presenter.createPostPageInformation?.websiteURL.absoluteString, "")
+        XCTAssertEqual(presenter.createPostPageInformation?.currentPageURL.absoluteString, "/admin/createPost")
+        XCTAssertEqual(presenter.createPostPageInformation?.websiteURL.absoluteString, "/")
     }
 
     func testCreatePostMustIncludeContents() throws {
@@ -283,7 +283,7 @@ class AdminPostTests: XCTestCase {
         XCTAssertFalse(contentsError)
         XCTAssertEqual(presenter.createPostPageInformation?.loggedInUser.username, user.username)
         XCTAssertEqual(presenter.createPostPageInformation?.currentPageURL.absoluteString, "/admin/posts/1/edit")
-        XCTAssertEqual(presenter.createPostPageInformation?.websiteURL.absoluteString, "")
+        XCTAssertEqual(presenter.createPostPageInformation?.websiteURL.absoluteString, "/")
     }
 
     func testThatEditingPostGetsRedirectToPostPage() throws {
@@ -444,7 +444,7 @@ class AdminPostTests: XCTestCase {
         XCTAssertFalse(contentsError)
         XCTAssertEqual(presenter.createPostPageInformation?.loggedInUser.username, user.username)
         XCTAssertEqual(presenter.createPostPageInformation?.currentPageURL.absoluteString, "/admin/posts/1/edit")
-        XCTAssertEqual(presenter.createPostPageInformation?.websiteURL.absoluteString, "")
+        XCTAssertEqual(presenter.createPostPageInformation?.websiteURL.absoluteString, "/")
     }
     
     func testEditingPageWithInvalidContentsDataPassesExistingDataToPresenter() throws {

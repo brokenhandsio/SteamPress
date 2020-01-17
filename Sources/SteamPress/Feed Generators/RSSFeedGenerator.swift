@@ -32,14 +32,14 @@ struct RSSFeedGenerator {
 
         let blogRepository = try request.make(BlogPostRepository.self)
         return blogRepository.getAllPostsSortedByPublishDate(includeDrafts: false, on: request).flatMap { posts in
-            var xmlFeed = try self.getXMLStart(for: request)
+            var xmlFeed = self.getXMLStart(for: request)
 
             if !posts.isEmpty {
                 let postDate = posts[0].lastEdited ?? posts[0].created
                 xmlFeed += "<pubDate>\(self.rfc822DateFormatter.string(from: postDate))</pubDate>\n"
             }
 
-            xmlFeed += try "<textinput>\n<description>Search \(self.title)</description>\n<title>Search</title>\n<link>\(self.getRootPath(for: request))/search?</link>\n<name>term</name>\n</textinput>\n"
+            xmlFeed += "<textinput>\n<description>Search \(self.title)</description>\n<title>Search</title>\n<link>\(self.getRootPath(for: request))/search?</link>\n<name>term</name>\n</textinput>\n"
 
             var postData: [EventLoopFuture<String>] = []
             for post in posts {
@@ -61,9 +61,9 @@ struct RSSFeedGenerator {
 
     // MARK: - Private functions
 
-    private func getXMLStart(for request: Request) throws -> String {
+    private func getXMLStart(for request: Request) -> String {
 
-        let link = try getRootPath(for: request) + "/"
+        let link = getRootPath(for: request) + "/"
 
         var start = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>\(title)</title>\n<link>\(link)</link>\n<description>\(description)</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n"
 
@@ -78,8 +78,10 @@ struct RSSFeedGenerator {
         return start
     }
 
-    private func getRootPath(for request: Request) throws -> String {
-        return try request.urlWithHTTPSIfReverseProxy().descriptionWithoutPort.replacingOccurrences(of: "/rss.xml", with: "")
+    private func getRootPath(for request: Request) -> String {
+        let hostname = request.http.remotePeer.description
+        let path = request.http.url.path
+        return "\(hostname)\(path.replacingOccurrences(of: "/rss.xml", with: ""))"
     }
 }
 

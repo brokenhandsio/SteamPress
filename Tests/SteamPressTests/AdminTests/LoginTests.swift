@@ -87,7 +87,7 @@ class LoginTests: XCTestCase {
         XCTAssertNil(presenter.resetPasswordError)
         XCTAssertNil(presenter.resetPasswordConfirmError)
         XCTAssertEqual(presenter.resetPasswordPageInformation?.loggedInUser.username, user.username)
-        XCTAssertEqual(presenter.resetPasswordPageInformation?.websiteURL.absoluteString, "")
+        XCTAssertEqual(presenter.resetPasswordPageInformation?.websiteURL.absoluteString, "/")
         XCTAssertEqual(presenter.resetPasswordPageInformation?.currentPageURL.absoluteString, "/blog/admin/resetPassword")
     }
 
@@ -125,7 +125,7 @@ class LoginTests: XCTestCase {
         XCTAssertTrue(resetPasswordError)
         XCTAssertTrue(confirmPasswordError)
         XCTAssertEqual(presenter.resetPasswordPageInformation?.loggedInUser.username, user.username)
-        XCTAssertEqual(presenter.resetPasswordPageInformation?.websiteURL.absoluteString, "")
+        XCTAssertEqual(presenter.resetPasswordPageInformation?.websiteURL.absoluteString, "/")
         XCTAssertEqual(presenter.resetPasswordPageInformation?.currentPageURL.absoluteString, "/blog/admin/resetPassword")
     }
 
@@ -285,7 +285,7 @@ class LoginTests: XCTestCase {
         XCTAssertNil(blogPresenter.loginPageInformation?.siteTwitterHandle)
         XCTAssertNil(blogPresenter.loginPageInformation?.loggedInUser)
         XCTAssertEqual(blogPresenter.loginPageInformation?.currentPageURL.absoluteString, "/blog/admin/login")
-        XCTAssertEqual(blogPresenter.loginPageInformation?.websiteURL.absoluteString, "")
+        XCTAssertEqual(blogPresenter.loginPageInformation?.websiteURL.absoluteString, "/")
     }
 
     func testSettingEnvVarsWithPageInformationForLoginPage() throws {

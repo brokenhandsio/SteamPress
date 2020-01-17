@@ -79,7 +79,7 @@ class AuthorTests: XCTestCase {
         XCTAssertNil(presenter.authorPageInformation?.siteTwitterHandle)
         XCTAssertNil(presenter.authorPageInformation?.loggedInUser)
         XCTAssertEqual(presenter.authorPageInformation?.currentPageURL.absoluteString, authorsRequestPath)
-        XCTAssertEqual(presenter.authorPageInformation?.websiteURL.absoluteString, "")
+        XCTAssertEqual(presenter.authorPageInformation?.websiteURL.absoluteString, "/")
     }
     
     func testAuthorPageInformationGetsLoggedInUser() throws {
@@ -108,7 +108,7 @@ class AuthorTests: XCTestCase {
         XCTAssertNil(presenter.allAuthorsPageInformation?.siteTwitterHandle)
         XCTAssertNil(presenter.allAuthorsPageInformation?.loggedInUser)
         XCTAssertEqual(presenter.allAuthorsPageInformation?.currentPageURL.absoluteString, allAuthorsRequestPath)
-        XCTAssertEqual(presenter.allAuthorsPageInformation?.websiteURL.absoluteString, "")
+        XCTAssertEqual(presenter.allAuthorsPageInformation?.websiteURL.absoluteString, "/")
     }
     
     func testPageInformationGetsLoggedInUserForAllAuthors() throws {

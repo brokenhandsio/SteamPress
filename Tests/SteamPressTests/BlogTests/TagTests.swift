@@ -87,7 +87,7 @@ class TagTests: XCTestCase {
         XCTAssertNil(presenter.tagPageInformation?.siteTwitterHandle)
         XCTAssertNil(presenter.tagPageInformation?.loggedInUser)
         XCTAssertEqual(presenter.tagPageInformation?.currentPageURL.absoluteString, tagRequestPath)
-        XCTAssertEqual(presenter.tagPageInformation?.websiteURL.absoluteString, "")
+        XCTAssertEqual(presenter.tagPageInformation?.websiteURL.absoluteString, "/")
     }
     
     func testTagPageInformationGetsLoggedInUser() throws {
@@ -115,7 +115,7 @@ class TagTests: XCTestCase {
         XCTAssertNil(presenter.allTagsPageInformation?.siteTwitterHandle)
         XCTAssertNil(presenter.allTagsPageInformation?.loggedInUser)
         XCTAssertEqual(presenter.allTagsPageInformation?.currentPageURL.absoluteString, allTagsRequestPath)
-        XCTAssertEqual(presenter.allTagsPageInformation?.websiteURL.absoluteString, "")
+        XCTAssertEqual(presenter.allTagsPageInformation?.websiteURL.absoluteString, "/")
     }
     
     func testPageInformationGetsLoggedInUserForAllTags() throws {

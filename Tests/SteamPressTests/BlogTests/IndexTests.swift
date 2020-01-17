@@ -109,14 +109,14 @@ class IndexTests: XCTestCase {
         XCTAssertNil(presenter.indexPageInformation?.siteTwitterHandle)
         XCTAssertNil(presenter.indexPageInformation?.loggedInUser)
         XCTAssertEqual(presenter.indexPageInformation?.currentPageURL.absoluteString, "/")
-        XCTAssertEqual(presenter.indexPageInformation?.websiteURL.absoluteString, "")
+        XCTAssertEqual(presenter.indexPageInformation?.websiteURL.absoluteString, "/")
     }
     
     func testIndexPageCurrentPageWhenAtSubPath() throws {
         testWorld = try TestWorld.create(path: "blog")
         _ = try testWorld.getResponse(to: "/blog")
         XCTAssertEqual(presenter.indexPageInformation?.currentPageURL.absoluteString, "/blog")
-        XCTAssertEqual(presenter.indexPageInformation?.websiteURL.absoluteString, "")
+        XCTAssertEqual(presenter.indexPageInformation?.websiteURL.absoluteString, "/")
     }
     
     func testIndexPageInformationGetsLoggedInUser() throws {

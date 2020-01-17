@@ -1,42 +1,24 @@
 import Foundation
 import Vapor
 
-extension URL {
-    func getRootUrl() throws -> URL {
-        var components = URLComponents()
-        components.scheme = self.scheme
-        components.host = self.host
-        guard let url = components.url else {
-            throw SteamPressError(identifier: "SteamPressError", "Unable to get root url from \(self.absoluteString)")
+extension Request {
+    func url() throws -> URL {
+        let hostname = self.http.remotePeer.description
+        let path = self.http.url.path.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        let urlString  = "\(hostname)\(path)"
+        guard let url = URL(string: urlString) else {
+            throw SteamPressError(identifier: "SteamPressError", "Failed to convert url path to URL")
         }
         return url
     }
-
-    var descriptionWithoutPort: String {
-        get {
-            if scheme == "https" {
-                return self.absoluteString.replacingFirstOccurrence(of: ":443", with: "")
-            } else {
-                return self.absoluteString.replacingFirstOccurrence(of: ":80", with: "")
-            }
+    
+    func rootUrl() throws -> URL {
+        var hostname = self.http.remotePeer.description
+        if hostname == "" {
+            hostname = "/"
         }
-    }
-}
-
-extension Request {
-    func urlWithHTTPSIfReverseProxy() throws -> URL {
-        guard var componets = URLComponents(url: self.http.url, resolvingAgainstBaseURL: false) else {
-            throw SteamPressError(identifier: "SteamPressError", "Failed to get componets of url from \(self.http.url.absoluteString)")
-        }
-        
-        if self.http.headers["X-Forwarded-Proto"].first == "https" {
-            componets.scheme = "https"
-        }
-        
-        componets.query = nil
-        
-        guard let url = componets.url else {
-            throw SteamPressError(identifier: "SteamPressError", "Failed to convert components to URL")
+        guard let url = URL(string: hostname) else {
+            throw SteamPressError(identifier: "SteamPressError", "Failed to convert url hostname to URL")
         }
         return url
     }

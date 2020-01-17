@@ -8,7 +8,7 @@ class PostTests: XCTestCase {
     // MARK: - Properties
     var testWorld: TestWorld!
     var firstData: TestData!
-    private let blogPostPath = "/posts/test-path/"
+    private let blogPostPath = "/posts/test-path"
 
     var presenter: CapturingBlogPresenter {
         return testWorld.context.blogPresenter
@@ -43,7 +43,7 @@ class PostTests: XCTestCase {
         XCTAssertNil(presenter.postPageInformation?.siteTwitterHandle)
         XCTAssertNil(presenter.postPageInformation?.loggedInUser)
         XCTAssertEqual(presenter.postPageInformation?.currentPageURL.absoluteString, blogPostPath)
-        XCTAssertEqual(presenter.postPageInformation?.websiteURL.absoluteString, "")
+        XCTAssertEqual(presenter.postPageInformation?.websiteURL.absoluteString, "/")
     }
     
     func testPostPageInformationGetsLoggedInUser() throws {

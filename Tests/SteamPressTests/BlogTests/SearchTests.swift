@@ -57,7 +57,7 @@ class SearchTests: XCTestCase {
         XCTAssertNil(presenter.searchPageInformation?.siteTwitterHandle)
         XCTAssertNil(presenter.searchPageInformation?.loggedInUser)
         XCTAssertEqual(presenter.searchPageInformation?.currentPageURL.absoluteString, "/search")
-        XCTAssertEqual(presenter.searchPageInformation?.websiteURL.absoluteString, "")
+        XCTAssertEqual(presenter.searchPageInformation?.websiteURL.absoluteString, "/")
     }
     
     func testPageInformationGetsLoggedInUserForSearch() throws {

@@ -71,20 +71,24 @@ class AtomFeedTests: XCTestCase {
         testWorld = try TestWorld.create(path: "blog")
         let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>https://geeks.brokenhands.io/blog/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"https://geeks.brokenhands.io/blog/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"https://geeks.brokenhands.io/blog/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: Date()))</updated>\n</feed>"
 
-        let fullPath = "https://geeks.brokenhands.io/blog/atom.xml"
-        let actualXmlResponse = try testWorld.getResponseString(to: fullPath)
-//        XCTAssertEqual(actualXmlResponse, expectedXML)
-        #warning("Fix")
+        let fullPath = "/blog/atom.xml"
+        let actualXmlResponse = try testWorld.getResponseString(to: fullPath, headers: [
+            "X-Forwarded-Proto": "https",
+            "X-Forwarded-For": "geeks.brokenhands.io"
+        ])
+        XCTAssertEqual(actualXmlResponse, expectedXML)
     }
 
     func testThatHTTPSLinksWorkWhenBehindReverseProxy() throws {
         testWorld = try TestWorld.create()
         let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>https://geeks.brokenhands.io/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"https://geeks.brokenhands.io/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"https://geeks.brokenhands.io/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: Date()))</updated>\n</feed>"
 
-        let fullPath = "http://geeks.brokenhands.io/atom.xml"
-        let actualXmlResponse = try testWorld.getResponseString(to: fullPath, headers: ["X-Forwarded-Proto": "https"])
-//        XCTAssertEqual(actualXmlResponse, expectedXML)
-        #warning("Fix")
+        let fullPath = "/atom.xml"
+        let actualXmlResponse = try testWorld.getResponseString(to: fullPath, headers: [
+                "X-Forwarded-Proto": "https",
+                "X-Forwarded-For": "geeks.brokenhands.io"
+            ])
+        XCTAssertEqual(actualXmlResponse, expectedXML)
     }
 
     func testThatLogoCanBeConfigured() throws {
@@ -201,26 +205,12 @@ class AtomFeedTests: XCTestCase {
 
         let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>https://geeks.brokenhands.io/blog/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"https://geeks.brokenhands.io/blog/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"https://geeks.brokenhands.io/blog/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: Date()))</updated>\n<entry>\n<id>https://geeks.brokenhands.io/blog/posts-id/1/</id>\n<title>\(post.title)</title>\n<updated>\(dateFormatter.string(from: post.created))</updated>\n<published>\(dateFormatter.string(from: post.created))</published>\n<author>\n<name>\(author.name)</name>\n<uri>https://geeks.brokenhands.io/blog/authors/\(author.username)/</uri>\n</author>\n<summary>\(try post.description())</summary>\n<link rel=\"alternate\" href=\"https://geeks.brokenhands.io/blog/posts/\(post.slugUrl)/\" />\n</entry>\n</feed>"
 
-        let fullPath = "http://geeks.brokenhands.io/blog/atom.xml"
-        let actualXmlResponse = try testWorld.getResponseString(to: fullPath)
-//        XCTAssertEqual(actualXmlResponse, expectedXML)
-        #warning("Fix")
-    }
-
-    func testThatHTTPSLinksWorkForPostsBehindReverseProxy() throws {
-        testWorld = try TestWorld.create(path: "blog")
-
-        let testData = try testWorld.createPost()
-
-        let post = testData.post
-        let author = testData.author
-
-        let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>https://geeks.brokenhands.io/blog/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"https://geeks.brokenhands.io/blog/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"https://geeks.brokenhands.io/blog/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: Date()))</updated>\n<entry>\n<id>https://geeks.brokenhands.io/blog/posts-id/1/</id>\n<title>\(post.title)</title>\n<updated>\(dateFormatter.string(from: post.created))</updated>\n<published>\(dateFormatter.string(from: post.created))</published>\n<author>\n<name>\(author.name)</name>\n<uri>https://geeks.brokenhands.io/blog/authors/\(author.username)/</uri>\n</author>\n<summary>\(try post.description())</summary>\n<link rel=\"alternate\" href=\"https://geeks.brokenhands.io/blog/posts/\(post.slugUrl)/\" />\n</entry>\n</feed>"
-
-        let fullPath = "http://geeks.brokenhands.io/blog/atom.xml"
-        let actualXmlResponse = try testWorld.getResponseString(to: fullPath, headers: ["X-Forwarded-Proto": "https"])
-//        XCTAssertEqual(actualXmlResponse, expectedXML)
-        #warning("Fix")
+        let fullPath = "/blog/atom.xml"
+        let actualXmlResponse = try testWorld.getResponseString(to: fullPath, headers: [
+            "X-Forwarded-Proto": "https",
+            "X-Forwarded-For": "geeks.brokenhands.io"
+        ])
+        XCTAssertEqual(actualXmlResponse, expectedXML)
     }
 
     func testCorrectHeaderSetForAtomFeed() throws {
