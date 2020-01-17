@@ -480,9 +480,9 @@ class BlogPresenterTests: XCTestCase {
         let post1 = try TestDataBuilder.anyPost(author: author, title: "Vapor 1")
         let post2 = try TestDataBuilder.anyPost(author: author, title: "Vapor 2")
         let pageInformation = buildPageInformation(currentPageURL: searchURL)
-        let paginationInformation = PaginationTagInformation(currentPage: 1, totalPages: 3)
+        let paginationInformation = PaginationTagInformation(currentPage: 1, totalPages: 3, currentQuery: "?term=vapor")
 
-        _ = presenter.searchView(on: basicContainer, posts: [post1, post2], authors: [author], searchTerm: "vapor", pageInformation: pageInformation, paginationTagInfo: paginationInformation)
+        _ = presenter.searchView(on: basicContainer, totalResults: 2, posts: [post1, post2], authors: [author], searchTerm: "vapor", pageInformation: pageInformation, paginationTagInfo: paginationInformation)
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? SearchPageContext)
         XCTAssertEqual(context.title, "Search Blog")
@@ -500,12 +500,13 @@ class BlogPresenterTests: XCTestCase {
         XCTAssertEqual(context.pageInformation.currentPageURL.absoluteString, "https://brokenhands.io/search?term=vapor")
         XCTAssertEqual(context.paginationTagInformation.currentPage, 1)
         XCTAssertEqual(context.paginationTagInformation.totalPages, 3)
+        XCTAssertEqual(context.paginationTagInformation.currentQuery, "?term=vapor")
     }
 
     func testSearchPageGetsNilIfNoSearchTermProvided() throws {
         let pageInformation = buildPageInformation(currentPageURL: searchURL)
-        let paginationInformation = PaginationTagInformation(currentPage: 0, totalPages: 0)
-        _ = presenter.searchView(on: basicContainer, posts: [], authors: [], searchTerm: nil, pageInformation: pageInformation, paginationTagInfo: paginationInformation)
+        let paginationInformation = PaginationTagInformation(currentPage: 0, totalPages: 0, currentQuery: nil)
+        _ = presenter.searchView(on: basicContainer, totalResults: 0, posts: [], authors: [], searchTerm: nil, pageInformation: pageInformation, paginationTagInfo: paginationInformation)
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? SearchPageContext)
         XCTAssertNil(context.searchTerm)
