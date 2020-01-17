@@ -481,7 +481,7 @@ class BlogPresenterTests: XCTestCase {
         let post2 = try TestDataBuilder.anyPost(author: author, title: "Vapor 2")
         let pageInformation = buildPageInformation(currentPageURL: searchURL)
 
-        _ = presenter.searchView(on: basicContainer, posts: [post1, post2], searchTerm: "vapor", pageInformation: pageInformation)
+        _ = presenter.searchView(on: basicContainer, posts: [post1, post2], authors: [author], searchTerm: "vapor", pageInformation: pageInformation)
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? SearchPageContext)
         XCTAssertEqual(context.title, "Search Blog")
@@ -501,7 +501,7 @@ class BlogPresenterTests: XCTestCase {
 
     func testSearchPageGetsNilIfNoSearchTermProvided() throws {
         let pageInformation = buildPageInformation(currentPageURL: searchURL)
-        _ = presenter.searchView(on: basicContainer, posts: [], searchTerm: nil, pageInformation: pageInformation)
+        _ = presenter.searchView(on: basicContainer, posts: [], authors: [], searchTerm: nil, pageInformation: pageInformation)
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? SearchPageContext)
         XCTAssertNil(context.searchTerm)

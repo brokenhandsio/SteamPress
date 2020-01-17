@@ -71,12 +71,14 @@ class CapturingBlogPresenter: BlogPresenter {
     }
 
     private(set) var searchPosts: [BlogPost]?
+    private(set) var searchAuthors: [BlogUser]?
     private(set) var searchTerm: String?
     private(set) var searchPageInformation: BlogGlobalPageInformation?
-    func searchView(on container: Container, posts: [BlogPost], searchTerm: String?, pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
+    func searchView(on container: Container, posts: [BlogPost], authors: [BlogUser], searchTerm: String?, pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
         self.searchPosts = posts
         self.searchTerm = searchTerm
         self.searchPageInformation = pageInformation
+        self.searchAuthors = authors
         return TestDataBuilder.createFutureView(on: container)
     }
 
