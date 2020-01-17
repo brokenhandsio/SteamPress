@@ -172,11 +172,19 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         let endIndex = min(offset + count, sortedPosts.count)
         return container.future(Array(sortedPosts[startIndex..<endIndex]))
     }
-
-    func findPublishedPostsOrdered(for searchTerm: String, on container: Container) -> EventLoopFuture<[BlogPost]> {
+    
+    func getPublishedPostCount(for searchTerm: String, on container: Container) -> EventLoopFuture<Int> {
         let titleResults = posts.filter { $0.title.contains(searchTerm) }
         let results = titleResults.sorted { $0.created > $1.created }.filter { $0.published }
-        return container.future(results)
+        return container.future(results.count)
+    }
+    
+    func findPublishedPostsOrdered(for searchTerm: String, on container: Container, count: Int, offset: Int) -> EventLoopFuture<[BlogPost]> {
+        let titleResults = posts.filter { $0.title.contains(searchTerm) }
+        let results = titleResults.sorted { $0.created > $1.created }.filter { $0.published }
+        let startIndex = min(offset, results.count)
+        let endIndex = min(offset + count, results.count)
+        return container.future(Array(results[startIndex..<endIndex]))
     }
 
     func save(_ post: BlogPost, on container: Container) -> EventLoopFuture<BlogPost> {

@@ -21,7 +21,8 @@ public protocol BlogPostRepository {
     func getPost(slug: String, on container: Container) -> EventLoopFuture<BlogPost?>
     func getPost(id: Int, on container: Container) -> EventLoopFuture<BlogPost?>
     func getSortedPublishedPosts(for tag: BlogTag, on container: Container, count: Int, offset: Int) -> EventLoopFuture<[BlogPost]>
-    func findPublishedPostsOrdered(for searchTerm: String, on container: Container) -> EventLoopFuture<[BlogPost]>
+    func findPublishedPostsOrdered(for searchTerm: String, on container: Container, count: Int, offset: Int) -> EventLoopFuture<[BlogPost]>
+    func getPublishedPostCount(for searchTerm: String, on container: Container) -> EventLoopFuture<Int>
     func save(_ post: BlogPost, on container: Container) -> EventLoopFuture<BlogPost>
     func delete(_ post: BlogPost, on container: Container) -> EventLoopFuture<Void>
 }

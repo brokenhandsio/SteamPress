@@ -105,7 +105,7 @@ public struct ViewBlogPresenter: BlogPresenter {
         }
     }
 
-    public func searchView(on container: Container, posts: [BlogPost], authors: [BlogUser], searchTerm: String?, pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
+    public func searchView(on container: Container, posts: [BlogPost], authors: [BlogUser], searchTerm: String?, pageInformation: BlogGlobalPageInformation, paginationTagInfo: PaginationTagInformation) -> EventLoopFuture<View> {
         do {
             #warning("Test users")
             let viewRenderer = try container.make(ViewRenderer.self)
@@ -114,7 +114,8 @@ public struct ViewBlogPresenter: BlogPresenter {
             let viewPosts = posts.map { post -> ViewBlogPost in
                 return post.toViewPost(authorName: authors.getAuthorName(id: post.author), authorUsername: authors.getAuthorUsername(id: post.author), longFormatter: longDateFormatter, numericFormatter: numericDateFormatter)
             }
-            let context = SearchPageContext(searchTerm: searchTerm, posts: viewPosts, pageInformation: pageInformation)
+            #warning("Test pagination information")
+            let context = SearchPageContext(searchTerm: searchTerm, posts: viewPosts, pageInformation: pageInformation, paginationTagInformation: paginationTagInfo)
             return viewRenderer.render("blog/search", context)
         } catch {
             return container.future(error: error)
