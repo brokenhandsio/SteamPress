@@ -132,8 +132,8 @@ struct BlogController: RouteCollection {
         let preseneter = try req.make(BlogPresenter.self)
         let paginationInformation = req.getPaginationInformation(postsPerPage: postsPerPage)
         guard let searchTerm = req.query[String.self, at: "term"], !searchTerm.isEmpty else {
-            let paginationTagInfo = getPaginationInformation(currentPage: paginationInformation.page, totalPosts: 0)
-            return preseneter.searchView(on: req, posts: [], authors: [], searchTerm: nil, pageInformation: try req.pageInformation(), paginationTagInfo: paginationTagInfo)
+            let paginationTagInfo = getPaginationInformation(currentPage: paginationInformation.page, totalPosts: 0, currentQuery: req.http.url.query)
+            return preseneter.searchView(on: req, totalResults: 0, posts: [], authors: [], searchTerm: nil, pageInformation: try req.pageInformation(), paginationTagInfo: paginationTagInfo)
         }
 
         let postRepository = try req.make(BlogPostRepository.self)
@@ -142,14 +142,14 @@ struct BlogController: RouteCollection {
         let postsQuery = postRepository.findPublishedPostsOrdered(for: searchTerm, on: req, count: self.postsPerPage, offset: paginationInformation.offset)
         let userQuery = authorRepository.getAllUsers(on: req)
         return flatMap(postsQuery, postsCountQuery, userQuery) { posts, totalPosts, users in
-            let paginationTagInfo = self.getPaginationInformation(currentPage: paginationInformation.page, totalPosts: totalPosts)
-            return preseneter.searchView(on: req, posts: posts, authors: users, searchTerm: searchTerm, pageInformation: try req.pageInformation(), paginationTagInfo: paginationTagInfo)
+            let paginationTagInfo = self.getPaginationInformation(currentPage: paginationInformation.page, totalPosts: totalPosts, currentQuery: req.http.url.query)
+            return preseneter.searchView(on: req, totalResults: totalPosts  , posts: posts, authors: users, searchTerm: searchTerm, pageInformation: try req.pageInformation(), paginationTagInfo: paginationTagInfo)
         }
     }
     
-    func getPaginationInformation(currentPage: Int, totalPosts: Int) -> PaginationTagInformation {
+    func getPaginationInformation(currentPage: Int, totalPosts: Int, currentQuery: String?) -> PaginationTagInformation {
         let totalPages = Int(ceil(Double(totalPosts) / Double(postsPerPage)))
-        return PaginationTagInformation(currentPage: currentPage, totalPages: totalPages)
+        return PaginationTagInformation(currentPage: currentPage, totalPages: totalPages, currentQuery: currentQuery)
     }
 
 }

@@ -25,6 +25,8 @@ public final class PaginatorTag: TagRenderer {
             throw Error.expectedPaginationInformation
         }
         
+        let currentQuery = paginationInformaton.dictionary?["currentQuery"]?.string
+        
         let previousPage: String?
         let nextPage: String?
         
@@ -32,23 +34,34 @@ public final class PaginatorTag: TagRenderer {
             previousPage = nil
         } else {
             let previousPageNumber = currentPage - 1
-            previousPage = "?page=\(previousPageNumber)"
+            previousPage = buildButtonLink(currentQuery: currentQuery, pageNumber: previousPageNumber)
         }
         
         if currentPage == totalPages {
             nextPage = nil
         } else {
             let nextPageNumber = currentPage + 1
-            nextPage = "?page=\(nextPageNumber)"
+            nextPage = buildButtonLink(currentQuery: currentQuery, pageNumber: nextPageNumber)
         }
         
-        let data = buildNavigation(currentPage: currentPage, totalPages: totalPages, previousPage: previousPage, nextPage: nextPage)
+        let data = buildNavigation(currentPage: currentPage, totalPages: totalPages, previousPage: previousPage, nextPage: nextPage, currentQuery: currentQuery)
         return tag.eventLoop.future(data)
         
     }
 }
 
 extension PaginatorTag {
+    
+    func buildButtonLink(currentQuery: String?, pageNumber: Int) -> String {
+        var urlComponents = URLComponents()
+        urlComponents.query = currentQuery
+        if (urlComponents.queryItems?.contains { $0.name == "page" }) ?? false {
+            urlComponents.queryItems?.removeAll { $0.name == "page" }
+        }
+        let pageQuery = URLQueryItem(name: "page", value: "\(pageNumber)")
+        urlComponents.queryItems?.append(pageQuery)
+        return "?\(urlComponents.query ?? "")"
+    }
 
     func buildBackButton(url: String?) -> String {
         guard let url = url else {
@@ -66,7 +79,7 @@ extension PaginatorTag {
         return buildLink(title: "»", active: false, link: url, disabled: false)
     }
 
-    func buildLinks(currentPage: Int, count: Int) -> String {
+    func buildLinks(currentPage: Int, count: Int, currentQuery: String?) -> String {
         var links = ""
 
         if count == 0 {
@@ -77,14 +90,15 @@ extension PaginatorTag {
             if i == currentPage {
                 links += buildLink(title: "\(i)", active: true, link: nil, disabled: false)
             } else {
-                links += buildLink(title: "\(i)", active: false, link: "?page=\(i)", disabled: false)
+                let link = buildButtonLink(currentQuery: currentQuery, pageNumber: i)
+                links += buildLink(title: "\(i)", active: false, link: link, disabled: false)
             }
         }
 
         return links
     }
 
-    func buildNavigation(currentPage: Int, totalPages: Int, previousPage: String?, nextPage: String?) -> TemplateData {
+    func buildNavigation(currentPage: Int, totalPages: Int, previousPage: String?, nextPage: String?, currentQuery: String?) -> TemplateData {
         
         var result = ""
 
@@ -102,7 +116,7 @@ extension PaginatorTag {
 
         result += buildBackButton(url: previousPage)
 
-        result += buildLinks(currentPage: currentPage, count: totalPages)
+        result += buildLinks(currentPage: currentPage, count: totalPages, currentQuery: currentQuery)
 
         result += buildForwardButton(url: nextPage)
 
