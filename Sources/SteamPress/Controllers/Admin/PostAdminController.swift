@@ -52,15 +52,15 @@ struct PostAdminController: RouteCollection {
 
                 var existingTagsQuery = [EventLoopFuture<BlogTag?>]()
                 for tagName in data.tags {
-                    try existingTagsQuery.append(tagsRepository.getTag(BlogTag.percentEncodedTagName(from: tagName), on: req))
+                    existingTagsQuery.append(tagsRepository.getTag(tagName, on: req))
                 }
 
                 return existingTagsQuery.flatten(on: req).flatMap { existingTagsWithOptionals in
                     let existingTags = existingTagsWithOptionals.compactMap { $0 }
                     var tagsSaves = [EventLoopFuture<BlogTag>]()
                     for tagName in data.tags {
-                        if try !existingTags.contains { try $0.name == BlogTag.percentEncodedTagName(from: tagName) } {
-                            let tag = try BlogTag(name: tagName)
+                        if !existingTags.contains { $0.name == tagName } {
+                            let tag = BlogTag(name: tagName)
                             tagsSaves.append(tagsRepository.save(tag, on: req))
                         }
                     }
@@ -137,9 +137,9 @@ struct PostAdminController: RouteCollection {
 
                 let tagsRepository = try req.make(BlogTagRepository.self)
                 return tagsRepository.getTags(for: post, on: req).flatMap { existingTags in
-                    let tagsToUnlink = try existingTags.filter { (anExistingTag) -> Bool in
+                    let tagsToUnlink = existingTags.filter { (anExistingTag) -> Bool in
                         for tagName in data.tags {
-                            if try anExistingTag.name == BlogTag.percentEncodedTagName(from: tagName) {
+                            if anExistingTag.name == tagName {
                                 return false
                             }
                         }
@@ -150,15 +150,15 @@ struct PostAdminController: RouteCollection {
                         removeTagLinkResults.append(tagsRepository.remove(tagToUnlink, from: post, on: req))
                     }
 
-                    let newTagsNames = try data.tags.filter { (tagName) -> Bool in
-                        try !existingTags.contains { (existingTag) -> Bool in
-                            try existingTag.name == BlogTag.percentEncodedTagName(from: tagName)
+                    let newTagsNames = data.tags.filter { (tagName) -> Bool in
+                        !existingTags.contains { (existingTag) -> Bool in
+                            existingTag.name == tagName
                         }
                     }
 
                     var tagCreateSaves = [EventLoopFuture<BlogTag>]()
                     for newTagName in newTagsNames {
-                        let newTag = try BlogTag(name: newTagName)
+                        let newTag = BlogTag(name: newTagName)
                         tagCreateSaves.append(tagsRepository.save(newTag, on: req))
                     }
 

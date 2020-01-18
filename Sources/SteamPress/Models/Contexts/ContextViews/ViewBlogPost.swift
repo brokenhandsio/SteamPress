@@ -87,17 +87,9 @@ extension BlogPost {
     func toViewPost(authorName: String, authorUsername: String, longFormatter: LongPostDateFormatter, numericFormatter: NumericPostDateFormatter, tags: [BlogTag]) throws -> ViewBlogPost {
         let viewPost = try self.toViewPostWithoutTags(authorName: authorName, authorUsername: authorUsername, longFormatter: longFormatter, numericFormatter: numericFormatter)
         
-        let viewTags = try tags.map { tag -> ViewBlogTag in
-            guard let urlEncodedName = tag.name.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) else {
-                throw SteamPressError(identifier: "ViewBlogPost", "Failed to URL encode tag name")
-            }
-            guard let tagID = tag.tagID else {
-                throw SteamPressError(identifier: "ViewBlogPost", "Tag has no ID")
-            }
-            return ViewBlogTag(tagID: tagID, name: tag.name, urlEncodedName: urlEncodedName)
-        }
+        let viewTags = try tags.map { try $0.toViewBlogTag() }
         
-        return try ViewBlogPost(blogID: viewPost.blogID, title: viewPost.title, contents: viewPost.contents, author: viewPost.author, created: viewPost.created, lastEdited: viewPost.lastEdited, slugUrl: viewPost.slugUrl, published: viewPost.published, longSnippet: viewPost.longSnippet, createdDateLong: viewPost.createdDateLong, createdDateNumeric: viewPost.createdDateNumeric, lastEditedDateNumeric: viewPost.lastEditedDateNumeric, lastEditedDateLong: viewPost.lastEditedDateLong, authorName: viewPost.authorName, authorUsername: viewPost.authorUsername, postImage: viewPost.postImage, postImageAlt: viewPost.postImageAlt, description: viewPost.description, tags: viewTags)
+        return ViewBlogPost(blogID: viewPost.blogID, title: viewPost.title, contents: viewPost.contents, author: viewPost.author, created: viewPost.created, lastEdited: viewPost.lastEdited, slugUrl: viewPost.slugUrl, published: viewPost.published, longSnippet: viewPost.longSnippet, createdDateLong: viewPost.createdDateLong, createdDateNumeric: viewPost.createdDateNumeric, lastEditedDateNumeric: viewPost.lastEditedDateNumeric, lastEditedDateLong: viewPost.lastEditedDateLong, authorName: viewPost.authorName, authorUsername: viewPost.authorUsername, postImage: viewPost.postImage, postImageAlt: viewPost.postImageAlt, description: viewPost.description, tags: viewTags)
     }
 }
 

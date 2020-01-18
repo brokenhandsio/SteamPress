@@ -34,7 +34,7 @@ class BlogPresenterTests: XCTestCase {
         basicContainer.services.register(LongPostDateFormatter.self)
         basicContainer.services.register(NumericPostDateFormatter.self)
         viewRenderer = CapturingViewRenderer(worker: basicContainer)
-        testTag = try! BlogTag(id: 1, name: "Tattoine")
+        testTag = BlogTag(id: 1, name: "Tattoine")
     }
     
     override func tearDown() {
@@ -46,7 +46,7 @@ class BlogPresenterTests: XCTestCase {
     // MARK: - All Tags Page
 
     func testParametersAreSetCorrectlyOnAllTagsPage() throws {
-        let tags = try [BlogTag(id: 0, name: "tag1"), BlogTag(id: 1, name: "tag2")]
+        let tags = [BlogTag(id: 0, name: "tag1"), BlogTag(id: 1, name: "tag2")]
 
         let pageInformation = buildPageInformation(currentPageURL: allTagsURL)
         _ = presenter.allTagsView(on: basicContainer, tags: tags, tagPostCounts: [:], pageInformation: pageInformation)
@@ -66,8 +66,8 @@ class BlogPresenterTests: XCTestCase {
     }
 
     func testTagsPageGetsPassedTagsSortedByPostCount() throws {
-        let tag1 = try BlogTag(id: 0, name: "Engineering")
-        let tag2 = try BlogTag(id: 1, name: "Tech")
+        let tag1 = BlogTag(id: 0, name: "Engineering")
+        let tag2 = BlogTag(id: 1, name: "Tech")
         let tags = [tag1, tag2]
         let tagPostCount = [0: 5, 1: 20]
         let pageInformation = buildPageInformation(currentPageURL: allTagsURL)
@@ -81,8 +81,8 @@ class BlogPresenterTests: XCTestCase {
     }
 
     func testTagsPageHandlesNoPostsForTagsCorrectly() throws {
-        let tag1 = try BlogTag(id: 0, name: "Engineering")
-        let tag2 = try BlogTag(id: 1, name: "Tech")
+        let tag1 = BlogTag(id: 0, name: "Engineering")
+        let tag2 = BlogTag(id: 1, name: "Tech")
         let tags = [tag1, tag2]
         let tagPostCount = [0: 0, 1: 20]
         let pageInformation = buildPageInformation(currentPageURL: allTagsURL)
@@ -94,7 +94,7 @@ class BlogPresenterTests: XCTestCase {
     }
 
     func testTwitterHandleNotSetOnAllTagsPageIfNotGiven() throws {
-        let tags = try [BlogTag(id: 0, name: "tag1"), BlogTag(id: 1, name: "tag2")]
+        let tags = [BlogTag(id: 0, name: "tag1"), BlogTag(id: 1, name: "tag2")]
         let pageInformation = buildPageInformation(currentPageURL: allTagsURL, siteTwitterHandle: nil)
         _ = presenter.allTagsView(on: basicContainer, tags: tags, tagPostCounts: [:], pageInformation: pageInformation)
 
@@ -103,7 +103,7 @@ class BlogPresenterTests: XCTestCase {
     }
 
     func testDisqusNameNotSetOnAllTagsPageIfNotGiven() throws {
-        let tags = try [BlogTag(id: 0, name: "tag1"), BlogTag(id: 1, name: "tag2")]
+        let tags = [BlogTag(id: 0, name: "tag1"), BlogTag(id: 1, name: "tag2")]
         let pageInformation = buildPageInformation(currentPageURL: allTagsURL, disqusName: nil)
         _ = presenter.allTagsView(on: basicContainer, tags: tags, tagPostCounts: [:], pageInformation: pageInformation)
 
@@ -112,7 +112,7 @@ class BlogPresenterTests: XCTestCase {
     }
 
     func testGAIdentifierNotSetOnAllTagsPageIfNotGiven() throws {
-        let tags = try [BlogTag(id: 0, name: "tag1"), BlogTag(id: 1, name: "tag2")]
+        let tags = [BlogTag(id: 0, name: "tag1"), BlogTag(id: 1, name: "tag2")]
         let pageInformation = buildPageInformation(currentPageURL: allTagsURL, googleAnalyticsIdentifier: nil)
         _ = presenter.allTagsView(on: basicContainer, tags: tags, tagPostCounts: [:], pageInformation: pageInformation)
 
@@ -121,7 +121,7 @@ class BlogPresenterTests: XCTestCase {
     }
 
     func testLoggedInUserSetOnAllTagsPageIfPassedIn() throws {
-        let tags = try [BlogTag(id: 0, name: "tag1"), BlogTag(id: 1, name: "tag2")]
+        let tags = [BlogTag(id: 0, name: "tag1"), BlogTag(id: 1, name: "tag2")]
         let user = TestDataBuilder.anyUser()
         let pageInformation = buildPageInformation(currentPageURL: allTagsURL, user: user)
         _ = presenter.allTagsView(on: basicContainer, tags: tags, tagPostCounts: [:], pageInformation: pageInformation)
@@ -295,8 +295,8 @@ class BlogPresenterTests: XCTestCase {
         post.blogID = 1
         let post2 = try TestDataBuilder.anyPost(author: author2, title: "Another Title")
         post2.blogID = 2
-        let tag1 = try BlogTag(id: 1, name: "Engineering")
-        let tag2 = try BlogTag(id: 2, name: "Fun")
+        let tag1 = BlogTag(id: 1, name: "Engineering")
+        let tag2 = BlogTag(id: 2, name: "Fun")
         let tags = [tag1, tag2]
         let currentPage = 2
         let totalPages = 10

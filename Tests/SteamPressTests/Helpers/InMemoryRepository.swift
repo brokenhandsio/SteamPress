@@ -63,7 +63,7 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
     }
 
     func addTag(name: String) throws -> BlogTag {
-        let newTag = try BlogTag(id: tags.count + 1, name: name)
+        let newTag = BlogTag(id: tags.count + 1, name: name)
         tags.append(newTag)
         return newTag
     }

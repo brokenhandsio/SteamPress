@@ -66,9 +66,6 @@ extension BlogTag: Parameter {
     public typealias ResolvedParameter = EventLoopFuture<BlogTag>
     public static func resolveParameter(_ parameter: String, on container: Container) throws -> EventLoopFuture<BlogTag> {
         let tagRepository = try container.make(BlogTagRepository.self)
-        guard let encodedName = parameter.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) else {
-            throw SteamPressError(identifier: "Invalid-Name", "Unable to convert \(parameter) to URL Encoded String")
-        }
-        return tagRepository.getTag(encodedName, on: container).unwrap(or: Abort(.notFound))
+        return tagRepository.getTag(parameter, on: container).unwrap(or: Abort(.notFound))
     }
 }

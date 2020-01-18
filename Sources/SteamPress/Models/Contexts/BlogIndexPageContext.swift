@@ -1,6 +1,6 @@
 struct BlogIndexPageContext: Encodable {
     let posts: [ViewBlogPost]
-    let tags: [BlogTag]
+    let tags: [ViewBlogTag]
     let authors: [BlogUser]
     let pageInformation: BlogGlobalPageInformation
     let title = "Blog"

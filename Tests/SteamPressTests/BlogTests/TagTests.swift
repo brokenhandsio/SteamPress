@@ -63,22 +63,6 @@ class TagTests: XCTestCase {
         XCTAssertEqual(presenter.tagPosts?.first?.title, postData.post.title)
         XCTAssertEqual(presenter.tag?.name, tag.name)
     }
-
-    func testTagNameContainsUrlEncodedName() throws {
-        let tag = try BlogTag(name: "Luke's Tatooine")
-        XCTAssertEqual(tag.name, "Luke's%20Tatooine")
-    }
-
-    func testGettingTagViewWithURLEncodedName() throws {
-        let tagName = "Some Tag"
-        _ = try testWorld.createTag(tagName)
-
-        let urlEncodedName = try XCTUnwrap(tagName.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed))
-        let response = try testWorld.getResponse(to: "/tags/\(urlEncodedName)")
-
-        XCTAssertEqual(response.http.status, .ok)
-        XCTAssertEqual(presenter.tag?.name.removingPercentEncoding, tagName)
-    }
     
     func testTagPageGetsCorrectPageInformation() throws {
         _ = try testWorld.getResponse(to: tagRequestPath)
@@ -88,6 +72,12 @@ class TagTests: XCTestCase {
         XCTAssertNil(presenter.tagPageInformation?.loggedInUser)
         XCTAssertEqual(presenter.tagPageInformation?.currentPageURL.absoluteString, tagRequestPath)
         XCTAssertEqual(presenter.tagPageInformation?.websiteURL.absoluteString, "/")
+    }
+    
+    func testRequestToURLEncodedTag() throws {
+        _ = try testWorld.createTag("Some tag")
+        let response = try testWorld.getResponse(to: "/tags/Some%20tag")
+        XCTAssertEqual(response.http.status, .ok)
     }
     
     func testTagPageInformationGetsLoggedInUser() throws {

@@ -9,7 +9,8 @@ public struct ViewBlogPresenter: BlogPresenter {
             let viewRenderer = try container.make(ViewRenderer.self)
             #warning("Test all the view post stuff")
             let viewPosts = try posts.convertToViewBlogPosts(authors: authors, tagsForPosts: tagsForPosts, on: container)
-            let context = BlogIndexPageContext(posts: viewPosts, tags: tags, authors: authors, pageInformation: pageInformation, paginationTagInformation: paginationTagInfo)
+            let viewTags = try tags.map { try $0.toViewBlogTag() }
+            let context = BlogIndexPageContext(posts: viewPosts, tags: viewTags, authors: authors, pageInformation: pageInformation, paginationTagInformation: paginationTagInfo)
             return viewRenderer.render("blog/blog", context)
         } catch {
             return container.future(error: error)

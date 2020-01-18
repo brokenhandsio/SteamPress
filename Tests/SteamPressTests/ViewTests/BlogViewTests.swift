@@ -48,7 +48,7 @@ class BlogViewTests: XCTestCase {
     }
 
     func testBlogPostPageGetsCorrectParameters() throws {
-        let tag = try BlogTag(id: 1, name: "Engineering")
+        let tag = BlogTag(id: 1, name: "Engineering")
         _ = presenter.postView(on: basicContainer, post: post, author: author, tags: [tag], pageInformation: pageInformation)
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? BlogPostPageContext)
@@ -93,6 +93,18 @@ class BlogViewTests: XCTestCase {
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? BlogPostPageContext)
         XCTAssertNil(context.pageInformation.googleAnalyticsIdentifier)
+    }
+    
+    func testGettingTagViewWithURLEncodedName() throws {
+        let tagName = "Some Tag"
+        let urlEncodedName = try XCTUnwrap(tagName.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed))
+        let tag = BlogTag(id: 1, name: tagName)
+        
+        _ = presenter.postView(on: basicContainer, post: post, author: author, tags: [tag], pageInformation: pageInformation)
+        
+        let context = try XCTUnwrap(viewRenderer.capturedContext as? BlogPostPageContext)
+        XCTAssertEqual(context.post.tags.first?.urlEncodedName, urlEncodedName)
+        XCTAssertEqual(context.post.tags.first?.name, tagName)
     }
 
 }
