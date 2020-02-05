@@ -79,6 +79,31 @@ class AdminUserTests: XCTestCase {
         XCTAssertEqual(response.http.status, .seeOther)
         XCTAssertEqual(response.http.headers[.location].first, "/admin/")
     }
+    
+    func testUserHasNoAdditionalInfoIfEmptyStringsSent() throws {
+        struct CreateUserData: Content {
+            static let defaultContentType = MediaType.urlEncodedForm
+            let name = "Luke"
+            let username = "lukes"
+            let password = "somepassword"
+            let confirmPassword = "somepassword"
+            let profilePicture = ""
+            let tagline = ""
+            let biography = ""
+            let twitterHandle = ""
+        }
+
+        let createData = CreateUserData()
+        _ = try testWorld.getResponse(to: createUserPath, body: createData, loggedInUser: user)
+
+        // First is user created in setup, final is one just created
+        XCTAssertEqual(testWorld.context.repository.users.count, 2)
+        let user = try XCTUnwrap(testWorld.context.repository.users.last)
+        XCTAssertNil(user.profilePicture)
+        XCTAssertNil(user.tagline)
+        XCTAssertNil(user.biography)
+        XCTAssertNil(user.twitterHandle)
+    }
 
     func testUserMustResetPasswordIfSetToWhenCreatingUser() throws {
         struct CreateUserResetData: Content {

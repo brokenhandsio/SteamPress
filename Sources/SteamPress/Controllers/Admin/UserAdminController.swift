@@ -42,7 +42,12 @@ struct UserAdminController: RouteCollection {
 
             let hasher = try req.make(PasswordHasher.self)
             let hashedPassword = try hasher.hash(password)
-            let newUser = BlogUser(name: name, username: username.lowercased(), password: hashedPassword, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline)
+            #warning("Do the same for editing")
+            let profilePicture = data.profilePicture.isEmptyOrWhitespace() ? nil : data.profilePicture
+            let twitterHandle = data.twitterHandle.isEmptyOrWhitespace() ? nil : data.twitterHandle
+            let biography = data.biography.isEmptyOrWhitespace() ? nil : data.biography
+            let tagline = data.tagline.isEmptyOrWhitespace() ? nil : data.tagline
+            let newUser = BlogUser(name: name, username: username.lowercased(), password: hashedPassword, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline)
             if let resetPasswordRequired = data.resetPasswordOnLogin, resetPasswordRequired {
                 newUser.resetPasswordRequired = true
             }
