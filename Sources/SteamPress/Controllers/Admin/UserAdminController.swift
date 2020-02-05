@@ -149,7 +149,7 @@ struct UserAdminController: RouteCollection {
             usernameError = true
         }
 
-        if !editing || data.password != nil {
+        if !editing || !data.password.isEmptyOrWhitespace() {
             if data.password.isEmptyOrWhitespace() {
                 createUserErrors.append("You must specify a password")
                 passwordError = true
@@ -161,7 +161,7 @@ struct UserAdminController: RouteCollection {
             }
         }
 
-        if let password = data.password {
+        if let password = data.password, password != "" {
             if password.count < 10 {
                 createUserErrors.append("Your password must be at least 10 characters long")
                 passwordError = true
@@ -182,7 +182,6 @@ struct UserAdminController: RouteCollection {
         }
 
         var usernameUniqueError: EventLoopFuture<String?>
-
         let usersRepository = try req.make(BlogUserRepository.self)
         if let username = data.username {
             usernameUniqueError = usersRepository.getUser(username: username.lowercased(), on: req).map { user in
