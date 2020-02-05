@@ -514,6 +514,7 @@ class AdminUserTests: XCTestCase {
         XCTAssertTrue(viewErrors.contains("Your passwords must match"))
         let passwordError = try XCTUnwrap(presenter.createUserPasswordError)
         let confirmPasswordError = try XCTUnwrap(presenter.createUserConfirmPasswordError)
+        XCTAssertEqual(presenter.createUserUserID, user.userID)
         XCTAssertTrue(passwordError)
         XCTAssertTrue(confirmPasswordError)
     }
