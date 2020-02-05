@@ -264,6 +264,8 @@ class AdminUserTests: XCTestCase {
         XCTAssertTrue(viewErrors.contains("Your password must be at least 10 characters long"))
         let passwordError = try XCTUnwrap(presenter.createUserPasswordError)
         XCTAssertTrue(passwordError)
+        let isEditing = try XCTUnwrap(presenter.createUserEditing)
+        XCTAssertFalse(isEditing)
     }
 
     func testUserCannotBeCreatedWithEmptyName() throws {

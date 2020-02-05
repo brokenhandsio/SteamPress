@@ -32,7 +32,7 @@ struct UserAdminController: RouteCollection {
         return try validateUserCreation(data, on: req).flatMap { createUserErrors in
             if let errors = createUserErrors {
                 let presenter = try req.make(BlogAdminPresenter.self)
-                let view = try presenter.createUserView(on: req, editing: true, errors: errors.errors, name: data.name, nameError: errors.nameError, username: data.username, usernameErorr: errors.usernameError, passwordError: errors.passwordError, confirmPasswordError: errors.confirmPasswordError, resetPasswordOnLogin: data.resetPasswordOnLogin ?? false, userID: nil, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline, pageInformation: req.adminPageInfomation())
+                let view = try presenter.createUserView(on: req, editing: false, errors: errors.errors, name: data.name, nameError: errors.nameError, username: data.username, usernameErorr: errors.usernameError, passwordError: errors.passwordError, confirmPasswordError: errors.confirmPasswordError, resetPasswordOnLogin: data.resetPasswordOnLogin ?? false, userID: nil, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline, pageInformation: req.adminPageInfomation())
                 return try view.encode(for: req)
             }
 
