@@ -516,6 +516,27 @@ class AdminUserTests: XCTestCase {
         XCTAssertEqual(response.http.status, .seeOther)
         XCTAssertEqual(response.http.headers[.location].first, "/admin/")
     }
+    
+    func testPasswordIsNotUpdatedWhenEmptyPasswordProvidedWhenEditingUser() throws {
+        struct EditUserData: Content {
+            static let defaultContentType = MediaType.urlEncodedForm
+            let name = "Luke"
+            let username = "lukes"
+            let password = ""
+            let confirmPassword = ""
+        }
+
+        let oldPassword = user.password
+        let editData = EditUserData()
+        let response = try testWorld.getResponse(to: "/admin/users/\(user.userID!)/edit", body: editData, loggedInUser: user)
+
+        XCTAssertEqual(testWorld.context.repository.users.count, 1)
+        let updatedUser = try XCTUnwrap(testWorld.context.repository.users.last)
+        XCTAssertEqual(updatedUser.password, oldPassword)
+        XCTAssertEqual(updatedUser.userID, user.userID)
+        XCTAssertEqual(response.http.status, .seeOther)
+        XCTAssertEqual(response.http.headers[.location].first, "/admin/")
+    }
 
     func testErrorShownWhenUpdatingUsersPasswordWithNonMatchingPasswords() throws {
         struct EditUserData: Content {

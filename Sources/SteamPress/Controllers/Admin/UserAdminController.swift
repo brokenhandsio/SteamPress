@@ -92,7 +92,7 @@ struct UserAdminController: RouteCollection {
                     user.resetPasswordRequired = true
                 }
 
-                if let password = data.password {
+                if let password = data.password, password != "" {
                     let hasher = try req.make(PasswordHasher.self)
                     user.password = try hasher.hash(password)
                 }
