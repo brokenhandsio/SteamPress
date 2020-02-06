@@ -74,7 +74,7 @@ struct UserAdminController: RouteCollection {
                 throw Abort(.internalServerError)
             }
 
-            return try self.validateUserCreation(data, editing: true, on: req).flatMap { errors in
+            return try self.validateUserCreation(data, editing: true, existingUsername: user.username, on: req).flatMap { errors in
                 if let editUserErrors = errors {
                     let presenter = try req.make(BlogAdminPresenter.self)
                     let view = try presenter.createUserView(on: req, editing: true, errors: editUserErrors.errors, name: data.name, nameError: errors?.nameError ?? false, username: data.username, usernameErorr: errors?.usernameError ?? false, passwordError: editUserErrors.passwordError, confirmPasswordError: editUserErrors.confirmPasswordError, resetPasswordOnLogin: data.resetPasswordOnLogin ?? false, userID: user.userID, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline, pageInformation: req.adminPageInfomation())
@@ -132,7 +132,7 @@ struct UserAdminController: RouteCollection {
     }
 
     // MARK: - Validators
-    private func validateUserCreation(_ data: CreateUserData, editing: Bool = false, on req: Request) throws -> EventLoopFuture<CreateUserErrors?> {
+    private func validateUserCreation(_ data: CreateUserData, editing: Bool = false, existingUsername: String? = nil, on req: Request) throws -> EventLoopFuture<CreateUserErrors?> {
         var createUserErrors = [String]()
         var passwordError = false
         var confirmPasswordError = false
@@ -184,11 +184,15 @@ struct UserAdminController: RouteCollection {
         var usernameUniqueError: EventLoopFuture<String?>
         let usersRepository = try req.make(BlogUserRepository.self)
         if let username = data.username {
-            usernameUniqueError = usersRepository.getUser(username: username.lowercased(), on: req).map { user in
-                if user != nil {
-                    return "Sorry that username has already been taken"
-                } else {
-                    return nil
+            if editing && data.username == existingUsername {
+                usernameUniqueError = req.future(nil)
+            } else {
+                usernameUniqueError = usersRepository.getUser(username: username.lowercased(), on: req).map { user in
+                    if user != nil {
+                        return "Sorry that username has already been taken"
+                    } else {
+                        return nil
+                    }
                 }
             }
         } else {

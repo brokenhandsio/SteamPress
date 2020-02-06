@@ -412,6 +412,25 @@ class AdminUserTests: XCTestCase {
         XCTAssertEqual(response.http.status, .seeOther)
         XCTAssertEqual(response.http.headers[.location].first, "/admin/")
     }
+    
+    func testUserCanBeUpdatedWithSameUsername() throws {
+        struct EditUserData: Content {
+            static let defaultContentType = MediaType.urlEncodedForm
+            let name = "Leia Organa"
+            let username = "leia"
+        }
+
+        let editData = EditUserData()
+        let response = try testWorld.getResponse(to: "/admin/users/\(user.userID!)/edit", body: editData, loggedInUser: user)
+
+        XCTAssertEqual(testWorld.context.repository.users.count, 1)
+        let updatedUser = try XCTUnwrap(testWorld.context.repository.users.last)
+        XCTAssertEqual(updatedUser.username, editData.username)
+        XCTAssertEqual(updatedUser.name, editData.name)
+        XCTAssertEqual(updatedUser.userID, user.userID)
+        XCTAssertEqual(response.http.status, .seeOther)
+        XCTAssertEqual(response.http.headers[.location].first, "/admin/")
+    }
 
     func testUserCanBeUpdatedWithAllInformation() throws {
         struct EditUserData: Content {
@@ -535,30 +554,6 @@ class AdminUserTests: XCTestCase {
         XCTAssertTrue(viewErrors.contains("Your password must be at least 10 characters long"))
         let passwordError = try XCTUnwrap(presenter.createUserPasswordError)
         XCTAssertTrue(passwordError)
-    }
-
-    func testErrorShownWhenTryingToChangeUsersPasswordWithEmptyString() throws {
-        struct EditUserData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
-            let name = "Luke"
-            let username = "lukes"
-            let password = ""
-            let confirmPassword = ""
-            let resetPasswordOnLogin = true
-        }
-
-        let editData = EditUserData()
-        _ = try testWorld.getResponse(to: "/admin/users/\(user.userID!)/edit", body: editData, loggedInUser: user)
-
-        let viewErrors = try XCTUnwrap(presenter.createUserErrors)
-        XCTAssertTrue(viewErrors.contains("You must confirm your password"))
-        XCTAssertTrue(viewErrors.contains("You must specify a password"))
-        let passwordError = try XCTUnwrap(presenter.createUserPasswordError)
-        let confirmPasswordError = try XCTUnwrap(presenter.createUserConfirmPasswordError)
-        XCTAssertTrue(passwordError)
-        XCTAssertTrue(confirmPasswordError)
-        let resetPasswordOnLogin = try XCTUnwrap(presenter.createUserResetPasswordRequired)
-        XCTAssertTrue(resetPasswordOnLogin)
     }
 
     func testPasswordIsActuallyHashedWhenEditingAUser() throws {
