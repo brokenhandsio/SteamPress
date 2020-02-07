@@ -42,7 +42,6 @@ struct UserAdminController: RouteCollection {
 
             let hasher = try req.make(PasswordHasher.self)
             let hashedPassword = try hasher.hash(password)
-            #warning("Do the same for editing")
             let profilePicture = data.profilePicture.isEmptyOrWhitespace() ? nil : data.profilePicture
             let twitterHandle = data.twitterHandle.isEmptyOrWhitespace() ? nil : data.twitterHandle
             let biography = data.biography.isEmptyOrWhitespace() ? nil : data.biography
@@ -83,10 +82,37 @@ struct UserAdminController: RouteCollection {
 
                 user.name = name
                 user.username = username.lowercased()
-                user.profilePicture = data.profilePicture
-                user.twitterHandle = data.twitterHandle
-                user.biography = data.biography
-                user.tagline = data.tagline
+                
+                let profilePicture: String?
+                let twitterHandle: String?
+                let biography: String?
+                let tagline: String?
+                
+                if user.profilePicture == nil && data.profilePicture.isEmptyOrWhitespace() {
+                    profilePicture = nil
+                } else {
+                    profilePicture = data.profilePicture
+                }
+                if user.twitterHandle ==  nil && data.twitterHandle.isEmptyOrWhitespace() {
+                    twitterHandle = nil
+                } else {
+                    twitterHandle = data.twitterHandle
+                }
+                if user.biography == nil && data.biography.isEmptyOrWhitespace() {
+                    biography = nil
+                } else {
+                    biography = data.biography
+                }
+                if user.tagline == nil && data.tagline.isEmptyOrWhitespace() {
+                    tagline = nil
+                } else {
+                    tagline = data.tagline
+                }
+                
+                user.profilePicture = profilePicture
+                user.twitterHandle = twitterHandle
+                user.biography = biography
+                user.tagline = tagline
 
                 if let resetPasswordOnLogin = data.resetPasswordOnLogin, resetPasswordOnLogin {
                     user.resetPasswordRequired = true

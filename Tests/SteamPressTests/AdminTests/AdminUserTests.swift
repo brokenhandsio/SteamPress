@@ -458,6 +458,65 @@ class AdminUserTests: XCTestCase {
         XCTAssertEqual(response.http.status, .seeOther)
         XCTAssertEqual(response.http.headers[.location].first, "/admin/")
     }
+    
+    func testOptionalInfoDoesntGetUpdatedWhenEditingUsernameAndSendingEmptyValuesIfSomeAlreadySet() throws {
+        struct EditUserData: Content {
+            static let defaultContentType = MediaType.urlEncodedForm
+            let name = "Darth Vader"
+            let username = "darth_vader"
+            let twitterHandle = ""
+            let profilePicture = ""
+            let tagline = ""
+            let biography = ""
+        }
+        
+        user.profilePicture = nil
+        user.twitterHandle = nil
+        user.tagline = nil
+        user.biography = nil
+
+        let editData = EditUserData()
+        _ = try testWorld.getResponse(to: "/admin/users/\(user.userID!)/edit", body: editData, loggedInUser: user)
+
+        XCTAssertEqual(testWorld.context.repository.users.count, 1)
+        let updatedUser = try XCTUnwrap(testWorld.context.repository.users.last)
+        XCTAssertEqual(updatedUser.username, editData.username)
+        XCTAssertEqual(updatedUser.name, editData.name)
+        XCTAssertNil(updatedUser.twitterHandle)
+        XCTAssertNil(updatedUser.profilePicture)
+        XCTAssertNil(updatedUser.tagline)
+        XCTAssertNil(updatedUser.biography)
+        XCTAssertEqual(updatedUser.userID, user.userID)
+    }
+    
+    func testUpdatingOptionalInfoToEmptyValuesWhenValueOriginallySetSetsItToEmpty() throws {
+        struct EditUserData: Content {
+            static let defaultContentType = MediaType.urlEncodedForm
+            let name = "Darth Vader"
+            let username = "darth_vader"
+            let twitterHandle = ""
+            let profilePicture = ""
+            let tagline = ""
+            let biography = ""
+        }
+
+        user.profilePicture = "https://static.brokenhands.io/picture.png"
+        user.tagline = "Tagline"
+        user.biography = "Biography"
+        user.twitterHandle = "darthVader"
+        let editData = EditUserData()
+        let response = try testWorld.getResponse(to: "/admin/users/\(user.userID!)/edit", body: editData, loggedInUser: user)
+
+        XCTAssertEqual(testWorld.context.repository.users.count, 1)
+        let updatedUser = try XCTUnwrap(testWorld.context.repository.users.last)
+        XCTAssertEqual(updatedUser.username, editData.username)
+        XCTAssertEqual(updatedUser.name, editData.name)
+        XCTAssertEqual(updatedUser.twitterHandle, editData.twitterHandle)
+        XCTAssertEqual(updatedUser.profilePicture, editData.profilePicture)
+        XCTAssertEqual(updatedUser.tagline, editData.tagline)
+        XCTAssertEqual(updatedUser.biography, editData.biography)
+        XCTAssertEqual(updatedUser.userID, user.userID)
+    }
 
     func testWhenEditingUserResetPasswordFlagSetIfRequired() throws {
         struct EditUserData: Content {
