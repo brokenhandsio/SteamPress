@@ -489,7 +489,7 @@ class AdminUserTests: XCTestCase {
         XCTAssertEqual(updatedUser.userID, user.userID)
     }
     
-    func testUpdatingOptionalInfoToEmptyValuesWhenValueOriginallySetSetsItToEmpty() throws {
+    func testUpdatingOptionalInfoToEmptyValuesWhenValueOriginallySetSetsItToNil() throws {
         struct EditUserData: Content {
             static let defaultContentType = MediaType.urlEncodedForm
             let name = "Darth Vader"
@@ -505,16 +505,16 @@ class AdminUserTests: XCTestCase {
         user.biography = "Biography"
         user.twitterHandle = "darthVader"
         let editData = EditUserData()
-        let response = try testWorld.getResponse(to: "/admin/users/\(user.userID!)/edit", body: editData, loggedInUser: user)
+        _ = try testWorld.getResponse(to: "/admin/users/\(user.userID!)/edit", body: editData, loggedInUser: user)
 
         XCTAssertEqual(testWorld.context.repository.users.count, 1)
         let updatedUser = try XCTUnwrap(testWorld.context.repository.users.last)
         XCTAssertEqual(updatedUser.username, editData.username)
         XCTAssertEqual(updatedUser.name, editData.name)
-        XCTAssertEqual(updatedUser.twitterHandle, editData.twitterHandle)
-        XCTAssertEqual(updatedUser.profilePicture, editData.profilePicture)
-        XCTAssertEqual(updatedUser.tagline, editData.tagline)
-        XCTAssertEqual(updatedUser.biography, editData.biography)
+        XCTAssertNil(updatedUser.twitterHandle)
+        XCTAssertNil(updatedUser.profilePicture)
+        XCTAssertNil(updatedUser.tagline)
+        XCTAssertNil(updatedUser.biography)
         XCTAssertEqual(updatedUser.userID, user.userID)
     }
 
