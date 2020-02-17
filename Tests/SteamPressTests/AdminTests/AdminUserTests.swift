@@ -79,6 +79,31 @@ class AdminUserTests: XCTestCase {
         XCTAssertEqual(response.http.status, .seeOther)
         XCTAssertEqual(response.http.headers[.location].first, "/admin/")
     }
+    
+    func testUserHasNoAdditionalInfoIfEmptyStringsSent() throws {
+        struct CreateUserData: Content {
+            static let defaultContentType = MediaType.urlEncodedForm
+            let name = "Luke"
+            let username = "lukes"
+            let password = "somepassword"
+            let confirmPassword = "somepassword"
+            let profilePicture = ""
+            let tagline = ""
+            let biography = ""
+            let twitterHandle = ""
+        }
+
+        let createData = CreateUserData()
+        _ = try testWorld.getResponse(to: createUserPath, body: createData, loggedInUser: user)
+
+        // First is user created in setup, final is one just created
+        XCTAssertEqual(testWorld.context.repository.users.count, 2)
+        let user = try XCTUnwrap(testWorld.context.repository.users.last)
+        XCTAssertNil(user.profilePicture)
+        XCTAssertNil(user.tagline)
+        XCTAssertNil(user.biography)
+        XCTAssertNil(user.twitterHandle)
+    }
 
     func testUserMustResetPasswordIfSetToWhenCreatingUser() throws {
         struct CreateUserResetData: Content {
@@ -264,6 +289,8 @@ class AdminUserTests: XCTestCase {
         XCTAssertTrue(viewErrors.contains("Your password must be at least 10 characters long"))
         let passwordError = try XCTUnwrap(presenter.createUserPasswordError)
         XCTAssertTrue(passwordError)
+        let isEditing = try XCTUnwrap(presenter.createUserEditing)
+        XCTAssertFalse(isEditing)
     }
 
     func testUserCannotBeCreatedWithEmptyName() throws {
@@ -385,6 +412,25 @@ class AdminUserTests: XCTestCase {
         XCTAssertEqual(response.http.status, .seeOther)
         XCTAssertEqual(response.http.headers[.location].first, "/admin/")
     }
+    
+    func testUserCanBeUpdatedWithSameUsername() throws {
+        struct EditUserData: Content {
+            static let defaultContentType = MediaType.urlEncodedForm
+            let name = "Leia Organa"
+            let username = "leia"
+        }
+
+        let editData = EditUserData()
+        let response = try testWorld.getResponse(to: "/admin/users/\(user.userID!)/edit", body: editData, loggedInUser: user)
+
+        XCTAssertEqual(testWorld.context.repository.users.count, 1)
+        let updatedUser = try XCTUnwrap(testWorld.context.repository.users.last)
+        XCTAssertEqual(updatedUser.username, editData.username)
+        XCTAssertEqual(updatedUser.name, editData.name)
+        XCTAssertEqual(updatedUser.userID, user.userID)
+        XCTAssertEqual(response.http.status, .seeOther)
+        XCTAssertEqual(response.http.headers[.location].first, "/admin/")
+    }
 
     func testUserCanBeUpdatedWithAllInformation() throws {
         struct EditUserData: Content {
@@ -411,6 +457,65 @@ class AdminUserTests: XCTestCase {
         XCTAssertEqual(updatedUser.userID, user.userID)
         XCTAssertEqual(response.http.status, .seeOther)
         XCTAssertEqual(response.http.headers[.location].first, "/admin/")
+    }
+    
+    func testOptionalInfoDoesntGetUpdatedWhenEditingUsernameAndSendingEmptyValuesIfSomeAlreadySet() throws {
+        struct EditUserData: Content {
+            static let defaultContentType = MediaType.urlEncodedForm
+            let name = "Darth Vader"
+            let username = "darth_vader"
+            let twitterHandle = ""
+            let profilePicture = ""
+            let tagline = ""
+            let biography = ""
+        }
+        
+        user.profilePicture = nil
+        user.twitterHandle = nil
+        user.tagline = nil
+        user.biography = nil
+
+        let editData = EditUserData()
+        _ = try testWorld.getResponse(to: "/admin/users/\(user.userID!)/edit", body: editData, loggedInUser: user)
+
+        XCTAssertEqual(testWorld.context.repository.users.count, 1)
+        let updatedUser = try XCTUnwrap(testWorld.context.repository.users.last)
+        XCTAssertEqual(updatedUser.username, editData.username)
+        XCTAssertEqual(updatedUser.name, editData.name)
+        XCTAssertNil(updatedUser.twitterHandle)
+        XCTAssertNil(updatedUser.profilePicture)
+        XCTAssertNil(updatedUser.tagline)
+        XCTAssertNil(updatedUser.biography)
+        XCTAssertEqual(updatedUser.userID, user.userID)
+    }
+    
+    func testUpdatingOptionalInfoToEmptyValuesWhenValueOriginallySetSetsItToNil() throws {
+        struct EditUserData: Content {
+            static let defaultContentType = MediaType.urlEncodedForm
+            let name = "Darth Vader"
+            let username = "darth_vader"
+            let twitterHandle = ""
+            let profilePicture = ""
+            let tagline = ""
+            let biography = ""
+        }
+
+        user.profilePicture = "https://static.brokenhands.io/picture.png"
+        user.tagline = "Tagline"
+        user.biography = "Biography"
+        user.twitterHandle = "darthVader"
+        let editData = EditUserData()
+        _ = try testWorld.getResponse(to: "/admin/users/\(user.userID!)/edit", body: editData, loggedInUser: user)
+
+        XCTAssertEqual(testWorld.context.repository.users.count, 1)
+        let updatedUser = try XCTUnwrap(testWorld.context.repository.users.last)
+        XCTAssertEqual(updatedUser.username, editData.username)
+        XCTAssertEqual(updatedUser.name, editData.name)
+        XCTAssertNil(updatedUser.twitterHandle)
+        XCTAssertNil(updatedUser.profilePicture)
+        XCTAssertNil(updatedUser.tagline)
+        XCTAssertNil(updatedUser.biography)
+        XCTAssertEqual(updatedUser.userID, user.userID)
     }
 
     func testWhenEditingUserResetPasswordFlagSetIfRequired() throws {
@@ -470,6 +575,27 @@ class AdminUserTests: XCTestCase {
         XCTAssertEqual(response.http.status, .seeOther)
         XCTAssertEqual(response.http.headers[.location].first, "/admin/")
     }
+    
+    func testPasswordIsNotUpdatedWhenEmptyPasswordProvidedWhenEditingUser() throws {
+        struct EditUserData: Content {
+            static let defaultContentType = MediaType.urlEncodedForm
+            let name = "Luke"
+            let username = "lukes"
+            let password = ""
+            let confirmPassword = ""
+        }
+
+        let oldPassword = user.password
+        let editData = EditUserData()
+        let response = try testWorld.getResponse(to: "/admin/users/\(user.userID!)/edit", body: editData, loggedInUser: user)
+
+        XCTAssertEqual(testWorld.context.repository.users.count, 1)
+        let updatedUser = try XCTUnwrap(testWorld.context.repository.users.last)
+        XCTAssertEqual(updatedUser.password, oldPassword)
+        XCTAssertEqual(updatedUser.userID, user.userID)
+        XCTAssertEqual(response.http.status, .seeOther)
+        XCTAssertEqual(response.http.headers[.location].first, "/admin/")
+    }
 
     func testErrorShownWhenUpdatingUsersPasswordWithNonMatchingPasswords() throws {
         struct EditUserData: Content {
@@ -487,6 +613,7 @@ class AdminUserTests: XCTestCase {
         XCTAssertTrue(viewErrors.contains("Your passwords must match"))
         let passwordError = try XCTUnwrap(presenter.createUserPasswordError)
         let confirmPasswordError = try XCTUnwrap(presenter.createUserConfirmPasswordError)
+        XCTAssertEqual(presenter.createUserUserID, user.userID)
         XCTAssertTrue(passwordError)
         XCTAssertTrue(confirmPasswordError)
     }
@@ -507,30 +634,6 @@ class AdminUserTests: XCTestCase {
         XCTAssertTrue(viewErrors.contains("Your password must be at least 10 characters long"))
         let passwordError = try XCTUnwrap(presenter.createUserPasswordError)
         XCTAssertTrue(passwordError)
-    }
-
-    func testErrorShownWhenTryingToChangeUsersPasswordWithEmptyString() throws {
-        struct EditUserData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
-            let name = "Luke"
-            let username = "lukes"
-            let password = ""
-            let confirmPassword = ""
-            let resetPasswordOnLogin = true
-        }
-
-        let editData = EditUserData()
-        _ = try testWorld.getResponse(to: "/admin/users/\(user.userID!)/edit", body: editData, loggedInUser: user)
-
-        let viewErrors = try XCTUnwrap(presenter.createUserErrors)
-        XCTAssertTrue(viewErrors.contains("You must confirm your password"))
-        XCTAssertTrue(viewErrors.contains("You must specify a password"))
-        let passwordError = try XCTUnwrap(presenter.createUserPasswordError)
-        let confirmPasswordError = try XCTUnwrap(presenter.createUserConfirmPasswordError)
-        XCTAssertTrue(passwordError)
-        XCTAssertTrue(confirmPasswordError)
-        let resetPasswordOnLogin = try XCTUnwrap(presenter.createUserResetPasswordRequired)
-        XCTAssertTrue(resetPasswordOnLogin)
     }
 
     func testPasswordIsActuallyHashedWhenEditingAUser() throws {

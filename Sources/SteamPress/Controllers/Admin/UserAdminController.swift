@@ -32,7 +32,7 @@ struct UserAdminController: RouteCollection {
         return try validateUserCreation(data, on: req).flatMap { createUserErrors in
             if let errors = createUserErrors {
                 let presenter = try req.make(BlogAdminPresenter.self)
-                let view = try presenter.createUserView(on: req, editing: true, errors: errors.errors, name: data.name, nameError: errors.nameError, username: data.username, usernameErorr: errors.usernameError, passwordError: errors.passwordError, confirmPasswordError: errors.confirmPasswordError, resetPasswordOnLogin: data.resetPasswordOnLogin ?? false, userID: nil, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline, pageInformation: req.adminPageInfomation())
+                let view = try presenter.createUserView(on: req, editing: false, errors: errors.errors, name: data.name, nameError: errors.nameError, username: data.username, usernameErorr: errors.usernameError, passwordError: errors.passwordError, confirmPasswordError: errors.confirmPasswordError, resetPasswordOnLogin: data.resetPasswordOnLogin ?? false, userID: nil, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline, pageInformation: req.adminPageInfomation())
                 return try view.encode(for: req)
             }
 
@@ -42,7 +42,11 @@ struct UserAdminController: RouteCollection {
 
             let hasher = try req.make(PasswordHasher.self)
             let hashedPassword = try hasher.hash(password)
-            let newUser = BlogUser(name: name, username: username.lowercased(), password: hashedPassword, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline)
+            let profilePicture = data.profilePicture.isEmptyOrWhitespace() ? nil : data.profilePicture
+            let twitterHandle = data.twitterHandle.isEmptyOrWhitespace() ? nil : data.twitterHandle
+            let biography = data.biography.isEmptyOrWhitespace() ? nil : data.biography
+            let tagline = data.tagline.isEmptyOrWhitespace() ? nil : data.tagline
+            let newUser = BlogUser(name: name, username: username.lowercased(), password: hashedPassword, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline)
             if let resetPasswordRequired = data.resetPasswordOnLogin, resetPasswordRequired {
                 newUser.resetPasswordRequired = true
             }
@@ -69,25 +73,31 @@ struct UserAdminController: RouteCollection {
                 throw Abort(.internalServerError)
             }
 
-            return try self.validateUserCreation(data, editing: true, on: req).flatMap { errors in
+            return try self.validateUserCreation(data, editing: true, existingUsername: user.username, on: req).flatMap { errors in
                 if let editUserErrors = errors {
                     let presenter = try req.make(BlogAdminPresenter.self)
-                    let view = try presenter.createUserView(on: req, editing: true, errors: editUserErrors.errors, name: data.name, nameError: errors?.nameError ?? false, username: data.username, usernameErorr: errors?.usernameError ?? false, passwordError: editUserErrors.passwordError, confirmPasswordError: editUserErrors.confirmPasswordError, resetPasswordOnLogin: data.resetPasswordOnLogin ?? false, userID: nil, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline, pageInformation: req.adminPageInfomation())
+                    let view = try presenter.createUserView(on: req, editing: true, errors: editUserErrors.errors, name: data.name, nameError: errors?.nameError ?? false, username: data.username, usernameErorr: errors?.usernameError ?? false, passwordError: editUserErrors.passwordError, confirmPasswordError: editUserErrors.confirmPasswordError, resetPasswordOnLogin: data.resetPasswordOnLogin ?? false, userID: user.userID, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline, pageInformation: req.adminPageInfomation())
                     return try view.encode(for: req)
                 }
 
                 user.name = name
                 user.username = username.lowercased()
-                user.profilePicture = data.profilePicture
-                user.twitterHandle = data.twitterHandle
-                user.biography = data.biography
-                user.tagline = data.tagline
+                
+                let profilePicture = data.profilePicture.isEmptyOrWhitespace() ? nil : data.profilePicture
+                let twitterHandle = data.twitterHandle.isEmptyOrWhitespace() ? nil : data.twitterHandle
+                let biography = data.biography.isEmptyOrWhitespace() ? nil : data.biography
+                let tagline = data.tagline.isEmptyOrWhitespace() ? nil : data.tagline
+                
+                user.profilePicture = profilePicture
+                user.twitterHandle = twitterHandle
+                user.biography = biography
+                user.tagline = tagline
 
                 if let resetPasswordOnLogin = data.resetPasswordOnLogin, resetPasswordOnLogin {
                     user.resetPasswordRequired = true
                 }
 
-                if let password = data.password {
+                if let password = data.password, password != "" {
                     let hasher = try req.make(PasswordHasher.self)
                     user.password = try hasher.hash(password)
                 }
@@ -127,7 +137,7 @@ struct UserAdminController: RouteCollection {
     }
 
     // MARK: - Validators
-    private func validateUserCreation(_ data: CreateUserData, editing: Bool = false, on req: Request) throws -> EventLoopFuture<CreateUserErrors?> {
+    private func validateUserCreation(_ data: CreateUserData, editing: Bool = false, existingUsername: String? = nil, on req: Request) throws -> EventLoopFuture<CreateUserErrors?> {
         var createUserErrors = [String]()
         var passwordError = false
         var confirmPasswordError = false
@@ -144,7 +154,7 @@ struct UserAdminController: RouteCollection {
             usernameError = true
         }
 
-        if !editing || data.password != nil {
+        if !editing || !data.password.isEmptyOrWhitespace() {
             if data.password.isEmptyOrWhitespace() {
                 createUserErrors.append("You must specify a password")
                 passwordError = true
@@ -156,7 +166,7 @@ struct UserAdminController: RouteCollection {
             }
         }
 
-        if let password = data.password {
+        if let password = data.password, password != "" {
             if password.count < 10 {
                 createUserErrors.append("Your password must be at least 10 characters long")
                 passwordError = true
@@ -177,14 +187,17 @@ struct UserAdminController: RouteCollection {
         }
 
         var usernameUniqueError: EventLoopFuture<String?>
-
         let usersRepository = try req.make(BlogUserRepository.self)
         if let username = data.username {
-            usernameUniqueError = usersRepository.getUser(username: username.lowercased(), on: req).map { user in
-                if user != nil {
-                    return "Sorry that username has already been taken"
-                } else {
-                    return nil
+            if editing && data.username == existingUsername {
+                usernameUniqueError = req.future(nil)
+            } else {
+                usernameUniqueError = usersRepository.getUser(username: username.lowercased(), on: req).map { user in
+                    if user != nil {
+                        return "Sorry that username has already been taken"
+                    } else {
+                        return nil
+                    }
                 }
             }
         } else {
