@@ -1,5 +1,5 @@
 public struct PaginationTagInformation: Encodable {
-    let currentPage: Int
-    let totalPages: Int
-    let currentQuery: String?
+    public let currentPage: Int
+    public let totalPages: Int
+    public let currentQuery: String?
 }

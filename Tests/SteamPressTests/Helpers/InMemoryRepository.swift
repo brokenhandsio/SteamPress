@@ -33,7 +33,12 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
         var dict = [Int: [BlogTag]]()
         for tag in tags {
             postTagLinks.filter { $0.tagID == tag.tagID }.forEach { link in
-                dict[link.postID]?.append(tag)
+                if var array = dict[link.postID] {
+                    array.append(tag)
+                    dict[link.postID] = array
+                } else {
+                    dict[link.postID] = [tag]
+                }
             }
         }
         return container.future(dict)

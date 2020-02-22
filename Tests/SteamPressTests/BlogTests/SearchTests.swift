@@ -31,6 +31,7 @@ class SearchTests: XCTestCase {
 
         XCTAssertEqual(response.http.status, .ok)
         XCTAssertEqual(presenter.searchTerm, "Test")
+        XCTAssertEqual(presenter.searchTotalResults, 1)
         XCTAssertEqual(presenter.searchPosts?.first?.title, firstData.post.title)
     }
 

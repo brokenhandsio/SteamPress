@@ -1,5 +1,4 @@
 import XCTest
-import SteamPress
 import Vapor
 import Foundation
 
@@ -46,6 +45,21 @@ class IndexTests: XCTestCase {
 
         XCTAssertEqual(presenter.indexTags?.count, 1)
         XCTAssertEqual(presenter.indexTags?.first?.name, tag.name)
+    }
+    
+    func testBlogIndexGetsAllTagsForPosts() throws {
+        let tag1 = "Testing"
+        let tag2 = "Engineering"
+        _ = try testWorld.createTag(tag1, on: firstData.post)
+        _ = try testWorld.createTag(tag2, on: firstData.post)
+        let post2 = try testWorld.createPost(title: "Something else", author: firstData.author).post
+        _ = try testWorld.getResponse(to: blogIndexPath)
+        
+        let tagForPostInformation = try XCTUnwrap(presenter.indexTagsForPosts)
+        XCTAssertEqual(tagForPostInformation[firstData.post.blogID!]?.count, 2)
+        XCTAssertEqual(tagForPostInformation[firstData.post.blogID!]?.first?.name, tag1)
+        XCTAssertEqual(tagForPostInformation[firstData.post.blogID!]?.last?.name, tag2)
+        XCTAssertNil(tagForPostInformation[post2.blogID!])
     }
 
     func testBlogIndexGetsAllAuthors() throws {
@@ -98,6 +112,14 @@ class IndexTests: XCTestCase {
         try testWorld.createPosts(count: 15, author: firstData.author)
         _ = try testWorld.getResponse(to: "/?page=three")
         XCTAssertEqual(presenter.indexPosts?.count, postsPerPage)
+    }
+    
+    func testPaginationInfoSetCorrectly() throws {
+        try testWorld.createPosts(count: 15, author: firstData.author)
+        _ = try testWorld.getResponse(to: "/?page=2")
+        XCTAssertEqual(presenter.indexPaginationTagInfo?.currentPage, 2)
+        XCTAssertEqual(presenter.indexPaginationTagInfo?.totalPages, 2)
+        XCTAssertEqual(presenter.indexPaginationTagInfo?.currentQuery, "page=2")
     }
     
     // MARK: - Page Information

@@ -10,16 +10,15 @@ class CapturingBlogPresenter: BlogPresenter {
     private(set) var indexTags: [BlogTag]?
     private(set) var indexAuthors: [BlogUser]?
     private(set) var indexPageInformation: BlogGlobalPageInformation?
-    #warning("test")
     private(set) var indexPaginationTagInfo: PaginationTagInformation?
-    private(set) var IndexTagsForPosts: [Int: [BlogTag]]?
+    private(set) var indexTagsForPosts: [Int: [BlogTag]]?
     func indexView(on container: Container, posts: [BlogPost], tags: [BlogTag], authors: [BlogUser], tagsForPosts: [Int : [BlogTag]], pageInformation: BlogGlobalPageInformation, paginationTagInfo: PaginationTagInformation) -> EventLoopFuture<View> {
         self.indexPosts = posts
         self.indexTags = tags
         self.indexAuthors = authors
         self.indexPageInformation = pageInformation
         self.indexPaginationTagInfo = paginationTagInfo
-        self.IndexTagsForPosts = tagsForPosts
+        self.indexTagsForPosts = tagsForPosts
         return TestDataBuilder.createFutureView(on: container)
     }
 
@@ -57,7 +56,7 @@ class CapturingBlogPresenter: BlogPresenter {
         self.authorPosts = posts
         self.authorPostCount = postCount
         self.authorPageInformation = pageInformation
-        self.authorPaginationTagInfo = paginationTagInfo
+//        self.authorPaginationTagInfo = paginationTagInfo
         self.authorPageTagsForPost = tagsForPosts
         return TestDataBuilder.createFutureView(on: container)
     }
@@ -83,7 +82,7 @@ class CapturingBlogPresenter: BlogPresenter {
         self.tag = tag
         self.tagPosts = posts
         self.tagPageInformation = pageInformation
-        self.tagPaginationTagInfo = paginationTagInfo
+//        self.tagPaginationTagInfo = paginationTagInfo
         self.tagPageTotalPosts = totalPosts
         self.tagPageAuthors = authors
         return TestDataBuilder.createFutureView(on: container)
@@ -92,9 +91,9 @@ class CapturingBlogPresenter: BlogPresenter {
     private(set) var searchPosts: [BlogPost]?
     private(set) var searchAuthors: [BlogUser]?
     private(set) var searchTerm: String?
-    #warning("Test")
     private(set) var searchTotalResults: Int?
     private(set) var searchPageInformation: BlogGlobalPageInformation?
+    #warning("Test")
     private(set) var searchPaginationTagInfo: PaginationTagInformation?
     private(set) var searchPageTagsForPost: [Int: [BlogTag]]?
     func searchView(on container: Container, totalResults: Int, posts: [BlogPost], authors: [BlogUser], searchTerm: String?, tagsForPosts: [Int : [BlogTag]], pageInformation: BlogGlobalPageInformation, paginationTagInfo: PaginationTagInformation) -> EventLoopFuture<View> {
@@ -103,7 +102,7 @@ class CapturingBlogPresenter: BlogPresenter {
         self.searchPageInformation = pageInformation
         self.searchTotalResults = totalResults
         self.searchAuthors = authors
-        self.searchPaginationTagInfo = paginationTagInfo
+//        self.searchPaginationTagInfo = paginationTagInfo
         self.searchPageTagsForPost = tagsForPosts
         return TestDataBuilder.createFutureView(on: container)
     }

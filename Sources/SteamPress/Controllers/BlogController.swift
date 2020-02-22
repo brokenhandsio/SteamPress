@@ -64,7 +64,6 @@ struct BlogController: RouteCollection {
         return blogRepository.getPost(slug: blogSlug, on: req).unwrap(or: Abort(.notFound)).flatMap { post in
             let userRepository = try req.make(BlogUserRepository.self)
             let tagsRepository = try req.make(BlogTagRepository.self)
-            #warning("Test tags")
             let tagsQuery = tagsRepository.getTags(for: post, on: req)
             let userQuery = userRepository.getUser(id: post.author, on: req).unwrap(or: Abort(.internalServerError))
             return flatMap(userQuery, tagsQuery) { user, tags in
