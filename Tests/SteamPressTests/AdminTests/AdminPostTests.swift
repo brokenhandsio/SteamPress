@@ -541,6 +541,31 @@ class AdminPostTests: XCTestCase {
         let string2 = try String.random()
         XCTAssertNotEqual(string1, string2)
     }
+    
+    func testAddingPostToExistingTagDoesntDuplicateTheTag() throws {
+        let existingTagName = "Engineering"
+        let post = try testWorld.createPost(title: "Initial title", contents: "Some initial contents", slugUrl: "initial-title").post
+        let existingTag = try testWorld.createTag(existingTagName)
+
+        struct UpdatePostData: Content {
+            static let defaultContentType = MediaType.urlEncodedForm
+            let title = "Post Title"
+            let contents = "# Post Title\n\nWe have a post"
+            let tags: [String]
+        }
+
+        let updateData = UpdatePostData(tags: [existingTagName])
+
+        XCTAssertEqual(testWorld.context.repository.tags.count, 1)
+        XCTAssertEqual(testWorld.context.repository.tags.first?.name, existingTagName)
+        
+        let updatePostPath = "/admin/posts/\(post.blogID!)/edit"
+        _ = try testWorld.getResponse(to: updatePostPath, body: updateData, loggedInUser: user)
+
+        XCTAssertTrue(testWorld.context.repository.postTagLinks
+            .contains { $0.postID == post.blogID! && $0.tagID == existingTag.tagID! })
+        XCTAssertEqual(testWorld.context.repository.tags.count, 1)
+    }
 
     // MARK: - Helpers
 
