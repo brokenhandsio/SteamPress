@@ -2,3 +2,4 @@ coverage:
   range: "0...100"
   ignore:  
     - "Tests/"
+    - ".build/"
