@@ -78,4 +78,31 @@ class SearchTests: XCTestCase {
         XCTAssertEqual(presenter.searchPageInformation?.googleAnalyticsIdentifier, googleAnalytics)
         XCTAssertEqual(presenter.searchPageInformation?.siteTwitterHandle, twitterHandle)
     }
+    
+    func testPaginationInfoSetCorrectly() throws {
+        try testWorld.createPosts(count: 15, author: firstData.author)
+        _ = try testWorld.getResponse(to: "/search?term=Test&page=1")
+        XCTAssertEqual(presenter.searchPaginationTagInfo?.currentPage, 1)
+        XCTAssertEqual(presenter.searchPaginationTagInfo?.totalPages, 1)
+        XCTAssertEqual(presenter.searchPaginationTagInfo?.currentQuery, "term=Test&page=1")
+    }
+    
+    func testTagsForSearchPostsSetCorrectly() throws {
+        let post2 = try testWorld.createPost(title: "Test Search", author: firstData.author)
+        let post3 = try testWorld.createPost(title: "Test Tags", author: firstData.author)
+        let tag1Name = "Testing"
+        let tag2Name = "Search"
+        let tag1 = try testWorld.createTag(tag1Name, on: post2.post)
+        _ = try testWorld.createTag(tag2Name, on: firstData.post)
+        try testWorld.context.repository.add(tag1, to: firstData.post)
+        
+        _ = try testWorld.getResponse(to: "/search?term=Test")
+        let tagsForPosts = try XCTUnwrap(presenter.searchPageTagsForPost)
+        XCTAssertNil(tagsForPosts[post3.post.blogID!])
+        XCTAssertEqual(tagsForPosts[post2.post.blogID!]?.count, 1)
+        XCTAssertEqual(tagsForPosts[post2.post.blogID!]?.first?.name, tag1Name)
+        XCTAssertEqual(tagsForPosts[firstData.post.blogID!]?.count, 2)
+        XCTAssertEqual(tagsForPosts[firstData.post.blogID!]?.first?.name, tag1Name)
+        XCTAssertEqual(tagsForPosts[firstData.post.blogID!]?.last?.name, tag2Name)
+    }
 }
