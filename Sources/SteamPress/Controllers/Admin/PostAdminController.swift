@@ -136,7 +136,7 @@ struct PostAdminController: RouteCollection {
                 }
 
                 let tagsRepository = try req.make(BlogTagRepository.self)
-                return tagsRepository.getTags(for: post, on: req).flatMap { existingTags in
+                return flatMap(tagsRepository.getTags(for: post, on: req), tagsRepository.getAllTags(on: req)) { existingTags, allTags in
                     let tagsToUnlink = existingTags.filter { (anExistingTag) -> Bool in
                         for tagName in data.tags {
                             if anExistingTag.name == tagName {
@@ -158,8 +158,13 @@ struct PostAdminController: RouteCollection {
 
                     var tagCreateSaves = [EventLoopFuture<BlogTag>]()
                     for newTagName in newTagsNames {
-                        let newTag = BlogTag(name: newTagName)
-                        tagCreateSaves.append(tagsRepository.save(newTag, on: req))
+                        let foundInAllTags = allTags.filter { $0.name == newTagName }.first
+                        if let existingTag = foundInAllTags {
+                            tagCreateSaves.append(req.future(existingTag))
+                        } else {
+                            let newTag = BlogTag(name: newTagName)
+                            tagCreateSaves.append(tagsRepository.save(newTag, on: req))
+                        }
                     }
 
                     return removeTagLinkResults.flatten(on: req).and(tagCreateSaves.flatten(on: req)).flatMap { (_, newTags) in
