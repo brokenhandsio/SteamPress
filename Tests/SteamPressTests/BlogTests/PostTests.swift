@@ -63,4 +63,18 @@ class PostTests: XCTestCase {
         XCTAssertEqual(presenter.postPageInformation?.googleAnalyticsIdentifier, googleAnalytics)
         XCTAssertEqual(presenter.postPageInformation?.siteTwitterHandle, twitterHandle)
     }
+    
+    func testPostPageGetsTags() throws {
+        let tag1Name = "Something"
+        let tag2Name = "Something else"
+        _ = try testWorld.createTag(tag1Name, on: firstData.post)
+        _ = try testWorld.createTag(tag2Name, on: firstData.post)
+        
+        _ = try testWorld.getResponse(to: blogPostPath)
+        
+        let tags = try XCTUnwrap(presenter.postPageTags)
+        XCTAssertEqual(tags.count, 2)
+        XCTAssertEqual(tags.first?.name, tag1Name)
+        XCTAssertEqual(tags.last?.name, tag2Name)
+    }
 }

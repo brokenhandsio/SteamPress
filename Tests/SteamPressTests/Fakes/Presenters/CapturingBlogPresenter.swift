@@ -26,7 +26,6 @@ class CapturingBlogPresenter: BlogPresenter {
     private(set) var post: BlogPost?
     private(set) var postAuthor: BlogUser?
     private(set) var postPageInformation: BlogGlobalPageInformation?
-    #warning("test")
     private(set) var postPageTags: [BlogTag]?
     func postView(on container: Container, post: BlogPost, author: BlogUser, tags: [BlogTag], pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
         self.post = post
