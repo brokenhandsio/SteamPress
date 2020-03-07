@@ -59,7 +59,7 @@ struct PostAdminController: RouteCollection {
                     let existingTags = existingTagsWithOptionals.compactMap { $0 }
                     var tagsSaves = [EventLoopFuture<BlogTag>]()
                     for tagName in data.tags {
-                        if !existingTags.contains { $0.name == tagName } {
+                        if !existingTags.contains(where: { $0.name == tagName }) {
                             let tag = BlogTag(name: tagName)
                             tagsSaves.append(tagsRepository.save(tag, on: req))
                         }
