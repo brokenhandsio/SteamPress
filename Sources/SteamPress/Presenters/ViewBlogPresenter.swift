@@ -119,10 +119,8 @@ public struct ViewBlogPresenter: BlogPresenter {
 
     public func searchView(on container: Container, totalResults: Int, posts: [BlogPost], authors: [BlogUser], searchTerm: String?, tagsForPosts: [Int: [BlogTag]], pageInformation: BlogGlobalPageInformation, paginationTagInfo: PaginationTagInformation) -> EventLoopFuture<View> {
         do {
-            #warning("Test users")
             let viewRenderer = try container.make(ViewRenderer.self)
             let viewPosts = try posts.convertToViewBlogPosts(authors: authors, tagsForPosts: tagsForPosts, on: container)
-            #warning("Test pagination information and total results")
             let context = SearchPageContext(searchTerm: searchTerm, posts: viewPosts, totalResults: totalResults, pageInformation: pageInformation, paginationTagInformation: paginationTagInfo)
             return viewRenderer.render("blog/search", context)
         } catch {

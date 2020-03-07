@@ -526,6 +526,7 @@ class BlogPresenterTests: XCTestCase {
         XCTAssertEqual(context.posts.count, 2)
         XCTAssertEqual(context.posts.first?.title, "Vapor 1")
         XCTAssertEqual(context.posts.last?.title, "Vapor 2")
+        XCTAssertEqual(context.posts.first?.authorName, author.name)
 
         XCTAssertEqual(viewRenderer.templatePath, "blog/search")
         XCTAssertEqual(context.pageInformation.disqusName, BlogPresenterTests.disqusName)
@@ -537,6 +538,7 @@ class BlogPresenterTests: XCTestCase {
         XCTAssertEqual(context.paginationTagInformation.currentPage, 1)
         XCTAssertEqual(context.paginationTagInformation.totalPages, 3)
         XCTAssertEqual(context.paginationTagInformation.currentQuery, "?term=vapor")
+        XCTAssertEqual(context.totalResults, 2)
     }
 
     func testSearchPageGetsNilIfNoSearchTermProvided() throws {
