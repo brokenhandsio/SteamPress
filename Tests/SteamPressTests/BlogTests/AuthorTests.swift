@@ -136,12 +136,16 @@ class AuthorTests: XCTestCase {
         try testWorld.createPosts(count: 15, author: user)
         _ = try testWorld.getResponse(to: authorsRequestPath)
         XCTAssertEqual(presenter.authorPosts?.count, postsPerPage)
+        XCTAssertEqual(presenter.authorPaginationTagInfo?.currentPage, 1)
+        XCTAssertEqual(presenter.authorPaginationTagInfo?.totalPages, 3)
+        XCTAssertNil(presenter.authorPaginationTagInfo?.currentQuery)
     }
 
     func testAuthorViewGetsCorrectPostsForPage() throws {
         try testWorld.createPosts(count: 15, author: user)
         _ = try testWorld.getResponse(to: "/authors/leia?page=3")
         XCTAssertEqual(presenter.authorPosts?.count, 2)
+        XCTAssertEqual(presenter.authorPaginationTagInfo?.currentQuery, "page=3")
     }
 
     func testAuthorViewGetsAuthorsTotalPostsEvenIfPaginated() throws {
@@ -151,4 +155,24 @@ class AuthorTests: XCTestCase {
         // One post created in setup
         XCTAssertEqual(presenter.authorPostCount, totalPosts + 1)
     }
+    
+    func testTagsForPostsSetCorrectly() throws {
+        let post2 = try testWorld.createPost(title: "Test Search", author: user)
+        let post3 = try testWorld.createPost(title: "Test Tags", author: user)
+        let tag1Name = "Testing"
+        let tag2Name = "Search"
+        let tag1 = try testWorld.createTag(tag1Name, on: post2.post)
+        _ = try testWorld.createTag(tag2Name, on: postData.post)
+        try testWorld.context.repository.add(tag1, to: postData.post)
+        
+        _ = try testWorld.getResponse(to: "/authors/leia")
+        let tagsForPosts = try XCTUnwrap(presenter.authorPageTagsForPost)
+        XCTAssertNil(tagsForPosts[post3.post.blogID!])
+        XCTAssertEqual(tagsForPosts[post2.post.blogID!]?.count, 1)
+        XCTAssertEqual(tagsForPosts[post2.post.blogID!]?.first?.name, tag1Name)
+        XCTAssertEqual(tagsForPosts[postData.post.blogID!]?.count, 2)
+        XCTAssertEqual(tagsForPosts[postData.post.blogID!]?.first?.name, tag1Name)
+        XCTAssertEqual(tagsForPosts[postData.post.blogID!]?.last?.name, tag2Name)
+    }
+    
 }

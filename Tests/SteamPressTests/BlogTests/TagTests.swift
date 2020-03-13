@@ -137,5 +137,20 @@ class TagTests: XCTestCase {
         try testWorld.createPosts(count: 15, author: postData.author, tag: tag)
         _ = try testWorld.getResponse(to: "\(tagRequestPath)?page=3")
         XCTAssertEqual(presenter.tagPosts?.count, 2)
+        XCTAssertEqual(presenter.tagPaginationTagInfo?.currentQuery, "page=3")
+    }
+    
+    func testPaginationInfoSetCorrectly() throws {
+        try testWorld.createPosts(count: 15, author: postData.author, tag: tag)
+        _ = try testWorld.getResponse(to: tagRequestPath)
+        XCTAssertEqual(presenter.tagPaginationTagInfo?.currentPage, 1)
+        XCTAssertEqual(presenter.tagPaginationTagInfo?.totalPages, 3)
+        XCTAssertNil(presenter.tagPaginationTagInfo?.currentQuery)
+    }
+    
+    func testPageAuthorsSetCorrectly() throws {
+        _ = try testWorld.getResponse(to: tagRequestPath)
+        XCTAssertEqual(presenter.tagPageAuthors?.count, 1)
+        XCTAssertEqual(presenter.tagPageAuthors?.first?.name, postData.author.name)
     }
 }

@@ -48,7 +48,6 @@ class CapturingBlogPresenter: BlogPresenter {
     private(set) var authorPosts: [BlogPost]?
     private(set) var authorPostCount: Int?
     private(set) var authorPageInformation: BlogGlobalPageInformation?
-    #warning("test")
     private(set) var authorPaginationTagInfo: PaginationTagInformation?
     private(set) var authorPageTagsForPost: [Int: [BlogTag]]?
     func authorView(on container: Container, author: BlogUser, posts: [BlogPost], postCount: Int, tagsForPosts: [Int : [BlogTag]], pageInformation: BlogGlobalPageInformation, paginationTagInfo: PaginationTagInformation) -> EventLoopFuture<View> {
@@ -74,7 +73,6 @@ class CapturingBlogPresenter: BlogPresenter {
     private(set) var tag: BlogTag?
     private(set) var tagPosts: [BlogPost]?
     private(set) var tagPageInformation: BlogGlobalPageInformation?
-    #warning("test these 3")
     private(set) var tagPaginationTagInfo: PaginationTagInformation?
     private(set) var tagPageTotalPosts: Int?
     private(set) var tagPageAuthors: [BlogUser]?
