@@ -72,7 +72,8 @@ class BlogViewTests: XCTestCase {
         XCTAssertEqual(context.post.authorUsername, author.username)
         
         #warning("Finish")
-                // Description
+        let expectedDescription = "Welcome to SteamPress! SteamPress started out as an idea - after all, I was porting sites and backends over to Swift and would like to have a blog as well. Being early days for Server-Side Swift, and embracing Vapor, there wasn't anything available to put a blog on my site, so I did what any self-respecting engineer would do - I made one! Besides, what better way to learn a framework than build a blog!"
+        XCTAssertEqual(context.post.description.trimmingCharacters(in: .whitespacesAndNewlines), expectedDescription)
                 // Image Alt
                 // Image
                 // var longSnippet: String
