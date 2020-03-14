@@ -291,11 +291,11 @@ class BlogPresenterTests: XCTestCase {
     func testBlogIndexPageGivenCorrectParameters() throws {
         let author1 = TestDataBuilder.anyUser(id: 0)
         let author2 = TestDataBuilder.anyUser(id: 1, username: "darth")
-        let post = try TestDataBuilder.anyPost(author: author1)
+        let post = try TestDataBuilder.anyPost(author: author1, contents: TestDataBuilder.longContents)
         post.blogID = 1
         let post2 = try TestDataBuilder.anyPost(author: author2, title: "Another Title")
         post2.blogID = 2
-        let tag1 = BlogTag(id: 1, name: "Engineering")
+        let tag1 = BlogTag(id: 1, name: "Engineering Stuff")
         let tag2 = BlogTag(id: 2, name: "Fun")
         let tags = [tag1, tag2]
         let currentPage = 2
@@ -309,9 +309,24 @@ class BlogPresenterTests: XCTestCase {
         XCTAssertEqual(context.title, "Blog")
         XCTAssertEqual(context.posts.count, 2)
         XCTAssertEqual(context.posts.first?.title, post.title)
+        XCTAssertEqual(context.posts.first?.authorName, author1.name)
+        XCTAssertEqual(context.posts.first?.authorUsername, author1.username)
+        #warning("Finish")
+        XCTAssertEqual(context.posts.first?.tags.count, 2)
+        XCTAssertEqual(context.posts.first?.tags.first?.name, tag1.name)
+        let expectedDescription = "Welcome to SteamPress!\nSteamPress started out as an idea - after all, I was porting sites and backends over to Swift and would like to have a blog as well. Being early days for Server-Side Swift, and embracing Vapor, there wasn't anything available to put a blog on my site, so I did what any self-respecting engineer would do - I made one! Besides, what better way to learn a framework than build a blog!"
+        XCTAssertEqual(context.posts.first?.description.trimmingCharacters(in: .whitespacesAndNewlines), expectedDescription)
+        // Image Alt
+        // Image
+        // var longSnippet: String
+//        var createdDateLong: String
+//        var createdDateNumeric: String
+//        var lastEditedDateNumeric: String?
+//        var lastEditedDateLong: String?
         XCTAssertEqual(context.posts.last?.title, post2.title)
         XCTAssertEqual(context.tags.count, 2)
         XCTAssertEqual(context.tags.first?.name, tag1.name)
+        XCTAssertEqual(context.tags.first?.urlEncodedName, "Engineering%20Stuff")
         XCTAssertEqual(context.tags.last?.name, tag2.name)
         XCTAssertEqual(context.authors.count, 2)
         XCTAssertEqual(context.authors.first?.username, author1.username)

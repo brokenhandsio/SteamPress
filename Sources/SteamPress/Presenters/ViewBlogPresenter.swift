@@ -7,7 +7,6 @@ public struct ViewBlogPresenter: BlogPresenter {
     public func indexView(on container: Container, posts: [BlogPost], tags: [BlogTag], authors: [BlogUser], tagsForPosts: [Int: [BlogTag]], pageInformation: BlogGlobalPageInformation, paginationTagInfo: PaginationTagInformation) -> EventLoopFuture<View> {
         do {
             let viewRenderer = try container.make(ViewRenderer.self)
-            #warning("Test all the view post stuff")
             let viewPosts = try posts.convertToViewBlogPosts(authors: authors, tagsForPosts: tagsForPosts, on: container)
             let viewTags = try tags.map { try $0.toViewBlogTag() }
             let context = BlogIndexPageContext(posts: viewPosts, tags: viewTags, authors: authors, pageInformation: pageInformation, paginationTagInformation: paginationTagInfo)
@@ -31,7 +30,6 @@ public struct ViewBlogPresenter: BlogPresenter {
                 }
             }
             let shortSnippet = post.shortSnippet()
-            #warning("test")
             let longFormatter = try container.make(LongPostDateFormatter.self)
             let numericFormatter = try container.make(NumericPostDateFormatter.self)
             let viewPost = try post.toViewPost(authorName: author.name, authorUsername: author.username, longFormatter: longFormatter, numericFormatter: numericFormatter, tags: tags)

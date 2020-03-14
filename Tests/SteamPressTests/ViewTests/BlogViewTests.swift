@@ -68,6 +68,19 @@ class BlogViewTests: XCTestCase {
         XCTAssertEqual(context.pageInformation.currentPageURL.absoluteString, "https://www.brokenhands.io/blog/posts/test-post")
         XCTAssertEqual(context.pageInformation.websiteURL.absoluteString, "https://www.brokenhands.io")
         XCTAssertEqual(context.post.tags.first?.name, tag.name)
+        XCTAssertEqual(context.post.authorName, author.name)
+        XCTAssertEqual(context.post.authorUsername, author.username)
+        
+        #warning("Finish")
+                // Description
+                // Image Alt
+                // Image
+                // var longSnippet: String
+        //        var createdDateLong: String
+        //        var createdDateNumeric: String
+        //        var lastEditedDateNumeric: String?
+        //        var lastEditedDateLong: String?
+        
         XCTAssertEqual(viewRenderer.templatePath, "blog/post")
     }
 
