@@ -289,9 +289,12 @@ class BlogPresenterTests: XCTestCase {
     // MARK: - Blog Index
 
     func testBlogIndexPageGivenCorrectParameters() throws {
+        let createdDate = Date(timeIntervalSince1970: 1584714638)
+        let lastEditedDate = Date(timeIntervalSince1970: 1584981458)
+        
         let author1 = TestDataBuilder.anyUser(id: 0)
         let author2 = TestDataBuilder.anyUser(id: 1, username: "darth")
-        let post = try TestDataBuilder.anyPost(author: author1, contents: TestDataBuilder.longContents)
+        let post = try TestDataBuilder.anyPost(author: author1, contents: TestDataBuilder.longContents, creationDate: createdDate, lastEditedDate: lastEditedDate)
         post.blogID = 1
         let post2 = try TestDataBuilder.anyPost(author: author2, title: "Another Title")
         post2.blogID = 2
@@ -311,18 +314,18 @@ class BlogPresenterTests: XCTestCase {
         XCTAssertEqual(context.posts.first?.title, post.title)
         XCTAssertEqual(context.posts.first?.authorName, author1.name)
         XCTAssertEqual(context.posts.first?.authorUsername, author1.username)
-        #warning("Finish")
         XCTAssertEqual(context.posts.first?.tags.count, 2)
         XCTAssertEqual(context.posts.first?.tags.first?.name, tag1.name)
         let expectedDescription = "Welcome to SteamPress! SteamPress started out as an idea - after all, I was porting sites and backends over to Swift and would like to have a blog as well. Being early days for Server-Side Swift, and embracing Vapor, there wasn't anything available to put a blog on my site, so I did what any self-respecting engineer would do - I made one! Besides, what better way to learn a framework than build a blog!"
         XCTAssertEqual(context.posts.first?.description.trimmingCharacters(in: .whitespacesAndNewlines), expectedDescription)
-        // Image Alt
-        // Image
-        // var longSnippet: String
-//        var createdDateLong: String
-//        var createdDateNumeric: String
-//        var lastEditedDateNumeric: String?
-//        var lastEditedDateLong: String?
+        XCTAssertEqual(context.posts.first?.postImage, "https://user-images.githubusercontent.com/9938337/29742058-ed41dcc0-8a6f-11e7-9cfc-680501cdfb97.png")
+        XCTAssertEqual(context.posts.first?.postImageAlt, "SteamPress Logo")
+        let expectedSnippet = "Welcome to SteamPress!\nSteamPress started out as an idea - after all, I was porting sites and backends over to Swift and would like to have a blog as well. Being early days for Server-Side Swift, and embracing Vapor, there wasn\'t anything available to put a blog on my site, so I did what any self-respecting engineer would do - I made one! Besides, what better way to learn a framework than build a blog!\nI plan to put some more posts up going into how I actually wrote SteamPress, going into some Vapor basics like Authentication and other popular #help topics on [Slack](qutheory.slack.com) (I probably need to rewrite a lot of it properly first!) either on here or on https://geeks.brokenhands.io, which will be the engineering site for Broken Hands, which is what a lot of future projects I have planned will be under. \n![SteamPress Logo](https://user-images.githubusercontent.com/9938337/29742058-ed41dcc0-8a6f-11e7-9cfc-680501cdfb97.png)\n"
+        XCTAssertEqual(context.posts.first?.longSnippet, expectedSnippet)
+        XCTAssertEqual(context.posts.first?.createdDateLong, "Friday, Mar 20, 2020")
+        XCTAssertEqual(context.posts.first?.createdDateNumeric, "2020-03-20T14:30:38.000Z")
+        XCTAssertEqual(context.posts.first?.lastEditedDateLong, "Monday, Mar 23, 2020")
+        XCTAssertEqual(context.posts.first?.lastEditedDateNumeric, "2020-03-23T16:37:38.000Z")
         XCTAssertEqual(context.posts.last?.title, post2.title)
         XCTAssertEqual(context.tags.count, 2)
         XCTAssertEqual(context.tags.first?.name, tag1.name)

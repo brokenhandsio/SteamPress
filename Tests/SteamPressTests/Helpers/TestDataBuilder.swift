@@ -11,8 +11,12 @@ struct TestDataBuilder {
         return BlogUser(userID: id, name: name, username: username, password: password, profilePicture: "https://static.brokenhands.io/steampress/images/authors/luke.png", twitterHandle: "luke", biography: "The last Jedi", tagline: "Who is my father")
     }
 
-    static func anyPost(author: BlogUser, title: String = "An Exciting Post!", contents: String = "This is a blog post", slugUrl: String = "some-exciting-title", creationDate: Date = Date(), published: Bool = true)  throws -> BlogPost {
-        return try BlogPost(title: title, contents: contents, author: author, creationDate: creationDate, slugUrl: slugUrl, published: published)
+    static func anyPost(author: BlogUser, title: String = "An Exciting Post!", contents: String = "This is a blog post", slugUrl: String = "some-exciting-title", creationDate: Date = Date(), published: Bool = true, lastEditedDate: Date? = nil)  throws -> BlogPost {
+        let blogPost = try BlogPost(title: title, contents: contents, author: author, creationDate: creationDate, slugUrl: slugUrl, published: published)
+        if let lastEdited = lastEditedDate {
+            blogPost.lastEdited = lastEdited
+        }
+        return blogPost
     }
 
     static func createPost(on repository: InMemoryRepository, tags: [String]? = nil, createdDate: Date? = nil, title: String = "An Exciting Post!", contents: String = "This is a blog post", slugUrl: String = "an-exciting-post", author: BlogUser? = nil, published: Bool = true) throws -> TestData {
