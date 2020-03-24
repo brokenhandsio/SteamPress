@@ -12,6 +12,7 @@ struct TestWorld {
         unsetenv("BLOG_GOOGLE_ANALYTICS_IDENTIFIER")
         unsetenv("BLOG_SITE_TWITTER_HANDLE")
         unsetenv("BLOG_DISQUS_NAME")
+        unsetenv("WEBSITE_URL")
         return TestWorld(context: context)
     }
 
