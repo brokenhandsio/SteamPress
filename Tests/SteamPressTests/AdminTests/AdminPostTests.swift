@@ -566,6 +566,20 @@ class AdminPostTests: XCTestCase {
             .contains { $0.postID == post.blogID! && $0.tagID == existingTag.tagID! })
         XCTAssertEqual(testWorld.context.repository.tags.count, 1)
     }
+    
+    func testPageInformationGetsWebsiteURLAndPageURLFromEnvVar() throws {
+        let website = "https://www.steampress.io"
+        setenv("WEBSITE_URL", website, 1)
+        _ = try testWorld.getResponse(to: createPostPath, loggedInUser: user)
+        XCTAssertEqual(presenter.createPostPageInformation?.websiteURL.absoluteString, website)
+    }
+    
+    func testFailingURLFromEnvVar() throws {
+        let website = ""
+        setenv("WEBSITE_URL", website, 1)
+        let response = try testWorld.getResponse(to: createPostPath, loggedInUser: user)
+        XCTAssertEqual(response.http.status, .internalServerError)
+    }
 
     // MARK: - Helpers
 
