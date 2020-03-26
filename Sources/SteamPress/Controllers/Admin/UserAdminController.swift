@@ -102,14 +102,13 @@ struct UserAdminController: RouteCollection {
                 }
 
                 let redirect = req.redirect(to: self.pathCreator.createPath(for: "admin"))
-                let userRepository = try req.make(BlogUserRepository.self)
-                return userRepository.save(user, on: req).transform(to: redirect)
+                return req.blogUserRepository.save(user).transform(to: redirect)
             }
         }
     }
 
     func deleteUserPostHandler(_ req: Request) throws -> EventLoopFuture<Response> {
-        try req.parameters.find(BlogUser.self, on: req).and(req.blogUserRepository.getUsersCount()).flatMap { user, userCount in
+        req.parameters.find(BlogUser.self, on: req).and(req.blogUserRepository.getUsersCount()).flatMap { user, userCount in
             guard userCount > 1 else {
                 return req.blogPostRepository.getAllPostsSortedByPublishDate(includeDrafts: true).and(req.blogUserRepository.getAllUsers()).flatMap { posts, users in
                     let presenter = try req.make(BlogAdminPresenter.self)

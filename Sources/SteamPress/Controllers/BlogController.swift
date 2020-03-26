@@ -106,8 +106,7 @@ struct BlogController: RouteCollection {
     }
 
     func allTagsViewHandler(_ req: Request) throws -> EventLoopFuture<View> {
-        let tagRepository = try req.make(BlogTagRepository.self)
-        return tagRepository.getAllTagsWithPostCount(on: req).flatMap { tagswithCount in
+        return req.blogTagRepository.getAllTagsWithPostCount().flatMap { tagswithCount in
             let presenter = try req.make(BlogPresenter.self)
             let allTags = tagswithCount.map { $0.0 }
             let tagCounts = try tagswithCount.reduce(into: [Int: Int]()) {
@@ -122,8 +121,7 @@ struct BlogController: RouteCollection {
 
     func allAuthorsViewHandler(_ req: Request) throws -> EventLoopFuture<View> {
         let presenter = try req.make(BlogPresenter.self)
-        let authorRepository = try req.make(BlogUserRepository.self)
-        return authorRepository.getAllUsersWithPostCount(on: req).flatMap { allUsersWithCount in
+        return req.blogUserRepository.getAllUsersWithPostCount().flatMap { allUsersWithCount in
             let allUsers = allUsersWithCount.map { $0.0 }
             let authorCounts = try allUsersWithCount.reduce(into: [Int: Int]()) {
                 guard let userID = $1.0.userID else {
@@ -149,7 +147,7 @@ struct BlogController: RouteCollection {
         let userQuery = req.blogUserRepository.getAllUsers()
         return postsQuery.and(postsCountQuery).flatMap { posts, totalPosts in
             userQuery.and(tagsQuery).flatMap { users, tagsForPosts in
-                let paginationTagInfo = self.getPaginationInformation(currentPage: paginationInformation.page, totalPosts: totalPosts, currentQuery: req.http.url.query)
+                let paginationTagInfo = self.getPaginationInformation(currentPage: paginationInformation.page, totalPosts: totalPosts, currentQuery: req.url.query)
                 return preseneter.searchView(on: req, totalResults: totalPosts, posts: posts, authors: users, searchTerm: searchTerm, tagsForPosts: tagsForPosts, pageInformation: try req.pageInformation(), paginationTagInfo: paginationTagInfo)
             }
         }
