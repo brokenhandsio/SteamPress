@@ -141,141 +141,72 @@ services.register(middlewares)
 
 **Note:** This must be registered before you register the `SessionsMiddleware`.
 
+SteamPress uses a `PasswordVerifier` protocol to check passwords. Vapor doesn't provide a default BCrypt implementation for this, so you must register this yourself:
+
+```swift
+config.prefer(BCryptDigest.self, for: PasswordVerifier.self)
+```
+
+Finally, if you wish to use the `#markdown()` tag with your blog Leaf templates, you must register this. There's also a paginator tag, to make pagination easy:
+
+```swift
+ var tags = LeafTagConfig.default()
+tags.use(Markdown(), as: "markdown")
+let paginatorTag = PaginatorTag(paginationLabel: "Blog Posts")
+tags.use(paginatorTag, as: PaginatorTag.name)
+services.register(tags)
+```
+
 ## Configuration
 
+There are a number of configuration options you can pass to the provider to configure SteamPress:
 
+* `blogPath`: the path to add the blog to. By default the blog routes will be registered to the root of your site, but you may want to register the blog at `/blog`. So if you pass in `"blog"` the blog will be available at `https://www.mysite.com/blog`.
+* `feedInformation`: Information to vend to the RSS and Atom feeds.
+* `postsPerPage`: The number of posts to show per page on the main index page of the blog. Defaults to 10.
+* `enableAuthorsPages`: Flag used to determine whether to publicly expose the authors endpoints or not. Defaults to true.
+* `enableTagsPages`: Flag used to determine whether to publicy expose the tags endpoints or not. Defaults to true.
 
-
-## Setup
-
-Next import it in the file where you are setting up your `Droplet` with:
-
-```swift
-import SteamPress
-```
-
-Finally, add the provider!
+To configure these, you can pass them to the provider. E.g.:
 
 ```swift
-try config.addProvider(SteamPress.Provider.self)
+let feedInformation = FeedInformation(
+    title: "The SteamPress Blog", 
+    description: "SteamPress is an open-source blogging engine written for Vapor in Swift", 
+    copyright: "Released under the MIT licence", 
+    imageURL: "https://user-images.githubusercontent.com/9938337/29742058-ed41dcc0-8a6f-11e7-9cfc-680501cdfb97.png")
+try services.register(SteamPressFluentPostgresProvider(blogPath: "blog", feedInformation: feedInformation, postsPerPage: 5))
 ```
 
-This will look for a config file called `steampress.json` that looks like:
-
-```json
-{
-    "postsPerPage": 5,
-    "blogPath": "blog"
-}
-```
-
-The `blogPath` line is optional, if you want your blog to be at the root path of your site, just remove that line.
-
-**Note:** you should add the SteamPress Provider before you add the `FluentProvider` to ensure that the password for the admin account is logged out correctly.
-
-### Manual initialisation
-
-You can also initialise the Provider manually, by creating it as so:
-
-```swift
-let steampress = SteamPress.Provider(postsPerPage: 5)
-config.addProvider(steampress)
-```
-
-This will initialise it as the root path of your site. If you wish to have it in a subdirectory, initialise it with:
-
-```swift
-let steampress = SteamPress.Provider(postsPerPage: 5, blogPath: "blog")
-config.addProvider(steampress)
-```
-
-### Bootstrap Versions
-
-By default, the paginator used by SteamPress is expecting to use Bootstrap 4. You can configure it to use Bootstrap 3 by either adding it to the configuration file or the manual initialisation. To add to a config file, in your `steampress.json`, add:
-
-```json
-{
-    "postsPerPage": 5,
-    "blogPath": "blog",
-    "paginator": {
-        "useBootstrap4": false
-    }
-}
-```
-
-To manually iniatialise, set up the Provider like so:
-
-```swift
-let steampress = SteamPress.Provider(postsPerPage: 5, blogPath: "blog", useBootstrap4: false)
-```
-
-### Disabling Routes
-
-You can disable the routes for authors pages and tags pages (both individual and all) by adding the option in your configuration file. To disable all of the authors pages, in your `steampress.json` add:
-
-```json
-{
-    "enableAuthorsPages": false
-}
-```
-
-To disable all of the tags pages, set:
-
-```json
-{
-    "enableTagsPages": false
-}
-```
-
-Both of these settings can also be configured if manually setting up the Provider:
-
-```swift
-let steampress = SteamPress.Provider(postsPerPage:5, enableAuthorsPages: true, enableTagsPages: true)
-```
+Additionally, you should set the `WEBSITE_URL` environment variable to the root address of your website, e.g. `https://www.steampress.io`. This is used to set various parameters throughout SteamPress.
 
 ## Logging In
 
-When you first launch SteamPress a preparation runs that seeds the database with an admin user. The username is `admin` and the password will be printined out to your app's logs. You will be required to reset your password when you first login. It is recommended you do this as soon as your site is up and running.
+When you first launch SteamPress, if you've enabled the `BlogAdminUser` migration, an admin user is created in the database. The username is `admin` and the password will be printined out to your app's logs. It is recommended that you reset your password when you first login as soon as your site is up and running.
 
 ## Comments
 
-SteamPress currently supports using [Disqus](https://disqus.com) for the comments engine. To use Disqus, just add a config file `disqus.json` to your site that looks like:
+SteamPress currently supports using [Disqus](https://disqus.com) for the comments engine. To use Disqus, start the app with the environment variable `BLOG_DISQUS_NAME` set to the name of your disqus sute. (You can get the name of your Disqus site from your Disqus admin panel)
 
-```json
-{
-    "disqusName": "NAME_OF_YOUR_DISQUS_SITE"
-}
-```
-
-(You can get the name of your Disqus site from your Disqus admin panel)
-
-This will pass it through to the Leaf templates for the Blog index (`blog.leaf`), blog posts (`blogpost.leaf`), author page (`profile.leaf`) and tag page (`tag.leaf`) so you can include it if needs be. If you want to manually set up comments you can do this yourself and just include the necessary files for your provider. This is mainly to provide easy configuration for the [Platform site](https://github.com/brokenhandsio/SteamPressExample).
+This will pass it through to the Leaf templates for the Blog index (`blog.leaf`), blog posts (`blogpost.leaf`), author page (`profile.leaf`) and tag page (`tag.leaf`) so you can include it if needs be. If you want to manually set up comments you can do this yourself and just include the necessary files for your provider. This is mainly to provide easy configuration for the [example site](https://github.com/brokenhandsio/SteamPressExample).
 
 ## Open Graph Twitter Card Support
 
-SteamPress supports both Open Graph and Twitter Cards. The Blog Post `all` Context (see below) will pass in the created date and last edited date (if applicable) in ISO 8601 format for Open Graph article support, under the parameters `create_date_iso8601` and `last_edited_date_iso8601`.
+SteamPress supports both Open Graph and Twitter Cards. The blog post page context will pass in the created date and last edited date (if applicable) in ISO 8601 format for Open Graph article support, under the parameters `createdDateNumeric` and `lastEditedDateNumeric`.
 
 The Blog Post page will also be passed a number of other useful parameters for Open Graph and Twitter Cards. See the `blogpost.leaf` section below.
 
-The Twitter handle of the site can be configured with a `twitter.json` config file (or injected in) with a property `siteHandle` (the site's twitter handle without the `@`). If set, this will be injected into the public pages as described below. This is for the `twitter:site` tag for Twitter Cards
+The Twitter handle of the site can be configured with a `BLOG_SITE_TWITTER_HANDLE` environment variable (the site's twitter handle without the `@`). If set, this will be injected into the public pages as described below. This is for the `twitter:site` tag for Twitter Cards
 
 ## Google Analytics Support
 
-SteamPress makes it easy to integrate Google Analytics into your blog. If you create a `googleAnalytics.json` config file that looks like:
+SteamPress makes it easy to integrate Google Analytics into your blog. Just start the application with the `BLOG_GOOGLE_ANALYTICS_IDENTIFIER` environment variable set to you Google Analytics identifier. (You can get your identifier from the Google Analytics console, it will look something like UA-12345678-1)
 
-```json
-{
-    "identifier": "YOUR_IDENTIFIER"
-}
-```
-
-(You can get your identifier from the Google Analytics console, it will look something like UA-12345678-1)
-
-This will pass a `google_analytics_identifier` parameter through to all of the public pages which you can include and then use the [Example Site's javascript](https://github.com/brokenhandsio/SteamPressExample/blob/master/Public/static/js/analytics.js) to integrate with.
+This will pass a `googleAnalyticsIdentifier` parameter through to all of the public pages in the `pageInformation` variable, which you can include and then use the [Example Site's javascript](https://github.com/brokenhandsio/SteamPressExample/blob/master/Public/static/js/analytics.js) to integrate with.
 
 ## Atom/RSS Support
 
-SteamPress automatically provides endpoints for registering RSS readers, either using RSS 2.0 or Atom 1.0. These endpoints can be found at the blog's `atom.xml` and `rss.xml` paths; e.g. if you blog is at `https://www.example.com/blog` then the atom feed will appear at `https://wwww.example.com/blog/atom.xml`. These will work by default, but you will probably want to configure some of fields. These can be added to your `steampress.json` config file, with the following values:
+SteamPress automatically provides endpoints for registering RSS readers, either using RSS 2.0 or Atom 1.0. These endpoints can be found at the blog's `atom.xml` and `rss.xml` paths; e.g. if you blog is at `https://www.example.com/blog` then the atom feed will appear at `https://wwww.example.com/blog/atom.xml`. These will work by default, but you will probably want to configure some of fields. These are configured with the `FeedInformation` parameter passed to the provider. The configuration options are:
 
 * `title` - the title of the blog - a default "SteamPress Blog" will be provided otherwise
 * `description` - the description of the blog (or subtitle in atom) - a default "SteamPress is an open-source blogging engine written for Vapor in Swift" will be provided otherwise
@@ -286,12 +217,19 @@ SteamPress automatically provides endpoints for registering RSS readers, either 
 
 SteamPress has a built in blog search. It will register a route, `/search`, under your blog path which you can send a query through to, with a key of `term` to search the blog.
 
-
 # Expected Leaf Templates
 
 SteamPress expects there to be a number of Leaf template files in the correct location in `Resources/Views`. All these files should be in a `blog` directory, with the admin template files being in an `admin` directory. For an example of how it SteamPress works with the leaf templates, see the [Example SteamPress site](https://github.com/brokenhandsio/SteamPressExample).
 
-For every Leaf template, a `user` parameter will be passed in for the currently logged in user, if there is a user currently logged in. This is useful for displaying a 'Create Post' link throughout the site when logged in etc.
+For every public Leaf template, a `pageInformation` parameter will be passed in with the following information:
+
+* `disqusName`: The site Disqus name, as discussed above
+* `siteTwitterHandle`: The site twitter handle, as discussed above
+* `googleAnalyticsIdentifier`: The Google Analytics identifer as discussed above
+* `loggedInUser`: The currently logged in user, if a user is logged in. This is useful for displaying a 'Create Post' link throughout the site when logged in etc.
+* `websiteURL`: The URL for the website
+* `currentPageURL`: The URL of the current page
+* `currentPageEncodedURL`: An URL encoded representation of the current page
 
 The basic structure of your `Resources/View` directory should be:
 
@@ -503,27 +441,18 @@ let shortSnippet = post.shortSnippet()
 let longSnippet = post.longSnippet()
 ```
 
-# Markdown Provider
+# Markdown Tag
 
-The Markdown Provider allows you to render markdown as HTML in your Leaf files. To use, just simply use:
+The Markdown Tag allows you to render markdown as HTML in your Leaf files. To use, just simply use:
 
 ```
 #markdown(myObject.markdownContent)
 ```
 
-This will convert the `Node` object `myObject`'s `markdownContent` to HTML (you pass in `myObject` as a parameter to your Leaf view). It uses CommonMark under the hood, but for more details, see the [Markdown Provider repo](https://github.com/vapor-community/markdown-provider).
+This will convert the object `myObject`'s `markdownContent` to HTML (you pass in `myObject` as a parameter to your Leaf view). It uses Github Flavoured Markdown under the hood, but for more details, see the [Leaf Markdown repo](https://github.com/vapor-community/leaf-markdown).
 
 # API
 
 SteamPress also contains an API for accessing certain things that may be useful. The current endpoints are:
 
 * `/<blog-path>/api/tags/` - returns all the tags that have been saved in JSON
-
-# Roadmap
-
-I anticipate SteamPress staying on a version 0 for some time, whilst some of the biggest features are implemented. Semantic versioning makes life a little difficult for this as any new endpoints will require a breaking change for you to add Leaf templates! However, I will aim to stabilise this as quickly as possible, and any breaking changes will be announced in the [releases](https://github.com/brokenhandsio/SteamPress/releases) page.
-
-On the roadmap we have:
-
-* AMP/Facebook instant articles endpoints for posts
-* Saving state when logging in - if you go to a page (e.g. edit post) but need to be logged in, it would be great if you could head back to that page once logged in. Also, if you have edited a post and your session expires before you post it, wouldn't it be great if it remembered everything!
