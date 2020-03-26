@@ -40,39 +40,113 @@ There is an example of how it can work in a site (and what it requires in terms 
 
 # How to Use
 
+## Add as a dependency
 
-## DOC UPDATES COMING SOON
+SteamPress is easy to integrate with your application. There are two providers that provide implementations for [PostgreSQL](https://github.com/brokenhandsio/steampress-fluent-postgres) or [MySQL](https://github.com/brokenhandsio/steampress-fluent-mysql). You are also free to write your own integrations. Normally you'd choose one of the implementations as that provides repository integrations for the database. In this example, we're using Postgres.
 
-**Note:** the `Production` environment will only work on HTTPS for security reasons.
-
-## Integration
-
-In order for SteamPress to work properly, it requires various Middleware to do things like authentication. You must add these to your `droplet.json` so they are loaded up and SteamPress can work properly. In your `droplet.json` add `steampress-sessions` and `blog-persist` like so (and in this order):
-
-```json
-{
-    ...
-    "middleware": [
-        ...,
-        "steampress-sessions"
-        "blog-persist"
-    ],
-    ...
-}
-```
-
-`steampress-sessions` will used the `Droplet`'s configured `SessionsProtocol` implementation and you can configure it in your `Configuration` (for example to use Redis instead of in-memory).
-
-## Setup
-
-SteamPress is easy to integrate with your application. First add SteamPress to your `Package.swift` dependencies:
+First, add the provider to your `Package.swift` dependencies:
 
 ```swift
 dependencies: [
-    ...,
-    .package(url: "https://github.com/brokenhandsio/SteamPress", from: "0.16.0")
+    // ...
+    .package(name: "SteampressFluentPostgres", url: "https://github.com/brokenhandsio/steampress-fluent-postgres.git", from: "1.0.0"),
+],
+```
+
+Then add it as a dependecy to your application target:
+
+
+```swift
+.target(name: "App",
+    dependencies: [
+        // ...
+        "SteampressFluentPostgres"
+    ])
+```
+
+In `configure.swift`, import the provider:
+
+```swift
+import SteampressFluentPostgres
+```
+
+Next, register the provider with your services:
+
+```swift
+try services.register(SteamPressFluentPostgresProvider())
+```
+
+The Provider's require you to add SteamPress' models to your migrations:
+
+```swift
+/// Configure migrations
+var migrations = MigrationConfig()
+// ...
+migrations.add(model: BlogTag.self, database: .psql)
+migrations.add(model: BlogUser.self, database: .psql)
+migrations.add(model: BlogPost.self, database: .psql)
+migrations.add(model: BlogPostTagPivot.self, database: .psql)
+// Optional but recommended - this will create an admin user for you to login with
+migrations.add(migration: BlogAdminUser.self, database: .psql)
+services.register(migrations)
+```
+
+## Manual Setup
+
+First add SteamPress to your `Package.swift` dependencies:
+
+```swift
+dependencies: [
+    // ...,
+    .package(name: "SteamPress", url: "https://github.com/brokenhandsio/SteamPress", from: "1.0.0")
 ]
 ```
+
+And then as a dependency to your target:
+
+```swift
+.target(name: "App",
+    dependencies: [
+        // ...
+        "SteamPress"
+    ])
+```
+
+This will register the routes for you. You must provide implementations for the different repository types to your services:
+
+```swift
+services.register(MyTagRepository(), as: BlogTagRepository.self)
+services.register(MyUserRepository(), as: BlogUserRepository.self)
+services.register(MyPostRepository(), as: BlogPostRepository.self)
+```
+
+You can then register the SteamPress provider with your services:
+
+```swift
+let steampressProvider = SteamPress.Provider()
+try services.register(steampressProvider)
+```
+
+## Integration
+
+SteamPress offers a 'Remember Me' functionality when logging in to extend the duration of the session. In order for this to work, you must register the middleware:
+
+```swift
+var middlewares = MiddlewareConfig()
+// ...
+middlewares.use(BlogRememberMeMiddleware.self)
+middlewares.use(SessionsMiddleware.self)
+services.register(middlewares)
+```
+
+**Note:** This must be registered before you register the `SessionsMiddleware`.
+
+## Configuration
+
+
+
+
+## Setup
 
 Next import it in the file where you are setting up your `Droplet` with:
 
