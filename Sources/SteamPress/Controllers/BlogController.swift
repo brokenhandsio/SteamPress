@@ -22,18 +22,18 @@ struct BlogController: RouteCollection {
     }
 
     // MARK: - Add routes
-    func boot(router: Router) throws {
-        router.get(use: indexHandler)
-        router.get(blogPostsPath, String.parameter, use: blogPostHandler)
-        router.get(blogPostsPath, use: blogPostIndexRedirectHandler)
-        router.get(searchPath, use: searchHandler)
+    func boot(routes: RoutesBuilder) throws {
+        routes.get(use: indexHandler)
+        routes.get(blogPostsPath, String.parameter, use: blogPostHandler)
+        routes.get(blogPostsPath, use: blogPostIndexRedirectHandler)
+        routes.get(searchPath, use: searchHandler)
         if enableAuthorPages {
-            router.get(authorsPath, use: allAuthorsViewHandler)
-            router.get(authorsPath, String.parameter, use: authorViewHandler)
+            routes.get(authorsPath, use: allAuthorsViewHandler)
+            routes.get(authorsPath, String.parameter, use: authorViewHandler)
         }
         if enableTagsPages {
-            router.get(tagsPath, BlogTag.parameter, use: tagViewHandler)
-            router.get(tagsPath, use: allTagsViewHandler)
+            routes.get(tagsPath, BlogTag.parameter, use: tagViewHandler)
+            routes.get(tagsPath, use: allTagsViewHandler)
         }
     }
 

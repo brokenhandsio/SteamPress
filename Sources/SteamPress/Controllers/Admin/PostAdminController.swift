@@ -11,12 +11,12 @@ struct PostAdminController: RouteCollection {
     }
 
     // MARK: - Route setup
-    func boot(router: Router) throws {
-        router.get("createPost", use: createPostHandler)
-        router.post("createPost", use: createPostPostHandler)
-        router.get("posts", BlogPost.parameter, "edit", use: editPostHandler)
-        router.post("posts", BlogPost.parameter, "edit", use: editPostPostHandler)
-        router.post("posts", BlogPost.parameter, "delete", use: deletePostHandler)
+    func boot(routes: RoutesBuilder) throws {
+        routes.get("createPost", use: createPostHandler)
+        routes.post("createPost", use: createPostPostHandler)
+        routes.get("posts", BlogPost.parameter, "edit", use: editPostHandler)
+        routes.post("posts", BlogPost.parameter, "edit", use: editPostPostHandler)
+        routes.post("posts", BlogPost.parameter, "delete", use: deletePostHandler)
     }
 
     // MARK: - Route handlers

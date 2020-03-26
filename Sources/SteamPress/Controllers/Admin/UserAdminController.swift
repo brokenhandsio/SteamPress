@@ -12,12 +12,12 @@ struct UserAdminController: RouteCollection {
     }
 
     // MARK: - Route setup
-    func boot(router: Router) throws {
-        router.get("createUser", use: createUserHandler)
-        router.post("createUser", use: createUserPostHandler)
-        router.get("users", BlogUser.parameter, "edit", use: editUserHandler)
-        router.post("users", BlogUser.parameter, "edit", use: editUserPostHandler)
-        router.post("users", BlogUser.parameter, "delete", use: deleteUserPostHandler)
+    func boot(routes: RoutesBuilder) throws {
+        routes.get("createUser", use: createUserHandler)
+        routes.post("createUser", use: createUserPostHandler)
+        routes.get("users", BlogUser.parameter, "edit", use: editUserHandler)
+        routes.post("users", BlogUser.parameter, "edit", use: editUserPostHandler)
+        routes.post("users", BlogUser.parameter, "delete", use: deleteUserPostHandler)
     }
 
     // MARK: - Route handlers

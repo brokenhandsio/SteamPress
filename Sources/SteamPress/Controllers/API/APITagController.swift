@@ -1,8 +1,8 @@
 import Vapor
 
 struct APITagController: RouteCollection {
-    func boot(router: Router) throws {
-        let tagsRoute = router.grouped("tags")
+    func boot(routes: RoutesBuilder) throws {
+        let tagsRoute = routes.grouped("tags")
         tagsRoute.get(use: allTagsHandler)
     }
 

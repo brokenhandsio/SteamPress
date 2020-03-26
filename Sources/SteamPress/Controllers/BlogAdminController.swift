@@ -12,8 +12,8 @@ struct BlogAdminController: RouteCollection {
     }
 
     // MARK: - Route setup
-    func boot(router: Router) throws {
-        let adminRoutes = router.grouped("admin")
+    func boot(routes: RoutesBuilder) throws {
+        let adminRoutes = routes.grouped("admin")
 
         let redirectMiddleware = BlogLoginRedirectAuthMiddleware(pathCreator: pathCreator)
         let adminProtectedRoutes = adminRoutes.grouped(redirectMiddleware)

@@ -12,12 +12,12 @@ struct LoginController: RouteCollection {
     }
 
     // MARK: - Route setup
-    func boot(router: Router) throws {
-        router.get("login", use: loginHandler)
-        router.post("login", use: loginPostHandler)
+    func boot(routes: RoutesBuilder) throws {
+        routes.get("login", use: loginHandler)
+        routes.post("login", use: loginPostHandler)
 
         let redirectMiddleware = BlogLoginRedirectAuthMiddleware(pathCreator: pathCreator)
-        let protectedRoutes = router.grouped(redirectMiddleware)
+        let protectedRoutes = routes.grouped(redirectMiddleware)
         protectedRoutes.post("logout", use: logoutHandler)
         protectedRoutes.get("resetPassword", use: resetPasswordHandler)
         protectedRoutes.post("resetPassword", use: resetPasswordPostHandler)
