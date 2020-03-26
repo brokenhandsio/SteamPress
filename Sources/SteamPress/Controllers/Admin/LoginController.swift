@@ -61,8 +61,7 @@ struct LoginController: RouteCollection {
             try req.session()["SteamPressRememberMe"] = nil
         }
 
-        let userRepository = try req.make(BlogUserRepository.self)
-        return userRepository.getUser(username: username, on: req).flatMap { user in
+        return req.blogUserRepository.getUser(username: username, on: req).flatMap { user in
             let verifier = try req.make(PasswordVerifier.self)
             guard let user = user, try verifier.verify(password, created: user.password) else {
                 let loginError = ["Your username or password is incorrect"]
@@ -129,8 +128,7 @@ struct LoginController: RouteCollection {
         let hasher = try req.make(PasswordHasher.self)
         user.password = try hasher.hash(password)
         user.resetPasswordRequired = false
-        let userRespository = try req.make(BlogUserRepository.self)
         let redirect = req.redirect(to: pathCreator.createPath(for: "admin"))
-        return userRespository.save(user, on: req).transform(to: redirect)
+        return req.blogUserRepository.save(user, on: req).transform(to: redirect)
     }
 }

@@ -61,14 +61,13 @@ extension BlogPost {
     }
 
     static func generateUniqueSlugURL(from title: String, on req: Request) throws -> EventLoopFuture<String> {
-        let postRepository = try req.make(BlogPostRepository.self)
         let alphanumericsWithHyphenAndSpace = CharacterSet(charactersIn: " -0123456789abcdefghijklmnopqrstuvwxyz")
         let initialSlug = title.lowercased()
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .components(separatedBy: alphanumericsWithHyphenAndSpace.inverted).joined()
             .components(separatedBy: .whitespacesAndNewlines).filter { !$0.isEmpty }.joined(separator: " ")
             .replacingOccurrences(of: " ", with: "-", options: .regularExpression)
-        return postRepository.getPost(slug: initialSlug, on: req).map { postWithSameSlug in
+        return req.blogPostRepository.getPost(slug: initialSlug).map { postWithSameSlug in
             if postWithSameSlug != nil {
                 let randomNumberGenerator = try req.make(SteamPressRandomNumberGenerator.self)
                 let randomNumber = randomNumberGenerator.getNumber()

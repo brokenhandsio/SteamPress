@@ -29,9 +29,7 @@ struct BlogAdminController: RouteCollection {
 
     // MARK: Admin Handler
     func adminHandler(_ req: Request) throws -> EventLoopFuture<View> {
-        let usersRepository = try req.make(BlogUserRepository.self)
-        let postsRepository = try req.make(BlogPostRepository.self)
-        return flatMap(postsRepository.getAllPostsSortedByPublishDate(includeDrafts: true, on: req), usersRepository.getAllUsers(on: req)) { posts, users in
+        return req.blogPostRepository.getAllPostsSortedByPublishDate(includeDrafts: true).and(req.blogUserRepository.getAllUsers()).flatMap { posts, users in
             let presenter = try req.make(BlogAdminPresenter.self)
             return try presenter.createIndexView(on: req, posts: posts, users: users, errors: nil, pageInformation: req.adminPageInfomation())
         }

@@ -46,8 +46,7 @@ struct PostAdminController: RouteCollection {
         return try BlogPost.generateUniqueSlugURL(from: title, on: req).flatMap { uniqueSlug in
             let newPost = try BlogPost(title: title, contents: contents, author: author, creationDate: Date(), slugUrl: uniqueSlug, published: data.publish != nil)
 
-            let postRepository = try req.make(BlogPostRepository.self)
-            return postRepository.save(newPost, on: req).flatMap { post in
+            return req.blogPostRepository.save(newPost, on: req).flatMap { post in
                 let tagsRepository = try req.make(BlogTagRepository.self)
 
                 var existingTagsQuery = [EventLoopFuture<BlogTag?>]()
@@ -86,8 +85,7 @@ struct PostAdminController: RouteCollection {
             let tagsRepository = try req.make(BlogTagRepository.self)
             return tagsRepository.deleteTags(for: post, on: req).flatMap {
                 let redirect = req.redirect(to: self.pathCreator.createPath(for: "admin"))
-                let postRepository = try req.make(BlogPostRepository.self)
-                return postRepository.delete(post, on: req).transform(to: redirect)
+                return req.blogPostRepository.delete(post, on: req).transform(to: redirect)
             }
         }
     }
@@ -174,8 +172,7 @@ struct PostAdminController: RouteCollection {
                         }
                         return postTagLinkResults.flatten(on: req).flatMap {
                             let redirect = req.redirect(to: self.pathCreator.createPath(for: "posts/\(post.slugUrl)"))
-                            let postRepository = try req.make(BlogPostRepository.self)
-                            return postRepository.save(post, on: req).transform(to: redirect)
+                            return req.blogPostRepository.save(post, on: req).transform(to: redirect)
                         }
                     }
                 }

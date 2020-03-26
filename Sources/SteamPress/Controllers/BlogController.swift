@@ -3,11 +3,11 @@ import Vapor
 struct BlogController: RouteCollection {
 
     // MARK: - Properties
-    fileprivate let blogPostsPath = "posts"
-    fileprivate let tagsPath = "tags"
-    fileprivate let authorsPath = "authors"
-    fileprivate let apiPath = "api"
-    fileprivate let searchPath = "search"
+    fileprivate let blogPostsPath = PathComponent(stringLiteral: "posts")
+    fileprivate let tagsPath = PathComponent(stringLiteral: "tags")
+    fileprivate let authorsPath = PathComponent(stringLiteral: "authors")
+    fileprivate let apiPath = PathComponent(stringLiteral: "api")
+    fileprivate let searchPath = PathComponent(stringLiteral: "search")
     fileprivate let pathCreator: BlogPathCreator
     fileprivate let enableAuthorPages: Bool
     fileprivate let enableTagsPages: Bool
@@ -24,12 +24,12 @@ struct BlogController: RouteCollection {
     // MARK: - Add routes
     func boot(routes: RoutesBuilder) throws {
         routes.get(use: indexHandler)
-        routes.get(blogPostsPath, String.parameter, use: blogPostHandler)
+        routes.get(blogPostsPath, ":blogSlug", use: blogPostHandler)
         routes.get(blogPostsPath, use: blogPostIndexRedirectHandler)
         routes.get(searchPath, use: searchHandler)
         if enableAuthorPages {
             routes.get(authorsPath, use: allAuthorsViewHandler)
-            routes.get(authorsPath, String.parameter, use: authorViewHandler)
+            routes.get(authorsPath, ":authorUsername", use: authorViewHandler)
         }
         if enableTagsPages {
             routes.get(tagsPath, BlogTag.parameter, use: tagViewHandler)
@@ -40,17 +40,14 @@ struct BlogController: RouteCollection {
     // MARK: - Route Handlers
 
     func indexHandler(_ req: Request) throws -> EventLoopFuture<View> {
-        let postRepository = try req.make(BlogPostRepository.self)
-        let tagRepository = try req.make(BlogTagRepository.self)
-        let userRepository = try req.make(BlogUserRepository.self)
         let paginationInformation = req.getPaginationInformation(postsPerPage: postsPerPage)
-        return flatMap(postRepository.getAllPostsSortedByPublishDate(includeDrafts: false, on: req, count: postsPerPage, offset: paginationInformation.offset),
-                       tagRepository.getAllTags(on: req),
-                       userRepository.getAllUsers(on: req),
-                       postRepository.getAllPostsCount(includeDrafts: false, on: req),
-                       tagRepository.getTagsForAllPosts(on: req)) { posts, tags, users, totalPostCount, tagsForPosts in
-            let presenter = try req.make(BlogPresenter.self)
-                        return presenter.indexView(on: req, posts: posts, tags: tags, authors: users, tagsForPosts: tagsForPosts, pageInformation: try req.pageInformation(), paginationTagInfo: self.getPaginationInformation(currentPage: paginationInformation.page, totalPosts: totalPostCount, currentQuery: req.http.url.query))
+        return req.blogPostRepository.getAllPostsSortedByPublishDate(includeDrafts: false, count: postsPerPage, offset: paginationInformation.offset).and(req.blogTagRepository.getAllTags()).flatMap { posts, tags in
+            req.blogUserRepository.getAllUsers().and(req.blogPostRepository.getAllPostsCount(includeDrafts: false)).flatMap { users, totalPostCount in
+                req.blogTagRepository.getTagsForAllPosts().flatMap { tagsForPosts in
+                    let presenter = try req.make(BlogPresenter.self)
+                    return presenter.indexView(on: req, posts: posts, tags: tags, authors: users, tagsForPosts: tagsForPosts, pageInformation: try req.pageInformation(), paginationTagInfo: self.getPaginationInformation(currentPage: paginationInformation.page, totalPosts: totalPostCount, currentQuery: req.http.url.query))
+                }
+            }
         }
     }
 
@@ -59,14 +56,13 @@ struct BlogController: RouteCollection {
     }
 
     func blogPostHandler(_ req: Request) throws -> EventLoopFuture<View> {
-        let blogSlug = try req.parameters.next(String.self)
-        let blogRepository = try req.make(BlogPostRepository.self)
-        return blogRepository.getPost(slug: blogSlug, on: req).unwrap(or: Abort(.notFound)).flatMap { post in
-            let userRepository = try req.make(BlogUserRepository.self)
-            let tagsRepository = try req.make(BlogTagRepository.self)
-            let tagsQuery = tagsRepository.getTags(for: post, on: req)
-            let userQuery = userRepository.getUser(id: post.author, on: req).unwrap(or: Abort(.internalServerError))
-            return flatMap(userQuery, tagsQuery) { user, tags in
+        guard let blogSlug = req.parameters.get("blogSlug") else {
+            throw Abort(.badRequest)
+        }
+        return req.blogPostRepository.getPost(slug: blogSlug).unwrap(or: Abort(.notFound)).flatMap { post in
+            let tagsQuery = req.blogTagsRepository.getTags(for: post, on: req)
+            let userQuery = req.blogUserRepository.getUser(id: post.author, on: req).unwrap(or: Abort(.internalServerError))
+            return userQuery.and(tagsQuery).flatMap { user, tags in
                 let presenter = try req.make(BlogPresenter.self)
                 return presenter.postView(on: req, post: post, author: user, tags: tags, pageInformation: try req.pageInformation())
             }
@@ -75,12 +71,10 @@ struct BlogController: RouteCollection {
 
     func tagViewHandler(_ req: Request) throws -> EventLoopFuture<View> {
         return try req.parameters.next(BlogTag.self).flatMap { tag in
-            let postRepository = try req.make(BlogPostRepository.self)
-            let usersRepository = try req.make(BlogUserRepository.self)
             let paginationInformation = req.getPaginationInformation(postsPerPage: self.postsPerPage)
-            let postsQuery = postRepository.getSortedPublishedPosts(for: tag, on: req, count: self.postsPerPage, offset: paginationInformation.offset)
-            let postCountQuery = postRepository.getPublishedPostCount(for: tag, on: req)
-            let usersQuery = usersRepository.getAllUsers(on: req)
+            let postsQuery = req.blogPostRepository.getSortedPublishedPosts(for: tag, count: self.postsPerPage, offset: paginationInformation.offset)
+            let postCountQuery = req.blogPostRepository.getPublishedPostCount(for: tag)
+            let usersQuery = req.blogUsersRepository.getAllUsers()
             return flatMap(postsQuery, postCountQuery, usersQuery) { posts, totalPosts, authors in
                 let presenter = try req.make(BlogPresenter.self)
                 let paginationTagInfo = self.getPaginationInformation(currentPage: paginationInformation.page, totalPosts: totalPosts, currentQuery: req.http.url.query)
@@ -90,23 +84,23 @@ struct BlogController: RouteCollection {
     }
 
     func authorViewHandler(_ req: Request) throws -> EventLoopFuture<View> {
-        let authorUsername = try req.parameters.next(String.self)
-        let userRepository = try req.make(BlogUserRepository.self)
+        guard let authorUsername = req.parameters.get("authorUsername") else {
+            throw Abort(.badRequest)
+        }
         let paginationInformation = req.getPaginationInformation(postsPerPage: postsPerPage)
-        return userRepository.getUser(username: authorUsername, on: req).flatMap { user in
+        return req.blogUserRepository.getUser(username: authorUsername).flatMap { user in
             guard let author = user else {
                 throw Abort(.notFound)
             }
-
-            let postRepository = try req.make(BlogPostRepository.self)
-            let tagsRepostiory = try req.make(BlogTagRepository.self)
-            let authorPostQuery = postRepository.getAllPostsSortedByPublishDate(for: author, includeDrafts: false, on: req, count: self.postsPerPage, offset: paginationInformation.offset)
-            let tagQuery = tagsRepostiory.getTagsForAllPosts(on: req)
-            let authorPostCountQuery = postRepository.getPostCount(for: author, on: req)
-            return flatMap(authorPostQuery, authorPostCountQuery, tagQuery) { posts, postCount, tagsForPosts in
-                let presenter = try req.make(BlogPresenter.self)
-                let paginationTagInfo = self.getPaginationInformation(currentPage: paginationInformation.page, totalPosts: postCount, currentQuery: req.http.url.query)
-                return presenter.authorView(on: req, author: author, posts: posts, postCount: postCount, tagsForPosts: tagsForPosts, pageInformation: try req.pageInformation(), paginationTagInfo: paginationTagInfo)
+            let authorPostQuery = req.blogPostRepository.getAllPostsSortedByPublishDate(for: author, includeDrafts: false, count: self.postsPerPage, offset: paginationInformation.offset)
+            let tagQuery = req.blogTagRepository.getTagsForAllPosts()
+            let authorPostCountQuery = req.blogPostRepository.getPostCount(for: author)
+            return authorPostQuery.and(authorPostCountQuery).flatMap { posts, postCount in
+                tagQuery.flatMap { tagsForPosts in
+                    let presenter = try req.make(BlogPresenter.self)
+                    let paginationTagInfo = self.getPaginationInformation(currentPage: paginationInformation.page, totalPosts: postCount, currentQuery: req.http.url.query)
+                    return presenter.authorView(on: req, author: author, posts: posts, postCount: postCount, tagsForPosts: tagsForPosts, pageInformation: try req.pageInformation(), paginationTagInfo: paginationTagInfo)
+                }
             }
         }
     }
@@ -145,20 +139,19 @@ struct BlogController: RouteCollection {
         let preseneter = try req.make(BlogPresenter.self)
         let paginationInformation = req.getPaginationInformation(postsPerPage: postsPerPage)
         guard let searchTerm = req.query[String.self, at: "term"], !searchTerm.isEmpty else {
-            let paginationTagInfo = getPaginationInformation(currentPage: paginationInformation.page, totalPosts: 0, currentQuery: req.http.url.query)
+            let paginationTagInfo = getPaginationInformation(currentPage: paginationInformation.page, totalPosts: 0, currentQuery: req.url.query)
             return preseneter.searchView(on: req, totalResults: 0, posts: [], authors: [], searchTerm: nil, tagsForPosts: [:], pageInformation: try req.pageInformation(), paginationTagInfo: paginationTagInfo)
         }
 
-        let postRepository = try req.make(BlogPostRepository.self)
-        let authorRepository = try req.make(BlogUserRepository.self)
-        let tagRepository = try req.make(BlogTagRepository.self)
-        let postsCountQuery = postRepository.getPublishedPostCount(for: searchTerm, on: req)
-        let postsQuery = postRepository.findPublishedPostsOrdered(for: searchTerm, on: req, count: self.postsPerPage, offset: paginationInformation.offset)
-        let tagsQuery = tagRepository.getTagsForAllPosts(on: req)
-        let userQuery = authorRepository.getAllUsers(on: req)
-        return flatMap(postsQuery, postsCountQuery, userQuery, tagsQuery) { posts, totalPosts, users, tagsForPosts in
-            let paginationTagInfo = self.getPaginationInformation(currentPage: paginationInformation.page, totalPosts: totalPosts, currentQuery: req.http.url.query)
-            return preseneter.searchView(on: req, totalResults: totalPosts, posts: posts, authors: users, searchTerm: searchTerm, tagsForPosts: tagsForPosts, pageInformation: try req.pageInformation(), paginationTagInfo: paginationTagInfo)
+        let postsCountQuery = req.blogPostRepository.getPublishedPostCount(for: searchTerm)
+        let postsQuery = req.blogPostRepository.findPublishedPostsOrdered(for: searchTerm, count: self.postsPerPage, offset: paginationInformation.offset)
+        let tagsQuery = req.blogTagRepository.getTagsForAllPosts()
+        let userQuery = req.blogUserRepository.getAllUsers()
+        return postsQuery.and(postsCountQuery).flatMap { posts, totalPosts in
+            userQuery.and(tagsQuery).flatMap { users, tagsForPosts in
+                let paginationTagInfo = self.getPaginationInformation(currentPage: paginationInformation.page, totalPosts: totalPosts, currentQuery: req.http.url.query)
+                return preseneter.searchView(on: req, totalResults: totalPosts, posts: posts, authors: users, searchTerm: searchTerm, tagsForPosts: tagsForPosts, pageInformation: try req.pageInformation(), paginationTagInfo: paginationTagInfo)
+            }
         }
     }
     

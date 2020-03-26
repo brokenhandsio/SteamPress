@@ -109,10 +109,9 @@ struct UserAdminController: RouteCollection {
     }
 
     func deleteUserPostHandler(_ req: Request) throws -> EventLoopFuture<Response> {
-        try req.parameters.find(BlogUser.self, on: req).and(req.blogUserRepository.getUsersCount(on: req)).flatMap { user, userCount in
+        try req.parameters.find(BlogUser.self, on: req).and(req.blogUserRepository.getUsersCount()).flatMap { user, userCount in
             guard userCount > 1 else {
-                let postRepository = try req.make(BlogPostRepository.self)
-                return flatMap(postRepository.getAllPostsSortedByPublishDate(includeDrafts: true, on: req), userRepository.getAllUsers(on: req)) { posts, users in
+                return req.blogPostRepository.getAllPostsSortedByPublishDate(includeDrafts: true).and(req.blogUserRepository.getAllUsers()).flatMap { posts, users in
                     let presenter = try req.make(BlogAdminPresenter.self)
                     let view = try presenter.createIndexView(on: req, posts: posts, users: users, errors: ["You cannot delete the last user"], pageInformation: req.adminPageInfomation())
                     return try view.encode(for: req)
@@ -121,8 +120,7 @@ struct UserAdminController: RouteCollection {
 
             let loggedInUser = try req.requireAuthenticated(BlogUser.self)
             guard loggedInUser.userID != user.userID else {
-                let postRepository = try req.make(BlogPostRepository.self)
-                return flatMap(postRepository.getAllPostsSortedByPublishDate(includeDrafts: true, on: req), userRepository.getAllUsers(on: req)) { posts, users in
+                return req.blogPostRepository.getAllPostsSortedByPublishDate(includeDrafts: true).and(req.blogUserRepository.getAllUsers()).flatMap { posts, users in
                     let presenter = try req.make(BlogAdminPresenter.self)
                     let view = try presenter.createIndexView(on: req, posts: posts, users: users, errors: ["You cannot delete yourself whilst logged in"], pageInformation: req.adminPageInfomation())
                     return try view.encode(for: req)
