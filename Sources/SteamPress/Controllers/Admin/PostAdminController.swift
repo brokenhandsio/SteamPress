@@ -26,7 +26,7 @@ struct PostAdminController: RouteCollection {
     }
 
     func createPostPostHandler(_ req: Request) throws -> EventLoopFuture<Response> {
-        let data = try req.content.syncDecode(CreatePostData.self)
+        let data = try req.content.decode(CreatePostData.self)
         let author = try req.requireAuthenticated(BlogUser.self)
 
         if data.draft == nil && data.publish == nil {
@@ -103,7 +103,7 @@ struct PostAdminController: RouteCollection {
     }
 
     func editPostPostHandler(_ req: Request) throws -> EventLoopFuture<Response> {
-        let data = try req.content.syncDecode(CreatePostData.self)
+        let data = try req.content.decode(CreatePostData.self)
         return try req.parameters.next(BlogPost.self).flatMap { post in
             if let errors = self.validatePostCreation(data) {
                 let presenter = try req.make(BlogAdminPresenter.self)

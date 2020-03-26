@@ -31,7 +31,7 @@ struct LoginController: RouteCollection {
     }
 
     func loginPostHandler(_ req: Request) throws -> EventLoopFuture<Response> {
-        let loginData = try req.content.syncDecode(LoginData.self)
+        let loginData = try req.content.decode(LoginData.self)
         var loginErrors = [String]()
         var usernameError = false
         var passwordError = false
@@ -85,7 +85,7 @@ struct LoginController: RouteCollection {
     }
 
     func resetPasswordPostHandler(_ req: Request) throws -> EventLoopFuture<Response> {
-        let data = try req.content.syncDecode(ResetPasswordData.self)
+        let data = try req.content.decode(ResetPasswordData.self)
 
         var resetPasswordErrors = [String]()
         var passwordError: Bool?

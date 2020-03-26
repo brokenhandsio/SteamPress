@@ -27,7 +27,7 @@ struct UserAdminController: RouteCollection {
     }
 
     func createUserPostHandler(_ req: Request) throws -> EventLoopFuture<Response> {
-        let data = try req.content.syncDecode(CreateUserData.self)
+        let data = try req.content.decode(CreateUserData.self)
 
         return try validateUserCreation(data, on: req).flatMap { createUserErrors in
             if let errors = createUserErrors {
@@ -67,7 +67,7 @@ struct UserAdminController: RouteCollection {
 
     func editUserPostHandler(_ req: Request) throws -> EventLoopFuture<Response> {
         return try req.parameters.next(BlogUser.self).flatMap { user in
-            let data = try req.content.syncDecode(CreateUserData.self)
+            let data = try req.content.decode(CreateUserData.self)
 
             guard let name = data.name, let username = data.username else {
                 throw Abort(.internalServerError)
