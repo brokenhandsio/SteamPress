@@ -231,6 +231,12 @@ For every public Leaf template, a `pageInformation` parameter will be passed in 
 * `currentPageURL`: The URL of the current page
 * `currentPageEncodedURL`: An URL encoded representation of the current page
 
+For admin pages, the `pageInformation` parameter has the following information:
+
+* `loggedInUser`: The currently logged in user, if a user is logged in. This is useful for displaying a 'Create Post' link throughout the site when logged in etc.
+* `websiteURL`: The URL for the website
+* `currentPageURL`: The URL of the current page
+
 The basic structure of your `Resources/View` directory should be:
 
 * `blog`
@@ -254,83 +260,87 @@ The basic structure of your `Resources/View` directory should be:
 
 This is the index page of the blog. The parameters it will receive are:
 
-* `posts` - a Node containing data about the posts and metadata for the paginator. You can access the posts by calling the `.data` object on it, which is an array of blog posts if there are any, in date descending order. The posts will be made with a `longSnippet` context (see below)
-* `tags` - an array of tags if there are any
+* `posts` - an array containing `ViewBlogPost`s. This contains all the post information and extra stuff that's useful, such as other date formats and snippets.
+* `tags` - an array of `ViewBlogTag`s if there are any
 * `authors` - an array of the authors if there are any
-* `disqus_name` - the name of your Disqus site if configured
-* `blog_index_page` - a boolean saying we are on the index page of the blog - useful for navbars
-* `site_twitter_handle` - the Twitter handle for the site if configured
-* `uri` - the URI of the page - useful for Open Graph
-* `google_analytics_identifier` - your Google Analytics identifier if configured
-
+* `pageInformation` - general page information (see above)
+* `title` - the title for the page
+* `blogIndexPage` - a boolean saying we are on the index page of the blog - useful for navbars
+* `paginationTagInformation` - information for enabling pagination on the page. See `PaginationTagInformation` for more details.
 
 ### `blogpost.leaf`
 
 This is the page for viewing a single entire blog post. The parameters set are:
 
-* `post` - the full current post, with the `all` context
+* `title` - the title of the blog post
+* `post` - the blog post as a `ViewBlogPost`
 * `author` - the author of the post
-* `blog_post_page` - a boolean saying we are on the blog post page
-* `disqus_name` - the name of your Disqus site if configured
-* `post_uri` - The URI of the post
-* `post_uri_encoded` - A URL-query encoded for of the URI for passing to Share buttons
-* `site_uri`: The URI of the root site - this is useful for creating links to author pages for `article:author` Open Graph support (has a trailing slash)
-* `post_description` - The HTML of the short snippet of the post on a single line with all HTML tags stripped out for the `description` tags
-* `post_image` - The first image in the blog post if one is there. Useful for OpenGraph and Twitter Cards
-* `post_image_alt` - The alt text of the first image if it exists. Useful for Twitter Cards
-* `site_twitter_handle` - the Twitter handle for the site if configured
-* `google_analytics_identifier` - your Google Analytics identifier if configured
+* `blogPostPage` - a boolean saying we are on the blog post page
+* `pageInformation` - general page information (see above)
+* `postImage` - The first image in the blog post if one is there. Useful for OpenGraph and Twitter Cards
+* `postImageAlt` - The alt text of the first image if it exists. Useful for Twitter Cards
+* `shortSnippet`: The HTML of the short snippet of the post on a single line with all HTML tags stripped out for the `description` tags
 
 ### `tag.leaf`
 
 This is the page for a tag. A blog post can be tagged with many tags and a tag can be tagged on many blog posts. This page is generally used for viewing all posts under that tag. The parameters are:
 
 * `tag` - the tag
-* `posts` - a Node containing data about the posts and metadata for the paginator. You can access the posts by calling the `.data` object on it, which is an array of blog posts if there are any, in date descending order. The posts will be made with a `longSnippet` context (see below)
-* `tag_page` - a boolean saying we are on the tag page
-* `disqus_name` - the name of your Disqus site if configured
-* `site_twitter_handle` - the Twitter handle for the site if configured
-* `uri` - the URI of the page - useful for Open Graph
-* `google_analytics_identifier` - your Google Analytics identifier if configured
+* `posts` - an array of `ViewBlogPost`s that have been tagged with this tag. Note that this may not be all the posts due to pagination
+* `tagPage` - a boolean saying we are on the tag page
+* `postCount` - the number of posts in total that have this tag
+* `pageInformation` - general page information (see above)
+* `paginationTagInformation` - information for enabling pagination on the page. See `PaginationTagInformation` for more details.
 
 ### `profile.leaf`
 
 This is the page for viewing a profile of a user. This is generally used for viewing all posts written by a user, as well as some information about them. The parameters it can have set are:
 
 * `author` - the user the page is for
-* `profile_page` - a boolean set to to true if we are viewing the profile page
-* `posts` - all the posts the user has written if they have written any in `shortSnippet` form
-* `disqus_name` - the name of your Disqus site if configured
-* `site_twitter_handle` - the Twitter handle for the site if configured
-* `uri` - the URI of the page - useful for Open Graph
-* `google_analytics_identifier` - your Google Analytics identifier if configured
+* `posts` - an array of `ViewBlogPost`s that have been written by this user. Note that this may not be .all the posts due to pagination
+* `profilePage` - a boolean set to to true if we are viewing the profile page
+* `myProfile` - a boolean set if the currently logged in user is viewing their own profile page
+* `postCount` - the number of posts in total that have this tag
+* `pageInformation` - general page information (see above)
+* `paginationTagInformation` - information for enabling pagination on the page. See `PaginationTagInformation` for more details.
 
 ### `tags.leaf`
 
 This is the page for viewing all of the tags on the blog. This provides some more navigation points for the blog as well as providing a page in case the user strips off the tag from the Tag's URL. The parameters that can be passed to it are:
 
-* `tags` - an array of all the tags on the blog, in `withPostCount` context (see below) sorted by post count
-* `site_twitter_handle` - the Twitter handle for the site if configured
-* `uri` - the URI of the page - useful for Open Graph
-* `google_analytics_identifier` - your Google Analytics identifier if configured
+* `title` - a title for the page
+* `tags` - an array of `BlogTagWithPostCount`s. This is the tags with the number of posts tagged with that tag
+* `pageInformation` - general page information (see above)
 
 ### `authors.leaf`
 
 This is the page for viewing all of the authors on the blog. It provides a useful page for user's to see everyone who has contributed to the site.
 
-* `authors` - an array of all the `BlogUser`s on the blog, in `withPostCount` context (see below) sorted by post count
-* `site_twitter_handle` - the Twitter handle for the site if configured
-* `uri` - the URI of the page - useful for Open Graph
-* `google_analytics_identifier` - your Google Analytics identifier if configured
+* `authors` - an array of all the `ViewBlogAuthor`s on the blog
+* `pageInformation` - general page information (see above)
 
 ### `search.leaf`
 
 This is the page that will display search results. It has a number of parameters on it on top of the standard parameters:
 
-* `emptySearch` - returned if no search term of an empty search term was received
+* `title` - a title for the page
 * `searchTerm` - the search term if provided
-* `searchCount` - the number of results returned from the search
-* `posts` - the posts found from the search, paginated, in `longSnippet` form
+* `totalResults` - the number of results returned from the search
+* `posts` - an array of `ViewBlogPost`s returned in the search. Note that this may not be all the posts due to pagination.
+* `pageInformation` - general page information (see above)
+* `paginationTagInformation` - information for enabling pagination on the page. See `PaginationTagInformation` for more details.
+
+### `login.leaf`
+
+This is the page for logging in to the admin section of the blog. The parameters are:
+* `title` - a title for the page
+* `errors` - an array of error messages if there were any errors logging in
+* `loginWarning` - a flag set if the user tried to access a protected page and was redirected to the login page
+* `username` - the username supplied (if any) when originally submitting the login for and there (useful for pre-populating the form)
+* `usernameError` - a boolean set if there was an issue with the username
+* `passwordError` - a boolean set if there was an error with the password (note that we do not pass any password submitted back to any pages if there was an error for security reasons)
+* `rememberMe` - set if the remember me checkbox was checked and there was an error, useful for pre-populating
+* `pageInformation` - general page information (see above)
 
 ## Admin Site
 
@@ -339,57 +349,61 @@ This is the page that will display search results. It has a number of parameters
 This is the main Admin page for the blog where you can create and edit users and posts. The parameters for this page are:
 
 * `users` - all the users for the site
-* `published_posts` - all the posts that have been published if there are any, with the `all` Context
-* `draft_posts` - all the draft posts that have been saved but not published, if there are any, with the `all` Context
+* `publishedPosts` - all the posts that have been published if there are any, , as `ViewBlogPostWithoutTags`
+* `draftPosts` - all the draft posts that have been saved but not published, if there are any, as `ViewBlogPostWithoutTags`
 * `errors` - any error messages for errors that have occurred when trying to delete posts or users (for instance trying to delete yourself or the last user)
-* `blog_admin_page` - a boolean set to true, useful for navigation
-
-### `login.leaf`
-
-This is the page for logging in to the admin section of the blog. The parameters are:
-
-* `username_error` - a boolean set if there was an issue with the username
-* `password_error` - a boolean set if there was an error with the password (note that we do not pass any password submitted back to any pages if there was an error for security reasons)
-* `username_supplied` - the username supplied (if any) when originally submitting the login for and there (useful for pre-populating the form)
-* `errors` - an array of error messages if there were any errors logging in
+* `blogAdminPage` - a boolean set to true, useful for navigation
+* `title` - the title for the page
+* `pageInformation` - general page information as `BlogAdminPageInformation` - see above
 
 ### `resetPassword.leaf`
 
 This is the page you will be redirected to if you need to reset your password. The parameters are:
 
 * `errors` - an array of errors if there were any errors resetting your password
-* `password_error` - a boolean set if there was an error with the password (for instance it was blank)
-* `confirm_password_error` - a boolean set if there was an error with the password confirm (for instance it was blank)
+* `passwordError` - a boolean set if there was an error with the password (for instance it was blank)
+* `confirmPasswordError` - a boolean set if there was an error with the password confirm (for instance it was blank)
+* `pageInformation` - general page information as `BlogAdminPageInformation` - see above
 
 ### `createPost.leaf`
 
 This is the page for creating a new blog post, or editing an existing one. The parameters for this page are:
 
-* `title_error` - a boolean set to true if there was an error with the title
-* `contents_error` - a boolean set to true if there was an error with the blog contents
-* `errors` - an array of error messages if there were any errors creating or editing the blog post
-* `title_supplied` - the title of the blog post to edit, or the post that failed to be created
-* `contents_supplied` - the contents of the blog post to edit, or the post that failed to be created
-* `tags_supplied` - an array of all of the tags that have been specified for the blog post
+* `title` - the title for the page
 * `editing` - a boolean set to true if we are currently editing the a blog post rather than creating a new one
 * `post` - the post object we are currently editing
-* `create_blog_post_page` - a boolean set to true, useful for the navbar etc
+* `draft` - a flag that's set when the post has been saved as a draft
+* `errors` - an array of error messages if there were any errors creating or editing the blog post
+* `titleSupplied` - the title of the blog post to edit, or the post that failed to be created
+* `contentsSupplied` - the contents of the blog post to edit, or the post that failed to be created
+* `tagsSupplied` - an array of all of the tags that have been specified for the blog post
+* `slugURLSupplied` - the slug URL of the blog post to edit, or the post that failed to be created
+* `titleError` - a boolean set to true if there was an error with the title
+* `contentsError` - a boolean set to true if there was an error with the blog contents
+let postPathPrefix: String
+* `postPathPrefix` - the path to the post page that would be created or we are editing
+* `pageInformation` - general page information as `BlogAdminPageInformation` - see above
 
-### `createLogin.leaf`
+### `createUser.leaf`
 
 This is the page for creating a new user, or editing an existing one. The parameters are:
 
-* `name_error` - a boolean set if there was an error with the name
-* `username_error` - a boolean set if there was an error with the username
-* `errors` - an array of error messages if there were any errors editing or creating the user
-* `name_supplied` - the name of the user we are editing or that we failed to create
-* `username_supplied` - the username of the user we are editing or that we failed to create
-* `password_error` - a boolean set to true if there was an error with the password
-* `confirm_password_error` - a boolean set to true if there was an error with the password confirm
-* `reset_password_on_login_supplied` - a boolean set to true if the edit/create submission was asked to reset the users password on next login (this is only supplied in an error so you can pre-populate the form for a user to correct without losing any information)
+* `title` - the title for the page
 * `editing` - a boolean set to true if we are editing a user
-* `user_id` - this is the ID of the user if we are editing one. This allows you to send the edit user `POST` back to the correct route
-
+* `errors` - an array of error messages if there were any errors editing or creating the user
+* `nameSupplied` - the name of the user we are editing or that we failed to create
+* `nameError` - a boolean set if there was an error with the name
+* `usernameSupplied` - the username of the user we are editing or that we failed to create
+* `usernameError` - a boolean set if there was an error with the username
+* `passwordError` - a boolean set to true if there was an error with the password
+* `confirmPasswordError` - a boolean set to true if there was an error with the password confirm
+* `resetPasswordOnLoginSupplied` - a boolean set to true if the edit/create submission was asked to reset the users password on next login (this is only supplied in an error so you can pre-populate the form for a user to correct without losing any information)
+* `userID` - this is the ID of the user if we are editing one. This allows you to send the edit user `POST` back to the correct route
+* `twitterHandleSupplied` - the twitter handle of the user we are editing or that we failed to create
+* `profilePictureSupplied` - the URL of the profile picture of the user we are editing or that we failed to create
+* `biographySupplied` - the biography of the user we are editing or that we failed to create
+* `taglineSupplied` - the tagline of the user we are editing or that we failed to create
+* `pageInformation` - general page information as `BlogAdminPageInformation` - see above
 
 ## `POST` Routes
 
@@ -397,51 +411,7 @@ There are a number of `POST` routes to the Admin site for creating and editing u
 
 This section needs to be filled out, but you can view the Controllers in the code to work out what they should be, or see the [Example Site](https://github.com/brokenhandsio/SteamPressExample).
 
-# Contexts
-
-## Blog Post
-
-The blog post has a number of `Context`s you can pass to the `makeNode()` function to provide more information when getting a `BlogPost`. Currently there are three contexts supported:
-
-* `.shortSnippet` - this will return the post with an `id`, `title`, `author_name`, `author_username`, `slug_url`, `created_date` (Human readable) and `short_snippet`
-* `.longSnippet` - this will return the post with an `id`, `title`, `author_name`, `author_username`, `slug_url`, `created_date` (Human readable) and `long_snippet`. It will also include all of the tags in a `tags` object if there are any associated with that post
-* `.all` - this returns the post with all information, including both snippet lengths, including author names and human readable dates, as well as both dates in ISO 8601 format under the parameter names `created_date_iso8601` and `last_edited_date_iso8601`.
-
-If no `Context` is supplied to the `makeNode()` call you will get:
-
-* `id`
-* `title`
-* `contents`
-* `bloguser_id` - The ID of the Author of the post
-* `created` - The time the post was created as a `Double`
-* `slug_url`
-* `published` - Whether the post has been published or not
-
-## Blog User
-
-The blog user has a `withPostCount` `BlogUserContext` available to pass into the `makeNode()` function that provides an extra `post_count` parameter to the user node, which contains the number of posts that author has written.
-
-## Blog Tag
-
-The blog user has a `withPostCount` `BlogTagContext` available to pass into the `makeNode()` function that provides an extra `post_count` parameter to the tag node, which contains the number of posts tagged with that tag.
-
-# Snippets
-
-SteamPress supports two type of snippets for blog posts - short and long. Short snippets will provide the first paragraph or so of the blog post, whereas long snippets will show several paragraphs (such as for use on the main blog page, when listing all of the posts)
-
-## Usage
-
-You can pass in a `BlogPostContext` to the `makeNode()` call to provide more information when getting `BlogPost` objects, as shown above.
-
-You can also call them directly on a `BlogPost` object (such as from a `Query()`):
-
-```swift
-// These both return the some of the contents of a blog post (as a String)
-let shortSnippet = post.shortSnippet()
-let longSnippet = post.longSnippet()
-```
-
-# Markdown Tag
+## Markdown Tag
 
 The Markdown Tag allows you to render markdown as HTML in your Leaf files. To use, just simply use:
 
