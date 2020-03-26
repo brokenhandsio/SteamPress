@@ -59,15 +59,14 @@ struct LoginController: RouteCollection {
             try req.session()["SteamPressRememberMe"] = nil
         }
 
-        return req.blogUserRepository.getUser(username: username).flatMap { user in
+        return req.blogUserRepository.getUser(username: username).flatMap { user -> EventLoopFuture<Response> in
             let verifier = try req.make(PasswordVerifier.self)
             guard let user = user, try verifier.verify(password, created: user.password) else {
                 let loginError = ["Your username or password is incorrect"]
-                let presenter = try req.make(BlogPresenter.self)
-                return try presenter.loginView(on: req, loginWarning: false, errors: loginError, username: loginData.username, usernameError: false, passwordError: false, rememberMe: loginData.rememberMe ?? false, pageInformation: req.pageInformation()).encode(for: req)
+                return try req.blogPresenter.loginView(loginWarning: false, errors: loginError, username: loginData.username, usernameError: false, passwordError: false, rememberMe: loginData.rememberMe ?? false, pageInformation: req.pageInformation()).encodeResponse(for: req)
             }
             try user.authenticateSession(on: req)
-            return req.future(req.redirect(to: self.pathCreator.createPath(for: "admin")))
+            return req.eventLoop.future(req.redirect(to: self.pathCreator.createPath(for: "admin")))
         }
     }
 
@@ -116,7 +115,7 @@ struct LoginController: RouteCollection {
 
         guard resetPasswordErrors.isEmpty else {
             let view = try req.adminPresenter.createResetPasswordView(errors: resetPasswordErrors, passwordError: passwordError, confirmPasswordError: confirmPasswordError, pageInformation: req.adminPageInfomation())
-            return try view.encode(for: req)
+            return view.encodeResponse(for: req)
         }
 
         let user = try req.requireAuthenticated(BlogUser.self)
@@ -124,6 +123,6 @@ struct LoginController: RouteCollection {
         user.password = try hasher.hash(password)
         user.resetPasswordRequired = false
         let redirect = req.redirect(to: pathCreator.createPath(for: "admin"))
-        return req.blogUserRepository.save(user, on: req).transform(to: redirect)
+        return req.blogUserRepository.save(user).transform(to: redirect)
     }
 }

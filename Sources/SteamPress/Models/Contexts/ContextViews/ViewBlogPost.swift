@@ -94,7 +94,7 @@ extension BlogPost {
 }
 
 extension Array where Element: BlogPost {
-    func convertToViewBlogPosts(authors: [BlogUser], tagsForPosts: [Int: [BlogTag]], on container: Container) throws -> [ViewBlogPost] {
+    func convertToViewBlogPosts(authors: [BlogUser], tagsForPosts: [Int: [BlogTag]], on request: Request) throws -> [ViewBlogPost] {
         let longDateFormatter = try container.make(LongPostDateFormatter.self)
         let numericDateFormatter = try container.make(NumericPostDateFormatter.self)
         let viewPosts = try self.map { post -> ViewBlogPost in
@@ -106,7 +106,7 @@ extension Array where Element: BlogPost {
         return viewPosts
     }
     
-    func convertToViewBlogPostsWithoutTags(authors: [BlogUser], on container: Container) throws -> [ViewBlogPostWithoutTags] {
+    func convertToViewBlogPostsWithoutTags(authors: [BlogUser], on request: Request) throws -> [ViewBlogPostWithoutTags] {
         let longDateFormatter = try container.make(LongPostDateFormatter.self)
         let numericDateFormatter = try container.make(NumericPostDateFormatter.self)
         let viewPosts = try self.map { post -> ViewBlogPostWithoutTags in

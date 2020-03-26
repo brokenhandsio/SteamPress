@@ -28,31 +28,30 @@ struct RSSFeedGenerator {
 
     // MARK: - Route Handler
 
-    func feedHandler(_ request: Request) throws -> EventLoopFuture<HTTPResponse> {
+    func feedHandler(_ request: Request) throws -> EventLoopFuture<Response> {
 
-        let blogRepository = try request.make(BlogPostRepository.self)
-        return blogRepository.getAllPostsSortedByPublishDate(includeDrafts: false, on: request).flatMap { posts in
-            var xmlFeed = self.getXMLStart(for: request)
+        request.blogPostRepository.getAllPostsSortedByPublishDate(includeDrafts: false).flatMap { posts in
+            var xmlFeed = try self.getXMLStart(for: request)
 
             if !posts.isEmpty {
                 let postDate = posts[0].lastEdited ?? posts[0].created
                 xmlFeed += "<pubDate>\(self.rfc822DateFormatter.string(from: postDate))</pubDate>\n"
             }
 
-            xmlFeed += "<textinput>\n<description>Search \(self.title)</description>\n<title>Search</title>\n<link>\(self.getRootPath(for: request))/search?</link>\n<name>term</name>\n</textinput>\n"
+            xmlFeed += try "<textinput>\n<description>Search \(self.title)</description>\n<title>Search</title>\n<link>\(self.getRootPath(for: request))/search?</link>\n<name>term</name>\n</textinput>\n"
 
             var postData: [EventLoopFuture<String>] = []
             for post in posts {
                 try postData.append(post.getPostRSSFeed(rootPath: self.getRootPath(for: request), dateFormatter: self.rfc822DateFormatter, for: request))
             }
 
-            return postData.flatten(on: request).map { postInformation in
+            return postData.flatten(on: request.eventLoop).map { postInformation in
                 for post in postInformation {
                     xmlFeed += post
                 }
 
                 xmlFeed += self.xmlEnd
-                var httpResponse = HTTPResponse(body: xmlFeed)
+                var httpResponse = Response(body: .init(stringLiteral: xmlFeed))
                 httpResponse.headers.add(name: .contentType, value: "application/rss+xml")
                 return httpResponse
             }

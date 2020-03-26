@@ -23,7 +23,7 @@ extension Application {
             if let existing = self.userInfo["blogPresenter"] as? PresenterFactory {
                 return existing
             } else {
-                let new = AdminPresenterFactory()
+                let new = PresenterFactory()
                 self.userInfo["blogPresenter"] = new
                 return new
             }
