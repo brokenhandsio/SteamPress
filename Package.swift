@@ -11,17 +11,16 @@ let package = Package(
         .library(name: "SteamPress", targets: ["SteamPress"]),
     ],
     dependencies: [
-        .package(name: "Vapor", url: "https://github.com/vapor/vapor.git", from: "3.0.0"),
+        .package(url: "https://github.com/vapor/vapor.git", from: "4.0.0-rc"),
         .package(url: "https://github.com/scinfu/SwiftSoup.git", from: "2.0.0"),
-        .package(name: "SwiftMarkdown", url: "https://github.com/vapor-community/markdown.git", from: "0.4.0"),
-        .package(name: "Auth", url: "https://github.com/vapor/auth.git", from: "2.0.0"),
+        .package(name: "SwiftMarkdown", url: "https://github.com/vapor-community/markdown.git", from: "0.6.1"),
     ],
     targets: [
         .target(name: "SteamPress", dependencies: [
-            "Vapor",
+            .product(name: "Vapor", package: "vapor"),
             "SwiftSoup",
             "SwiftMarkdown",
-            .product(name: "Authentication", package: "Auth")
+//            .product(name: "Authentication", package: "vapor")
         ]),
         .testTarget(name: "SteamPressTests", dependencies: ["SteamPress"]),
     ]
