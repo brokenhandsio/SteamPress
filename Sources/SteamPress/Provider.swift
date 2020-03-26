@@ -67,7 +67,7 @@ public struct Provider: Vapor.Provider {
         let blogController = BlogController(pathCreator: self.pathCreator, enableAuthorPages: self.enableAuthorPages, enableTagPages: self.enableTagPages, postsPerPage: self.postsPerPage)
         let blogAdminController = BlogAdminController(pathCreator: self.pathCreator)
 
-        let blogRoutes: Router
+        let blogRoutes: RoutesBuilder
         if let blogPath = blogPath {
             blogRoutes = router.grouped(blogPath)
         } else {

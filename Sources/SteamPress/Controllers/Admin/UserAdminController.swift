@@ -50,8 +50,7 @@ struct UserAdminController: RouteCollection {
             if let resetPasswordRequired = data.resetPasswordOnLogin, resetPasswordRequired {
                 newUser.resetPasswordRequired = true
             }
-            let userRepository = try req.make(BlogUserRepository.self)
-            return userRepository.save(newUser, on: req).map { _ in
+            return req.blogUserRepository.save(newUser, on: req).map { _ in
                 return req.redirect(to: self.pathCreator.createPath(for: "admin"))
             }
 
@@ -59,14 +58,14 @@ struct UserAdminController: RouteCollection {
     }
 
     func editUserHandler(_ req: Request) throws -> EventLoopFuture<View> {
-        return try req.parameters.next(BlogUser.self).flatMap { user in
+        return req.parameters.find(BlogUser.self, on: req).flatMap { user in
             let presenter = try req.make(BlogAdminPresenter.self)
             return try presenter.createUserView(on: req, editing: true, errors: nil, name: user.name, nameError: false, username: user.username, usernameErorr: false, passwordError: false, confirmPasswordError: false, resetPasswordOnLogin: user.resetPasswordRequired, userID: user.userID, profilePicture: user.profilePicture, twitterHandle: user.twitterHandle, biography: user.biography, tagline: user.tagline, pageInformation: req.adminPageInfomation())
         }
     }
 
     func editUserPostHandler(_ req: Request) throws -> EventLoopFuture<Response> {
-        return try req.parameters.next(BlogUser.self).flatMap { user in
+        return req.parameters.find(BlogUser.self, on: req).flatMap { user in
             let data = try req.content.decode(CreateUserData.self)
 
             guard let name = data.name, let username = data.username else {
@@ -110,8 +109,7 @@ struct UserAdminController: RouteCollection {
     }
 
     func deleteUserPostHandler(_ req: Request) throws -> EventLoopFuture<Response> {
-        let userRepository = try req.make(BlogUserRepository.self)
-        return try flatMap(req.parameters.next(BlogUser.self), userRepository.getUsersCount(on: req)) { user, userCount in
+        try req.parameters.find(BlogUser.self, on: req).and(req.blogUserRepository.getUsersCount(on: req)).flatMap { user, userCount in
             guard userCount > 1 else {
                 let postRepository = try req.make(BlogPostRepository.self)
                 return flatMap(postRepository.getAllPostsSortedByPublishDate(includeDrafts: true, on: req), userRepository.getAllUsers(on: req)) { posts, users in
@@ -187,12 +185,11 @@ struct UserAdminController: RouteCollection {
         }
 
         var usernameUniqueError: EventLoopFuture<String?>
-        let usersRepository = try req.make(BlogUserRepository.self)
         if let username = data.username {
             if editing && data.username == existingUsername {
-                usernameUniqueError = req.future(nil)
+                usernameUniqueError = req.eventLoop.future(nil)
             } else {
-                usernameUniqueError = usersRepository.getUser(username: username.lowercased(), on: req).map { user in
+                usernameUniqueError = req.blogUserRepository.getUser(username: username.lowercased(), on: req).map { user in
                     if user != nil {
                         return "Sorry that username has already been taken"
                     } else {
@@ -201,7 +198,7 @@ struct UserAdminController: RouteCollection {
                 }
             }
         } else {
-            usernameUniqueError = req.future(nil)
+            usernameUniqueError = req.eventLoop.future(nil)
         }
 
         return usernameUniqueError.map { usernameErrorOccurred in
