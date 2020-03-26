@@ -28,11 +28,10 @@ struct AtomFeedGenerator {
 
     // MARK: - Route Handler
 
-    func feedHandler(_ request: Request) throws -> EventLoopFuture<HTTPResponse> {
+    func feedHandler(_ request: Request) throws -> EventLoopFuture<Response> {
 
-        let blogRepository = try request.make(BlogPostRepository.self)
-        return blogRepository.getAllPostsSortedByPublishDate(includeDrafts: false, on: request).flatMap { posts in
-            var feed = self.getFeedStart(for: request)
+        return request.blogPostRepository.getAllPostsSortedByPublishDate(includeDrafts: false).flatMap { posts in
+            var feed = try self.getFeedStart(for: request)
 
             if !posts.isEmpty {
                 let postDate = posts[0].lastEdited ?? posts[0].created
@@ -54,13 +53,13 @@ struct AtomFeedGenerator {
                 try postData.append(post.getPostAtomFeed(blogPath: self.getRootPath(for: request), dateFormatter: self.iso8601Formatter, for: request))
             }
 
-            return postData.flatten(on: request).map { postsInformation in
+            return postData.flatten(on: request.eventLoop).map { postsInformation in
                 for postInformation in postsInformation {
                     feed += postInformation
                 }
 
                 feed += self.feedEnd
-                var httpResponse = HTTPResponse(body: feed)
+                var httpResponse = Response(body: .init(stringLiteral: feed))
                 httpResponse.headers.add(name: .contentType, value: "application/atom+xml")
                 return httpResponse
             }
@@ -69,15 +68,17 @@ struct AtomFeedGenerator {
 
     // MARK: - Private functions
 
-    private func getFeedStart(for request: Request) -> String {
-        let blogLink = getRootPath(for: request) + "/"
+    private func getFeedStart(for request: Request) throws -> String {
+        let blogLink = try getRootPath(for: request) + "/"
         let feedLink = blogLink + "atom.xml"
         return "\(xmlDeclaration)\n\(feedStart)\n\n<title>\(title)</title>\n<subtitle>\(description)</subtitle>\n<id>\(blogLink)</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"\(blogLink)\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"\(feedLink)\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n"
     }
 
-    private func getRootPath(for request: Request) -> String {
-        let hostname = request.http.remotePeer.description
-        let path = request.http.url.path
+    private func getRootPath(for request: Request) throws -> String {
+        guard let hostname = Environment.get("WEBSITE_URL") else {
+            throw SteamPressError(identifier: "SteamPressError", "WEBSITE_URL not set")
+        }
+        let path = request.url.path
         return "\(hostname)\(path.replacingOccurrences(of: "/atom.xml", with: ""))"
     }
 }
@@ -85,8 +86,7 @@ struct AtomFeedGenerator {
 fileprivate extension BlogPost {
     func getPostAtomFeed(blogPath: String, dateFormatter: DateFormatter, for request: Request) throws -> EventLoopFuture<String> {
         let updatedTime = lastEdited ?? created
-        let authorRepository = try request.make(BlogUserRepository.self)
-        return authorRepository.getUser(id: author, on: request).flatMap { user in
+        return request.blogUserRepository.getUser(id: author).flatMap { user in
             guard let user = user else {
                 throw SteamPressError(identifier: "Invalid-relationship", "Blog user with ID \(self.author) not found")
             }
@@ -95,8 +95,7 @@ fileprivate extension BlogPost {
             }
             var postEntry = "<entry>\n<id>\(blogPath)/posts-id/\(postID)/</id>\n<title>\(self.title)</title>\n<updated>\(dateFormatter.string(from: updatedTime))</updated>\n<published>\(dateFormatter.string(from: self.created))</published>\n<author>\n<name>\(user.name)</name>\n<uri>\(blogPath)/authors/\(user.username)/</uri>\n</author>\n<summary>\(try self.description())</summary>\n<link rel=\"alternate\" href=\"\(blogPath)/posts/\(self.slugUrl)/\" />\n"
 
-            let tagRepository = try request.make(BlogTagRepository.self)
-            return tagRepository.getTags(for: self, on: request).map { tags in
+            return request.blogTagRepository.getTags(for: self).map { tags in
                 for tag in tags {
                     if let percentDecodedTag = tag.name.removingPercentEncoding {
                         postEntry += "<category term=\"\(percentDecodedTag)\"/>\n"

@@ -61,9 +61,9 @@ struct RSSFeedGenerator {
 
     // MARK: - Private functions
 
-    private func getXMLStart(for request: Request) -> String {
+    private func getXMLStart(for request: Request) throws -> String {
 
-        let link = getRootPath(for: request) + "/"
+        let link = try getRootPath(for: request) + "/"
 
         var start = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version=\"2.0\">\n\n<channel>\n<title>\(title)</title>\n<link>\(link)</link>\n<description>\(description)</description>\n<generator>SteamPress</generator>\n<ttl>60</ttl>\n"
 
@@ -78,9 +78,11 @@ struct RSSFeedGenerator {
         return start
     }
 
-    private func getRootPath(for request: Request) -> String {
-        let hostname = request.http.remotePeer.description
-        let path = request.http.url.path
+    private func getRootPath(for request: Request) throws -> String {
+        guard let hostname = Environment.get("WEBSITE_URL") else {
+            throw SteamPressError(identifier: "SteamPressError", "WEBSITE_URL not set")
+        }
+        let path = request.url.path
         return "\(hostname)\(path.replacingOccurrences(of: "/rss.xml", with: ""))"
     }
 }
@@ -90,8 +92,7 @@ fileprivate extension BlogPost {
         let link = rootPath + "/posts/\(slugUrl)/"
         var postEntry = "<item>\n<title>\n\(title)\n</title>\n<description>\n\(try description())\n</description>\n<link>\n\(link)\n</link>\n"
 
-        let tagRepository = try request.make(BlogTagRepository.self)
-        return tagRepository.getTags(for: self, on: request).map { tags in
+        return request.blogTagRepository.getTags(for: self).map { tags in
             for tag in tags {
                 if let percentDecodedTag = tag.name.removingPercentEncoding {
                     postEntry += "<category>\(percentDecodedTag)</category>\n"
