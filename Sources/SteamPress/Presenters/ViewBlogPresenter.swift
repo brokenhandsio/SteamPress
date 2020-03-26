@@ -3,10 +3,11 @@ import SwiftSoup
 import SwiftMarkdown
 
 public struct ViewBlogPresenter: BlogPresenter {
+    
+    let viewRenderer: ViewRenderer
 
-    public func indexView(on container: Container, posts: [BlogPost], tags: [BlogTag], authors: [BlogUser], tagsForPosts: [Int: [BlogTag]], pageInformation: BlogGlobalPageInformation, paginationTagInfo: PaginationTagInformation) -> EventLoopFuture<View> {
+    public func indexView(posts: [BlogPost], tags: [BlogTag], authors: [BlogUser], tagsForPosts: [Int: [BlogTag]], pageInformation: BlogGlobalPageInformation, paginationTagInfo: PaginationTagInformation) -> EventLoopFuture<View> {
         do {
-            let viewRenderer = try container.make(ViewRenderer.self)
             let viewPosts = try posts.convertToViewBlogPosts(authors: authors, tagsForPosts: tagsForPosts, on: container)
             let viewTags = try tags.map { try $0.toViewBlogTag() }
             let context = BlogIndexPageContext(posts: viewPosts, tags: viewTags, authors: authors, pageInformation: pageInformation, paginationTagInformation: paginationTagInfo)
@@ -16,10 +17,8 @@ public struct ViewBlogPresenter: BlogPresenter {
         }
     }
 
-    public func postView(on container: Container, post: BlogPost, author: BlogUser, tags: [BlogTag], pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
+    public func postView(post: BlogPost, author: BlogUser, tags: [BlogTag], pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
         do {
-            let viewRenderer = try container.make(ViewRenderer.self)
-
             var postImage: String?
             var postImageAlt: String?
             if let image = try SwiftSoup.parse(markdownToHTML(post.contents)).select("img").first() {
@@ -42,9 +41,8 @@ public struct ViewBlogPresenter: BlogPresenter {
 
     }
 
-    public func allAuthorsView(on container: Container, authors: [BlogUser], authorPostCounts: [Int: Int], pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
+    public func allAuthorsView(authors: [BlogUser], authorPostCounts: [Int: Int], pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
         do {
-            let viewRenderer = try container.make(ViewRenderer.self)
             var viewAuthors = try authors.map { user -> ViewBlogAuthor in
                 guard let userID = user.userID else {
                     throw SteamPressError(identifier: "ViewBlogPresenter", "User ID Was Not Set")
@@ -60,9 +58,8 @@ public struct ViewBlogPresenter: BlogPresenter {
         }
     }
 
-    public func authorView(on container: Container, author: BlogUser, posts: [BlogPost], postCount: Int, tagsForPosts: [Int: [BlogTag]], pageInformation: BlogGlobalPageInformation, paginationTagInfo: PaginationTagInformation) -> EventLoopFuture<View> {
+    public func authorView(author: BlogUser, posts: [BlogPost], postCount: Int, tagsForPosts: [Int: [BlogTag]], pageInformation: BlogGlobalPageInformation, paginationTagInfo: PaginationTagInformation) -> EventLoopFuture<View> {
         do {
-            let viewRenderer = try container.make(ViewRenderer.self)
             let myProfile: Bool
             if let loggedInUser = pageInformation.loggedInUser {
                 myProfile = loggedInUser.userID == author.userID
@@ -77,9 +74,8 @@ public struct ViewBlogPresenter: BlogPresenter {
         }
     }
 
-    public func allTagsView(on container: Container, tags: [BlogTag], tagPostCounts: [Int: Int], pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
+    public func allTagsView(tags: [BlogTag], tagPostCounts: [Int: Int], pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
         do {
-            let viewRenderer = try container.make(ViewRenderer.self)
             var viewTags = try tags.map { tag -> BlogTagWithPostCount in
                 guard let tagID = tag.tagID else {
                     throw SteamPressError(identifier: "ViewBlogPresenter", "Tag ID Was Not Set")
@@ -97,9 +93,8 @@ public struct ViewBlogPresenter: BlogPresenter {
         }
     }
 
-    public func tagView(on container: Container, tag: BlogTag, posts: [BlogPost], authors: [BlogUser], totalPosts: Int, pageInformation: BlogGlobalPageInformation, paginationTagInfo: PaginationTagInformation) -> EventLoopFuture<View> {
+    public func tagView(tag: BlogTag, posts: [BlogPost], authors: [BlogUser], totalPosts: Int, pageInformation: BlogGlobalPageInformation, paginationTagInfo: PaginationTagInformation) -> EventLoopFuture<View> {
         do {
-            let viewRenderer = try container.make(ViewRenderer.self)
             let tagsForPosts = try posts.reduce(into: [Int: [BlogTag]]()) { dict, blog in
                 guard let blogID = blog.blogID else {
                     throw SteamPressError(identifier: "ViewBlogPresenter", "Blog has no ID set")
@@ -115,9 +110,8 @@ public struct ViewBlogPresenter: BlogPresenter {
         }
     }
 
-    public func searchView(on container: Container, totalResults: Int, posts: [BlogPost], authors: [BlogUser], searchTerm: String?, tagsForPosts: [Int: [BlogTag]], pageInformation: BlogGlobalPageInformation, paginationTagInfo: PaginationTagInformation) -> EventLoopFuture<View> {
+    public func searchView(totalResults: Int, posts: [BlogPost], authors: [BlogUser], searchTerm: String?, tagsForPosts: [Int: [BlogTag]], pageInformation: BlogGlobalPageInformation, paginationTagInfo: PaginationTagInformation) -> EventLoopFuture<View> {
         do {
-            let viewRenderer = try container.make(ViewRenderer.self)
             let viewPosts = try posts.convertToViewBlogPosts(authors: authors, tagsForPosts: tagsForPosts, on: container)
             let context = SearchPageContext(searchTerm: searchTerm, posts: viewPosts, totalResults: totalResults, pageInformation: pageInformation, paginationTagInformation: paginationTagInfo)
             return viewRenderer.render("blog/search", context)
@@ -126,9 +120,8 @@ public struct ViewBlogPresenter: BlogPresenter {
         }
     }
 
-    public func loginView(on container: Container, loginWarning: Bool, errors: [String]?, username: String?, usernameError: Bool, passwordError: Bool, rememberMe: Bool, pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
+    public func loginView(loginWarning: Bool, errors: [String]?, username: String?, usernameError: Bool, passwordError: Bool, rememberMe: Bool, pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
         do {
-            let viewRenderer = try container.make(ViewRenderer.self)
             let context = LoginPageContext(errors: errors, loginWarning: loginWarning, username: username, usernameError: usernameError, passwordError: passwordError, rememberMe: rememberMe, pageInformation: pageInformation)
             return viewRenderer.render("blog/admin/login", context)
         } catch {

@@ -3,10 +3,10 @@ import Vapor
 public struct ViewBlogAdminPresenter: BlogAdminPresenter {
 
     let pathCreator: BlogPathCreator
+    let viewRenderer: ViewRenderer
 
-    public func createIndexView(on container: Container, posts: [BlogPost], users: [BlogUser], errors: [String]?, pageInformation: BlogAdminPageInformation) -> EventLoopFuture<View> {
+    public func createIndexView(posts: [BlogPost], users: [BlogUser], errors: [String]?, pageInformation: BlogAdminPageInformation) -> EventLoopFuture<View> {
         do {
-            let viewRenderer = try container.make(ViewRenderer.self)
             let publishedPosts = try posts.filter { $0.published }.convertToViewBlogPostsWithoutTags(authors: users, on: container)
             let draftPosts = try posts.filter { !$0.published }.convertToViewBlogPostsWithoutTags(authors: users, on: container)
             let context = AdminPageContext(errors: errors, publishedPosts: publishedPosts, draftPosts: draftPosts, users: users, pageInformation: pageInformation)
@@ -16,14 +16,13 @@ public struct ViewBlogAdminPresenter: BlogAdminPresenter {
         }
     }
 
-    public func createPostView(on container: Container, errors: [String]?, title: String?, contents: String?, slugURL: String?, tags: [String]?, isEditing: Bool, post: BlogPost?, isDraft: Bool?, titleError: Bool, contentsError: Bool, pageInformation: BlogAdminPageInformation) -> EventLoopFuture<View> {
+    public func createPostView(errors: [String]?, title: String?, contents: String?, slugURL: String?, tags: [String]?, isEditing: Bool, post: BlogPost?, isDraft: Bool?, titleError: Bool, contentsError: Bool, pageInformation: BlogAdminPageInformation) -> EventLoopFuture<View> {
         do {
             if isEditing {
                 guard post != nil else {
                     return container.future(error: SteamPressError(identifier: "ViewBlogAdminPresenter", "Blog Post is empty whilst editing"))
                 }
             }
-            let viewRenderer = try container.make(ViewRenderer.self)
             let postPathSuffix = pathCreator.createPath(for: "posts")
             let postPathPrefix = pageInformation.websiteURL.appendingPathComponent(postPathSuffix)
             let pageTitle = isEditing ? "Edit Blog Post" : "Create Blog Post"
@@ -34,7 +33,7 @@ public struct ViewBlogAdminPresenter: BlogAdminPresenter {
         }
     }
 
-    public func createUserView(on container: Container, editing: Bool, errors: [String]?, name: String?, nameError: Bool, username: String?, usernameErorr: Bool, passwordError: Bool, confirmPasswordError: Bool, resetPasswordOnLogin: Bool, userID: Int?, profilePicture: String?, twitterHandle: String?, biography: String?, tagline: String?, pageInformation: BlogAdminPageInformation) -> EventLoopFuture<View> {
+    public func createUserView(editing: Bool, errors: [String]?, name: String?, nameError: Bool, username: String?, usernameErorr: Bool, passwordError: Bool, confirmPasswordError: Bool, resetPasswordOnLogin: Bool, userID: Int?, profilePicture: String?, twitterHandle: String?, biography: String?, tagline: String?, pageInformation: BlogAdminPageInformation) -> EventLoopFuture<View> {
         do {
             if editing {
                 guard userID != nil else {
@@ -42,7 +41,6 @@ public struct ViewBlogAdminPresenter: BlogAdminPresenter {
                 }
             }
 
-            let viewRenderer = try container.make(ViewRenderer.self)
             let context = CreateUserPageContext(editing: editing, errors: errors, nameSupplied: name, nameError: nameError, usernameSupplied: username, usernameError: usernameErorr, passwordError: passwordError, confirmPasswordError: confirmPasswordError, resetPasswordOnLoginSupplied: resetPasswordOnLogin, userID: userID, twitterHandleSupplied: twitterHandle, profilePictureSupplied: profilePicture, biographySupplied: biography, taglineSupplied: tagline, pageInformation: pageInformation)
             return viewRenderer.render("blog/admin/createUser", context)
         } catch {
@@ -50,9 +48,8 @@ public struct ViewBlogAdminPresenter: BlogAdminPresenter {
         }
     }
 
-    public func createResetPasswordView(on container: Container, errors: [String]?, passwordError: Bool?, confirmPasswordError: Bool?, pageInformation: BlogAdminPageInformation) -> EventLoopFuture<View> {
+    public func createResetPasswordView(errors: [String]?, passwordError: Bool?, confirmPasswordError: Bool?, pageInformation: BlogAdminPageInformation) -> EventLoopFuture<View> {
         do {
-            let viewRenderer = try container.make(ViewRenderer.self)
             let context = ResetPasswordPageContext(errors: errors, passwordError: passwordError, confirmPasswordError: confirmPasswordError, pageInformation: pageInformation)
             return viewRenderer.render("blog/admin/resetPassword", context)
         } catch {

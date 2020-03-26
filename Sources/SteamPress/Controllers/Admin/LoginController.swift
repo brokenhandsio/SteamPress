@@ -26,8 +26,7 @@ struct LoginController: RouteCollection {
     // MARK: - Route handlers
     func loginHandler(_ req: Request) throws -> EventLoopFuture<View> {
         let loginRequied = (try? req.query.get(Bool.self, at: "loginRequired")) != nil
-        let presenter = try req.make(BlogPresenter.self)
-        return try presenter.loginView(on: req, loginWarning: loginRequied, errors: nil, username: nil, usernameError: false, passwordError: false, rememberMe: false, pageInformation: req.pageInformation())
+        return try req.blogPresenter.loginView(loginWarning: loginRequied, errors: nil, username: nil, usernameError: false, passwordError: false, rememberMe: false, pageInformation: req.pageInformation())
     }
 
     func loginPostHandler(_ req: Request) throws -> EventLoopFuture<Response> {
@@ -47,8 +46,7 @@ struct LoginController: RouteCollection {
         }
 
         if !loginErrors.isEmpty {
-            let presenter = try req.make(BlogPresenter.self)
-            return try presenter.loginView(on: req, loginWarning: false, errors: loginErrors, username: loginData.username, usernameError: usernameError, passwordError: passwordError, rememberMe: loginData.rememberMe ?? false, pageInformation: req.pageInformation()).encode(for: req)
+            return try req.blogPresenter.loginView(loginWarning: false, errors: loginErrors, username: loginData.username, usernameError: usernameError, passwordError: passwordError, rememberMe: loginData.rememberMe ?? false, pageInformation: req.pageInformation()).encodeResponse(for: req)
         }
 
         guard let username = loginData.username, let password = loginData.password else {
@@ -61,7 +59,7 @@ struct LoginController: RouteCollection {
             try req.session()["SteamPressRememberMe"] = nil
         }
 
-        return req.blogUserRepository.getUser(username: username, on: req).flatMap { user in
+        return req.blogUserRepository.getUser(username: username).flatMap { user in
             let verifier = try req.make(PasswordVerifier.self)
             guard let user = user, try verifier.verify(password, created: user.password) else {
                 let loginError = ["Your username or password is incorrect"]
@@ -79,8 +77,7 @@ struct LoginController: RouteCollection {
     }
 
     func resetPasswordHandler(_ req: Request) throws -> EventLoopFuture<View> {
-        let presenter = try req.make(BlogAdminPresenter.self)
-        return try presenter.createResetPasswordView(on: req, errors: nil, passwordError: nil, confirmPasswordError: nil, pageInformation: req.adminPageInfomation())
+        try req.adminPresenter.createResetPasswordView(errors: nil, passwordError: nil, confirmPasswordError: nil, pageInformation: req.adminPageInfomation())
     }
 
     func resetPasswordPostHandler(_ req: Request) throws -> EventLoopFuture<Response> {
@@ -102,9 +99,8 @@ struct LoginController: RouteCollection {
                 confirmPasswordError = true
             }
 
-            let presenter = try req.make(BlogAdminPresenter.self)
-            let view = try presenter.createResetPasswordView(on: req, errors: resetPasswordErrors, passwordError: passwordError, confirmPasswordError: confirmPasswordError, pageInformation: req.adminPageInfomation())
-            return try view.encode(for: req)
+            let view = try req.adminPresenter.createResetPasswordView(errors: resetPasswordErrors, passwordError: passwordError, confirmPasswordError: confirmPasswordError, pageInformation: req.adminPageInfomation())
+            return view.encodeResponse(for: req)
         }
 
         if password != confirmPassword {
@@ -119,8 +115,7 @@ struct LoginController: RouteCollection {
         }
 
         guard resetPasswordErrors.isEmpty else {
-            let presenter = try req.make(BlogAdminPresenter.self)
-            let view = try presenter.createResetPasswordView(on: req, errors: resetPasswordErrors, passwordError: passwordError, confirmPasswordError: confirmPasswordError, pageInformation: req.adminPageInfomation())
+            let view = try req.adminPresenter.createResetPasswordView(errors: resetPasswordErrors, passwordError: passwordError, confirmPasswordError: confirmPasswordError, pageInformation: req.adminPageInfomation())
             return try view.encode(for: req)
         }
 
