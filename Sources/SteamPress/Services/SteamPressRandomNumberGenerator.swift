@@ -12,18 +12,15 @@ private struct RandomNumberGeneratorFactory {
 }
 
 private extension Application {
+    private struct RandomNumberGeneratorKey: StorageKey {
+        typealias Value = RandomNumberGeneratorFactory
+    }
     var randomNumberGenerators: RandomNumberGeneratorFactory {
         get {
-            if let existing = self.userInfo["randomNumberGenerator"] as? RandomNumberGeneratorFactory {
-                return existing
-            } else {
-                let new = RandomNumberGeneratorFactory()
-                self.userInfo["randomNumberGenerator"] = new
-                return new
-            }
+            self.storage[RandomNumberGeneratorKey.self] ?? .init()
         }
         set {
-            self.userInfo["randomNumberGenerator"] = newValue
+            self.storage[RandomNumberGeneratorKey.self] = newValue
         }
     }
 }
