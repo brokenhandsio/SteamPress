@@ -29,16 +29,24 @@ struct UserAdminController: RouteCollection {
 
         return try validateUserCreation(data, on: req).flatMap { createUserErrors in
             if let errors = createUserErrors {
-                let view = try req.adminPresenter.createUserView(editing: false, errors: errors.errors, name: data.name, nameError: errors.nameError, username: data.username, usernameErorr: errors.usernameError, passwordError: errors.passwordError, confirmPasswordError: errors.confirmPasswordError, resetPasswordOnLogin: data.resetPasswordOnLogin ?? false, userID: nil, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline, pageInformation: req.adminPageInfomation())
-                return view.encodeResponse(for: req)
+                do {
+                    let view = try req.adminPresenter.createUserView(editing: false, errors: errors.errors, name: data.name, nameError: errors.nameError, username: data.username, usernameErorr: errors.usernameError, passwordError: errors.passwordError, confirmPasswordError: errors.confirmPasswordError, resetPasswordOnLogin: data.resetPasswordOnLogin ?? false, userID: nil, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline, pageInformation: req.adminPageInfomation())
+                    return view.encodeResponse(for: req)
+                } catch {
+                    return req.eventLoop.makeFailedFuture(error)
+                }
             }
 
             guard let name = data.name, let username = data.username, let password = data.password else {
-                throw Abort(.internalServerError)
+                return req.eventLoop.makeFailedFuture(Abort(.internalServerError))
             }
 
-            let hasher = try req.make(PasswordHasher.self)
-            let hashedPassword = try hasher.hash(password)
+            let hashedPassword: String
+            do {
+                hashedPassword = try req.passwordHasher.hash(password)
+            } catch {
+                return req.eventLoop.makeFailedFuture(error)
+            }
             let profilePicture = data.profilePicture.isEmptyOrWhitespace() ? nil : data.profilePicture
             let twitterHandle = data.twitterHandle.isEmptyOrWhitespace() ? nil : data.twitterHandle
             let biography = data.biography.isEmptyOrWhitespace() ? nil : data.biography
@@ -47,7 +55,7 @@ struct UserAdminController: RouteCollection {
             if let resetPasswordRequired = data.resetPasswordOnLogin, resetPasswordRequired {
                 newUser.resetPasswordRequired = true
             }
-            return req.blogUserRepository.save(newUser, on: req).map { _ in
+            return req.blogUserRepository.save(newUser).map { _ in
                 return req.redirect(to: self.pathCreator.createPath(for: "admin"))
             }
 
@@ -66,42 +74,53 @@ struct UserAdminController: RouteCollection {
 
     func editUserPostHandler(_ req: Request) throws -> EventLoopFuture<Response> {
         req.parameters.findUser(on: req).flatMap { user in
-            let data = try req.content.decode(CreateUserData.self)
+            do {
+                let data = try req.content.decode(CreateUserData.self)
 
-            guard let name = data.name, let username = data.username else {
-                throw Abort(.internalServerError)
-            }
-
-            return try self.validateUserCreation(data, editing: true, existingUsername: user.username, on: req).flatMap { errors in
-                if let editUserErrors = errors {
-                    let view = try req.adminPresenter.createUserView(editing: true, errors: editUserErrors.errors, name: data.name, nameError: errors?.nameError ?? false, username: data.username, usernameErorr: errors?.usernameError ?? false, passwordError: editUserErrors.passwordError, confirmPasswordError: editUserErrors.confirmPasswordError, resetPasswordOnLogin: data.resetPasswordOnLogin ?? false, userID: user.userID, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline, pageInformation: req.adminPageInfomation())
-                    return view.encodeResponse(for: req)
+                guard let name = data.name, let username = data.username else {
+                    throw Abort(.internalServerError)
                 }
 
-                user.name = name
-                user.username = username.lowercased()
-                
-                let profilePicture = data.profilePicture.isEmptyOrWhitespace() ? nil : data.profilePicture
-                let twitterHandle = data.twitterHandle.isEmptyOrWhitespace() ? nil : data.twitterHandle
-                let biography = data.biography.isEmptyOrWhitespace() ? nil : data.biography
-                let tagline = data.tagline.isEmptyOrWhitespace() ? nil : data.tagline
-                
-                user.profilePicture = profilePicture
-                user.twitterHandle = twitterHandle
-                user.biography = biography
-                user.tagline = tagline
+                return try self.validateUserCreation(data, editing: true, existingUsername: user.username, on: req).flatMap { errors in
+                    if let editUserErrors = errors {
+                        do {
+                            let view = try req.adminPresenter.createUserView(editing: true, errors: editUserErrors.errors, name: data.name, nameError: errors?.nameError ?? false, username: data.username, usernameErorr: errors?.usernameError ?? false, passwordError: editUserErrors.passwordError, confirmPasswordError: editUserErrors.confirmPasswordError, resetPasswordOnLogin: data.resetPasswordOnLogin ?? false, userID: user.userID, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline, pageInformation: req.adminPageInfomation())
+                            return view.encodeResponse(for: req)
+                        } catch {
+                            return req.eventLoop.makeFailedFuture(error)
+                        }
+                    }
 
-                if let resetPasswordOnLogin = data.resetPasswordOnLogin, resetPasswordOnLogin {
-                    user.resetPasswordRequired = true
+                    user.name = name
+                    user.username = username.lowercased()
+                    
+                    let profilePicture = data.profilePicture.isEmptyOrWhitespace() ? nil : data.profilePicture
+                    let twitterHandle = data.twitterHandle.isEmptyOrWhitespace() ? nil : data.twitterHandle
+                    let biography = data.biography.isEmptyOrWhitespace() ? nil : data.biography
+                    let tagline = data.tagline.isEmptyOrWhitespace() ? nil : data.tagline
+                    
+                    user.profilePicture = profilePicture
+                    user.twitterHandle = twitterHandle
+                    user.biography = biography
+                    user.tagline = tagline
+
+                    if let resetPasswordOnLogin = data.resetPasswordOnLogin, resetPasswordOnLogin {
+                        user.resetPasswordRequired = true
+                    }
+
+                    if let password = data.password, password != "" {
+                        do {
+                            user.password = try req.passwordHasher.hash(password)
+                        } catch {
+                            return req.eventLoop.makeFailedFuture(error)
+                        }
+                    }
+
+                    let redirect = req.redirect(to: self.pathCreator.createPath(for: "admin"))
+                    return req.blogUserRepository.save(user).transform(to: redirect)
                 }
-
-                if let password = data.password, password != "" {
-                    let hasher = try req.make(PasswordHasher.self)
-                    user.password = try hasher.hash(password)
-                }
-
-                let redirect = req.redirect(to: self.pathCreator.createPath(for: "admin"))
-                return req.blogUserRepository.save(user).transform(to: redirect)
+            } catch {
+                return req.eventLoop.makeFailedFuture(error)
             }
         }
     }
@@ -185,7 +204,7 @@ struct UserAdminController: RouteCollection {
         }
 
         do {
-            try data.validate()
+            try CreateUserData.validate(req)
         } catch {
             createUserErrors.append("The username provided is not valid")
             usernameError = true
