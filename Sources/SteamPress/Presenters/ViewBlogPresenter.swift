@@ -5,15 +5,18 @@ import SwiftMarkdown
 public struct ViewBlogPresenter: BlogPresenter {
     
     let viewRenderer: ViewRenderer
+    let longDateFormatter: LongPostDateFormatter
+    let numericDateFormatter: NumericPostDateFormatter
+    let eventLoopGroup: EventLoopGroup
 
     public func indexView(posts: [BlogPost], tags: [BlogTag], authors: [BlogUser], tagsForPosts: [Int: [BlogTag]], pageInformation: BlogGlobalPageInformation, paginationTagInfo: PaginationTagInformation) -> EventLoopFuture<View> {
         do {
-            let viewPosts = try posts.convertToViewBlogPosts(authors: authors, tagsForPosts: tagsForPosts, on: container)
+            let viewPosts = try posts.convertToViewBlogPosts(authors: authors, tagsForPosts: tagsForPosts, longDateFormatter: longDateFormatter, numericDateFormatter: numericDateFormatter)
             let viewTags = try tags.map { try $0.toViewBlogTag() }
             let context = BlogIndexPageContext(posts: viewPosts, tags: viewTags, authors: authors, pageInformation: pageInformation, paginationTagInformation: paginationTagInfo)
             return viewRenderer.render("blog/blog", context)
         } catch {
-            return container.future(error: error)
+            return eventLoopGroup.future(error: error)
         }
     }
 
@@ -29,14 +32,12 @@ public struct ViewBlogPresenter: BlogPresenter {
                 }
             }
             let shortSnippet = post.shortSnippet()
-            let longFormatter = try container.make(LongPostDateFormatter.self)
-            let numericFormatter = try container.make(NumericPostDateFormatter.self)
-            let viewPost = try post.toViewPost(authorName: author.name, authorUsername: author.username, longFormatter: longFormatter, numericFormatter: numericFormatter, tags: tags)
+            let viewPost = try post.toViewPost(authorName: author.name, authorUsername: author.username, longFormatter: longDateFormatter, numericFormatter: numericDateFormatter, tags: tags)
 
             let context = BlogPostPageContext(title: post.title, post: viewPost, author: author, pageInformation: pageInformation, postImage: postImage, postImageAlt: postImageAlt, shortSnippet: shortSnippet)
             return viewRenderer.render("blog/post", context)
         } catch {
-            return container.future(error: error)
+            return eventLoopGroup.future(error: error)
         }
 
     }
@@ -54,7 +55,7 @@ public struct ViewBlogPresenter: BlogPresenter {
             let context = AllAuthorsPageContext(pageInformation: pageInformation, authors: viewAuthors)
             return viewRenderer.render("blog/authors", context)
         } catch {
-            return container.future(error: error)
+            return eventLoopGroup.future(error: error)
         }
     }
 
@@ -66,11 +67,11 @@ public struct ViewBlogPresenter: BlogPresenter {
             } else {
                 myProfile = false
             }
-            let viewPosts = try posts.convertToViewBlogPosts(authors: [author], tagsForPosts: tagsForPosts, on: container)
+            let viewPosts = try posts.convertToViewBlogPosts(authors: [author], tagsForPosts: tagsForPosts, longDateFormatter: longDateFormatter, numericDateFormatter: numericDateFormatter)
             let context = AuthorPageContext(author: author, posts: viewPosts, pageInformation: pageInformation, myProfile: myProfile, postCount: postCount, paginationTagInformation: paginationTagInfo)
             return viewRenderer.render("blog/profile", context)
         } catch {
-            return container.future(error: error)
+            return eventLoopGroup.future(error: error)
         }
     }
 
@@ -89,7 +90,7 @@ public struct ViewBlogPresenter: BlogPresenter {
             let context = AllTagsPageContext(title: "All Tags", tags: viewTags, pageInformation: pageInformation)
             return viewRenderer.render("blog/tags", context)
         } catch {
-            return container.future(error: error)
+            return eventLoopGroup.future(error: error)
         }
     }
 
@@ -102,31 +103,27 @@ public struct ViewBlogPresenter: BlogPresenter {
                 dict[blogID] = [tag]
             }
             
-            let viewPosts = try posts.convertToViewBlogPosts(authors: authors, tagsForPosts: tagsForPosts, on: container)
+            let viewPosts = try posts.convertToViewBlogPosts(authors: authors, tagsForPosts: tagsForPosts, longDateFormatter: longDateFormatter, numericDateFormatter: numericDateFormatter)
             let context = TagPageContext(tag: tag, pageInformation: pageInformation, posts: viewPosts, postCount: totalPosts, paginationTagInformation: paginationTagInfo)
             return viewRenderer.render("blog/tag", context)
         } catch {
-            return container.future(error: error)
+            return eventLoopGroup.future(error: error)
         }
     }
 
     public func searchView(totalResults: Int, posts: [BlogPost], authors: [BlogUser], searchTerm: String?, tagsForPosts: [Int: [BlogTag]], pageInformation: BlogGlobalPageInformation, paginationTagInfo: PaginationTagInformation) -> EventLoopFuture<View> {
         do {
-            let viewPosts = try posts.convertToViewBlogPosts(authors: authors, tagsForPosts: tagsForPosts, on: container)
+            let viewPosts = try posts.convertToViewBlogPosts(authors: authors, tagsForPosts: tagsForPosts, longDateFormatter: longDateFormatter, numericDateFormatter: numericDateFormatter)
             let context = SearchPageContext(searchTerm: searchTerm, posts: viewPosts, totalResults: totalResults, pageInformation: pageInformation, paginationTagInformation: paginationTagInfo)
             return viewRenderer.render("blog/search", context)
         } catch {
-            return container.future(error: error)
+            return eventLoopGroup.future(error: error)
         }
     }
 
     public func loginView(loginWarning: Bool, errors: [String]?, username: String?, usernameError: Bool, passwordError: Bool, rememberMe: Bool, pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View> {
-        do {
-            let context = LoginPageContext(errors: errors, loginWarning: loginWarning, username: username, usernameError: usernameError, passwordError: passwordError, rememberMe: rememberMe, pageInformation: pageInformation)
-            return viewRenderer.render("blog/admin/login", context)
-        } catch {
-            return container.future(error: error)
-        }
+        let context = LoginPageContext(errors: errors, loginWarning: loginWarning, username: username, usernameError: usernameError, passwordError: passwordError, rememberMe: rememberMe, pageInformation: pageInformation)
+        return viewRenderer.render("blog/admin/login", context)
     }
     
 }

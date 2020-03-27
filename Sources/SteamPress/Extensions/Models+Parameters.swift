@@ -62,6 +62,6 @@ extension Parameters {
         guard let idString = req.parameters.get(T.parameterKey), let id = Int(idString) else {
             return req.eventLoop.makeFailedFuture(Abort(.badRequest))
         }
-        return req.blogUserRepository.getUser(id: id, on: req).unwrap(or: Abort(.notFound))
+        return req.blogUserRepository.getUser(id: id).unwrap(or: Abort(.notFound))
     }
 }

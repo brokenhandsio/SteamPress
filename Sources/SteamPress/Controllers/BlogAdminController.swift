@@ -1,5 +1,4 @@
 import Vapor
-import Authentication
 
 struct BlogAdminController: RouteCollection {
 
@@ -30,8 +29,7 @@ struct BlogAdminController: RouteCollection {
     // MARK: Admin Handler
     func adminHandler(_ req: Request) throws -> EventLoopFuture<View> {
         return req.blogPostRepository.getAllPostsSortedByPublishDate(includeDrafts: true).and(req.blogUserRepository.getAllUsers()).flatMap { posts, users in
-            let presenter = try req.make(BlogAdminPresenter.self)
-            return try presenter.createIndexView(on: req, posts: posts, users: users, errors: nil, pageInformation: req.adminPageInfomation())
+            return try req.adminPresenter.createIndexView(posts: posts, users: users, errors: nil, pageInformation: req.adminPageInfomation())
         }
     }
 

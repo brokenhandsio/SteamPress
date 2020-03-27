@@ -1,5 +1,4 @@
 import Vapor
-import Authentication
 
 struct LoginController: RouteCollection {
 
@@ -60,8 +59,7 @@ struct LoginController: RouteCollection {
         }
 
         return req.blogUserRepository.getUser(username: username).flatMap { user -> EventLoopFuture<Response> in
-            let verifier = try req.make(PasswordVerifier.self)
-            guard let user = user, try verifier.verify(password, created: user.password) else {
+            guard let user = user, try req.passwordVerifier.verify(password, created: user.password) else {
                 let loginError = ["Your username or password is incorrect"]
                 return try req.blogPresenter.loginView(loginWarning: false, errors: loginError, username: loginData.username, usernameError: false, passwordError: false, rememberMe: loginData.rememberMe ?? false, pageInformation: req.pageInformation()).encodeResponse(for: req)
             }
@@ -119,8 +117,7 @@ struct LoginController: RouteCollection {
         }
 
         let user = try req.requireAuthenticated(BlogUser.self)
-        let hasher = try req.make(PasswordHasher.self)
-        user.password = try hasher.hash(password)
+        user.password = try req.passwordHasher.hash(password)
         user.resetPasswordRequired = false
         let redirect = req.redirect(to: pathCreator.createPath(for: "admin"))
         return req.blogUserRepository.save(user).transform(to: redirect)

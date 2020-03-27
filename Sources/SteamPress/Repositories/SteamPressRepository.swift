@@ -46,12 +46,6 @@ public protocol BlogUserRepository: SteamPressRepository {
     func getUsersCount() -> EventLoopFuture<Int>
 }
 
-//extension Request {
-//    var blogUserRepository: BlogUserRepository {
-//
-//    }
-//}
-
 public extension Request {
     var blogUserRepository: BlogUserRepository {
         self.application.blogUserRepositories.makeRepository!(self)

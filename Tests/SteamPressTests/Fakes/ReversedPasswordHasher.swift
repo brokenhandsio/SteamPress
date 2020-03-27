@@ -1,5 +1,4 @@
 import Vapor
-import Authentication
 import SteamPress
 
 struct ReversedPasswordHasher: PasswordHasher, PasswordVerifier {

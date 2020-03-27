@@ -1,5 +1,4 @@
 import Vapor
-import Authentication
 
 struct UserAdminController: RouteCollection {
 
@@ -22,8 +21,7 @@ struct UserAdminController: RouteCollection {
 
     // MARK: - Route handlers
     func createUserHandler(_ req: Request) throws -> EventLoopFuture<View> {
-        let presenter = try req.make(BlogAdminPresenter.self)
-        return try presenter.createUserView(on: req, editing: false, errors: nil, name: nil, nameError: false, username: nil, usernameErorr: false, passwordError: false, confirmPasswordError: false, resetPasswordOnLogin: false, userID: nil, profilePicture: nil, twitterHandle: nil, biography: nil, tagline: nil, pageInformation: req.adminPageInfomation())
+        return try req.adminPresenter.createUserView(editing: false, errors: nil, name: nil, nameError: false, username: nil, usernameErorr: false, passwordError: false, confirmPasswordError: false, resetPasswordOnLogin: false, userID: nil, profilePicture: nil, twitterHandle: nil, biography: nil, tagline: nil, pageInformation: req.adminPageInfomation())
     }
 
     func createUserPostHandler(_ req: Request) throws -> EventLoopFuture<Response> {
@@ -31,9 +29,8 @@ struct UserAdminController: RouteCollection {
 
         return try validateUserCreation(data, on: req).flatMap { createUserErrors in
             if let errors = createUserErrors {
-                let presenter = try req.make(BlogAdminPresenter.self)
-                let view = try presenter.createUserView(on: req, editing: false, errors: errors.errors, name: data.name, nameError: errors.nameError, username: data.username, usernameErorr: errors.usernameError, passwordError: errors.passwordError, confirmPasswordError: errors.confirmPasswordError, resetPasswordOnLogin: data.resetPasswordOnLogin ?? false, userID: nil, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline, pageInformation: req.adminPageInfomation())
-                return try view.encode(for: req)
+                let view = try req.adminPresenter.createUserView(editing: false, errors: errors.errors, name: data.name, nameError: errors.nameError, username: data.username, usernameErorr: errors.usernameError, passwordError: errors.passwordError, confirmPasswordError: errors.confirmPasswordError, resetPasswordOnLogin: data.resetPasswordOnLogin ?? false, userID: nil, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline, pageInformation: req.adminPageInfomation())
+                return view.encodeResponse(for: req)
             }
 
             guard let name = data.name, let username = data.username, let password = data.password else {
@@ -59,8 +56,7 @@ struct UserAdminController: RouteCollection {
 
     func editUserHandler(_ req: Request) throws -> EventLoopFuture<View> {
         return req.parameters.find(BlogUser.self, on: req).flatMap { user in
-            let presenter = try req.make(BlogAdminPresenter.self)
-            return try presenter.createUserView(on: req, editing: true, errors: nil, name: user.name, nameError: false, username: user.username, usernameErorr: false, passwordError: false, confirmPasswordError: false, resetPasswordOnLogin: user.resetPasswordRequired, userID: user.userID, profilePicture: user.profilePicture, twitterHandle: user.twitterHandle, biography: user.biography, tagline: user.tagline, pageInformation: req.adminPageInfomation())
+            return try req.adminPresenter.createUserView(editing: true, errors: nil, name: user.name, nameError: false, username: user.username, usernameErorr: false, passwordError: false, confirmPasswordError: false, resetPasswordOnLogin: user.resetPasswordRequired, userID: user.userID, profilePicture: user.profilePicture, twitterHandle: user.twitterHandle, biography: user.biography, tagline: user.tagline, pageInformation: req.adminPageInfomation())
         }
     }
 
@@ -74,9 +70,8 @@ struct UserAdminController: RouteCollection {
 
             return try self.validateUserCreation(data, editing: true, existingUsername: user.username, on: req).flatMap { errors in
                 if let editUserErrors = errors {
-                    let presenter = try req.make(BlogAdminPresenter.self)
-                    let view = try presenter.createUserView(on: req, editing: true, errors: editUserErrors.errors, name: data.name, nameError: errors?.nameError ?? false, username: data.username, usernameErorr: errors?.usernameError ?? false, passwordError: editUserErrors.passwordError, confirmPasswordError: editUserErrors.confirmPasswordError, resetPasswordOnLogin: data.resetPasswordOnLogin ?? false, userID: user.userID, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline, pageInformation: req.adminPageInfomation())
-                    return try view.encode(for: req)
+                    let view = try req.adminPresenter.createUserView(editing: true, errors: editUserErrors.errors, name: data.name, nameError: errors?.nameError ?? false, username: data.username, usernameErorr: errors?.usernameError ?? false, passwordError: editUserErrors.passwordError, confirmPasswordError: editUserErrors.confirmPasswordError, resetPasswordOnLogin: data.resetPasswordOnLogin ?? false, userID: user.userID, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline, pageInformation: req.adminPageInfomation())
+                    return view.encodeResponse(for: req)
                 }
 
                 user.name = name
@@ -111,23 +106,21 @@ struct UserAdminController: RouteCollection {
         req.parameters.find(BlogUser.self, on: req).and(req.blogUserRepository.getUsersCount()).flatMap { user, userCount in
             guard userCount > 1 else {
                 return req.blogPostRepository.getAllPostsSortedByPublishDate(includeDrafts: true).and(req.blogUserRepository.getAllUsers()).flatMap { posts, users in
-                    let presenter = try req.make(BlogAdminPresenter.self)
-                    let view = try presenter.createIndexView(on: req, posts: posts, users: users, errors: ["You cannot delete the last user"], pageInformation: req.adminPageInfomation())
-                    return try view.encode(for: req)
+                    let view = try req.adminPresenter.createIndexView(posts: posts, users: users, errors: ["You cannot delete the last user"], pageInformation: req.adminPageInfomation())
+                    return view.encodeResponse(for: req)
                 }
             }
 
             let loggedInUser = try req.requireAuthenticated(BlogUser.self)
             guard loggedInUser.userID != user.userID else {
                 return req.blogPostRepository.getAllPostsSortedByPublishDate(includeDrafts: true).and(req.blogUserRepository.getAllUsers()).flatMap { posts, users in
-                    let presenter = try req.make(BlogAdminPresenter.self)
-                    let view = try presenter.createIndexView(on: req, posts: posts, users: users, errors: ["You cannot delete yourself whilst logged in"], pageInformation: req.adminPageInfomation())
-                    return try view.encode(for: req)
+                    let view = try req.adminPresenter.createIndexView(posts: posts, users: users, errors: ["You cannot delete yourself whilst logged in"], pageInformation: req.adminPageInfomation())
+                    return view.encodeResponse(for: req)
                 }
             }
 
             let redirect = req.redirect(to: self.pathCreator.createPath(for: "admin"))
-            return userRepository.delete(user, on: req).transform(to: redirect)
+            return req.blogUserRepository.delete(user).transform(to: redirect)
         }
     }
 
@@ -186,7 +179,7 @@ struct UserAdminController: RouteCollection {
             if editing && data.username == existingUsername {
                 usernameUniqueError = req.eventLoop.future(nil)
             } else {
-                usernameUniqueError = req.blogUserRepository.getUser(username: username.lowercased(), on: req).map { user in
+                usernameUniqueError = req.blogUserRepository.getUser(username: username.lowercased()).map { user in
                     if user != nil {
                         return "Sorry that username has already been taken"
                     } else {

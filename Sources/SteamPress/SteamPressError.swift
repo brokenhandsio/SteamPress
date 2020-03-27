@@ -1,6 +1,6 @@
 import Vapor
 
-struct SteamPressError: AbortError, Debuggable {
+struct SteamPressError: AbortError, DebuggableError {
 
     let identifier: String
     let reason: String

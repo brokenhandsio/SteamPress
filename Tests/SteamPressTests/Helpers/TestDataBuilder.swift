@@ -1,7 +1,6 @@
 import Foundation
 @testable import SteamPress
 import Vapor
-import Authentication
 
 struct TestDataBuilder {
 

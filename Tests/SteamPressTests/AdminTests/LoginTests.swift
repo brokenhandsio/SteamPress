@@ -2,7 +2,6 @@ import XCTest
 import Vapor
 import SteamPress
 import Foundation
-import Authentication
 
 class LoginTests: XCTestCase {
 

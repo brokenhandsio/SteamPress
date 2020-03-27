@@ -1,5 +1,4 @@
 import Vapor
-import Authentication
 
 // MARK: - Model
 

@@ -1,6 +1,5 @@
 import SteamPress
 import Vapor
-import Authentication
 
 extension TestWorld {
     static func getSteamPressApp(repository: InMemoryRepository,

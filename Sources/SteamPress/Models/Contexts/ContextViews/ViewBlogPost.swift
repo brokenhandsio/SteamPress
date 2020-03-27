@@ -94,9 +94,7 @@ extension BlogPost {
 }
 
 extension Array where Element: BlogPost {
-    func convertToViewBlogPosts(authors: [BlogUser], tagsForPosts: [Int: [BlogTag]], on request: Request) throws -> [ViewBlogPost] {
-        let longDateFormatter = try container.make(LongPostDateFormatter.self)
-        let numericDateFormatter = try container.make(NumericPostDateFormatter.self)
+    func convertToViewBlogPosts(authors: [BlogUser], tagsForPosts: [Int: [BlogTag]], longDateFormatter: LongPostDateFormatter, numericDateFormatter: NumericPostDateFormatter) throws -> [ViewBlogPost] {
         let viewPosts = try self.map { post -> ViewBlogPost in
             guard let blogID = post.blogID else {
                 throw SteamPressError(identifier: "ViewBlogPost", "Post has no ID set")
@@ -106,9 +104,7 @@ extension Array where Element: BlogPost {
         return viewPosts
     }
     
-    func convertToViewBlogPostsWithoutTags(authors: [BlogUser], on request: Request) throws -> [ViewBlogPostWithoutTags] {
-        let longDateFormatter = try container.make(LongPostDateFormatter.self)
-        let numericDateFormatter = try container.make(NumericPostDateFormatter.self)
+    func convertToViewBlogPostsWithoutTags(authors: [BlogUser], longDateFormatter: LongPostDateFormatter, numericDateFormatter: NumericPostDateFormatter) throws -> [ViewBlogPostWithoutTags] {
         let viewPosts = try self.map { post -> ViewBlogPostWithoutTags in
             return try post.toViewPostWithoutTags(authorName: authors.getAuthorName(id: post.author), authorUsername: authors.getAuthorUsername(id: post.author), longFormatter: longDateFormatter, numericFormatter: numericDateFormatter)
         }
