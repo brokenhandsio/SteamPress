@@ -32,16 +32,16 @@ public final class BlogUser: Codable {
 extension BlogUser: Authenticatable {
     func authenticateSession(on req: Request) throws {
         try req.session()["_BlogUserSession"] = self.userID?.description
-        try req.authenticate(self)
+        req.auth.login(self)
     }
 }
 
 extension Request {
     func unauthenticateBlogUserSession() throws {
-        guard try self.hasSession() else {
+        guard self.hasSession else {
             return
         }
         try session()["_BlogUserSession"] = nil
-        try unauthenticate(BlogUser.self)
+        self.auth.logout(BlogUser.self)
     }
 }

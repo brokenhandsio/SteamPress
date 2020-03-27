@@ -64,4 +64,11 @@ extension Parameters {
         }
         return req.blogUserRepository.getUser(id: id).unwrap(or: Abort(.notFound))
     }
+    
+    func findPost(on req: Request) -> EventLoopFuture<BlogPost> {
+        guard let idString = req.parameters.get(BlogPost.parameterKey), let id = Int(idString) else {
+            return req.eventLoop.makeFailedFuture(Abort(.badRequest))
+        }
+        return req.blogPostRepository.getPost(id: id).unwrap(or: Abort(.notFound))
+    }
 }

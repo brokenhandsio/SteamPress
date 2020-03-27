@@ -69,8 +69,7 @@ extension BlogPost {
             .replacingOccurrences(of: " ", with: "-", options: .regularExpression)
         return req.blogPostRepository.getPost(slug: initialSlug).map { postWithSameSlug in
             if postWithSameSlug != nil {
-                let randomNumberGenerator = try req.make(SteamPressRandomNumberGenerator.self)
-                let randomNumber = randomNumberGenerator.getNumber()
+                let randomNumber = req.randomNumberGenerator.getNumber()
                 return "\(initialSlug)-\(randomNumber)"
             } else {
                 return initialSlug
