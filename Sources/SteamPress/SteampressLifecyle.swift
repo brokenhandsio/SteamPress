@@ -57,6 +57,11 @@ public struct SteampressLifecyle: LifecycleHandler {
 //    }
 
     public func willBoot(_ application: Application) throws {
+        
+//        application.storage[BlogPresenterKey.self] = ViewBlogPresenter(viewRenderer: <#T##ViewRenderer#>, longDateFormatter: <#T##LongPostDateFormatter#>, numericDateFormatter: <#T##NumericPostDateFormatter#>, eventLoopGroup: <#T##EventLoopGroup#>)
+//        application.storage[RandomNumberGeneratorKey.self] = RealRandomNumberGenerator()
+        application.randomNumberGenerators.initialize()
+        
         let router = application.routes
 
         let feedController = FeedController(pathCreator: self.pathCreator, feedInformation: self.feedInformation)

@@ -14,7 +14,7 @@ extension Request {
 }
 
 extension Application {
-    private struct AdminPresenterKey: StorageKey {
+    struct AdminPresenterKey: StorageKey {
         typealias Value = AdminPresenterFactory
     }
     var adminPresenterFactory: AdminPresenterFactory {

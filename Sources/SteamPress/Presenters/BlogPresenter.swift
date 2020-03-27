@@ -18,7 +18,7 @@ extension Request {
 }
 
 extension Application {
-    private struct BlogPresenterKey: StorageKey {
+    struct BlogPresenterKey: StorageKey {
         typealias Value = BlogPresenterFactory
     }
     var blogPresenterFactory: BlogPresenterFactory {
