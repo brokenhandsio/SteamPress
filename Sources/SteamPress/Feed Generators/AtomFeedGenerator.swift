@@ -87,23 +87,27 @@ fileprivate extension BlogPost {
     func getPostAtomFeed(blogPath: String, dateFormatter: DateFormatter, for request: Request) throws -> EventLoopFuture<String> {
         let updatedTime = lastEdited ?? created
         return request.blogUserRepository.getUser(id: author).flatMap { user in
-            guard let user = user else {
-                throw SteamPressError(identifier: "Invalid-relationship", "Blog user with ID \(self.author) not found")
-            }
-            guard let postID = self.blogID else {
-                throw SteamPressError(identifier: "ID-required", "Blog Post has no ID")
-            }
-            var postEntry = "<entry>\n<id>\(blogPath)/posts-id/\(postID)/</id>\n<title>\(self.title)</title>\n<updated>\(dateFormatter.string(from: updatedTime))</updated>\n<published>\(dateFormatter.string(from: self.created))</published>\n<author>\n<name>\(user.name)</name>\n<uri>\(blogPath)/authors/\(user.username)/</uri>\n</author>\n<summary>\(try self.description())</summary>\n<link rel=\"alternate\" href=\"\(blogPath)/posts/\(self.slugUrl)/\" />\n"
-
-            return request.blogTagRepository.getTags(for: self).map { tags in
-                for tag in tags {
-                    if let percentDecodedTag = tag.name.removingPercentEncoding {
-                        postEntry += "<category term=\"\(percentDecodedTag)\"/>\n"
-                    }
+            do {
+                guard let user = user else {
+                    throw SteamPressError(identifier: "Invalid-relationship", "Blog user with ID \(self.author) not found")
                 }
+                guard let postID = self.blogID else {
+                    throw SteamPressError(identifier: "ID-required", "Blog Post has no ID")
+                }
+                var postEntry = "<entry>\n<id>\(blogPath)/posts-id/\(postID)/</id>\n<title>\(self.title)</title>\n<updated>\(dateFormatter.string(from: updatedTime))</updated>\n<published>\(dateFormatter.string(from: self.created))</published>\n<author>\n<name>\(user.name)</name>\n<uri>\(blogPath)/authors/\(user.username)/</uri>\n</author>\n<summary>\(try self.description())</summary>\n<link rel=\"alternate\" href=\"\(blogPath)/posts/\(self.slugUrl)/\" />\n"
 
-                postEntry += "</entry>\n"
-                return postEntry
+                return request.blogTagRepository.getTags(for: self).map { tags in
+                    for tag in tags {
+                        if let percentDecodedTag = tag.name.removingPercentEncoding {
+                            postEntry += "<category term=\"\(percentDecodedTag)\"/>\n"
+                        }
+                    }
+
+                    postEntry += "</entry>\n"
+                    return postEntry
+                }
+            } catch {
+                return request.eventLoop.makeFailedFuture(error)
             }
         }
     }

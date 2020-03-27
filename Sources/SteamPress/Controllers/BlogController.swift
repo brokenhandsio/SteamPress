@@ -44,7 +44,11 @@ struct BlogController: RouteCollection {
         return req.blogPostRepository.getAllPostsSortedByPublishDate(includeDrafts: false, count: postsPerPage, offset: paginationInformation.offset).and(req.blogTagRepository.getAllTags()).flatMap { posts, tags in
             req.blogUserRepository.getAllUsers().and(req.blogPostRepository.getAllPostsCount(includeDrafts: false)).flatMap { users, totalPostCount in
                 req.blogTagRepository.getTagsForAllPosts().flatMap { tagsForPosts in
-                    return req.blogPresenter.indexView(posts: posts, tags: tags, authors: users, tagsForPosts: tagsForPosts, pageInformation: try req.pageInformation(), paginationTagInfo: self.getPaginationInformation(currentPage: paginationInformation.page, totalPosts: totalPostCount, currentQuery: req.url.query))
+                    do {
+                        return req.blogPresenter.indexView(posts: posts, tags: tags, authors: users, tagsForPosts: tagsForPosts, pageInformation: try req.pageInformation(), paginationTagInfo: self.getPaginationInformation(currentPage: paginationInformation.page, totalPosts: totalPostCount, currentQuery: req.url.query))
+                    } catch {
+                        return req.eventLoop.makeFailedFuture(error)
+                    }
                 }
             }
         }
@@ -59,8 +63,8 @@ struct BlogController: RouteCollection {
             throw Abort(.badRequest)
         }
         return req.blogPostRepository.getPost(slug: blogSlug).unwrap(or: Abort(.notFound)).flatMap { (post: BlogPost) -> EventLoopFuture<View> in
-            let tagsQuery: EventLoopFuture<[BlogTag]> = req.blogTagsRepository.getTags(for: post, on: req)
-            let userQuery: EventLoopFuture<BlogUser> = req.blogUserRepository.getUser(id: post.author, on: req).unwrap(or: Abort(.internalServerError))
+            let tagsQuery: EventLoopFuture<[BlogTag]> = req.blogTagRepository.getTags(for: post)
+            let userQuery: EventLoopFuture<BlogUser> = req.blogUserRepository.getUser(id: post.author).unwrap(or: Abort(.internalServerError))
             return userQuery.and(tagsQuery).flatMap { (user: BlogUser, tags: [BlogTag]) -> EventLoopFuture<View> in
                 do {
                     let pageInformation: BlogGlobalPageInformation = try req.pageInformation()
@@ -73,14 +77,20 @@ struct BlogController: RouteCollection {
     }
 
     func tagViewHandler(_ req: Request) throws -> EventLoopFuture<View> {
-        return try req.parameters.next(BlogTag.self).flatMap { tag in
+        return req.parameters.findTag(on: req).flatMap { tag in
             let paginationInformation = req.getPaginationInformation(postsPerPage: self.postsPerPage)
             let postsQuery = req.blogPostRepository.getSortedPublishedPosts(for: tag, count: self.postsPerPage, offset: paginationInformation.offset)
             let postCountQuery = req.blogPostRepository.getPublishedPostCount(for: tag)
-            let usersQuery = req.blogUsersRepository.getAllUsers()
-            return flatMap(postsQuery, postCountQuery, usersQuery) { posts, totalPosts, authors in
-                let paginationTagInfo = self.getPaginationInformation(currentPage: paginationInformation.page, totalPosts: totalPosts, currentQuery: req.http.url.query)
-                return req.blogPresenter.tagView(tag: tag, posts: posts, authors: authors, totalPosts: totalPosts, pageInformation: try req.pageInformation(), paginationTagInfo: paginationTagInfo)
+            let usersQuery = req.blogUserRepository.getAllUsers()
+            return postsQuery.and(postCountQuery).flatMap { posts, totalPosts in
+                usersQuery.flatMap { authors in
+                    let paginationTagInfo = self.getPaginationInformation(currentPage: paginationInformation.page, totalPosts: totalPosts, currentQuery: req.url.query)
+                    do {
+                        return req.blogPresenter.tagView(tag: tag, posts: posts, authors: authors, totalPosts: totalPosts, pageInformation: try req.pageInformation(), paginationTagInfo: paginationTagInfo)
+                    } catch {
+                        return req.eventLoop.makeFailedFuture(error)
+                    }
+                }
             }
         }
     }
@@ -92,7 +102,7 @@ struct BlogController: RouteCollection {
         let paginationInformation = req.getPaginationInformation(postsPerPage: postsPerPage)
         return req.blogUserRepository.getUser(username: authorUsername).flatMap { user in
             guard let author = user else {
-                throw Abort(.notFound)
+                return req.eventLoop.makeFailedFuture(Abort(.notFound))
             }
             let authorPostQuery = req.blogPostRepository.getAllPostsSortedByPublishDate(for: author, includeDrafts: false, count: self.postsPerPage, offset: paginationInformation.offset)
             let tagQuery = req.blogTagRepository.getTagsForAllPosts()
@@ -100,7 +110,11 @@ struct BlogController: RouteCollection {
             return authorPostQuery.and(authorPostCountQuery).flatMap { posts, postCount in
                 tagQuery.flatMap { tagsForPosts in
                     let paginationTagInfo = self.getPaginationInformation(currentPage: paginationInformation.page, totalPosts: postCount, currentQuery: req.url.query)
-                    return req.blogPresenter.authorView(author: author, posts: posts, postCount: postCount, tagsForPosts: tagsForPosts, pageInformation: try req.pageInformation(), paginationTagInfo: paginationTagInfo)
+                    do {
+                        return req.blogPresenter.authorView(author: author, posts: posts, postCount: postCount, tagsForPosts: tagsForPosts, pageInformation: try req.pageInformation(), paginationTagInfo: paginationTagInfo)
+                    } catch {
+                        return req.eventLoop.makeFailedFuture(error)
+                    }
                 }
             }
         }
@@ -109,26 +123,34 @@ struct BlogController: RouteCollection {
     func allTagsViewHandler(_ req: Request) throws -> EventLoopFuture<View> {
         return req.blogTagRepository.getAllTagsWithPostCount().flatMap { tagswithCount in
             let allTags = tagswithCount.map { $0.0 }
-            let tagCounts = try tagswithCount.reduce(into: [Int: Int]()) {
-                guard let tagID = $1.0.tagID else {
-                    throw SteamPressError(identifier: "BlogController", "Tag ID not set")
+            do {
+                let tagCounts = try tagswithCount.reduce(into: [Int: Int]()) {
+                    guard let tagID = $1.0.tagID else {
+                        throw SteamPressError(identifier: "BlogController", "Tag ID not set")
+                    }
+                    return $0[tagID] = $1.1
                 }
-                return $0[tagID] = $1.1
+                return req.blogPresenter.allTagsView(tags: allTags, tagPostCounts: tagCounts, pageInformation: try req.pageInformation())
+            } catch {
+                return req.eventLoop.makeFailedFuture(error)
             }
-            return req.blogPresenter.allTagsView(tags: allTags, tagPostCounts: tagCounts, pageInformation: try req.pageInformation())
         }
     }
 
     func allAuthorsViewHandler(_ req: Request) throws -> EventLoopFuture<View> {
         return req.blogUserRepository.getAllUsersWithPostCount().flatMap { allUsersWithCount in
             let allUsers = allUsersWithCount.map { $0.0 }
-            let authorCounts = try allUsersWithCount.reduce(into: [Int: Int]()) {
-                guard let userID = $1.0.userID else {
-                    throw SteamPressError(identifier: "BlogController", "User ID not set")
+            do {
+                let authorCounts = try allUsersWithCount.reduce(into: [Int: Int]()) {
+                    guard let userID = $1.0.userID else {
+                        throw SteamPressError(identifier: "BlogController", "User ID not set")
+                    }
+                    return $0[userID] = $1.1
                 }
-                return $0[userID] = $1.1
+                return req.blogPresenter.allAuthorsView(authors: allUsers, authorPostCounts: authorCounts, pageInformation: try req.pageInformation())
+            } catch {
+                return req.eventLoop.makeFailedFuture(error)
             }
-            return req.blogPresenter.allAuthorsView(authors: allUsers, authorPostCounts: authorCounts, pageInformation: try req.pageInformation())
         }
     }
 
@@ -146,7 +168,11 @@ struct BlogController: RouteCollection {
         return postsQuery.and(postsCountQuery).flatMap { posts, totalPosts in
             userQuery.and(tagsQuery).flatMap { users, tagsForPosts in
                 let paginationTagInfo = self.getPaginationInformation(currentPage: paginationInformation.page, totalPosts: totalPosts, currentQuery: req.url.query)
-                return req.blogPresenter.searchView(totalResults: totalPosts, posts: posts, authors: users, searchTerm: searchTerm, tagsForPosts: tagsForPosts, pageInformation: try req.pageInformation(), paginationTagInfo: paginationTagInfo)
+                do {
+                    return req.blogPresenter.searchView(totalResults: totalPosts, posts: posts, authors: users, searchTerm: searchTerm, tagsForPosts: tagsForPosts, pageInformation: try req.pageInformation(), paginationTagInfo: paginationTagInfo)
+                } catch {
+                    return req.eventLoop.makeFailedFuture(error)
+                }
             }
         }
     }

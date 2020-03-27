@@ -55,13 +55,17 @@ struct UserAdminController: RouteCollection {
     }
 
     func editUserHandler(_ req: Request) throws -> EventLoopFuture<View> {
-        return req.parameters.find(BlogUser.self, on: req).flatMap { user in
-            return try req.adminPresenter.createUserView(editing: true, errors: nil, name: user.name, nameError: false, username: user.username, usernameErorr: false, passwordError: false, confirmPasswordError: false, resetPasswordOnLogin: user.resetPasswordRequired, userID: user.userID, profilePicture: user.profilePicture, twitterHandle: user.twitterHandle, biography: user.biography, tagline: user.tagline, pageInformation: req.adminPageInfomation())
+        req.parameters.findUser(on: req).flatMap { user in
+            do {
+                return try req.adminPresenter.createUserView(editing: true, errors: nil, name: user.name, nameError: false, username: user.username, usernameErorr: false, passwordError: false, confirmPasswordError: false, resetPasswordOnLogin: user.resetPasswordRequired, userID: user.userID, profilePicture: user.profilePicture, twitterHandle: user.twitterHandle, biography: user.biography, tagline: user.tagline, pageInformation: req.adminPageInfomation())
+            } catch {
+                return req.eventLoop.makeFailedFuture(error)
+            }
         }
     }
 
     func editUserPostHandler(_ req: Request) throws -> EventLoopFuture<Response> {
-        return req.parameters.find(BlogUser.self, on: req).flatMap { user in
+        req.parameters.findUser(on: req).flatMap { user in
             let data = try req.content.decode(CreateUserData.self)
 
             guard let name = data.name, let username = data.username else {
@@ -103,7 +107,7 @@ struct UserAdminController: RouteCollection {
     }
 
     func deleteUserPostHandler(_ req: Request) throws -> EventLoopFuture<Response> {
-        req.parameters.find(BlogUser.self, on: req).and(req.blogUserRepository.getUsersCount()).flatMap { user, userCount in
+        req.parameters.findUser(on: req).and(req.blogUserRepository.getUsersCount()).flatMap { user, userCount in
             guard userCount > 1 else {
                 return req.blogPostRepository.getAllPostsSortedByPublishDate(includeDrafts: true).and(req.blogUserRepository.getAllUsers()).flatMap { posts, users in
                     let view = try req.adminPresenter.createIndexView(posts: posts, users: users, errors: ["You cannot delete the last user"], pageInformation: req.adminPageInfomation())

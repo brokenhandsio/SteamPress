@@ -29,7 +29,11 @@ struct BlogAdminController: RouteCollection {
     // MARK: Admin Handler
     func adminHandler(_ req: Request) throws -> EventLoopFuture<View> {
         return req.blogPostRepository.getAllPostsSortedByPublishDate(includeDrafts: true).and(req.blogUserRepository.getAllUsers()).flatMap { posts, users in
-            return try req.adminPresenter.createIndexView(posts: posts, users: users, errors: nil, pageInformation: req.adminPageInfomation())
+            do {
+                return try req.adminPresenter.createIndexView(posts: posts, users: users, errors: nil, pageInformation: req.adminPageInfomation())
+            } catch {
+                return req.eventLoop.makeFailedFuture(error)
+            }
         }
     }
 

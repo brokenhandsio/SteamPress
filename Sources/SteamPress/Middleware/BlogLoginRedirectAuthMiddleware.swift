@@ -6,7 +6,7 @@ struct BlogLoginRedirectAuthMiddleware: Middleware {
     
     func respond(to request: Request, chainingTo next: Responder) -> EventLoopFuture<Response> {
         do {
-            let user = try request.requireAuthenticated(BlogUser.self)
+            let user = try request.auth.require(BlogUser.self)
             let resetPasswordPath = pathCreator.createPath(for: "admin/resetPassword")
             var requestPath = request.url.string
             if !requestPath.hasSuffix("/") {

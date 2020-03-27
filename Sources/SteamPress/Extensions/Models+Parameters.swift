@@ -71,4 +71,11 @@ extension Parameters {
         }
         return req.blogPostRepository.getPost(id: id).unwrap(or: Abort(.notFound))
     }
+    
+    func findTag(on req: Request) -> EventLoopFuture<BlogTag> {
+        guard let tagName = req.parameters.get(BlogTag.parameterKey) else {
+            return req.eventLoop.makeFailedFuture(Abort(.notFound))
+        }
+        return req.blogTagRepository.getTag(tagName).unwrap(or: Abort(.notFound))
+    }
 }
