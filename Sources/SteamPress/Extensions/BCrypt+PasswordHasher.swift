@@ -1,17 +1,23 @@
 import Vapor
 import Crypto
 
-public protocol PasswordHasher {
+protocol PasswordHasher {
+    func `for`(_ request: Request) -> PasswordHasher
     func hash(_ plaintext: String) throws -> String
 }
 
 extension BCryptDigest: PasswordHasher {
-    public func hash(_ plaintext: String) throws -> String {
+    func hash(_ plaintext: String) throws -> String {
         return try self.hash(plaintext)
+    }
+    
+    func `for`(_ request: Request) -> PasswordHasher {
+        return BCryptDigest()
     }
 }
 
 protocol SteamPressPasswordVerifier {
+    func `for`(_ request: Request) -> SteamPressPasswordVerifier
     func verify(_ plaintext: String, created hash: String) throws -> Bool
 }
 
@@ -19,55 +25,145 @@ extension BCryptDigest: SteamPressPasswordVerifier {
     func verify(_ plaintext: String, created hash: String) throws -> Bool {
         return try self.verify(plaintext, created: hash)
     }
+    
+    func `for`(_ request: Request) -> SteamPressPasswordVerifier {
+        return BCryptDigest()
+    }
 }
 
 
-public extension Request {
+extension Request {
     var passwordHasher: PasswordHasher {
-        self.application.passwordHasherFactory.makeHasher!(self)
+        self.application.passwordHashers.passwordHasher.for(self)
     }
     
-    internal var passwordVerifier: SteamPressPasswordVerifier {
-        self.application.passwordVerifierFactory.makeVerifier!(self)
+    var passwordVerifier: SteamPressPasswordVerifier {
+        self.application.passwordVerifiers.passwordVerifier.for(self)
     }
 }
 
-private extension Application {
-    private struct PasswordHasherKey: StorageKey {
-        typealias Value = PasswordHasherFactory
-    }
-    var passwordHasherFactory: PasswordHasherFactory {
-        get {
-            self.storage[PasswordHasherKey.self] ?? .init()
+extension Application {
+    struct PasswordVerifiers {
+        struct Provider {
+            static var bcrypt: Self {
+                .init {
+                    $0.passwordVerifiers.use { $0.passwordVerifiers.bcrypt }
+                }
+            }
+
+            let run: (Application) -> ()
+
+            init(_ run: @escaping (Application) -> ()) {
+                self.run = run
+            }
         }
-        set {
-            self.storage[PasswordHasherKey.self] = newValue
+        
+        final class Storage {
+            var makeVerifier: ((Application) -> SteamPressPasswordVerifier)?
+            init() { }
+        }
+
+        struct Key: StorageKey {
+            typealias Value = Storage
+        }
+
+        let application: Application
+
+        var bcrypt: BCryptDigest {
+            return .init()
+        }
+
+        var passwordVerifier: SteamPressPasswordVerifier {
+            guard let makeVerifier = self.storage.makeVerifier else {
+                fatalError("No password verifier configured. Configure with app.passwordVerifiers.use(...)")
+            }
+            return makeVerifier(self.application)
+        }
+
+        func use(_ provider: Provider) {
+            provider.run(self.application)
+        }
+
+        func use(_ makeVerifier: @escaping (Application) -> (SteamPressPasswordVerifier)) {
+            self.storage.makeVerifier = makeVerifier
+        }
+
+        func initialize() {
+            self.application.storage[Key.self] = .init()
+            self.use(.bcrypt)
+        }
+
+        private var storage: Storage {
+            guard let storage = self.application.storage[Key.self] else {
+                fatalError("PasswordVerifiers not configured. Configure with app.passwordVerifiers.initialize()")
+            }
+            return storage
         }
     }
     
-    private struct PasswordVerifierKey: StorageKey {
-        typealias Value = PasswordVerifierFactory
+    var passwordVerifiers: PasswordVerifiers {
+        .init(application: self)
     }
-    var passwordVerifierFactory: PasswordVerifierFactory {
-        get {
-            self.storage[PasswordVerifierKey.self] ?? .init()
-        }
-        set {
-            self.storage[PasswordVerifierKey.self] = newValue
-        }
-    }
-}
+    
+    struct PasswordHashers {
+        struct Provider {
+            static var bcrypt: Self {
+                .init {
+                    $0.passwordHashers.use { $0.passwordHashers.bcrypt }
+                }
+            }
 
-private struct PasswordHasherFactory {
-    var makeHasher: ((Request) -> PasswordHasher)?
-    mutating func use(_ makeHasher: @escaping (Request) -> PasswordHasher) {
-        self.makeHasher = makeHasher
-    }
-}
+            let run: (Application) -> ()
 
-private struct PasswordVerifierFactory {
-    var makeVerifier: ((Request) -> SteamPressPasswordVerifier)?
-    mutating func use(_ makeVerifier: @escaping (Request) -> SteamPressPasswordVerifier) {
-        self.makeVerifier = makeVerifier
+            init(_ run: @escaping (Application) -> ()) {
+                self.run = run
+            }
+        }
+        
+        final class Storage {
+            var makeHasher: ((Application) -> PasswordHasher)?
+            init() { }
+        }
+
+        struct Key: StorageKey {
+            typealias Value = Storage
+        }
+
+        let application: Application
+
+        var bcrypt: BCryptDigest {
+            return .init()
+        }
+
+        var passwordHasher: PasswordHasher {
+            guard let makeHasher = self.storage.makeHasher else {
+                fatalError("No password hasher configured. Configure with app.passwordHashers.use(...)")
+            }
+            return makeHasher(self.application)
+        }
+
+        func use(_ provider: Provider) {
+            provider.run(self.application)
+        }
+
+        func use(_ makeHasher: @escaping (Application) -> (PasswordHasher)) {
+            self.storage.makeHasher = makeHasher
+        }
+
+        func initialize() {
+            self.application.storage[Key.self] = .init()
+            self.use(.bcrypt)
+        }
+
+        private var storage: Storage {
+            guard let storage = self.application.storage[Key.self] else {
+                fatalError("PasswordHashers not configured. Configure with app.passwordHashers.initialize()")
+            }
+            return storage
+        }
+    }
+
+    var passwordHashers: PasswordHashers {
+        .init(application: self)
     }
 }

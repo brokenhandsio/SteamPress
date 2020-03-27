@@ -37,30 +37,15 @@ public struct SteampressLifecyle: LifecycleHandler {
     }
 
 //    public func register(_ services: inout Services) throws {
-//        services.register(BlogPresenter.self) { _ in
-//            return ViewBlogPresenter()
-//        }
-//
-//        services.register(BlogAdminPresenter.self) { _ in
-//            return ViewBlogAdminPresenter(pathCreator: self.pathCreator)
-//        }
-//
-//        try services.register(AuthenticationProvider())
-//        services.register([PasswordHasher.self, PasswordVerifier.self]) { _ in
-//            return BCryptDigest()
-//        }
-//        services.register(SteamPressRandomNumberGenerator.self) { _ in
-//            return RealRandomNumberGenerator()
-//        }
-//
 //        services.register(BlogRememberMeMiddleware.self)
 //    }
 
     public func willBoot(_ application: Application) throws {
-        
-//        application.storage[BlogPresenterKey.self] = ViewBlogPresenter(viewRenderer: <#T##ViewRenderer#>, longDateFormatter: <#T##LongPostDateFormatter#>, numericDateFormatter: <#T##NumericPostDateFormatter#>, eventLoopGroup: <#T##EventLoopGroup#>)
-//        application.storage[RandomNumberGeneratorKey.self] = RealRandomNumberGenerator()
         application.randomNumberGenerators.initialize()
+        application.blogPresenters.initialize()
+        application.adminPresenters.initialize()
+        application.passwordHashers.initialize()
+        application.passwordVerifiers.initialize()
         
         let router = application.routes
 

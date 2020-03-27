@@ -1,6 +1,7 @@
 import Vapor
 
 public protocol BlogPresenter {
+    func `for`(_ request: Request) -> BlogPresenter
     func indexView(posts: [BlogPost], tags: [BlogTag], authors: [BlogUser], tagsForPosts: [Int: [BlogTag]], pageInformation: BlogGlobalPageInformation, paginationTagInfo: PaginationTagInformation) -> EventLoopFuture<View>
     func postView(post: BlogPost, author: BlogUser, tags: [BlogTag], pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View>
     func allAuthorsView(authors: [BlogUser], authorPostCounts: [Int: Int], pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View>
@@ -11,29 +12,78 @@ public protocol BlogPresenter {
     func loginView(loginWarning: Bool, errors: [String]?, username: String?, usernameError: Bool, passwordError: Bool, rememberMe: Bool, pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View>
 }
 
-extension Request {
+extension ViewBlogPresenter {
+    public func `for`(_ request: Request) -> BlogPresenter {
+        return ViewBlogPresenter(viewRenderer: request.view, longDateFormatter: LongPostDateFormatter(), numericDateFormatter: NumericPostDateFormatter(), eventLoopGroup: request.eventLoop)
+    }
+}
+
+public extension Request {
     var blogPresenter: BlogPresenter {
-        self.application.blogPresenterFactory.makePresenter!(self)
+        self.application.blogPresenters.blogPresenter.for(self)
     }
 }
 
 extension Application {
-    struct BlogPresenterKey: StorageKey {
-        typealias Value = BlogPresenterFactory
-    }
-    var blogPresenterFactory: BlogPresenterFactory {
-        get {
-            self.storage[BlogPresenterKey.self] ?? .init()
-        }
-        set {
-            self.storage[BlogPresenterKey.self] = newValue
-        }
-    }
-}
+    struct BlogPresenters {
+        struct Provider {
+            static var view: Self {
+                .init {
+                    $0.blogPresenters.use { $0.blogPresenters.view }
+                }
+            }
 
-struct BlogPresenterFactory {
-    var makePresenter: ((Request) -> BlogPresenter)?
-    mutating func use(_ makePresenter: @escaping (Request) -> BlogPresenter) {
-        self.makePresenter = makePresenter
+            let run: (Application) -> ()
+
+            init(_ run: @escaping (Application) -> ()) {
+                self.run = run
+            }
+        }
+        
+        final class Storage {
+            var makePresenter: ((Application) -> BlogPresenter)?
+            init() { }
+        }
+
+        struct Key: StorageKey {
+            typealias Value = Storage
+        }
+
+        let application: Application
+
+        var view: ViewBlogPresenter {
+            return .init(viewRenderer: self.application.views.renderer, longDateFormatter: LongPostDateFormatter(), numericDateFormatter: NumericPostDateFormatter(), eventLoopGroup: self.application.eventLoopGroup)
+        }
+
+        var blogPresenter: BlogPresenter {
+            guard let makePresenter = self.storage.makePresenter else {
+                fatalError("No blog presenter configured. Configure with app.blogPresenters.use(...)")
+            }
+            return makePresenter(self.application)
+        }
+
+        func use(_ provider: Provider) {
+            provider.run(self.application)
+        }
+
+        func use(_ makePresenter: @escaping (Application) -> (BlogPresenter)) {
+            self.storage.makePresenter = makePresenter
+        }
+
+        func initialize() {
+            self.application.storage[Key.self] = .init()
+            self.use(.view)
+        }
+
+        private var storage: Storage {
+            guard let storage = self.application.storage[Key.self] else {
+                fatalError("BlogPresenters not configured. Configure with app.blogPresenters.initialize()")
+            }
+            return storage
+        }
+    }
+
+    var blogPresenters: BlogPresenters {
+        .init(application: self)
     }
 }
