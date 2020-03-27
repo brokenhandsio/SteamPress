@@ -1,6 +1,6 @@
 import Vapor
 
-public struct Provider: LifecycleHandler {
+public struct SteampressLifecyle: LifecycleHandler {
 
     let blogPath: String?
     let feedInformation: FeedInformation
