@@ -43,7 +43,7 @@ public struct SteampressLifecyle: LifecycleHandler {
     public func willBoot(_ application: Application) throws {
         application.randomNumberGenerators.initialize()
         application.blogPresenters.initialize()
-        application.adminPresenters.initialize()
+        application.adminPresenters.initialize(pathCreator: pathCreator)
         application.passwordHashers.initialize()
         application.passwordVerifiers.initialize()
         

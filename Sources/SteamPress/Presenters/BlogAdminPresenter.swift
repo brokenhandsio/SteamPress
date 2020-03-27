@@ -1,7 +1,7 @@
 import Vapor
 
-public protocol BlogAdminPresenter {
-    func `for`(_ request: Request) -> BlogAdminPresenter
+protocol BlogAdminPresenter {
+    func `for`(_ request: Request, pathCreator: BlogPathCreator) -> BlogAdminPresenter
     func createIndexView(posts: [BlogPost], users: [BlogUser], errors: [String]?, pageInformation: BlogAdminPageInformation) -> EventLoopFuture<View>
     func createPostView(errors: [String]?, title: String?, contents: String?, slugURL: String?, tags: [String]?, isEditing: Bool, post: BlogPost?, isDraft: Bool?, titleError: Bool, contentsError: Bool, pageInformation: BlogAdminPageInformation) -> EventLoopFuture<View>
     func createUserView(editing: Bool, errors: [String]?, name: String?, nameError: Bool, username: String?, usernameErorr: Bool, passwordError: Bool, confirmPasswordError: Bool, resetPasswordOnLogin: Bool, userID: Int?, profilePicture: String?, twitterHandle: String?, biography: String?, tagline: String?, pageInformation: BlogAdminPageInformation) -> EventLoopFuture<View>
@@ -9,15 +9,14 @@ public protocol BlogAdminPresenter {
 }
 
 extension ViewBlogAdminPresenter {
-    public func `for`(_ request: Request) -> BlogAdminPresenter {
-        #warning("TODO path create")
-        return ViewBlogAdminPresenter(pathCreator: BlogPathCreator(blogPath: nil), viewRenderer: request.view, eventLoopGroup: request.eventLoop, longDateFormatter: LongPostDateFormatter(), numericDateFormatter: NumericPostDateFormatter())
+    func `for`(_ request: Request, pathCreator: BlogPathCreator) -> BlogAdminPresenter {
+        return ViewBlogAdminPresenter(pathCreator: pathCreator, viewRenderer: request.view, eventLoopGroup: request.eventLoop, longDateFormatter: LongPostDateFormatter(), numericDateFormatter: NumericPostDateFormatter())
     }
 }
 
 extension Request {
     var adminPresenter: BlogAdminPresenter {
-        self.application.adminPresenters.adminPresenter.for(self)
+        self.application.adminPresenters.adminPresenter.for(self, pathCreator: self.application.adminPresenters.storage.pathCreator)
     }
 }
 
@@ -38,8 +37,11 @@ extension Application {
         }
         
         final class Storage {
+            let pathCreator: BlogPathCreator
             var makePresenter: ((Application) -> BlogAdminPresenter)?
-            init() { }
+            init(pathCreator: BlogPathCreator) {
+                self.pathCreator = pathCreator
+            }
         }
 
         struct Key: StorageKey {
@@ -49,8 +51,7 @@ extension Application {
         let application: Application
 
         var view: ViewBlogAdminPresenter {
-            #warning("Sort out Blog Path Creator")
-            return .init(pathCreator: BlogPathCreator(blogPath: nil), viewRenderer: self.application.views.renderer, eventLoopGroup: self.application.eventLoopGroup, longDateFormatter: LongPostDateFormatter(), numericDateFormatter: NumericPostDateFormatter())
+            return .init(pathCreator: self.storage.pathCreator, viewRenderer: self.application.views.renderer, eventLoopGroup: self.application.eventLoopGroup, longDateFormatter: LongPostDateFormatter(), numericDateFormatter: NumericPostDateFormatter())
         }
 
         var adminPresenter: BlogAdminPresenter {
@@ -68,12 +69,12 @@ extension Application {
             self.storage.makePresenter = makePresenter
         }
 
-        func initialize() {
-            self.application.storage[Key.self] = .init()
+        func initialize(pathCreator: BlogPathCreator) {
+            self.application.storage[Key.self] = .init(pathCreator: pathCreator)
             self.use(.view)
         }
 
-        private var storage: Storage {
+        var storage: Storage {
             guard let storage = self.application.storage[Key.self] else {
                 fatalError("BlogAdminPresenters not configured. Configure with app.adminPresenters.initialize()")
             }
