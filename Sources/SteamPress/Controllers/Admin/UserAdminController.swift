@@ -110,16 +110,29 @@ struct UserAdminController: RouteCollection {
         req.parameters.findUser(on: req).and(req.blogUserRepository.getUsersCount()).flatMap { user, userCount in
             guard userCount > 1 else {
                 return req.blogPostRepository.getAllPostsSortedByPublishDate(includeDrafts: true).and(req.blogUserRepository.getAllUsers()).flatMap { posts, users in
-                    let view = try req.adminPresenter.createIndexView(posts: posts, users: users, errors: ["You cannot delete the last user"], pageInformation: req.adminPageInfomation())
-                    return view.encodeResponse(for: req)
+                    do {
+                        let view = try req.adminPresenter.createIndexView(posts: posts, users: users, errors: ["You cannot delete the last user"], pageInformation: req.adminPageInfomation())
+                        return view.encodeResponse(for: req)
+                    } catch {
+                        return req.eventLoop.makeFailedFuture(error)
+                    }
                 }
             }
 
-            let loggedInUser = try req.requireAuthenticated(BlogUser.self)
+            let loggedInUser: BlogUser
+            do {
+                loggedInUser = try req.auth.require(BlogUser.self)
+            } catch {
+                return req.eventLoop.makeFailedFuture(error)
+            }
             guard loggedInUser.userID != user.userID else {
                 return req.blogPostRepository.getAllPostsSortedByPublishDate(includeDrafts: true).and(req.blogUserRepository.getAllUsers()).flatMap { posts, users in
-                    let view = try req.adminPresenter.createIndexView(posts: posts, users: users, errors: ["You cannot delete yourself whilst logged in"], pageInformation: req.adminPageInfomation())
-                    return view.encodeResponse(for: req)
+                    do {
+                        let view = try req.adminPresenter.createIndexView(posts: posts, users: users, errors: ["You cannot delete yourself whilst logged in"], pageInformation: req.adminPageInfomation())
+                        return view.encodeResponse(for: req)
+                    } catch {
+                        return req.eventLoop.makeFailedFuture(error)
+                    }
                 }
             }
 
