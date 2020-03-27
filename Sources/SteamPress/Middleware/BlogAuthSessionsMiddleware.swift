@@ -9,17 +9,17 @@ public final class BlogAuthSessionsMiddleware: Middleware {
         if let userIDString = try request.session()["_BlogUserSession"], let userID = Int(userIDString) {
             future = request.blogUserRepository.getUser(id: userID).flatMap { user in
                 if let user = user {
-                    try request.authenticate(user)
+                    request.auth.login(user)
                 }
-                return .done(on: request)
+                return request.eventLoop.future()
             }
         } else {
-            future = .done(on: request.eventLoop)
+            future = request.eventLoop.future()
         }
 
         return future.flatMap {
-            return next.respond(to: request).map { response in
-                if let user = try request.authenticated(BlogUser.self) {
+            return next.respond(to: request).flatMapThrowing { response in
+                if let user = request.auth.get(BlogUser.self) {
                     try user.authenticateSession(on: request)
                 } else {
                     try request.unauthenticateBlogUserSession()

@@ -24,45 +24,38 @@ extension BCryptDigest: SteamPressPasswordVerifier {
 
 public extension Request {
     var passwordHasher: PasswordHasher {
-        self.application.passwordHashers.makeHasher!(self)
+        self.application.passwordHasherFactory.makeHasher!(self)
     }
     
     internal var passwordVerifier: SteamPressPasswordVerifier {
-        self.application.passwordVerifiers.makeVerifier!(self)
+        self.application.passwordVerifierFactory.makeVerifier!(self)
     }
 }
 
 private extension Application {
-    var passwordHashers: PasswordHasherFactory {
+    private struct PasswordHasherKey: StorageKey {
+        typealias Value = PasswordHasherFactory
+    }
+    var passwordHasherFactory: PasswordHasherFactory {
         get {
-            if let existing = self.userInfo["passwordHasher"] as? PasswordHasherFactory {
-                return existing
-            } else {
-                let new = PasswordHasherFactory()
-                self.userInfo["passwordHasher"] = new
-                return new
-            }
+            self.storage[PasswordHasherKey.self] ?? .init()
         }
         set {
-            self.userInfo["passwordHasher"] = newValue
+            self.storage[PasswordHasherKey.self] = newValue
         }
     }
     
-    var passwordVerifiers: PasswordVerifierFactory {
+    private struct PasswordVerifierKey: StorageKey {
+        typealias Value = PasswordVerifierFactory
+    }
+    var passwordVerifierFactory: PasswordVerifierFactory {
         get {
-            if let existing = self.userInfo["passwordVerifier"] as? PasswordVerifierFactory {
-                return existing
-            } else {
-                let new = PasswordVerifierFactory()
-                self.userInfo["passwordVerifier"] = new
-                return new
-            }
+            self.storage[PasswordVerifierKey.self] ?? .init()
         }
         set {
-            self.userInfo["passwordVerifier"] = newValue
+            self.storage[PasswordVerifierKey.self] = newValue
         }
     }
-    
 }
 
 private struct PasswordHasherFactory {

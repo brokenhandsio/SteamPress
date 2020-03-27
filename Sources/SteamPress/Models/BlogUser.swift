@@ -30,6 +30,7 @@ public final class BlogUser: Codable {
 // MARK: - Authentication
 
 extension BlogUser: Authenticatable {
+    #warning("this might not need to throw")
     func authenticateSession(on req: Request) throws {
         try req.session()["_BlogUserSession"] = self.userID?.description
         req.auth.login(self)
@@ -37,6 +38,7 @@ extension BlogUser: Authenticatable {
 }
 
 extension Request {
+    #warning("this might not need to throw")
     func unauthenticateBlogUserSession() throws {
         guard self.hasSession else {
             return

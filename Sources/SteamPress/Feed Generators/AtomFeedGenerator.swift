@@ -31,37 +31,41 @@ struct AtomFeedGenerator {
     func feedHandler(_ request: Request) throws -> EventLoopFuture<Response> {
 
         return request.blogPostRepository.getAllPostsSortedByPublishDate(includeDrafts: false).flatMap { posts in
-            var feed = try self.getFeedStart(for: request)
+            do {
+                var feed = try self.getFeedStart(for: request)
 
-            if !posts.isEmpty {
-                let postDate = posts[0].lastEdited ?? posts[0].created
-                feed += "<updated>\(self.iso8601Formatter.string(from: postDate))</updated>\n"
-            } else {
-                feed += "<updated>\(self.iso8601Formatter.string(from: Date()))</updated>\n"
-            }
-
-            if let copyright = self.copyright {
-                feed += "<rights>\(copyright)</rights>\n"
-            }
-
-            if let imageURL = self.imageURL {
-                feed += "<logo>\(imageURL)</logo>\n"
-            }
-
-            var postData: [EventLoopFuture<String>] = []
-            for post in posts {
-                try postData.append(post.getPostAtomFeed(blogPath: self.getRootPath(for: request), dateFormatter: self.iso8601Formatter, for: request))
-            }
-
-            return postData.flatten(on: request.eventLoop).map { postsInformation in
-                for postInformation in postsInformation {
-                    feed += postInformation
+                if !posts.isEmpty {
+                    let postDate = posts[0].lastEdited ?? posts[0].created
+                    feed += "<updated>\(self.iso8601Formatter.string(from: postDate))</updated>\n"
+                } else {
+                    feed += "<updated>\(self.iso8601Formatter.string(from: Date()))</updated>\n"
                 }
 
-                feed += self.feedEnd
-                var httpResponse = Response(body: .init(stringLiteral: feed))
-                httpResponse.headers.add(name: .contentType, value: "application/atom+xml")
-                return httpResponse
+                if let copyright = self.copyright {
+                    feed += "<rights>\(copyright)</rights>\n"
+                }
+
+                if let imageURL = self.imageURL {
+                    feed += "<logo>\(imageURL)</logo>\n"
+                }
+
+                var postData: [EventLoopFuture<String>] = []
+                for post in posts {
+                    try postData.append(post.getPostAtomFeed(blogPath: self.getRootPath(for: request), dateFormatter: self.iso8601Formatter, for: request))
+                }
+
+                return postData.flatten(on: request.eventLoop).map { postsInformation in
+                    for postInformation in postsInformation {
+                        feed += postInformation
+                    }
+
+                    feed += self.feedEnd
+                    let httpResponse = Response(body: .init(stringLiteral: feed))
+                    httpResponse.headers.add(name: .contentType, value: "application/atom+xml")
+                    return httpResponse
+                }
+            } catch {
+                return request.eventLoop.makeFailedFuture(error)
             }
         }
     }
