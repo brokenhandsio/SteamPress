@@ -1,6 +1,7 @@
-import TemplateKit
+import LeafKit
+import Foundation
 
-public final class PaginatorTag: TagRenderer {
+public final class PaginatorTag: LeafTag {
     public enum Error: Swift.Error {
         case expectedPaginationInformation
     }
@@ -13,7 +14,7 @@ public final class PaginatorTag: TagRenderer {
 
     public static let name = "paginator"
     
-    public func render(tag: TagContext) throws -> EventLoopFuture<TemplateData> {
+    public func render(_ ctx: LeafContext) throws -> LeafData {
         try tag.requireNoBody()
                 
         guard let paginationInformaton = tag.context.data.dictionary?["paginationTagInformation"] else {

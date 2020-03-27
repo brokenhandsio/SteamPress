@@ -57,9 +57,9 @@ protocol ParameterModel {
 //    }
 //}
 
-extension Parameters {
-    func find<T>(_ type: T.Type, on req: Request) -> EventLoopFuture<T> where T: ParameterModel {
-        guard let idString = req.parameters.get(T.parameterKey), let id = Int(idString) else {
+extension Parameters {    
+    func findUser(on req: Request) -> EventLoopFuture<BlogUser> {
+        guard let idString = req.parameters.get(BlogUser.parameterKey), let id = Int(idString) else {
             return req.eventLoop.makeFailedFuture(Abort(.badRequest))
         }
         return req.blogUserRepository.getUser(id: id).unwrap(or: Abort(.notFound))

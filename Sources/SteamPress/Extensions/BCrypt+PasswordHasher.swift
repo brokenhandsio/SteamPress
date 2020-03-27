@@ -11,13 +11,23 @@ extension BCryptDigest: PasswordHasher {
     }
 }
 
+protocol SteamPressPasswordVerifier {
+    func verify(_ plaintext: String, created hash: String) throws -> Bool
+}
+
+extension BCryptDigest: SteamPressPasswordVerifier {
+    func verify(_ plaintext: String, created hash: String) throws -> Bool {
+        return try self.verify(plaintext, created: hash)
+    }
+}
+
 
 public extension Request {
     var passwordHasher: PasswordHasher {
         self.application.passwordHashers.makeHasher!(self)
     }
     
-    var passwordVerifier: PasswordVerifier {
+    internal var passwordVerifier: SteamPressPasswordVerifier {
         self.application.passwordVerifiers.makeVerifier!(self)
     }
 }
@@ -63,8 +73,8 @@ private struct PasswordHasherFactory {
 }
 
 private struct PasswordVerifierFactory {
-    var makeVerifier: ((Request) -> PasswordVerifier)?
-    mutating func use(_ makeVerifier: @escaping (Request) -> PasswordVerifier) {
+    var makeVerifier: ((Request) -> SteamPressPasswordVerifier)?
+    mutating func use(_ makeVerifier: @escaping (Request) -> SteamPressPasswordVerifier) {
         self.makeVerifier = makeVerifier
     }
 }

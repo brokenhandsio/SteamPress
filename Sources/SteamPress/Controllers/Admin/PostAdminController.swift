@@ -26,7 +26,7 @@ struct PostAdminController: RouteCollection {
 
     func createPostPostHandler(_ req: Request) throws -> EventLoopFuture<Response> {
         let data = try req.content.decode(CreatePostData.self)
-        let author = try req.requireAuthenticated(BlogUser.self)
+        let author = try req.auth.require(BlogUser.self)
 
         if data.draft == nil && data.publish == nil {
             throw Abort(.badRequest)
@@ -34,7 +34,7 @@ struct PostAdminController: RouteCollection {
 
         if let createPostErrors = validatePostCreation(data) {
             let view = try req.adminPresenter.createPostView(errors: createPostErrors.errors, title: data.title, contents: data.contents, slugURL: nil, tags: data.tags, isEditing: false, post: nil, isDraft: nil, titleError: createPostErrors.titleError, contentsError: createPostErrors.contentsError, pageInformation: req.adminPageInfomation())
-            return try view.encode(for: req)
+            return view.encodeResponse(for: req)
         }
 
         guard let title = data.title, let contents = data.contents else {
