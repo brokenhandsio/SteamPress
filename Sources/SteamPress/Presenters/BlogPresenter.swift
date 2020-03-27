@@ -13,28 +13,25 @@ public protocol BlogPresenter {
 
 extension Request {
     var blogPresenter: BlogPresenter {
-        self.application.presenter.makePresenter!(self)
+        self.application.blogPresenterFactory.makePresenter!(self)
     }
 }
 
 extension Application {
-    var presenter: PresenterFactory {
+    private struct BlogPresenterKey: StorageKey {
+        typealias Value = BlogPresenterFactory
+    }
+    var blogPresenterFactory: BlogPresenterFactory {
         get {
-            if let existing = self.userInfo["blogPresenter"] as? PresenterFactory {
-                return existing
-            } else {
-                let new = PresenterFactory()
-                self.userInfo["blogPresenter"] = new
-                return new
-            }
+            self.storage[BlogPresenterKey.self] ?? .init()
         }
         set {
-            self.userInfo["blogPresenter"] = newValue
+            self.storage[BlogPresenterKey.self] = newValue
         }
     }
 }
 
-struct PresenterFactory {
+struct BlogPresenterFactory {
     var makePresenter: ((Request) -> BlogPresenter)?
     mutating func use(_ makePresenter: @escaping (Request) -> BlogPresenter) {
         self.makePresenter = makePresenter

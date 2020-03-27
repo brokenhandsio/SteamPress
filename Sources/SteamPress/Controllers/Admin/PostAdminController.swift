@@ -42,7 +42,12 @@ struct PostAdminController: RouteCollection {
         }
 
         return try BlogPost.generateUniqueSlugURL(from: title, on: req).flatMap { uniqueSlug in
-            let newPost = try BlogPost(title: title, contents: contents, author: author, creationDate: Date(), slugUrl: uniqueSlug, published: data.publish != nil)
+            let newPost: BlogPost
+            do {
+                newPost = try BlogPost(title: title, contents: contents, author: author, creationDate: Date(), slugUrl: uniqueSlug, published: data.publish != nil)
+            } catch {
+                return req.eventLoop.makeFailedFuture(error)
+            }
 
             return req.blogPostRepository.save(newPost).flatMap { post in
                 var existingTagsQuery = [EventLoopFuture<BlogTag?>]()
@@ -60,7 +65,7 @@ struct PostAdminController: RouteCollection {
                         }
                     }
 
-                    return tagsSaves.flatten(on: req).flatMap { tags in
+                    return tagsSaves.flatten(on: req.eventLoop).flatMap { tags in
                         var tagLinks = [EventLoopFuture<Void>]()
                         for tag in tags {
                             tagLinks.append(req.blogTagRepository.add(tag, to: post))
@@ -88,7 +93,11 @@ struct PostAdminController: RouteCollection {
     func editPostHandler(_ req: Request) throws -> EventLoopFuture<View> {
         return try req.parameters.next(BlogPost.self).flatMap { post in
             return req.blogTagRepository.getTags(for: post).flatMap { tags in
-                return try req.adminPresenter.createPostView(on: req, errors: nil, title: post.title, contents: post.contents, slugURL: post.slugUrl, tags: tags.map { $0.name }, isEditing: true, post: post, isDraft: !post.published, titleError: false, contentsError: false, pageInformation: req.adminPageInfomation())
+                do {
+                    return try req.adminPresenter.createPostView(errors: nil, title: post.title, contents: post.contents, slugURL: post.slugUrl, tags: tags.map { $0.name }, isEditing: true, post: post, isDraft: !post.published, titleError: false, contentsError: false, pageInformation: req.adminPageInfomation())
+                } catch {
+                    return req.eventLoop.makeFailedFuture(error)
+                }
             }
         }
     }

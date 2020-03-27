@@ -9,23 +9,20 @@ public protocol BlogAdminPresenter {
 
 extension Request {
     var adminPresenter: BlogAdminPresenter {
-        self.application.adminPresenter.makePresenter!(self)
+        self.application.adminPresenterFactory.makePresenter!(self)
     }
 }
 
 extension Application {
-    var adminPresenter: AdminPresenterFactory {
+    private struct AdminPresenterKey: StorageKey {
+        typealias Value = AdminPresenterFactory
+    }
+    var adminPresenterFactory: AdminPresenterFactory {
         get {
-            if let existing = self.userInfo["blogAdminPresenter"] as? AdminPresenterFactory {
-                return existing
-            } else {
-                let new = AdminPresenterFactory()
-                self.userInfo["blogAdminPresenter"] = new
-                return new
-            }
+            self.storage[AdminPresenterKey.self] ?? .init()
         }
         set {
-            self.userInfo["blogAdminPresenter"] = newValue
+            self.storage[AdminPresenterKey.self] = newValue
         }
     }
 }

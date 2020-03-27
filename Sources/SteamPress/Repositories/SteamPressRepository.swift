@@ -48,61 +48,52 @@ public protocol BlogUserRepository: SteamPressRepository {
 
 public extension Request {
     var blogUserRepository: BlogUserRepository {
-        self.application.blogUserRepositories.makeRepository!(self)
+        self.application.blogUserRepositoryFactory.makeRepository!(self)
     }
     
     var blogPostRepository: BlogPostRepository {
-        self.application.blogPostRepositories.makeRepository!(self)
+        self.application.blogPostRepositoryFactory.makeRepository!(self)
     }
     
     var blogTagRepository: BlogTagRepository {
-        self.application.blogTagRepositories.makeRepository!(self)
+        self.application.blogTagRepositoryFactory.makeRepository!(self)
     }
 }
 
 private extension Application {
-    var blogUserRepositories: BlogUserRepositoryFactory {
+    private struct BlogUserRepositoryKey: StorageKey {
+        typealias Value = BlogUserRepositoryFactory
+    }
+    var blogUserRepositoryFactory: BlogUserRepositoryFactory {
         get {
-            if let existing = self.userInfo["blogUserRepository"] as? BlogUserRepositoryFactory {
-                return existing
-            } else {
-                let new = BlogUserRepositoryFactory()
-                self.userInfo["blogUserRepository"] = new
-                return new
-            }
+            self.storage[BlogUserRepositoryKey.self] ?? .init()
         }
         set {
-            self.userInfo["blogUserRepository"] = newValue
+            self.storage[BlogUserRepositoryKey.self] = newValue
         }
     }
     
-    var blogPostRepositories: BlogPostRepositoryFactory {
+    private struct BlogPostRepositoryKey: StorageKey {
+        typealias Value = BlogPostRepositoryFactory
+    }
+    var blogPostRepositoryFactory: BlogPostRepositoryFactory {
         get {
-            if let existing = self.userInfo["blogPostRepository"] as? BlogPostRepositoryFactory {
-                return existing
-            } else {
-                let new = BlogPostRepositoryFactory()
-                self.userInfo["blogPostRepository"] = new
-                return new
-            }
+            self.storage[BlogPostRepositoryKey.self] ?? .init()
         }
         set {
-            self.userInfo["blogPostRepository"] = newValue
+            self.storage[BlogPostRepositoryKey.self] = newValue
         }
     }
     
-    var blogTagRepositories: BlogTagRepositoryFactory {
+    private struct BlogTagRepositoryKey: StorageKey {
+        typealias Value = BlogTagRepositoryFactory
+    }
+    var blogTagRepositoryFactory: BlogTagRepositoryFactory {
         get {
-            if let existing = self.userInfo["blogTagRepository"] as? BlogTagRepositoryFactory {
-                return existing
-            } else {
-                let new = BlogTagRepositoryFactory()
-                self.userInfo["blogTagRepository"] = new
-                return new
-            }
+            self.storage[BlogTagRepositoryKey.self] ?? .init()
         }
         set {
-            self.userInfo["blogTagRepository"] = newValue
+            self.storage[BlogTagRepositoryKey.self] = newValue
         }
     }
 }
