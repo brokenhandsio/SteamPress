@@ -51,7 +51,7 @@ struct RSSFeedGenerator {
                     }
 
                     xmlFeed += self.xmlEnd
-                    var httpResponse = Response(body: .init(stringLiteral: xmlFeed))
+                    let httpResponse = Response(body: .init(stringLiteral: xmlFeed))
                     httpResponse.headers.add(name: .contentType, value: "application/rss+xml")
                     return httpResponse
                 }

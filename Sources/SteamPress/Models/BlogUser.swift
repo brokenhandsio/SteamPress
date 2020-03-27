@@ -30,20 +30,18 @@ public final class BlogUser: Codable {
 // MARK: - Authentication
 
 extension BlogUser: Authenticatable {
-    #warning("this might not need to throw")
-    func authenticateSession(on req: Request) throws {
-        try req.session()["_BlogUserSession"] = self.userID?.description
+    func authenticateSession(on req: Request) {
+        req.session.data["_BlogUserSession"] = self.userID?.description
         req.auth.login(self)
     }
 }
 
 extension Request {
-    #warning("this might not need to throw")
-    func unauthenticateBlogUserSession() throws {
+    func unauthenticateBlogUserSession() {
         guard self.hasSession else {
             return
         }
-        try session()["_BlogUserSession"] = nil
+        session.data["_BlogUserSession"] = nil
         self.auth.logout(BlogUser.self)
     }
 }

@@ -53,9 +53,9 @@ struct LoginController: RouteCollection {
         }
         
         if let rememberMe = loginData.rememberMe, rememberMe {
-            try req.session()["SteamPressRememberMe"] = "YES"
+            req.session.data["SteamPressRememberMe"] = "YES"
         } else {
-            try req.session()["SteamPressRememberMe"] = nil
+            req.session.data["SteamPressRememberMe"] = nil
         }
         
         return req.blogUserRepository.getUser(username: username).flatMap { user -> EventLoopFuture<Response> in
@@ -64,7 +64,7 @@ struct LoginController: RouteCollection {
                     let loginError = ["Your username or password is incorrect"]
                     return try req.blogPresenter.loginView(loginWarning: false, errors: loginError, username: loginData.username, usernameError: false, passwordError: false, rememberMe: loginData.rememberMe ?? false, pageInformation: req.pageInformation()).encodeResponse(for: req)
                 }
-                try user.authenticateSession(on: req)
+                user.authenticateSession(on: req)
                 return req.eventLoop.future(req.redirect(to: self.pathCreator.createPath(for: "admin")))
             }
             catch {
@@ -73,8 +73,8 @@ struct LoginController: RouteCollection {
         }
     }
     
-    func logoutHandler(_ request: Request) throws -> Response {
-        try request.unauthenticateBlogUserSession()
+    func logoutHandler(_ request: Request) -> Response {
+        request.unauthenticateBlogUserSession()
         return request.redirect(to: pathCreator.createPath(for: pathCreator.blogPath))
     }
     
