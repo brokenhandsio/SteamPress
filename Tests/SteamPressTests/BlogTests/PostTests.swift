@@ -16,9 +16,9 @@ class PostTests: XCTestCase {
 
     // MARK: - Overrides
 
-    override func setUp() {
-        testWorld = try! TestWorld.create()
-        firstData = try! testWorld.createPost(title: "Test Path", slugUrl: "test-path")
+    override func setUpWithError() throws {
+        testWorld = try TestWorld.create()
+        firstData = try testWorld.createPost(title: "Test Path", slugUrl: "test-path")
     }
     
     override func tearDown() {

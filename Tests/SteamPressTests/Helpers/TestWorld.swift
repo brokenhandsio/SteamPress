@@ -31,8 +31,8 @@ struct TestWorld {
     }
     
     #warning("Remove")
-//    // To work around Vapor 3 dodgy lifecycle mess
-//    mutating func tryAsHardAsWeCanToShutdownApplication() throws {       
+    // To work around Vapor 3 dodgy lifecycle mess
+    mutating func tryAsHardAsWeCanToShutdownApplication() throws {
 //        struct ApplicationDidNotGoAway: Error {
 //            var description: String
 //        }
@@ -46,5 +46,5 @@ struct TestWorld {
 //        if weakApp != nil {
 //            throw ApplicationDidNotGoAway(description: "application leak: \(weakApp.debugDescription)")
 //        }
-//    }
+    }
 }
