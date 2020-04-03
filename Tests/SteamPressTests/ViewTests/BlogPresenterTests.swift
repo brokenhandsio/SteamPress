@@ -26,14 +26,14 @@ class BlogPresenterTests: XCTestCase {
     // MARK: - Overrides
 
     override func setUp() {
-        let eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
-        let viewRenderer = CapturingViewRenderer(eventLoop: eventLoopGroup.next())
+        eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
+        viewRenderer = CapturingViewRenderer(eventLoop: eventLoopGroup.next())
         presenter = ViewBlogPresenter(viewRenderer: viewRenderer, longDateFormatter: LongPostDateFormatter(), numericDateFormatter: NumericPostDateFormatter(), eventLoopGroup: eventLoopGroup)
         testTag = BlogTag(id: 1, name: "Tattoine")
     }
     
-    override func tearDown() {
-        try! eventLoopGroup.syncShutdownGracefully()
+    override func tearDownWithError() throws {
+        try eventLoopGroup.syncShutdownGracefully()
     }
 
     // MARK: - Tests

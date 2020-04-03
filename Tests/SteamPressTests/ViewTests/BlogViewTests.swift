@@ -17,8 +17,8 @@ class BlogViewTests: XCTestCase {
     // MARK: - Overrides
     
     override func setUp() {
-        let eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
-        let viewRenderer = CapturingViewRenderer(eventLoop: eventLoopGroup.next())
+        eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
+        viewRenderer = CapturingViewRenderer(eventLoop: eventLoopGroup.next())
         presenter = ViewBlogPresenter(viewRenderer: viewRenderer, longDateFormatter: LongPostDateFormatter(), numericDateFormatter: NumericPostDateFormatter(), eventLoopGroup: eventLoopGroup)
         author = TestDataBuilder.anyUser()
         author.userID = 1
@@ -30,8 +30,8 @@ class BlogViewTests: XCTestCase {
         pageInformation = BlogGlobalPageInformation(disqusName: "disqusName", siteTwitterHandle: "twitterHandleSomething", googleAnalyticsIdentifier: "GAString....", loggedInUser: author, websiteURL: websiteURL, currentPageURL: currentPageURL, currentPageEncodedURL: currentPageURL.absoluteString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!)
     }
     
-    override func tearDown() {
-        try! eventLoopGroup.syncShutdownGracefully()
+    override func tearDownWithError() throws {
+        try eventLoopGroup.syncShutdownGracefully()
     }
     
     // MARK: - Tests
