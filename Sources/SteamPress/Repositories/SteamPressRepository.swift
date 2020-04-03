@@ -36,7 +36,6 @@ public protocol BlogPostRepository: SteamPressRepository {
 }
 
 public protocol BlogUserRepository: SteamPressRepository {
-    init(application: Application)
     func getAllUsers() -> EventLoopFuture<[BlogUser]>
     func getAllUsersWithPostCount() -> EventLoopFuture<[(BlogUser, Int)]>
     func getUser(id: Int) -> EventLoopFuture<BlogUser?>
