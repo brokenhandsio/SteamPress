@@ -77,7 +77,7 @@ class TagTests: XCTestCase {
     func testRequestToURLEncodedTag() throws {
         _ = try testWorld.createTag("Some tag")
         let response = try testWorld.getResponse(to: "/tags/Some%20tag")
-        XCTAssertEqual(response.http.status, .ok)
+        XCTAssertEqual(response.status, .ok)
     }
     
     func testTagPageInformationGetsLoggedInUser() throws {

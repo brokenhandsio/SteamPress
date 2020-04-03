@@ -216,7 +216,7 @@ class AtomFeedTests: XCTestCase {
     func testCorrectHeaderSetForAtomFeed() throws {
         testWorld = try TestWorld.create()
         let actualXmlResponse = try testWorld.getResponse(to: atomPath)
-        XCTAssertEqual(actualXmlResponse.http.headers.firstValue(name: .contentType), "application/atom+xml")
+        XCTAssertEqual(actualXmlResponse.headers.firstValue(name: .contentType), "application/atom+xml")
     }
 
     func testThatDateFormatterIsCorrect() throws {

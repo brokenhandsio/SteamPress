@@ -187,7 +187,7 @@ class RSSFeedTests: XCTestCase {
         testWorld = try TestWorld.create()
         let actualXmlResponse = try testWorld.getResponse(to: rssPath)
 
-        XCTAssertEqual(actualXmlResponse.http.headers.firstValue(name: .contentType), "application/rss+xml")
+        XCTAssertEqual(actualXmlResponse.headers.firstValue(name: .contentType), "application/rss+xml")
     }
 
     func testThatDateFormatterIsCorrect() throws {

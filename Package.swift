@@ -21,8 +21,7 @@ let package = Package(
             .product(name: "Vapor", package: "vapor"),
             .product(name: "LeafKit", package: "leaf-kit"),
             "SwiftSoup",
-            "SwiftMarkdown",
-//            .product(name: "Authentication", package: "vapor")
+            "SwiftMarkdown"
         ]),
         .testTarget(name: "SteamPressTests", dependencies: ["SteamPress"]),
     ]
