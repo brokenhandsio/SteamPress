@@ -23,27 +23,28 @@ struct TestWorld {
     }
 
     struct Context {
-        var app: Application?
+        var app: Application
         let repository: InMemoryRepository
         let blogPresenter: CapturingBlogPresenter
         let blogAdminPresenter: CapturingAdminPresenter
         let path: String?
     }
     
-    // To work around Vapor 3 dodgy lifecycle mess
-    mutating func tryAsHardAsWeCanToShutdownApplication() throws {       
-        struct ApplicationDidNotGoAway: Error {
-            var description: String
-        }
-        weak var weakApp: Application? = context.app
-        context.app = nil
-        var tries = 0
-        while weakApp != nil && tries < 10 {
-            Thread.sleep(forTimeInterval: 0.1)
-            tries += 1
-        }
-        if weakApp != nil {
-            throw ApplicationDidNotGoAway(description: "application leak: \(weakApp.debugDescription)")
-        }
-    }
+    #warning("Remove")
+//    // To work around Vapor 3 dodgy lifecycle mess
+//    mutating func tryAsHardAsWeCanToShutdownApplication() throws {       
+//        struct ApplicationDidNotGoAway: Error {
+//            var description: String
+//        }
+//        weak var weakApp: Application? = context.app
+//        context.app = nil
+//        var tries = 0
+//        while weakApp != nil && tries < 10 {
+//            Thread.sleep(forTimeInterval: 0.1)
+//            tries += 1
+//        }
+//        if weakApp != nil {
+//            throw ApplicationDidNotGoAway(description: "application leak: \(weakApp.debugDescription)")
+//        }
+//    }
 }
