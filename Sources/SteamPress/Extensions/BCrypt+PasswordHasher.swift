@@ -1,38 +1,38 @@
 import Vapor
 import Crypto
 
-protocol PasswordHasher {
+public protocol PasswordHasher {
     func `for`(_ request: Request) -> PasswordHasher
     func hash(_ plaintext: String) throws -> String
 }
 
 extension BCryptDigest: PasswordHasher {
-    func hash(_ plaintext: String) throws -> String {
+    public func hash(_ plaintext: String) throws -> String {
         return try self.hash(plaintext)
     }
     
-    func `for`(_ request: Request) -> PasswordHasher {
+    public func `for`(_ request: Request) -> PasswordHasher {
         return BCryptDigest()
     }
 }
 
-protocol SteamPressPasswordVerifier {
+public protocol SteamPressPasswordVerifier {
     func `for`(_ request: Request) -> SteamPressPasswordVerifier
     func verify(_ plaintext: String, created hash: String) throws -> Bool
 }
 
 extension BCryptDigest: SteamPressPasswordVerifier {
-    func verify(_ plaintext: String, created hash: String) throws -> Bool {
+    public func verify(_ plaintext: String, created hash: String) throws -> Bool {
         return try self.verify(plaintext, created: hash)
     }
     
-    func `for`(_ request: Request) -> SteamPressPasswordVerifier {
+    public func `for`(_ request: Request) -> SteamPressPasswordVerifier {
         return BCryptDigest()
     }
 }
 
 
-extension Request {
+public extension Request {
     var passwordHasher: PasswordHasher {
         self.application.passwordHashers.passwordHasher.for(self)
     }
@@ -42,7 +42,7 @@ extension Request {
     }
 }
 
-extension Application {
+public extension Application {
     struct PasswordVerifiers {
         struct Provider {
             static var bcrypt: Self {

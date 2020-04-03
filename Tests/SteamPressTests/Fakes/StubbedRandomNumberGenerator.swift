@@ -3,7 +3,7 @@ import Vapor
 
 struct StubbedRandomNumberGenerator: SteamPressRandomNumberGenerator {
     func `for`(_ request: Request) -> SteamPressRandomNumberGenerator {
-        return SteamPressRandomNumberGenerator(numberToReturn: self.numberToReturn)
+        return StubbedRandomNumberGenerator(numberToReturn: self.numberToReturn)
     }
     
     let numberToReturn: Int
