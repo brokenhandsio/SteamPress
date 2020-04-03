@@ -38,40 +38,40 @@ class LoginTests: XCTestCase {
         let loginData = LoginData(username: user.username, password: "password")
         let loginResponse = try testWorld.getResponse(to: "/blog/admin/login", method: .POST, body: loginData)
 
-        XCTAssertEqual(loginResponse.http.status, .seeOther)
-        XCTAssertEqual(loginResponse.http.headers[.location].first, "/blog/admin/")
-        XCTAssertNotNil(loginResponse.http.headers[.setCookie].first)
-        XCTAssertNotNil(loginResponse.http.cookies["steampress-session"])
+        XCTAssertEqual(loginResponse.status, .seeOther)
+        XCTAssertEqual(loginResponse.headers[.location].first, "/blog/admin/")
+        XCTAssertNotNil(loginResponse.headers[.setCookie].first)
+        XCTAssertNotNil(loginResponse.cookies["steampress-session"])
 
-        let sessionCookie = loginResponse.http.cookies["steampress-session"]
+        let sessionCookie = loginResponse.cookies["steampress-session"]
         var adminRequest = HTTPRequest(method: .GET, url: URL(string: "/blog/admin")!)
         adminRequest.cookies["steampress-session"] = sessionCookie
         let wrappedAdminRequest = Request(http: adminRequest, using: testWorld.context.app!)
 
         let adminResponse = try testWorld.getResponse(to: wrappedAdminRequest)
 
-        XCTAssertEqual(adminResponse.http.status, .ok)
+        XCTAssertEqual(adminResponse.status, .ok)
 
         var logoutRequest = HTTPRequest(method: .POST, url: URL(string: "/blog/admin/logout")!)
         logoutRequest.cookies["steampress-session"] = sessionCookie
         let wrappedLogoutRequest = Request(http: logoutRequest, using: testWorld.context.app!)
         let logoutResponse = try testWorld.getResponse(to: wrappedLogoutRequest)
 
-        XCTAssertEqual(logoutResponse.http.status, .seeOther)
-        XCTAssertEqual(logoutResponse.http.headers[.location].first, "/blog/")
+        XCTAssertEqual(logoutResponse.status, .seeOther)
+        XCTAssertEqual(logoutResponse.headers[.location].first, "/blog/")
 
         var secondAdminRequest = HTTPRequest(method: .GET, url: URL(string: "/blog/admin")!)
         secondAdminRequest.cookies["steampress-session"] = sessionCookie
         let wrappedSecondRequest = Request(http: secondAdminRequest, using: testWorld.context.app!)
         let loggedOutAdminResponse = try testWorld.getResponse(to: wrappedSecondRequest)
 
-        XCTAssertEqual(loggedOutAdminResponse.http.status, .seeOther)
-        XCTAssertEqual(loggedOutAdminResponse.http.headers[.location].first, "/blog/admin/login/?loginRequired")
+        XCTAssertEqual(loggedOutAdminResponse.status, .seeOther)
+        XCTAssertEqual(loggedOutAdminResponse.headers[.location].first, "/blog/admin/login/?loginRequired")
     }
 
     func testLoginPageCanBeAccessed() throws {
         let response = try testWorld.getResponse(to: "/blog/admin/login")
-        XCTAssertEqual(response.http.status, .ok)
+        XCTAssertEqual(response.status, .ok)
     }
 
     func testLoginWarningShownIfRedirecting() throws {
@@ -92,7 +92,7 @@ class LoginTests: XCTestCase {
 
     func testUserCanResetPassword() throws {
         struct ResetPasswordData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let password = "Th3S@m3password"
             let confirmPassword = "Th3S@m3password"
         }
@@ -101,14 +101,14 @@ class LoginTests: XCTestCase {
         let response = try testWorld.getResponse(to: "/blog/admin/resetPassword", body: data, loggedInUser: user)
 
         XCTAssertEqual(user.password, data.password)
-        XCTAssertEqual(response.http.status, .seeOther)
-        XCTAssertEqual(response.http.headers[.location].first, "/blog/admin/")
+        XCTAssertEqual(response.status, .seeOther)
+        XCTAssertEqual(response.headers[.location].first, "/blog/admin/")
         XCTAssertTrue(testWorld.context.repository.userUpdated)
     }
 
     func testUserCannotResetPasswordWithMismatchingPasswords() throws {
         struct ResetPasswordData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let password = "Th3S@m3password"
             let confirmPassword = "An0th3rPass!"
         }
@@ -130,7 +130,7 @@ class LoginTests: XCTestCase {
 
     func testUserCannotResetPasswordWithoutPassword() throws {
         struct ResetPasswordData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let confirmPassword = "Th3S@m3password"
         }
 
@@ -147,7 +147,7 @@ class LoginTests: XCTestCase {
 
     func testUserCannotResetPasswordWithoutConfirmPassword() throws {
         struct ResetPasswordData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let password = "Th3S@m3password"
         }
 
@@ -163,7 +163,7 @@ class LoginTests: XCTestCase {
 
     func testUserCannotResetPasswordWithShortPassword() throws {
         struct ResetPasswordData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let password = "apassword"
             let confirmPassword = "apassword"
         }
@@ -178,7 +178,7 @@ class LoginTests: XCTestCase {
     func testThatAfterResettingPasswordUserIsNotAskedToResetPassword() throws {
         let user2 = testWorld.createUser(name: "Han", username: "hans", resetPasswordRequired: true)
         struct ResetPasswordData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let password = "alongpassword"
             let confirmPassword = "alongpassword"
         }
@@ -188,7 +188,7 @@ class LoginTests: XCTestCase {
 
         let response = try testWorld.getResponse(to: "/blog/admin", method: .GET, body: EmptyContent(), loggedInUser: user2)
 
-        XCTAssertEqual(response.http.status, .ok)
+        XCTAssertEqual(response.status, .ok)
     }
 
     func testUserIsRedirectedWhenLoggingInAndPasswordResetRequired() throws {
@@ -196,8 +196,8 @@ class LoginTests: XCTestCase {
 
         let response = try testWorld.getResponse(to: "/blog/admin/", method: .GET, body: EmptyContent(), loggedInUser: user2)
 
-        XCTAssertEqual(response.http.status, .seeOther)
-        XCTAssertEqual(response.http.headers[.location].first, "/blog/admin/resetPassword/")
+        XCTAssertEqual(response.status, .seeOther)
+        XCTAssertEqual(response.headers[.location].first, "/blog/admin/resetPassword/")
     }
 
     func testErrorShownWhenTryingToLoginWithoutUsername() throws {
@@ -232,7 +232,7 @@ class LoginTests: XCTestCase {
         let loginData = LoginData(username: "luke", password: "password", rememberMe: true)
         let response = try testWorld.getResponse(to: "/blog/admin/login", method: .POST, body: loginData)
 
-        let cookieExpiry = try XCTUnwrap(response.http.cookies["steampress-session"]?.expires)
+        let cookieExpiry = try XCTUnwrap(response.cookies["steampress-session"]?.expires)
         let oneYear: TimeInterval = 60 * 60 * 24 * 365
         XCTAssertEqual(cookieExpiry.timeIntervalSince1970, Date().addingTimeInterval(oneYear).timeIntervalSince1970, accuracy: 1)
     }
@@ -241,7 +241,7 @@ class LoginTests: XCTestCase {
         let loginData = LoginData(username: "luke", password: "password", rememberMe: nil)
         let response = try testWorld.getResponse(to: "/blog/admin/login", method: .POST, body: loginData)
 
-        let cookie = try XCTUnwrap(response.http.cookies["steampress-session"])
+        let cookie = try XCTUnwrap(response.cookies["steampress-session"])
         XCTAssertNil(cookie.expires)
     }
 
@@ -249,7 +249,7 @@ class LoginTests: XCTestCase {
         let loginData = LoginData(username: "luke", password: "password", rememberMe: false)
         let response = try testWorld.getResponse(to: "/blog/admin/login", method: .POST, body: loginData)
 
-        let cookie = try XCTUnwrap(response.http.cookies["steampress-session"])
+        let cookie = try XCTUnwrap(response.cookies["steampress-session"])
         XCTAssertNil(cookie.expires)
     }
 
@@ -260,7 +260,7 @@ class LoginTests: XCTestCase {
         loginData = LoginData(username: "luke", password: "password", rememberMe: false)
         let response = try testWorld.getResponse(to: "/blog/admin/login", method: .POST, body: loginData)
 
-        let cookie = try XCTUnwrap(response.http.cookies["steampress-session"])
+        let cookie = try XCTUnwrap(response.cookies["steampress-session"])
         XCTAssertNil(cookie.expires)
     }
 
@@ -268,13 +268,13 @@ class LoginTests: XCTestCase {
         let loginData = LoginData(username: "luke", password: "password", rememberMe: true)
         let loginResponse = try testWorld.getResponse(to: "/blog/admin/login", method: .POST, body: loginData)
 
-        let cookie = loginResponse.http.cookies["steampress-session"]
+        let cookie = loginResponse.cookies["steampress-session"]
         var adminRequest = HTTPRequest(method: .GET, url: URL(string: "/blog/admin")!)
         adminRequest.cookies["steampress-session"] = cookie
         let wrappedAdminRequest = Request(http: adminRequest, using: testWorld.context.app!)
         let response = try testWorld.getResponse(to: wrappedAdminRequest)
 
-        XCTAssertEqual(loginResponse.http.cookies["steampress-session"]?.expires, response.http.cookies["steampress-session"]?.expires)
+        XCTAssertEqual(loginResponse.cookies["steampress-session"]?.expires, response.cookies["steampress-session"]?.expires)
     }
     
     func testCorrectPageInformationForLogin() throws {

@@ -8,8 +8,8 @@ class DisabledBlogTagTests: XCTestCase {
         var tagResponse: Response? = try testWorld.getResponse(to: "/tags/Engineering")
         var allTagsResponse: Response? = try testWorld.getResponse(to: "/tags")
 
-        XCTAssertEqual(.notFound, tagResponse?.http.status)
-        XCTAssertEqual(.notFound, allTagsResponse?.http.status)
+        XCTAssertEqual(.notFound, tagResponse?.status)
+        XCTAssertEqual(.notFound, allTagsResponse?.status)
         
         tagResponse = nil
         allTagsResponse = nil

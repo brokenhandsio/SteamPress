@@ -8,7 +8,7 @@ extension TestWorld {
     }
 
     func getResponseString(to path: String, headers: HTTPHeaders = .init()) throws -> String {
-        let data = try getResponse(to: path, headers: headers).http.body.convertToHTTPBody().data
+        let data = try getResponse(to: path, headers: headers).body.convertToHTTPBody().data
         return String(data: data!, encoding: .utf8)!
     }
 
@@ -41,7 +41,7 @@ extension TestWorld {
                 loginPath = "/\(path)\(loginPath)"
             }
             let loginResponse = try getResponse(to: loginPath, method: .POST, body: loginData)
-            let sessionCookie = loginResponse.http.cookies["steampress-session"]
+            let sessionCookie = loginResponse.cookies["steampress-session"]
             return sessionCookie
         } else {
             return nil

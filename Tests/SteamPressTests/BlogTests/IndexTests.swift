@@ -71,15 +71,15 @@ class IndexTests: XCTestCase {
 
     func testThatAccessingPathsRouteRedirectsToBlogIndex() throws {
         let response = try testWorld.getResponse(to: "/posts/")
-        XCTAssertEqual(response.http.status, .movedPermanently)
-        XCTAssertEqual(response.http.headers[.location].first, "/")
+        XCTAssertEqual(response.status, .movedPermanently)
+        XCTAssertEqual(response.headers[.location].first, "/")
     }
 
     func testThatAccessingPathsRouteRedirectsToBlogIndexWithCustomPath() throws {
         testWorld = try! TestWorld.create(path: "blog")
         let response = try testWorld.getResponse(to: "/blog/posts/")
-        XCTAssertEqual(response.http.status, .movedPermanently)
-        XCTAssertEqual(response.http.headers[.location].first, "/blog/")
+        XCTAssertEqual(response.status, .movedPermanently)
+        XCTAssertEqual(response.headers[.location].first, "/blog/")
     }
 
     // MARK: - Pagination Tests

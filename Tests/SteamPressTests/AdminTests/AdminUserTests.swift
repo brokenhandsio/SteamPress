@@ -53,7 +53,7 @@ class AdminUserTests: XCTestCase {
 
     func testUserCanBeCreatedSuccessfully() throws {
         struct CreateUserData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let name = "Luke"
             let username = "lukes"
             let password = "somepassword"
@@ -76,13 +76,13 @@ class AdminUserTests: XCTestCase {
         XCTAssertEqual(user.tagline, createData.tagline)
         XCTAssertEqual(user.biography, createData.biography)
         XCTAssertEqual(user.twitterHandle, createData.twitterHandle)
-        XCTAssertEqual(response.http.status, .seeOther)
-        XCTAssertEqual(response.http.headers[.location].first, "/admin/")
+        XCTAssertEqual(response.status, .seeOther)
+        XCTAssertEqual(response.headers[.location].first, "/admin/")
     }
     
     func testUserHasNoAdditionalInfoIfEmptyStringsSent() throws {
         struct CreateUserData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let name = "Luke"
             let username = "lukes"
             let password = "somepassword"
@@ -107,7 +107,7 @@ class AdminUserTests: XCTestCase {
 
     func testUserMustResetPasswordIfSetToWhenCreatingUser() throws {
         struct CreateUserResetData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let name = "Luke"
             let username = "lukes"
             let password = "somepassword"
@@ -128,7 +128,7 @@ class AdminUserTests: XCTestCase {
 
     func testUserCannotBeCreatedWithoutName() throws {
         struct CreateUserData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let username = "lukes"
             let password = "password"
             let confirmPassword = "password"
@@ -145,7 +145,7 @@ class AdminUserTests: XCTestCase {
 
     func testUserCannotBeCreatedWithoutUsername() throws {
         struct CreateUserData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let name = "Luke"
             let password = "password"
             let confirmPassword = "password"
@@ -162,7 +162,7 @@ class AdminUserTests: XCTestCase {
 
     func testUserCannotBeCreatedWithUsernameThatAlreadyExists() throws {
         struct CreateUserData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let name = "Luke"
             let password = "password"
             let confirmPassword = "password"
@@ -182,7 +182,7 @@ class AdminUserTests: XCTestCase {
 
     func testUserCannotBeCreatedWithUsernameThatAlreadyExistsIgnoringCase() throws {
         struct CreateUserData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let name = "Luke"
             let password = "password"
             let confirmPassword = "password"
@@ -202,7 +202,7 @@ class AdminUserTests: XCTestCase {
 
     func testUserCannotBeCreatedWithoutPassword() throws {
         struct CreateUserData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let name = "Luke"
             let username = "lukes"
             let confirmPassword = "password"
@@ -219,7 +219,7 @@ class AdminUserTests: XCTestCase {
 
     func testUserCannotBeCreatedWithEmptyPassword() throws {
         struct CreateUserData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let name = "Luke"
             let username = "lukes"
             let password = ""
@@ -237,7 +237,7 @@ class AdminUserTests: XCTestCase {
 
     func testUserCannotBeCreatedWithoutSpecifyingAConfirmPassword() throws {
         struct CreateUserData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let name = "Luke"
             let username = "lukes"
             let password = "password"
@@ -254,7 +254,7 @@ class AdminUserTests: XCTestCase {
 
     func testUserCannotBeCreatedWithPasswordsThatDontMatch() throws {
         struct CreateUserData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let name = "Luke"
             let username = "lukes"
             let password = "astrongpassword"
@@ -275,7 +275,7 @@ class AdminUserTests: XCTestCase {
 
     func testUserCannotBeCreatedWithSimplePassword() throws {
         struct CreateUserData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let name = "Luke"
             let username = "lukes"
             let password = "password"
@@ -295,7 +295,7 @@ class AdminUserTests: XCTestCase {
 
     func testUserCannotBeCreatedWithEmptyName() throws {
         struct CreateUserData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let mame = ""
             let username = "lukes"
             let password = "password"
@@ -313,7 +313,7 @@ class AdminUserTests: XCTestCase {
 
     func testUserCannotBeCreatedWithEmptyUsername() throws {
         struct CreateUserData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let name = "Luke"
             let username = ""
             let password = "password"
@@ -331,7 +331,7 @@ class AdminUserTests: XCTestCase {
 
     func testUserCannotBeCreatedWithInvalidUsername() throws {
         struct CreateUserData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let name = "Luke"
             let username = "lukes!"
             let password = "password"
@@ -354,7 +354,7 @@ class AdminUserTests: XCTestCase {
         user = testWorld.createUser(name: "Leia", username: "leia", password: hashedPassword)
 
         struct CreateUserData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let name = "Luke"
             let username = "lukes"
             let password = "somepassword"
@@ -396,7 +396,7 @@ class AdminUserTests: XCTestCase {
 
     func testUserCanBeUpdated() throws {
         struct EditUserData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let name = "Darth Vader"
             let username = "darth_vader"
         }
@@ -409,13 +409,13 @@ class AdminUserTests: XCTestCase {
         XCTAssertEqual(updatedUser.username, editData.username)
         XCTAssertEqual(updatedUser.name, editData.name)
         XCTAssertEqual(updatedUser.userID, user.userID)
-        XCTAssertEqual(response.http.status, .seeOther)
-        XCTAssertEqual(response.http.headers[.location].first, "/admin/")
+        XCTAssertEqual(response.status, .seeOther)
+        XCTAssertEqual(response.headers[.location].first, "/admin/")
     }
     
     func testUserCanBeUpdatedWithSameUsername() throws {
         struct EditUserData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let name = "Leia Organa"
             let username = "leia"
         }
@@ -428,13 +428,13 @@ class AdminUserTests: XCTestCase {
         XCTAssertEqual(updatedUser.username, editData.username)
         XCTAssertEqual(updatedUser.name, editData.name)
         XCTAssertEqual(updatedUser.userID, user.userID)
-        XCTAssertEqual(response.http.status, .seeOther)
-        XCTAssertEqual(response.http.headers[.location].first, "/admin/")
+        XCTAssertEqual(response.status, .seeOther)
+        XCTAssertEqual(response.headers[.location].first, "/admin/")
     }
 
     func testUserCanBeUpdatedWithAllInformation() throws {
         struct EditUserData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let name = "Darth Vader"
             let username = "darth_vader"
             let twitterHandle = "darthVader"
@@ -455,13 +455,13 @@ class AdminUserTests: XCTestCase {
         XCTAssertEqual(updatedUser.tagline, editData.tagline)
         XCTAssertEqual(updatedUser.biography, editData.biography)
         XCTAssertEqual(updatedUser.userID, user.userID)
-        XCTAssertEqual(response.http.status, .seeOther)
-        XCTAssertEqual(response.http.headers[.location].first, "/admin/")
+        XCTAssertEqual(response.status, .seeOther)
+        XCTAssertEqual(response.headers[.location].first, "/admin/")
     }
     
     func testOptionalInfoDoesntGetUpdatedWhenEditingUsernameAndSendingEmptyValuesIfSomeAlreadySet() throws {
         struct EditUserData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let name = "Darth Vader"
             let username = "darth_vader"
             let twitterHandle = ""
@@ -491,7 +491,7 @@ class AdminUserTests: XCTestCase {
     
     func testUpdatingOptionalInfoToEmptyValuesWhenValueOriginallySetSetsItToNil() throws {
         struct EditUserData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let name = "Darth Vader"
             let username = "darth_vader"
             let twitterHandle = ""
@@ -520,7 +520,7 @@ class AdminUserTests: XCTestCase {
 
     func testWhenEditingUserResetPasswordFlagSetIfRequired() throws {
         struct EditUserData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let name = "Luke"
             let username = "lukes"
             let resetPasswordOnLogin = true
@@ -533,13 +533,13 @@ class AdminUserTests: XCTestCase {
         let updatedUser = try XCTUnwrap(testWorld.context.repository.users.last)
         XCTAssertTrue(updatedUser.resetPasswordRequired)
         XCTAssertEqual(updatedUser.userID, user.userID)
-        XCTAssertEqual(response.http.status, .seeOther)
-        XCTAssertEqual(response.http.headers[.location].first, "/admin/")
+        XCTAssertEqual(response.status, .seeOther)
+        XCTAssertEqual(response.headers[.location].first, "/admin/")
     }
 
     func testWhenEditingUserResetPasswordFlagNotSetIfSetToFalse() throws {
         struct EditUserData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let name = "Luke"
             let username = "lukes"
             let resetPasswordOnLogin = false
@@ -552,13 +552,13 @@ class AdminUserTests: XCTestCase {
         let updatedUser = try XCTUnwrap(testWorld.context.repository.users.last)
         XCTAssertFalse(updatedUser.resetPasswordRequired)
         XCTAssertEqual(updatedUser.userID, user.userID)
-        XCTAssertEqual(response.http.status, .seeOther)
-        XCTAssertEqual(response.http.headers[.location].first, "/admin/")
+        XCTAssertEqual(response.status, .seeOther)
+        XCTAssertEqual(response.headers[.location].first, "/admin/")
     }
 
     func testPasswordIsUpdatedWhenNewPasswordProvidedWhenEditingUser() throws {
         struct EditUserData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let name = "Luke"
             let username = "lukes"
             let password = "anewpassword"
@@ -572,13 +572,13 @@ class AdminUserTests: XCTestCase {
         let updatedUser = try XCTUnwrap(testWorld.context.repository.users.last)
         XCTAssertEqual(updatedUser.password, editData.password)
         XCTAssertEqual(updatedUser.userID, user.userID)
-        XCTAssertEqual(response.http.status, .seeOther)
-        XCTAssertEqual(response.http.headers[.location].first, "/admin/")
+        XCTAssertEqual(response.status, .seeOther)
+        XCTAssertEqual(response.headers[.location].first, "/admin/")
     }
     
     func testPasswordIsNotUpdatedWhenEmptyPasswordProvidedWhenEditingUser() throws {
         struct EditUserData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let name = "Luke"
             let username = "lukes"
             let password = ""
@@ -593,13 +593,13 @@ class AdminUserTests: XCTestCase {
         let updatedUser = try XCTUnwrap(testWorld.context.repository.users.last)
         XCTAssertEqual(updatedUser.password, oldPassword)
         XCTAssertEqual(updatedUser.userID, user.userID)
-        XCTAssertEqual(response.http.status, .seeOther)
-        XCTAssertEqual(response.http.headers[.location].first, "/admin/")
+        XCTAssertEqual(response.status, .seeOther)
+        XCTAssertEqual(response.headers[.location].first, "/admin/")
     }
 
     func testErrorShownWhenUpdatingUsersPasswordWithNonMatchingPasswords() throws {
         struct EditUserData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let name = "Luke"
             let username = "lukes"
             let password = "anewpassword"
@@ -620,7 +620,7 @@ class AdminUserTests: XCTestCase {
 
     func testErrorShownWhenChangingUsersPasswordWithShortPassword() throws {
         struct EditUserData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let name = "Luke"
             let username = "lukes"
             let password = "a"
@@ -643,7 +643,7 @@ class AdminUserTests: XCTestCase {
         user = testWorld.createUser(name: "Leia", username: "leia", password: hashedPassword)
 
         struct EditUserData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let name = "Darth Vader"
             let username = "darth_vader"
             let password = "somenewpassword"
@@ -659,7 +659,7 @@ class AdminUserTests: XCTestCase {
 
     func testNameMustBeSetWhenEditingAUser() throws {
         struct EditUserData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let name = ""
             let username = "darth_vader"
             let password = "somenewpassword"
@@ -677,7 +677,7 @@ class AdminUserTests: XCTestCase {
 
     func testUsernameMustBeSetWhenEditingAUser() throws {
         struct EditUserData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let name = "Darth Vader"
             let username = ""
             let password = "somenewpassword"
@@ -700,8 +700,8 @@ class AdminUserTests: XCTestCase {
 
         let response = try testWorld.getResponse(to: "/admin/users/\(user2.userID!)/delete", body: EmptyContent(), loggedInUser: user)
 
-        XCTAssertEqual(response.http.status, .seeOther)
-        XCTAssertEqual(response.http.headers[.location].first, "/admin/")
+        XCTAssertEqual(response.status, .seeOther)
+        XCTAssertEqual(response.headers[.location].first, "/admin/")
         XCTAssertEqual(testWorld.context.repository.users.count, 1)
         XCTAssertNotEqual(testWorld.context.repository.users.last?.name, "Han")
     }

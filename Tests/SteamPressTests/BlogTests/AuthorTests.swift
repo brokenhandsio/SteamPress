@@ -59,8 +59,8 @@ class AuthorTests: XCTestCase {
         let authorResponse = try testWorld.getResponse(to: authorsRequestPath)
         let allAuthorsResponse = try testWorld.getResponse(to: allAuthorsRequestPath)
 
-        XCTAssertEqual(authorResponse.http.status, .notFound)
-        XCTAssertEqual(allAuthorsResponse.http.status, .notFound)
+        XCTAssertEqual(authorResponse.status, .notFound)
+        XCTAssertEqual(allAuthorsResponse.status, .notFound)
     }
 
     func testAuthorView() throws {
