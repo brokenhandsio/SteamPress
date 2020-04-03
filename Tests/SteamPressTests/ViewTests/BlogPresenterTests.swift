@@ -5,7 +5,7 @@ import Vapor
 class BlogPresenterTests: XCTestCase {
 
     // MARK: - Properties
-    var basicContainer: BasicContainer!
+//    var basicContainer: BasicContainer!
     var presenter: ViewBlogPresenter!
     var viewRenderer: CapturingViewRenderer!
     var testTag: BlogTag!
