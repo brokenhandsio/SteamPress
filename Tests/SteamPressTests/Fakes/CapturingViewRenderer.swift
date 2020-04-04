@@ -9,7 +9,7 @@ class CapturingViewRenderer: ViewRenderer {
     }
     
     func `for`(_ request: Request) -> ViewRenderer {
-        return CapturingViewRenderer(eventLoop: request.eventLoop)
+        return self
     }
 
     private(set) var capturedContext: Encodable?

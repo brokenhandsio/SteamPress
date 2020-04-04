@@ -13,12 +13,14 @@ class BlogViewTests: XCTestCase {
     var pageInformation: BlogGlobalPageInformation!
     var websiteURL: URL!
     var currentPageURL: URL!
-    
+    let app = Application(.testing)
+
     // MARK: - Overrides
     
     override func setUp() {
         eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
         viewRenderer = CapturingViewRenderer(eventLoop: eventLoopGroup.next())
+        app.views.use {_ in self.viewRenderer }
         presenter = ViewBlogPresenter(viewRenderer: viewRenderer, longDateFormatter: LongPostDateFormatter(), numericDateFormatter: NumericPostDateFormatter(), eventLoopGroup: eventLoopGroup)
         author = TestDataBuilder.anyUser()
         author.userID = 1
@@ -32,6 +34,7 @@ class BlogViewTests: XCTestCase {
     
     override func tearDownWithError() throws {
         try eventLoopGroup.syncShutdownGracefully()
+        app.shutdown()
     }
     
     // MARK: - Tests
