@@ -1,11 +1,12 @@
 import Vapor
 
 public protocol SteamPressRepository {
-//    associatedtype ModelType
-//    func get(_ id: Int, on eventLoop: EventLoop) -> EventLoopFuture<ModelType>
+    //    associatedtype ModelType
+    //    func get(_ id: Int, on eventLoop: EventLoop) -> EventLoopFuture<ModelType>
 }
 
 public protocol BlogTagRepository: SteamPressRepository {
+    func `for`(_ request: Request) -> BlogTagRepository
     func getAllTags() -> EventLoopFuture<[BlogTag]>
     func getAllTagsWithPostCount() -> EventLoopFuture<[(BlogTag, Int)]>
     func getTags(for post: BlogPost) -> EventLoopFuture<[BlogTag]>
@@ -20,6 +21,7 @@ public protocol BlogTagRepository: SteamPressRepository {
 }
 
 public protocol BlogPostRepository: SteamPressRepository {
+    func `for`(_ request: Request) -> BlogPostRepository
     func getAllPostsSortedByPublishDate(includeDrafts: Bool) -> EventLoopFuture<[BlogPost]>
     func getAllPostsCount(includeDrafts: Bool) -> EventLoopFuture<Int>
     func getAllPostsSortedByPublishDate(includeDrafts: Bool, count: Int, offset: Int) -> EventLoopFuture<[BlogPost]>
@@ -36,6 +38,7 @@ public protocol BlogPostRepository: SteamPressRepository {
 }
 
 public protocol BlogUserRepository: SteamPressRepository {
+    func `for`(_ request: Request) -> BlogUserRepository
     func getAllUsers() -> EventLoopFuture<[BlogUser]>
     func getAllUsersWithPostCount() -> EventLoopFuture<[(BlogUser, Int)]>
     func getUser(id: Int) -> EventLoopFuture<BlogUser?>
@@ -47,73 +50,85 @@ public protocol BlogUserRepository: SteamPressRepository {
 
 public extension Request {
     var blogUserRepository: BlogUserRepository {
-        self.application.blogUserRepositoryFactory.makeRepository!(self)
+        self.application.blogRepositories.userRepository.for(self)
     }
     
     var blogPostRepository: BlogPostRepository {
-        self.application.blogPostRepositoryFactory.makeRepository!(self)
+        self.application.blogRepositories.postRepository.for(self)
     }
     
     var blogTagRepository: BlogTagRepository {
-        self.application.blogTagRepositoryFactory.makeRepository!(self)
+        self.application.blogRepositories.tagRepository.for(self)
     }
 }
 
 public extension Application {
-    private struct BlogUserRepositoryKey: StorageKey {
-        typealias Value = BlogUserRepositoryFactory
-    }
-    var blogUserRepositoryFactory: BlogUserRepositoryFactory {
-        get {
-            self.storage[BlogUserRepositoryKey.self] ?? .init()
+    struct BlogRepositories {
+        public struct Provider {
+            let run: (Application) -> ()
+            
+            public init(_ run: @escaping (Application) -> ()) {
+                self.run = run
+            }
         }
-        set {
-            self.storage[BlogUserRepositoryKey.self] = newValue
+        
+        final class Storage {
+            var makePostRepository: ((Application) -> BlogPostRepository)?
+            var makeTagRepository: ((Application) -> BlogTagRepository)?
+            var makeUserRepository: ((Application) -> BlogUserRepository)?
+            init() { }
+        }
+        
+        struct Key: StorageKey {
+            typealias Value = Storage
+        }
+        
+        let application: Application
+        
+        var userRepository: BlogUserRepository {
+            guard let makeRepository = self.storage.makeUserRepository else {
+                fatalError("No user repository configured. Configure with app.blogRepositories.use(...)")
+            }
+            return makeRepository(self.application)
+        }
+        
+        var postRepository: BlogPostRepository {
+            guard let makeRepository = self.storage.makePostRepository else {
+                fatalError("No post repository configured. Configure with app.blogRepositories.use(...)")
+            }
+            return makeRepository(self.application)
+        }
+        
+        var tagRepository: BlogTagRepository {
+            guard let makeRepository = self.storage.makeTagRepository else {
+                fatalError("No tag repository configured. Configure with app.blogRepositories.use(...)")
+            }
+            return makeRepository(self.application)
+        }
+        
+        public func use(_ provider: Provider) {
+            provider.run(self.application)
+        }
+        
+        public func use(_ makeRespository: @escaping (Application) -> (BlogUserRepository & BlogTagRepository & BlogPostRepository)) {
+            self.storage.makeUserRepository = makeRespository
+            self.storage.makeTagRepository = makeRespository
+            self.storage.makePostRepository = makeRespository
+        }
+        
+        func initialize() {
+            self.application.storage[Key.self] = .init()
+        }
+        
+        private var storage: Storage {
+            guard let storage = self.application.storage[Key.self] else {
+                fatalError("Repositoroes not configured. Configure with app.blogRepositories.initialize()")
+            }
+            return storage
         }
     }
     
-    private struct BlogPostRepositoryKey: StorageKey {
-        typealias Value = BlogPostRepositoryFactory
-    }
-    var blogPostRepositoryFactory: BlogPostRepositoryFactory {
-        get {
-            self.storage[BlogPostRepositoryKey.self] ?? .init()
-        }
-        set {
-            self.storage[BlogPostRepositoryKey.self] = newValue
-        }
-    }
-    
-    private struct BlogTagRepositoryKey: StorageKey {
-        typealias Value = BlogTagRepositoryFactory
-    }
-    var blogTagRepositoryFactory: BlogTagRepositoryFactory {
-        get {
-            self.storage[BlogTagRepositoryKey.self] ?? .init()
-        }
-        set {
-            self.storage[BlogTagRepositoryKey.self] = newValue
-        }
-    }
-}
-
-public struct BlogUserRepositoryFactory {
-    var makeRepository: ((Request) -> BlogUserRepository)?
-    mutating func use(_ makeRepository: @escaping (Request) -> BlogUserRepository) {
-        self.makeRepository = makeRepository
-    }
-}
-
-public struct BlogPostRepositoryFactory {
-    var makeRepository: ((Request) -> BlogPostRepository)?
-    mutating func use(_ makeRepository: @escaping (Request) -> BlogPostRepository) {
-        self.makeRepository = makeRepository
-    }
-}
-
-public struct BlogTagRepositoryFactory {
-    var makeRepository: ((Request) -> BlogTagRepository)?
-    mutating func use(_ makeRepository: @escaping (Request) -> BlogTagRepository) {
-        self.makeRepository = makeRepository
+    var blogRepositories: BlogRepositories {
+        .init(application: self)
     }
 }

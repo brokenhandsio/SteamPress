@@ -23,9 +23,8 @@ extension TestWorld {
                                              enableAuthorPages: enableAuthorPages,
                                              enableTagPages: enableTagPages)
         application.lifecycle.use(steampress)
-
         
-        services.register([BlogTagRepository.self, BlogPostRepository.self, BlogUserRepository.self]) { _ in
+        application.blogRepositories.use { _ in
             return repository
         }
 

@@ -9,10 +9,9 @@ class ProviderTests: XCTestCase {
         app.middleware.use(BlogRememberMeMiddleware())
         app.middleware.use(SessionsMiddleware(session: app.sessions.driver))
 
-        #warning("TODO")
-//        services.register([BlogTagRepository.self, BlogPostRepository.self, BlogUserRepository.self]) { _ in
-//            return InMemoryRepository()
-//        }
+        app.blogRepositories.use { application in
+            return InMemoryRepository(eventLoop: application.eventLoopGroup.next())
+        }
         
         let numberGenerator = app.randomNumberGenerators.generator
         XCTAssertTrue(type(of: numberGenerator) == RealRandomNumberGenerator.self)

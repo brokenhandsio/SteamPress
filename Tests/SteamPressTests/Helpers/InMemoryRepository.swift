@@ -18,6 +18,10 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
     }
 
     // MARK: - BlogTagRepository
+    
+    func `for`(_ request: Request) -> BlogTagRepository {
+        return self
+    }
 
     func getAllTags() -> EventLoopFuture<[BlogTag]> {
         return eventLoop.future(tags)
@@ -130,6 +134,10 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
     }
 
     // MARK: - BlogPostRepository
+    
+    func `for`(_ request: Request) -> BlogPostRepository {
+        return self
+    }
 
     func getAllPostsSortedByPublishDate(includeDrafts: Bool) -> EventLoopFuture<[BlogPost]> {
         var sortedPosts = posts.sorted { $0.created > $1.created }
@@ -246,6 +254,10 @@ class InMemoryRepository: BlogTagRepository, BlogPostRepository, BlogUserReposit
     }
 
     // MARK: - BlogUserRepository
+    
+    func `for`(_ request: Request) -> BlogUserRepository {
+        return self
+    }
 
     func add(_ user: BlogUser) {
         if (users.first { $0.userID == user.userID } == nil) {
