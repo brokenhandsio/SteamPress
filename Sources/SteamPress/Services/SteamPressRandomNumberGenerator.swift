@@ -17,9 +17,9 @@ public extension Request {
     }
 }
 
-extension Application {
+public extension Application {
     struct RandomNumberGenerators {
-        struct Provider {
+        public struct Provider {
             static var real: Self {
                 .init {
                     $0.randomNumberGenerators.use { $0.randomNumberGenerators.real }
@@ -55,11 +55,11 @@ extension Application {
             return makeGenerator(self.application)
         }
 
-        func use(_ provider: Provider) {
+        public func use(_ provider: Provider) {
             provider.run(self.application)
         }
 
-        func use(_ makeGenerator: @escaping (Application) -> (SteamPressRandomNumberGenerator)) {
+        public func use(_ makeGenerator: @escaping (Application) -> (SteamPressRandomNumberGenerator)) {
             self.storage.makeGenerator = makeGenerator
         }
 

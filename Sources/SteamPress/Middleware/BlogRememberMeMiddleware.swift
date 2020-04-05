@@ -2,6 +2,8 @@ import Vapor
 
 public struct BlogRememberMeMiddleware: Middleware {
 
+    public init()
+    
     public func respond(to request: Request, chainingTo next: Responder) -> EventLoopFuture<Response> {
         return next.respond(to: request).map { response in
             if let rememberMe = request.session.data["SteamPressRememberMe"], rememberMe == "YES" {

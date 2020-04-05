@@ -4,7 +4,7 @@ import Vapor
 extension TestWorld {
     func getResponse<T>(to path: String, method: HTTPMethod = .GET, headers: HTTPHeaders = .init(), decodeTo type: T.Type) throws -> T where T: Content {
         let response = try getResponse(to: path, method: method, headers: headers)
-        return try response.content.decode(type).wait()
+        return try response.content.decode(type)
     }
 
     func getResponseString(to path: String, headers: HTTPHeaders = .init()) throws -> String {
@@ -33,7 +33,7 @@ extension TestWorld {
         return Request(http: request, using: app)
     }
 
-    func setLoginCookie(for user: BlogUser?, password: String? = nil) throws -> HTTPCookieValue? {
+    func setLoginCookie(for user: BlogUser?, password: String? = nil) throws -> HTTPSetCookie? {
         if let user = user {
             let loginData = LoginData(username: user.username, password: password ?? user.password)
             var loginPath = "/admin/login"
@@ -49,10 +49,7 @@ extension TestWorld {
     }
 
     func getResponse(to request: Request) throws -> Response {
-        guard let app = context.app else {
-            fatalError("App has already been deinitiliased")
-        }
-        let responder = try app.make(Responder.self)
+        let responder = try context.app.make(Responder.self)
         return try responder.respond(to: request).wait()
     }
 }

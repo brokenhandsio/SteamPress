@@ -59,7 +59,7 @@ public extension Request {
     }
 }
 
-private extension Application {
+public extension Application {
     private struct BlogUserRepositoryKey: StorageKey {
         typealias Value = BlogUserRepositoryFactory
     }
@@ -97,21 +97,21 @@ private extension Application {
     }
 }
 
-private struct BlogUserRepositoryFactory {
+public struct BlogUserRepositoryFactory {
     var makeRepository: ((Request) -> BlogUserRepository)?
     mutating func use(_ makeRepository: @escaping (Request) -> BlogUserRepository) {
         self.makeRepository = makeRepository
     }
 }
 
-private struct BlogPostRepositoryFactory {
+public struct BlogPostRepositoryFactory {
     var makeRepository: ((Request) -> BlogPostRepository)?
     mutating func use(_ makeRepository: @escaping (Request) -> BlogPostRepository) {
         self.makeRepository = makeRepository
     }
 }
 
-private struct BlogTagRepositoryFactory {
+public struct BlogTagRepositoryFactory {
     var makeRepository: ((Request) -> BlogTagRepository)?
     mutating func use(_ makeRepository: @escaping (Request) -> BlogTagRepository) {
         self.makeRepository = makeRepository

@@ -21,19 +21,16 @@ class BlogAdminPresenterTests: XCTestCase {
     private static let siteTwitterHandle = "brokenhandsio"
     private static let disqusName = "steampress"
     private static let googleAnalyticsIdentifier = "UA-12345678-1"
-    let app = Application(.testing)
     // MARK: - Overrides
 
     override func setUp() {
         eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
         viewRenderer = CapturingViewRenderer(eventLoop: eventLoopGroup.next())
-        app.views.use {_ in self.viewRenderer }
         presenter = ViewBlogAdminPresenter(pathCreator: BlogPathCreator(blogPath: "blog"), viewRenderer: viewRenderer, eventLoopGroup: eventLoopGroup, longDateFormatter: LongPostDateFormatter(), numericDateFormatter: NumericPostDateFormatter())
     }
     
     override func tearDownWithError() throws {
         try eventLoopGroup.syncShutdownGracefully()
-        app.shutdown()
     }
 
     // MARK: - Tests

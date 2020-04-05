@@ -23,15 +23,6 @@ class ProviderTests: XCTestCase {
         let blogAdminPresenter = app.adminPresenters.adminPresenter
         XCTAssertTrue(type(of: blogAdminPresenter) == ViewBlogAdminPresenter.self)
         
-        #warning("Remove")
-//        // Work around Vapor 3 lifecycle mess
-//        weak var weakApp: Application? = app
-//        weakApp = nil
-//        var tries = 0
-//        while weakApp != nil && tries < 10 {
-//            Thread.sleep(forTimeInterval: 0.1)
-//            tries += 1
-//        }
-//        XCTAssertNil(weakApp, "application leak: \(weakApp.debugDescription)")
+        app.shutdown()
     }
 }

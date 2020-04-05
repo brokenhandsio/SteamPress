@@ -44,8 +44,8 @@ public extension Request {
 
 public extension Application {
     struct PasswordVerifiers {
-        struct Provider {
-            static var bcrypt: Self {
+        public struct Provider {
+            public static var bcrypt: Self {
                 .init {
                     $0.passwordVerifiers.use { $0.passwordVerifiers.bcrypt }
                 }
@@ -53,7 +53,7 @@ public extension Application {
 
             let run: (Application) -> ()
 
-            init(_ run: @escaping (Application) -> ()) {
+            public init(_ run: @escaping (Application) -> ()) {
                 self.run = run
             }
         }
@@ -80,7 +80,7 @@ public extension Application {
             return makeVerifier(self.application)
         }
 
-        func use(_ provider: Provider) {
+        public func use(_ provider: Provider) {
             provider.run(self.application)
         }
 
@@ -106,8 +106,8 @@ public extension Application {
     }
     
     struct PasswordHashers {
-        struct Provider {
-            static var bcrypt: Self {
+        public struct Provider {
+            public static var bcrypt: Self {
                 .init {
                     $0.passwordHashers.use { $0.passwordHashers.bcrypt }
                 }
@@ -115,7 +115,7 @@ public extension Application {
 
             let run: (Application) -> ()
 
-            init(_ run: @escaping (Application) -> ()) {
+            public init(_ run: @escaping (Application) -> ()) {
                 self.run = run
             }
         }
@@ -142,7 +142,7 @@ public extension Application {
             return makeHasher(self.application)
         }
 
-        func use(_ provider: Provider) {
+        public func use(_ provider: Provider) {
             provider.run(self.application)
         }
 

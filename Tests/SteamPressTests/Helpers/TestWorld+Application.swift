@@ -2,7 +2,8 @@ import SteamPress
 import Vapor
 
 extension TestWorld {
-    static func getSteamPressApp(repository: InMemoryRepository,
+    static func getSteamPressApp(eventLoopGroup: EventLoopGroup,
+                                 repository: InMemoryRepository,
                                  path: String?,
                                  postsPerPage: Int,
                                  feedInformation: FeedInformation,
@@ -12,22 +13,23 @@ extension TestWorld {
                                  enableTagPages: Bool,
                                  passwordHasherToUse: PasswordHasherChoice,
                                  randomNumberGenerator: StubbedRandomNumberGenerator) throws -> Application {
-        var services = Services.default()
-        let steampress = SteamPress.Provider(
+        
+        let application = Application(.testing, .shared(eventLoopGroup))
+        
+        let steampress = SteamPress.SteampressLifecyle(
                                              blogPath: path,
                                              feedInformation: feedInformation,
                                              postsPerPage: postsPerPage,
                                              enableAuthorPages: enableAuthorPages,
                                              enableTagPages: enableTagPages)
-        try services.register(steampress)
+        application.lifecycle.use(steampress)
 
+        
         services.register([BlogTagRepository.self, BlogPostRepository.self, BlogUserRepository.self]) { _ in
             return repository
         }
 
-        services.register(SteamPressRandomNumberGenerator.self) { _ in
-            return randomNumberGenerator
-        }
+        application.randomNumberGenerators.use { _ in randomNumberGenerator }
         
         services.register(BlogPresenter.self) { _ in
             return blogPresenter
@@ -37,34 +39,22 @@ extension TestWorld {
             return adminPresenter
         }
 
-        var middlewareConfig = MiddlewareConfig()
-        middlewareConfig.use(ErrorMiddleware.self)
-        middlewareConfig.use(BlogRememberMeMiddleware.self)
-        middlewareConfig.use(SessionsMiddleware.self)
-        services.register(middlewareConfig)
-
-        var config = Config.default()
+        application.middleware.use(BlogRememberMeMiddleware())
+        application.middleware.use(SessionsMiddleware(session: application.sessions.driver))
 
         config.prefer(CapturingBlogPresenter.self, for: BlogPresenter.self)
         config.prefer(CapturingAdminPresenter.self, for: BlogAdminPresenter.self)
-        config.prefer(StubbedRandomNumberGenerator.self, for: SteamPressRandomNumberGenerator.self)
 
         switch passwordHasherToUse {
         case .real:
-            config.prefer(BCryptDigest.self, for: PasswordVerifier.self)
-            config.prefer(BCryptDigest.self, for: PasswordHasher.self)
+            application.passwordHashers.use(.bcrypt)
+            application.passwordVerifiers.use(.bcrypt)
         case .plaintext:
-            services.register(PasswordHasher.self) { _ in
-                return PlaintextHasher()
-            }
-            config.prefer(PlaintextVerifier.self, for: PasswordVerifier.self)
-            config.prefer(PlaintextHasher.self, for: PasswordHasher.self)
+            application.passwordHashers.use(.plaintext)
+            application.passwordVerifiers.use(.plaintext)
         case .reversed:
-            services.register([PasswordHasher.self, PasswordVerifier.self]) { _ in
-                return ReversedPasswordHasher()
-            }
-            config.prefer(ReversedPasswordHasher.self, for: PasswordVerifier.self)
-            config.prefer(ReversedPasswordHasher.self, for: PasswordHasher.self)
+            application.passwordVerifiers.use(.reversed)
+            application.passwordHashers.use(.reversed)
         }
 
         return try Application(config: config, services: services)

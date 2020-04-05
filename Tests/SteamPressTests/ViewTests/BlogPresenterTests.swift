@@ -22,20 +22,17 @@ class BlogPresenterTests: XCTestCase {
     private static let siteTwitterHandle = "brokenhandsio"
     private static let disqusName = "steampress"
     private static let googleAnalyticsIdentifier = "UA-12345678-1"
-    let app = Application(.testing)
     // MARK: - Overrides
 
     override func setUp() {
         eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
         viewRenderer = CapturingViewRenderer(eventLoop: eventLoopGroup.next())
-        app.views.use {_ in self.viewRenderer }
         presenter = ViewBlogPresenter(viewRenderer: viewRenderer, longDateFormatter: LongPostDateFormatter(), numericDateFormatter: NumericPostDateFormatter(), eventLoopGroup: eventLoopGroup)
         testTag = BlogTag(id: 1, name: "Tattoine")
     }
     
     override func tearDownWithError() throws {
         try eventLoopGroup.syncShutdownGracefully()
-        app.shutdown()
     }
 
     // MARK: - Tests

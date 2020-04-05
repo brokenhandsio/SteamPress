@@ -18,3 +18,31 @@ struct ReversedPasswordHasher: PasswordHasher, SteamPressPasswordVerifier {
         return plaintext == String(hash.reversed())
     }
 }
+
+extension Application.PasswordHashers.Provider {
+    public static var reversed: Self {
+        .init {
+            $0.passwordHashers.use { $0.passwordHashers.reversed }
+        }
+    }
+}
+
+extension Application.PasswordHashers {
+    var reversed: ReversedPasswordHasher {
+        return .init()
+    }
+}
+
+extension Application.PasswordVerifiers {
+    var reversed: ReversedPasswordHasher {
+        return .init()
+    }
+}
+
+extension Application.PasswordVerifiers.Provider {
+    public static var reversed: Self {
+        .init {
+            $0.passwordVerifiers.use { $0.passwordVerifiers.reversed }
+        }
+    }
+}
