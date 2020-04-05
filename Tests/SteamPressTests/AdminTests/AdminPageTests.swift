@@ -24,6 +24,6 @@ class AdminPageTests: XCTestCase {
         XCTAssertEqual(presenter.adminViewPageInformation?.websiteURL.absoluteString, "/")
         XCTAssertEqual(presenter.adminViewPageInformation?.currentPageURL.absoluteString, "/admin")
         
-        XCTAssertNoThrow(try testWorld.tryAsHardAsWeCanToShutdownApplication())
+        XCTAssertNoThrow(try testWorld.shutdown())
     }
 }

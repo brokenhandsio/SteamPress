@@ -25,7 +25,7 @@ class AuthorTests: XCTestCase {
     }
     
     override func tearDown() {
-        XCTAssertNoThrow(try testWorld.tryAsHardAsWeCanToShutdownApplication())
+        XCTAssertNoThrow(try testWorld.shutdown())
     }
 
     // MARK: - Tests
@@ -163,7 +163,7 @@ class AuthorTests: XCTestCase {
         let tag2Name = "Search"
         let tag1 = try testWorld.createTag(tag1Name, on: post2.post)
         _ = try testWorld.createTag(tag2Name, on: postData.post)
-        try testWorld.context.repository.add(tag1, to: postData.post)
+        try testWorld.context.repository.internalAdd(tag1, to: postData.post)
         
         _ = try testWorld.getResponse(to: "/authors/leia")
         let tagsForPosts = try XCTUnwrap(presenter.authorPageTagsForPost)

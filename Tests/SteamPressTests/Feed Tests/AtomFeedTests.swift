@@ -19,7 +19,7 @@ class AtomFeedTests: XCTestCase {
     }
     
     override func tearDown() {
-        XCTAssertNoThrow(try testWorld.tryAsHardAsWeCanToShutdownApplication())
+        XCTAssertNoThrow(try testWorld.shutdown())
     }
 
     // MARK: - Tests
@@ -216,7 +216,7 @@ class AtomFeedTests: XCTestCase {
     func testCorrectHeaderSetForAtomFeed() throws {
         testWorld = try TestWorld.create()
         let actualXmlResponse = try testWorld.getResponse(to: atomPath)
-        XCTAssertEqual(actualXmlResponse.headers.firstValue(name: .contentType), "application/atom+xml")
+        XCTAssertEqual(actualXmlResponse.headers.first(name: .contentType), "application/atom+xml")
     }
 
     func testThatDateFormatterIsCorrect() throws {

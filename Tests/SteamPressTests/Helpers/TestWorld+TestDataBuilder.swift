@@ -10,7 +10,7 @@ extension TestWorld {
         for index in 1...count {
             let data = try createPost(title: "Post \(index)", slugUrl: "post-\(index)", author: author)
             if let tag = tag {
-                try context.repository.add(tag, to: data.post)
+                try context.repository.internalAdd(tag, to: data.post)
             }
         }
     }

@@ -14,6 +14,6 @@ class DisabledBlogTagTests: XCTestCase {
         tagResponse = nil
         allTagsResponse = nil
         
-        XCTAssertNoThrow(try testWorld.tryAsHardAsWeCanToShutdownApplication())
+        XCTAssertNoThrow(try testWorld.shutdown())
     }
 }

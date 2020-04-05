@@ -17,7 +17,7 @@ class APITagControllerTests: XCTestCase {
         XCTAssertEqual(tags[0].name, tag1.name)
         XCTAssertEqual(tags[1].name, tag2.name)
         
-        XCTAssertNoThrow(try testWorld.tryAsHardAsWeCanToShutdownApplication())
+        XCTAssertNoThrow(try testWorld.shutdown())
     }
     
 }

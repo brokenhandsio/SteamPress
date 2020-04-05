@@ -17,7 +17,7 @@ class AccessControlTests: XCTestCase {
     }
     
     override func tearDown() {
-        XCTAssertNoThrow(try testWorld.tryAsHardAsWeCanToShutdownApplication())
+        XCTAssertNoThrow(try testWorld.shutdown())
     }
 
     // MARK: - Tests

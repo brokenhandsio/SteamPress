@@ -19,7 +19,7 @@ class RSSFeedTests: XCTestCase {
     }
     
     override func tearDown() {
-        XCTAssertNoThrow(try testWorld.tryAsHardAsWeCanToShutdownApplication())
+        XCTAssertNoThrow(try testWorld.shutdown())
     }
 
     // MARK: - Tests
@@ -187,7 +187,7 @@ class RSSFeedTests: XCTestCase {
         testWorld = try TestWorld.create()
         let actualXmlResponse = try testWorld.getResponse(to: rssPath)
 
-        XCTAssertEqual(actualXmlResponse.headers.firstValue(name: .contentType), "application/rss+xml")
+        XCTAssertEqual(actualXmlResponse.headers.first(name: .contentType), "application/rss+xml")
     }
 
     func testThatDateFormatterIsCorrect() throws {
