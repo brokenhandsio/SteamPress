@@ -24,9 +24,9 @@ public extension Request {
     }
 }
 
-extension Application {
+public extension Application {
     struct BlogPresenters {
-        struct Provider {
+        public struct Provider {
             static var view: Self {
                 .init {
                     $0.blogPresenters.use { $0.blogPresenters.view }
@@ -35,7 +35,7 @@ extension Application {
 
             let run: (Application) -> ()
 
-            init(_ run: @escaping (Application) -> ()) {
+            public init(_ run: @escaping (Application) -> ()) {
                 self.run = run
             }
         }
@@ -49,7 +49,7 @@ extension Application {
             typealias Value = Storage
         }
 
-        let application: Application
+        public let application: Application
 
         var view: ViewBlogPresenter {
             return .init(viewRenderer: self.application.views.renderer, longDateFormatter: LongPostDateFormatter(), numericDateFormatter: NumericPostDateFormatter(), eventLoopGroup: self.application.eventLoopGroup)
@@ -62,11 +62,11 @@ extension Application {
             return makePresenter(self.application)
         }
 
-        func use(_ provider: Provider) {
+        public func use(_ provider: Provider) {
             provider.run(self.application)
         }
 
-        func use(_ makePresenter: @escaping (Application) -> (BlogPresenter)) {
+        public func use(_ makePresenter: @escaping (Application) -> (BlogPresenter)) {
             self.storage.makePresenter = makePresenter
         }
 

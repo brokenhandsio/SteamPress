@@ -131,3 +131,17 @@ class CapturingBlogPresenter: BlogPresenter {
         return TestDataBuilder.createFutureView(on: eventLoop)
     }
 }
+
+extension Application.BlogPresenters {
+    var capturing: CapturingBlogPresenter {
+        return .init(eventLoop: self.application.eventLoopGroup.next())
+    }
+}
+
+extension Application.BlogPresenters.Provider {
+    static var capturing: Self {
+        .init {
+            $0.blogPresenters.use { $0.blogPresenters.capturing }
+        }
+    }
+}

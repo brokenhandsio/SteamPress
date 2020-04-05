@@ -20,9 +20,9 @@ extension Request {
     }
 }
 
-extension Application {
+public extension Application {
     struct BlogAdminPresenters {
-        struct Provider {
+        public struct Provider {
             static var view: Self {
                 .init {
                     $0.adminPresenters.use { $0.adminPresenters.view }
@@ -61,7 +61,7 @@ extension Application {
             return makePresenter(self.application)
         }
 
-        func use(_ provider: Provider) {
+        public func use(_ provider: Provider) {
             provider.run(self.application)
         }
 

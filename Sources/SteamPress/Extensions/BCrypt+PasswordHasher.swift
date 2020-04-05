@@ -84,7 +84,7 @@ public extension Application {
             provider.run(self.application)
         }
 
-        func use(_ makeVerifier: @escaping (Application) -> (SteamPressPasswordVerifier)) {
+        public func use(_ makeVerifier: @escaping (Application) -> (SteamPressPasswordVerifier)) {
             self.storage.makeVerifier = makeVerifier
         }
 
@@ -146,7 +146,7 @@ public extension Application {
             provider.run(self.application)
         }
 
-        func use(_ makeHasher: @escaping (Application) -> (PasswordHasher)) {
+        public func use(_ makeHasher: @escaping (Application) -> (PasswordHasher)) {
             self.storage.makeHasher = makeHasher
         }
 

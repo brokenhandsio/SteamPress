@@ -26,7 +26,15 @@ extension Application.PasswordHashers {
     }
 }
 
-extension PlaintextVerifier: SteamPressPasswordVerifier {}
+extension PlaintextVerifier: SteamPressPasswordVerifier {
+    public func `for`(_ request: Request) -> SteamPressPasswordVerifier {
+        return PlaintextVerifier()
+    }
+    
+    public func verify(_ plaintext: String, created hash: String) throws -> Bool {
+        return plaintext == hash
+    }
+}
 
 extension Application.PasswordVerifiers {
     var plaintext: PlaintextVerifier {

@@ -19,7 +19,6 @@ class BlogViewTests: XCTestCase {
     override func setUp() {
         eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
         viewRenderer = CapturingViewRenderer(eventLoop: eventLoopGroup.next())
-        app.views.use {_ in self.viewRenderer }
         presenter = ViewBlogPresenter(viewRenderer: viewRenderer, longDateFormatter: LongPostDateFormatter(), numericDateFormatter: NumericPostDateFormatter(), eventLoopGroup: eventLoopGroup)
         author.userID = 1
         let createdDate = Date(timeIntervalSince1970: 1584714638)

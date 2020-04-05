@@ -95,3 +95,17 @@ class CapturingAdminPresenter: BlogAdminPresenter {
         return TestDataBuilder.createFutureView(on: eventLoop)
     }
 }
+
+extension Application.BlogAdminPresenters {
+    var capturing: CapturingAdminPresenter {
+        return .init(eventLoop: self.application.eventLoopGroup.next())
+    }
+}
+
+extension Application.BlogAdminPresenters.Provider {
+    static var capturing: Self {
+        .init {
+            $0.adminPresenters.use { $0.adminPresenters.capturing }
+        }
+    }
+}

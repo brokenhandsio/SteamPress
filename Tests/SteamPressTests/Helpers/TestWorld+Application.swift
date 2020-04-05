@@ -30,20 +30,12 @@ extension TestWorld {
         }
 
         application.randomNumberGenerators.use { _ in randomNumberGenerator }
-        
-        services.register(BlogPresenter.self) { _ in
-            return blogPresenter
-        }
-        
-        services.register(BlogAdminPresenter.self) { _ in
-            return adminPresenter
-        }
 
         application.middleware.use(BlogRememberMeMiddleware())
         application.middleware.use(SessionsMiddleware(session: application.sessions.driver))
 
-        config.prefer(CapturingBlogPresenter.self, for: BlogPresenter.self)
-        config.prefer(CapturingAdminPresenter.self, for: BlogAdminPresenter.self)
+        application.blogPresenters.use(.capturing)
+        application.adminPresenters.use(.capturing)
 
         switch passwordHasherToUse {
         case .real:
@@ -57,6 +49,6 @@ extension TestWorld {
             application.passwordHashers.use(.reversed)
         }
 
-        return try Application(config: config, services: services)
+        return Application(.testing, .shared(eventLoopGroup))
     }
 }
