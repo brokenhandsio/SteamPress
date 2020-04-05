@@ -24,6 +24,8 @@ extension TestWorld {
                                              enableTagPages: enableTagPages)
         application.lifecycle.use(steampress)
         
+        #warning("This should be removed")
+        steampress.tmpSetup(application)
         application.blogRepositories.use { _ in
             return repository
         }
@@ -48,6 +50,6 @@ extension TestWorld {
             application.passwordHashers.use(.reversed)
         }
 
-        return Application(.testing, .shared(eventLoopGroup))
+        return application
     }
 }

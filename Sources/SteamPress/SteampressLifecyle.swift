@@ -35,17 +35,23 @@ public struct SteampressLifecyle: LifecycleHandler {
         self.enableTagPages = enableTagPages
         self.pathCreator = BlogPathCreator(blogPath: self.blogPath)
     }
-
-//    public func register(_ services: inout Services) throws {
-//        services.register(BlogRememberMeMiddleware.self)
-//    }
-
-    public func willBoot(_ application: Application) throws {
+    
+    public func tmpSetup(_ application: Application) {
         application.randomNumberGenerators.initialize()
         application.blogPresenters.initialize()
         application.adminPresenters.initialize(pathCreator: pathCreator)
         application.passwordHashers.initialize()
         application.passwordVerifiers.initialize()
+        application.blogRepositories.initialize()
+    }
+
+    public func willBoot(_ application: Application) throws {
+//        application.randomNumberGenerators.initialize()
+//        application.blogPresenters.initialize()
+//        application.adminPresenters.initialize(pathCreator: pathCreator)
+//        application.passwordHashers.initialize()
+//        application.passwordVerifiers.initialize()
+//        application.blogRepositories.initialize()
         
         let router = application.routes
 

@@ -116,7 +116,7 @@ public extension Application {
             self.storage.makePostRepository = makeRespository
         }
         
-        func initialize() {
+        public func initialize() {
             self.application.storage[Key.self] = .init()
         }
         

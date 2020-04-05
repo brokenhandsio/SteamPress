@@ -14,17 +14,19 @@ struct TestWorld {
         unsetenv("BLOG_SITE_TWITTER_HANDLE")
         unsetenv("BLOG_DISQUS_NAME")
         unsetenv("WEBSITE_URL")
+        #warning("When do we do this?")
+        //try application.boot()
         return TestWorld(context: context)
     }
 
-    var context: Context
+    let context: Context
 
     init(context: Context) {
         self.context = context
     }
 
     struct Context {
-        var app: Application
+        let app: Application
         let repository: InMemoryRepository
         let blogPresenter: CapturingBlogPresenter
         let blogAdminPresenter: CapturingAdminPresenter
@@ -32,7 +34,7 @@ struct TestWorld {
         let eventLoopGroup: EventLoopGroup
     }
     
-    mutating func shutdown() throws {
+    func shutdown() throws {
         context.app.shutdown()
         try context.eventLoopGroup.syncShutdownGracefully()
     }
