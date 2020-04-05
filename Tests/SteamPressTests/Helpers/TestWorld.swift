@@ -15,7 +15,7 @@ struct TestWorld {
         unsetenv("BLOG_DISQUS_NAME")
         unsetenv("WEBSITE_URL")
         #warning("When do we do this?")
-        //try application.boot()
+        try application.boot()
         return TestWorld(context: context)
     }
 
