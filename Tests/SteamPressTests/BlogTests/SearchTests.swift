@@ -94,7 +94,7 @@ class SearchTests: XCTestCase {
         let tag2Name = "Search"
         let tag1 = try testWorld.createTag(tag1Name, on: post2.post)
         _ = try testWorld.createTag(tag2Name, on: firstData.post)
-        try testWorld.context.repository.internalAll(tag1, to: firstData.post)
+        try testWorld.context.repository.internalAdd(tag1, to: firstData.post)
         
         _ = try testWorld.getResponse(to: "/search?term=Test")
         let tagsForPosts = try XCTUnwrap(presenter.searchPageTagsForPost)

@@ -8,8 +8,7 @@ extension TestWorld {
     }
 
     func getResponseString(to path: String, headers: HTTPHeaders = .init()) throws -> String {
-        let data = try getResponse(to: path, headers: headers).body.convertToHTTPBody().data
-        return String(data: data!, encoding: .utf8)!
+        return try getResponse(to: path, headers: headers).body.string!
     }
 
     func getResponse<T: Content>(to path: String, method: HTTPMethod = .POST, body: T, loggedInUser: BlogUser? = nil, passwordToLoginWith: String? = nil, headers: HTTPHeaders = .init()) throws -> Response {
@@ -24,16 +23,12 @@ extension TestWorld {
     }
 
     func setupRequest(to path: String, method: HTTPMethod = .POST, loggedInUser: BlogUser? = nil, passwordToLoginWith: String? = nil, headers: HTTPHeaders = .init()) throws -> Request {
-        var request = HTTPRequest(method: method, url: URL(string: path)!, headers: headers)
+        let request = Request(application: context.app, method: method, url: URI(path: path), headers: headers, on: context.eventLoopGroup.next())
         request.cookies["steampress-session"] = try setLoginCookie(for: loggedInUser, password: passwordToLoginWith)
-
-        guard let app = context.app else {
-            fatalError("App has already been deinitiliased")
-        }
-        return Request(http: request, using: app)
+        return request
     }
 
-    func setLoginCookie(for user: BlogUser?, password: String? = nil) throws -> HTTPSetCookie? {
+    func setLoginCookie(for user: BlogUser?, password: String? = nil) throws -> HTTPCookies.Value? {
         if let user = user {
             let loginData = LoginData(username: user.username, password: password ?? user.password)
             var loginPath = "/admin/login"
@@ -49,7 +44,6 @@ extension TestWorld {
     }
 
     func getResponse(to request: Request) throws -> Response {
-        let responder = try context.app.make(Responder.self)
-        return try responder.respond(to: request).wait()
+        return try context.app.responder.respond(to: request).wait()
     }
 }

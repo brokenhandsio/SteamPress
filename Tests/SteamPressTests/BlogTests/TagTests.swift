@@ -35,7 +35,7 @@ class TagTests: XCTestCase {
         let secondPost = try! testWorld.createPost()
         let thirdPost = try! testWorld.createPost()
         let secondTag = try testWorld.createTag("AnotherTag", on: secondPost.post)
-        try testWorld.context.repository.internalAll(secondTag, to: thirdPost.post)
+        try testWorld.context.repository.internalAdd(secondTag, to: thirdPost.post)
         _ = try testWorld.getResponse(to: allTagsRequestPath)
 
         XCTAssertEqual(presenter.allTagsPageTags?.count, 2)
