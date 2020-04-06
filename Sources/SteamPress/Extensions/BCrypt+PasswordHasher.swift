@@ -21,11 +21,7 @@ public protocol SteamPressPasswordVerifier {
     func verify(_ plaintext: String, created hash: String) throws -> Bool
 }
 
-extension BCryptDigest: SteamPressPasswordVerifier {
-    public func verify(_ plaintext: String, created hash: String) throws -> Bool {
-        return try self.verify(plaintext, created: hash)
-    }
-    
+extension BCryptDigest: SteamPressPasswordVerifier {   
     public func `for`(_ request: Request) -> SteamPressPasswordVerifier {
         return BCryptDigest()
     }
