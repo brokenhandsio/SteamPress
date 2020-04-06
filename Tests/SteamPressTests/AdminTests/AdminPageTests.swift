@@ -5,7 +5,7 @@ import SteamPress
 class AdminPageTests: XCTestCase {
     
     func testAdminPagePassesCorrectInformationToPresenter() throws {
-        var testWorld  = try TestWorld.create()
+        let testWorld  = TestWorld.create()
         let user = testWorld.createUser(username: "leia")
         let testData1 = try testWorld.createPost(author: user)
         let testData2 = try testWorld.createPost(title: "A second post", author: user)

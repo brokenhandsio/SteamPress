@@ -19,7 +19,7 @@ class AuthorTests: XCTestCase {
     // MARK: - Overrides
 
     override func setUp() {
-        testWorld = try! TestWorld.create(postsPerPage: postsPerPage)
+        testWorld = TestWorld.create(postsPerPage: postsPerPage)
         user = testWorld.createUser(username: "leia")
         postData = try! testWorld.createPost(author: user)
     }
@@ -53,7 +53,7 @@ class AuthorTests: XCTestCase {
     }
 
     func testDisabledBlogAuthorsPath() throws {
-        testWorld = try TestWorld.create(enableAuthorPages: false)
+        testWorld = TestWorld.create(enableAuthorPages: false)
         _ = testWorld.createUser(username: "leia")
 
         let authorResponse = try testWorld.getResponse(to: authorsRequestPath)

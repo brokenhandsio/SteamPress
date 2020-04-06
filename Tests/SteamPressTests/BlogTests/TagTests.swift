@@ -20,7 +20,7 @@ class TagTests: XCTestCase {
     // MARK: - Overrides
 
     override func setUp() {
-        testWorld = try! TestWorld.create(postsPerPage: postsPerPage)
+        testWorld = TestWorld.create(postsPerPage: postsPerPage)
         postData = try! testWorld.createPost()
         tag = try! testWorld.createTag(tagName, on: postData.post)
     }

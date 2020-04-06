@@ -7,7 +7,7 @@ class APITagControllerTests: XCTestCase {
     // MARK: - Tests
 
     func testThatAllTagsAreReturnedFromAPI() throws {
-        let testWorld = try TestWorld.create()
+        let testWorld = TestWorld.create()
 
         let tag1 = try testWorld.context.repository.addTag(name: "Vapor3")
         let tag2 = try testWorld.context.repository.addTag(name: "Engineering")

@@ -3,19 +3,19 @@ import Vapor
 
 struct TestWorld {
 
-    static func create(path: String? = nil, postsPerPage: Int = 10, feedInformation: FeedInformation = FeedInformation(), enableAuthorPages: Bool = true, enableTagPages: Bool = true, passwordHasherToUse: PasswordHasherChoice = .plaintext, randomNumberGenerator: StubbedRandomNumberGenerator = StubbedRandomNumberGenerator(numberToReturn: 666)) throws -> TestWorld {
+    static func create(path: String? = nil, postsPerPage: Int = 10, feedInformation: FeedInformation = FeedInformation(), enableAuthorPages: Bool = true, enableTagPages: Bool = true, passwordHasherToUse: PasswordHasherChoice = .plaintext, randomNumberGenerator: StubbedRandomNumberGenerator = StubbedRandomNumberGenerator(numberToReturn: 666)) -> TestWorld {
         let eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
         let repository = InMemoryRepository(eventLoop: eventLoopGroup.next())
         let blogPresenter = CapturingBlogPresenter(eventLoop: eventLoopGroup.next())
         let blogAdminPresenter = CapturingAdminPresenter(eventLoop: eventLoopGroup.next())
-        let application = try TestWorld.getSteamPressApp(eventLoopGroup: eventLoopGroup, repository: repository, path: path, postsPerPage: postsPerPage, feedInformation: feedInformation, blogPresenter: blogPresenter, adminPresenter: blogAdminPresenter, enableAuthorPages: enableAuthorPages, enableTagPages: enableTagPages, passwordHasherToUse: passwordHasherToUse, randomNumberGenerator: randomNumberGenerator)
+        let application = TestWorld.getSteamPressApp(eventLoopGroup: eventLoopGroup, repository: repository, path: path, postsPerPage: postsPerPage, feedInformation: feedInformation, blogPresenter: blogPresenter, adminPresenter: blogAdminPresenter, enableAuthorPages: enableAuthorPages, enableTagPages: enableTagPages, passwordHasherToUse: passwordHasherToUse, randomNumberGenerator: randomNumberGenerator)
         let context = Context(app: application, repository: repository, blogPresenter: blogPresenter, blogAdminPresenter: blogAdminPresenter, path: path, eventLoopGroup: eventLoopGroup)
         unsetenv("BLOG_GOOGLE_ANALYTICS_IDENTIFIER")
         unsetenv("BLOG_SITE_TWITTER_HANDLE")
         unsetenv("BLOG_DISQUS_NAME")
         unsetenv("WEBSITE_URL")
-        #warning("When do we do this?")
-        try application.boot()
+//        #warning("When do we do this?")
+//        try application.boot()
         return TestWorld(context: context)
     }
 

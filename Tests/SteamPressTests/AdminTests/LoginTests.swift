@@ -21,7 +21,7 @@ class LoginTests: XCTestCase {
     // MARK: - Overrides
 
     override func setUp() {
-        testWorld = try! TestWorld.create(path: "blog")
+        testWorld = TestWorld.create(path: "blog")
         user = testWorld.createUser()
     }
     
@@ -32,7 +32,7 @@ class LoginTests: XCTestCase {
     // MARK: - Tests
 
     func testLogin() throws {
-        testWorld = try TestWorld.create(path: "blog", passwordHasherToUse: .real)
+        testWorld = TestWorld.create(path: "blog", passwordHasherToUse: .real)
         let hashedPassword = try BCryptDigest().hash("password")
         user = testWorld.createUser(password: hashedPassword)
         let loginData = LoginData(username: user.username, password: "password")

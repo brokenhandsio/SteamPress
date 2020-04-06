@@ -12,7 +12,7 @@ extension TestWorld {
                                  enableAuthorPages: Bool,
                                  enableTagPages: Bool,
                                  passwordHasherToUse: PasswordHasherChoice,
-                                 randomNumberGenerator: StubbedRandomNumberGenerator) throws -> Application {
+                                 randomNumberGenerator: StubbedRandomNumberGenerator) -> Application {
         
         let application = Application(.testing, .shared(eventLoopGroup))
         

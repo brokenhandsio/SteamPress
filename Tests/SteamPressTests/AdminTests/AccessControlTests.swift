@@ -12,7 +12,7 @@ class AccessControlTests: XCTestCase {
     // MARK: - Overrides
 
     override func setUp() {
-        testWorld = try! TestWorld.create(path: "blog")
+        testWorld = TestWorld.create(path: "blog")
         user = testWorld.createUser()
     }
     

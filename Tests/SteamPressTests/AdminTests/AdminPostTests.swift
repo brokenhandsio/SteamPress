@@ -16,7 +16,7 @@ class AdminPostTests: XCTestCase {
     // MARK: - Overrides
 
     override func setUp() {
-        testWorld = try! TestWorld.create()
+        testWorld = TestWorld.create()
         user = testWorld.createUser(username: "leia")
     }
     
@@ -59,7 +59,7 @@ class AdminPostTests: XCTestCase {
 
     func testCreatingPostWithNonUniqueSlugFromSameTitle() throws {
         let randomNumber = 345
-        testWorld = try TestWorld.create(randomNumberGenerator: StubbedRandomNumberGenerator(numberToReturn: randomNumber))
+        testWorld = TestWorld.create(randomNumberGenerator: StubbedRandomNumberGenerator(numberToReturn: randomNumber))
         let initialPostData = try testWorld.createPost(title: "Post Title", slugUrl: "post-title")
 
         struct CreatePostData: Content {
