@@ -3,7 +3,7 @@ import Vapor
 
 struct TestWorld {
 
-    static func create(path: String? = nil, postsPerPage: Int = 10, feedInformation: FeedInformation = FeedInformation(), enableAuthorPages: Bool = true, enableTagPages: Bool = true, passwordHasherToUse: PasswordHasherChoice = .plaintext, randomNumberGenerator: StubbedRandomNumberGenerator = StubbedRandomNumberGenerator(numberToReturn: 666)) -> TestWorld {
+    static func create(path: String? = nil, postsPerPage: Int = 10, feedInformation: FeedInformation = FeedInformation(), enableAuthorPages: Bool = true, enableTagPages: Bool = true, passwordHasherToUse: PasswordHasherChoice = .plaintext, randomNumberGenerator: StubbedRandomNumberGenerator = StubbedRandomNumberGenerator(numberToReturn: 666), websiteURL: String = "https://www.steampress.io") -> TestWorld {
         let eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
         let repository = InMemoryRepository(eventLoop: eventLoopGroup.next())
         let blogPresenter = CapturingBlogPresenter(eventLoop: eventLoopGroup.next())
@@ -14,6 +14,7 @@ struct TestWorld {
         unsetenv("BLOG_SITE_TWITTER_HANDLE")
         unsetenv("BLOG_DISQUS_NAME")
         unsetenv("WEBSITE_URL")
+        setenv("WEBSITE_URL", websiteURL, 1)
         try! application.boot()
         return TestWorld(context: context)
     }
