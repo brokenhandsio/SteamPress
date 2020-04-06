@@ -8,7 +8,7 @@ public protocol PasswordHasher {
 
 extension BCryptDigest: PasswordHasher {
     public func hash(_ plaintext: String) throws -> String {
-        return try self.hash(plaintext)
+        return try self.hash(plaintext, cost: 12)
     }
     
     public func `for`(_ request: Request) -> PasswordHasher {

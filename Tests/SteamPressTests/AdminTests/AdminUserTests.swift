@@ -348,6 +348,7 @@ class AdminUserTests: XCTestCase {
     }
 
     func testPasswordIsActuallyHashedWhenCreatingAUser() throws {
+        try testWorld.shutdown()
         testWorld = TestWorld.create(passwordHasherToUse: .reversed)
         let usersPassword = "password"
         let hashedPassword = String(usersPassword.reversed())
@@ -637,6 +638,7 @@ class AdminUserTests: XCTestCase {
     }
 
     func testPasswordIsActuallyHashedWhenEditingAUser() throws {
+        try testWorld.shutdown()
         testWorld = TestWorld.create(passwordHasherToUse: .reversed)
         let usersPassword = "password"
         let hashedPassword = String(usersPassword.reversed())
@@ -723,6 +725,7 @@ class AdminUserTests: XCTestCase {
     }
 
     func testCannotDeleteLastUser() throws {
+        try testWorld.shutdown()
         testWorld = TestWorld.create()
         let adminUser = testWorld.createUser(name: "Admin", username: "admin")
         let testData = try testWorld.createPost(author: adminUser)

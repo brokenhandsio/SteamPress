@@ -53,6 +53,7 @@ class AuthorTests: XCTestCase {
     }
 
     func testDisabledBlogAuthorsPath() throws {
+        try testWorld.shutdown()
         testWorld = TestWorld.create(enableAuthorPages: false)
         _ = testWorld.createUser(username: "leia")
 

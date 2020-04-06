@@ -59,6 +59,7 @@ class AdminPostTests: XCTestCase {
 
     func testCreatingPostWithNonUniqueSlugFromSameTitle() throws {
         let randomNumber = 345
+        try testWorld.shutdown()
         testWorld = TestWorld.create(randomNumberGenerator: StubbedRandomNumberGenerator(numberToReturn: randomNumber))
         let initialPostData = try testWorld.createPost(title: "Post Title", slugUrl: "post-title")
 

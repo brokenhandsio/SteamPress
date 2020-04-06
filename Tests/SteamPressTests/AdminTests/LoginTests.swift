@@ -32,6 +32,7 @@ class LoginTests: XCTestCase {
     // MARK: - Tests
 
     func testLogin() throws {
+        try testWorld.shutdown()
         testWorld = TestWorld.create(path: "blog", passwordHasherToUse: .real)
         let hashedPassword = try BCryptDigest().hash("password")
         user = testWorld.createUser(password: hashedPassword)

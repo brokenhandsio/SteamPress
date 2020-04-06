@@ -76,6 +76,7 @@ class IndexTests: XCTestCase {
     }
 
     func testThatAccessingPathsRouteRedirectsToBlogIndexWithCustomPath() throws {
+        try testWorld.shutdown()
         testWorld = TestWorld.create(path: "blog")
         let response = try testWorld.getResponse(to: "/blog/posts/")
         XCTAssertEqual(response.status, .movedPermanently)
@@ -135,6 +136,7 @@ class IndexTests: XCTestCase {
     }
     
     func testIndexPageCurrentPageWhenAtSubPath() throws {
+        try testWorld.shutdown()
         testWorld = TestWorld.create(path: "blog")
         _ = try testWorld.getResponse(to: "/blog")
         XCTAssertEqual(presenter.indexPageInformation?.currentPageURL.absoluteString, "/blog")
