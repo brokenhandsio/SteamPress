@@ -5,7 +5,14 @@ extension Request {
     func url() throws -> URL {
         let path = self.url.path.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
         let rootURL = try self.rootUrl()
-        return rootURL.appendingPathComponent(path)
+        if rootURL.absoluteString == "/" {
+            guard let pathURL = URL(string: path) else {
+                throw SteamPressError(identifier: "SteamPressError", "Failed to convert path to URL")
+            }
+            return pathURL
+        } else {
+            return rootURL.appendingPathComponent(path)
+        }
     }
     
     func rootUrl() throws -> URL {

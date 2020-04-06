@@ -19,7 +19,7 @@ class AuthorTests: XCTestCase {
     // MARK: - Overrides
 
     override func setUp() {
-        testWorld = TestWorld.create(postsPerPage: postsPerPage)
+        testWorld = TestWorld.create(postsPerPage: postsPerPage, websiteURL: "/")
         user = testWorld.createUser(username: "leia")
         postData = try! testWorld.createPost(author: user)
     }

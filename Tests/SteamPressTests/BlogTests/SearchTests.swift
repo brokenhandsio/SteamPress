@@ -16,7 +16,7 @@ class SearchTests: XCTestCase {
     // MARK: - Overrides
 
     override func setUpWithError() throws {
-        testWorld = TestWorld.create()
+        testWorld = TestWorld.create(websiteURL: "/")
         firstData = try testWorld.createPost(title: "Test Path", slugUrl: "test-path")
     }
     

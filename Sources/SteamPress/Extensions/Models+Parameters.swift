@@ -3,7 +3,7 @@ import Vapor
 extension BlogUser: ParameterModel {
 //    typealias Repository = BlogUserRepository
     public static let parameterKey = "blogUserID"
-    public static let parameter = PathComponent(stringLiteral: ":\(BlogPost.parameterKey)")
+    public static let parameter = PathComponent(stringLiteral: ":\(BlogUser.parameterKey)")
     
 //    public typealias ResolvedParameter = EventLoopFuture<BlogUser>
 //    public static func resolveParameter(_ parameter: String, on container: Container) throws -> BlogUser.ResolvedParameter {
@@ -33,7 +33,7 @@ extension BlogPost: ParameterModel {
 extension BlogTag: ParameterModel {
 //    typealias Repository = BlogTagRepository
     public static let parameterKey = "blogTagName"
-    public static let parameter = PathComponent(stringLiteral: ":\(BlogPost.parameterKey)")
+    public static let parameter = PathComponent(stringLiteral: ":\(BlogTag.parameterKey)")
     
 //    public typealias ResolvedParameter = EventLoopFuture<BlogTag>
 //    public static func resolveParameter(_ parameter: String, on container: Container) throws -> EventLoopFuture<BlogTag> {

@@ -16,7 +16,7 @@ class AdminPostTests: XCTestCase {
     // MARK: - Overrides
 
     override func setUp() {
-        testWorld = TestWorld.create()
+        testWorld = TestWorld.create(websiteURL: "/")
         user = testWorld.createUser(username: "leia")
     }
     
@@ -96,7 +96,7 @@ class AdminPostTests: XCTestCase {
         XCTAssertFalse(titleError)
         XCTAssertFalse(contentsError)
         XCTAssertEqual(presenter.createPostPageInformation?.loggedInUser.username, user.username)
-        XCTAssertEqual(presenter.createPostPageInformation?.currentPageURL.absoluteString, "/admin/createPost")
+        XCTAssertEqual(presenter.createPostPageInformation?.currentPageURL.absoluteString, "/admin/createPost/")
         XCTAssertEqual(presenter.createPostPageInformation?.websiteURL.absoluteString, "/")
     }
 
@@ -131,7 +131,7 @@ class AdminPostTests: XCTestCase {
         XCTAssertTrue(titleError)
         XCTAssertFalse(contentsError)
         XCTAssertEqual(presenter.createPostPageInformation?.loggedInUser.username, user.username)
-        XCTAssertEqual(presenter.createPostPageInformation?.currentPageURL.absoluteString, "/admin/createPost")
+        XCTAssertEqual(presenter.createPostPageInformation?.currentPageURL.absoluteString, "/admin/createPost/")
         XCTAssertEqual(presenter.createPostPageInformation?.websiteURL.absoluteString, "/")
     }
 

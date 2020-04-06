@@ -17,7 +17,7 @@ class IndexTests: XCTestCase {
     // MARK: - Overrides
 
     override func setUp() {
-        testWorld = TestWorld.create(postsPerPage: postsPerPage)
+        testWorld = TestWorld.create(postsPerPage: postsPerPage, websiteURL: "/")
         firstData = try! testWorld.createPost(title: "Test Path", slugUrl: "test-path")
     }
     
@@ -137,7 +137,7 @@ class IndexTests: XCTestCase {
     
     func testIndexPageCurrentPageWhenAtSubPath() throws {
         try testWorld.shutdown()
-        testWorld = TestWorld.create(path: "blog")
+        testWorld = TestWorld.create(path: "blog", websiteURL: "/")
         _ = try testWorld.getResponse(to: "/blog")
         XCTAssertEqual(presenter.indexPageInformation?.currentPageURL.absoluteString, "/blog")
         XCTAssertEqual(presenter.indexPageInformation?.websiteURL.absoluteString, "/")

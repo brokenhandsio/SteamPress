@@ -21,7 +21,7 @@ class LoginTests: XCTestCase {
     // MARK: - Overrides
 
     override func setUp() {
-        testWorld = TestWorld.create(path: "blog")
+        testWorld = TestWorld.create(path: "blog", websiteURL: "/")
         user = testWorld.createUser()
     }
     
@@ -79,7 +79,7 @@ class LoginTests: XCTestCase {
     }
     
     func testPresenterGetsCorrectInformationForResetPasswordPage() throws {
-        let response = try testWorld.getResponse(to: "/blog/admin/resetPassword", loggedInUser: user)
+        _ = try testWorld.getResponse(to: "/blog/admin/resetPassword", loggedInUser: user)
         XCTAssertNil(presenter.resetPasswordErrors)
         XCTAssertNil(presenter.resetPasswordError)
         XCTAssertNil(presenter.resetPasswordConfirmError)
