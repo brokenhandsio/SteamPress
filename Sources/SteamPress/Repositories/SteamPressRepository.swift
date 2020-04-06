@@ -121,10 +121,10 @@ public extension Application {
         }
         
         private var storage: Storage {
-            guard let storage = self.application.storage[Key.self] else {
-                fatalError("Repositoroes not configured. Configure with app.blogRepositories.initialize()")
+            if self.application.storage[Key.self] == nil {
+                self.initialize()
             }
-            return storage
+            return self.application.storage[Key.self]!
         }
     }
     

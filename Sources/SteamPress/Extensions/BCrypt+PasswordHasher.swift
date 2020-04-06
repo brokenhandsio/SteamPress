@@ -21,12 +21,11 @@ public protocol SteamPressPasswordVerifier {
     func verify(_ plaintext: String, created hash: String) throws -> Bool
 }
 
-extension BCryptDigest: SteamPressPasswordVerifier {   
+extension BCryptDigest: SteamPressPasswordVerifier {
     public func `for`(_ request: Request) -> SteamPressPasswordVerifier {
         return BCryptDigest()
     }
 }
-
 
 public extension Request {
     var passwordHasher: PasswordHasher {
@@ -90,10 +89,10 @@ public extension Application {
         }
 
         private var storage: Storage {
-            guard let storage = self.application.storage[Key.self] else {
-                fatalError("PasswordVerifiers not configured. Configure with app.passwordVerifiers.initialize()")
+            if self.application.storage[Key.self] == nil {
+                self.initialize()
             }
-            return storage
+            return self.application.storage[Key.self]!
         }
     }
     
@@ -152,10 +151,10 @@ public extension Application {
         }
 
         private var storage: Storage {
-            guard let storage = self.application.storage[Key.self] else {
-                fatalError("PasswordHashers not configured. Configure with app.passwordHashers.initialize()")
+            if self.application.storage[Key.self] == nil {
+                self.initialize()
             }
-            return storage
+            return self.application.storage[Key.self]!
         }
     }
 

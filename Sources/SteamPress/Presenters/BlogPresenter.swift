@@ -1,6 +1,6 @@
 import Vapor
 
-public protocol BlogPresenter {
+protocol BlogPresenter {
     func `for`(_ request: Request) -> BlogPresenter
     func indexView(posts: [BlogPost], tags: [BlogTag], authors: [BlogUser], tagsForPosts: [Int: [BlogTag]], pageInformation: BlogGlobalPageInformation, paginationTagInfo: PaginationTagInformation) -> EventLoopFuture<View>
     func postView(post: BlogPost, author: BlogUser, tags: [BlogTag], pageInformation: BlogGlobalPageInformation) -> EventLoopFuture<View>
@@ -13,20 +13,20 @@ public protocol BlogPresenter {
 }
 
 extension ViewBlogPresenter {
-    public func `for`(_ request: Request) -> BlogPresenter {
+    func `for`(_ request: Request) -> BlogPresenter {
         return ViewBlogPresenter(viewRenderer: request.view, longDateFormatter: LongPostDateFormatter(), numericDateFormatter: NumericPostDateFormatter(), eventLoopGroup: request.eventLoop)
     }
 }
 
-public extension Request {
+extension Request {
     var blogPresenter: BlogPresenter {
         self.application.blogPresenters.blogPresenter.for(self)
     }
 }
 
-public extension Application {
+extension Application {
     struct BlogPresenters {
-        public struct Provider {
+        struct Provider {
             static var view: Self {
                 .init {
                     $0.blogPresenters.use { $0.blogPresenters.view }
@@ -49,7 +49,7 @@ public extension Application {
             typealias Value = Storage
         }
 
-        public let application: Application
+        let application: Application
 
         var view: ViewBlogPresenter {
             return .init(viewRenderer: self.application.views.renderer, longDateFormatter: LongPostDateFormatter(), numericDateFormatter: NumericPostDateFormatter(), eventLoopGroup: self.application.eventLoopGroup)
@@ -62,11 +62,11 @@ public extension Application {
             return makePresenter(self.application)
         }
 
-        public func use(_ provider: Provider) {
+        func use(_ provider: Provider) {
             provider.run(self.application)
         }
 
-        public func use(_ makePresenter: @escaping (Application) -> (BlogPresenter)) {
+        func use(_ makePresenter: @escaping (Application) -> (BlogPresenter)) {
             self.storage.makePresenter = makePresenter
         }
 
@@ -76,10 +76,10 @@ public extension Application {
         }
 
         private var storage: Storage {
-            guard let storage = self.application.storage[Key.self] else {
-                fatalError("BlogPresenters not configured. Configure with app.blogPresenters.initialize()")
+            if self.application.storage[Key.self] == nil {
+                self.initialize()
             }
-            return storage
+            return self.application.storage[Key.self]!
         }
     }
 

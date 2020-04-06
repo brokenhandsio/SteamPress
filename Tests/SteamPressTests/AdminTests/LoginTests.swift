@@ -79,7 +79,7 @@ class LoginTests: XCTestCase {
     }
     
     func testPresenterGetsCorrectInformationForResetPasswordPage() throws {
-        _ = try testWorld.getResponse(to: "/blog/admin/resetPassword", loggedInUser: user)
+        let response = try testWorld.getResponse(to: "/blog/admin/resetPassword", loggedInUser: user)
         XCTAssertNil(presenter.resetPasswordErrors)
         XCTAssertNil(presenter.resetPasswordError)
         XCTAssertNil(presenter.resetPasswordConfirmError)

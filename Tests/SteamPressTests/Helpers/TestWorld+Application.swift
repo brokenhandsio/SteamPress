@@ -1,4 +1,4 @@
-import SteamPress
+@testable import SteamPress
 import Vapor
 
 extension TestWorld {
@@ -35,8 +35,12 @@ extension TestWorld {
         application.middleware.use(BlogRememberMeMiddleware())
         application.middleware.use(SessionsMiddleware(session: application.sessions.driver))
 
-        application.blogPresenters.use(.capturing)
-        application.adminPresenters.use(.capturing)
+        application.blogPresenters.use { _ in
+            return blogPresenter
+        }
+        application.adminPresenters.use { _ in
+            return adminPresenter
+        }
 
         switch passwordHasherToUse {
         case .real:

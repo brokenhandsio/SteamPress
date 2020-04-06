@@ -9,7 +9,7 @@ class CapturingAdminPresenter: BlogAdminPresenter {
     }
     
     func `for`(_ request: Request, pathCreator: BlogPathCreator) -> BlogAdminPresenter {
-        return CapturingAdminPresenter(eventLoop: request.eventLoop)
+        return self
     }
 
     // MARK: - BlogPresenter
@@ -93,19 +93,5 @@ class CapturingAdminPresenter: BlogAdminPresenter {
         self.resetPasswordConfirmError = confirmPasswordError
         self.resetPasswordPageInformation = pageInformation
         return TestDataBuilder.createFutureView(on: eventLoop)
-    }
-}
-
-extension Application.BlogAdminPresenters {
-    var capturing: CapturingAdminPresenter {
-        return .init(eventLoop: self.application.eventLoopGroup.next())
-    }
-}
-
-extension Application.BlogAdminPresenters.Provider {
-    static var capturing: Self {
-        .init {
-            $0.adminPresenters.use { $0.adminPresenters.capturing }
-        }
     }
 }

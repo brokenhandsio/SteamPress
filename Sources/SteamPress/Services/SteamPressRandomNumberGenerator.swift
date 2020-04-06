@@ -69,10 +69,10 @@ public extension Application {
         }
 
         private var storage: Storage {
-            guard let storage = self.application.storage[Key.self] else {
-                fatalError("RandomNumberGenerators not configured. Configure with app.randomNumberGenerators.initialize()")
+            if self.application.storage[Key.self] == nil {
+                self.initialize()
             }
-            return storage
+            return self.application.storage[Key.self]!
         }
     }
 

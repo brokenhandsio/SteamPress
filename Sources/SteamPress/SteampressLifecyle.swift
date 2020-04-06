@@ -37,22 +37,10 @@ public struct SteampressLifecyle: LifecycleHandler {
     }
     
     public func tmpSetup(_ application: Application) {
-        application.randomNumberGenerators.initialize()
-        application.blogPresenters.initialize()
         application.adminPresenters.initialize(pathCreator: pathCreator)
-        application.passwordHashers.initialize()
-        application.passwordVerifiers.initialize()
-        application.blogRepositories.initialize()
     }
 
-    public func willBoot(_ application: Application) throws {
-//        application.randomNumberGenerators.initialize()
-//        application.blogPresenters.initialize()
-//        application.adminPresenters.initialize(pathCreator: pathCreator)
-//        application.passwordHashers.initialize()
-//        application.passwordVerifiers.initialize()
-//        application.blogRepositories.initialize()
-        
+    public func willBoot(_ application: Application) throws {        
         let router = application.routes
 
         let feedController = FeedController(pathCreator: self.pathCreator, feedInformation: self.feedInformation)
