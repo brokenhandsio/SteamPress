@@ -5,15 +5,15 @@ extension Application {
         let application: Application
         
         final class Storage {
-            let databases: Databases
-            let migrations: Migrations
+//            let databases: Databases
+//            let migrations: Migrations
 
             init(threadPool: NIOThreadPool, on eventLoopGroup: EventLoopGroup) {
-                self.databases = Databases(
-                    threadPool: threadPool,
-                    on: eventLoopGroup
-                )
-                self.migrations = .init()
+//                self.databases = Databases(
+//                    threadPool: threadPool,
+//                    on: eventLoopGroup
+//                )
+//                self.migrations = .init()
             }
         }
 
@@ -33,7 +33,7 @@ extension Application {
                 threadPool: self.application.threadPool,
                 on: self.application.eventLoopGroup
             )
-            self.application.lifecycle.use(SteamPressRoutesLifecycleHandler())
+//            self.application.lifecycle.use(SteamPressRoutesLifecycleHandler())
         }
     }
     
@@ -41,14 +41,14 @@ extension Application {
         .init(application: self)
     }
     
-    public var configuration: SteamPressConfiguration {
-        get {
-            self.steampress.storage.configuration
-        }
-        set {
-            
-        }
-    }
+//    public var configuration: SteamPressConfiguration {
+//        get {
+//            self.steampress.storage.configuration
+//        }
+//        set {
+//
+//        }
+//    }
 }
 
 public struct SteamPressConfiguration {

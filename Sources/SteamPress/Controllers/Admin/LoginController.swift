@@ -59,16 +59,25 @@ struct LoginController: RouteCollection {
         }
         
         return req.blogUserRepository.getUser(username: username).flatMap { user -> EventLoopFuture<Response> in
-            do {
-                guard let user = user, try req.passwordVerifier.verify(password, created: user.password) else {
-                    let loginError = ["Your username or password is incorrect"]
+            guard let user = user else {
+                let loginError = ["Your username or password is incorrect"]
+                do {
                     return try req.blogPresenter.loginView(loginWarning: false, errors: loginError, username: loginData.username, usernameError: false, passwordError: false, rememberMe: loginData.rememberMe ?? false, pageInformation: req.pageInformation()).encodeResponse(for: req)
+                } catch {
+                    return req.eventLoop.makeFailedFuture(error)
+                }
+            }
+            return req.password.async.verify(password, created: user.password).flatMap { userAuthenticated in
+                guard userAuthenticated else {
+                    let loginError = ["Your username or password is incorrect"]
+                    do {
+                        return try req.blogPresenter.loginView(loginWarning: false, errors: loginError, username: loginData.username, usernameError: false, passwordError: false, rememberMe: loginData.rememberMe ?? false, pageInformation: req.pageInformation()).encodeResponse(for: req)
+                    } catch {
+                        return req.eventLoop.makeFailedFuture(error)
+                    }
                 }
                 user.authenticateSession(on: req)
                 return req.eventLoop.future(req.redirect(to: self.pathCreator.createPath(for: "admin")))
-            }
-            catch {
-                return req.eventLoop.makeFailedFuture(error)
             }
         }
     }
@@ -122,9 +131,11 @@ struct LoginController: RouteCollection {
         }
         
         let user = try req.auth.require(BlogUser.self)
-        user.password = try req.passwordHasher.hash(password)
-        user.resetPasswordRequired = false
-        let redirect = req.redirect(to: pathCreator.createPath(for: "admin"))
-        return req.blogUserRepository.save(user).transform(to: redirect)
+        return req.password.async.hash(password).flatMap { hashedPassword in
+            user.password = hashedPassword
+            user.resetPasswordRequired = false
+            let redirect = req.redirect(to: self.pathCreator.createPath(for: "admin"))
+            return req.blogUserRepository.save(user).transform(to: redirect)
+        }
     }
 }

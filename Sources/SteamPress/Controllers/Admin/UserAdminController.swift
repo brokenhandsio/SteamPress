@@ -41,24 +41,19 @@ struct UserAdminController: RouteCollection {
                 return req.eventLoop.makeFailedFuture(Abort(.internalServerError))
             }
 
-            let hashedPassword: String
-            do {
-                hashedPassword = try req.passwordHasher.hash(password)
-            } catch {
-                return req.eventLoop.makeFailedFuture(error)
+            return req.password.async.hash(password).flatMap { hashedPassword in
+                let profilePicture = data.profilePicture.isEmptyOrWhitespace() ? nil : data.profilePicture
+                let twitterHandle = data.twitterHandle.isEmptyOrWhitespace() ? nil : data.twitterHandle
+                let biography = data.biography.isEmptyOrWhitespace() ? nil : data.biography
+                let tagline = data.tagline.isEmptyOrWhitespace() ? nil : data.tagline
+                let newUser = BlogUser(name: name, username: username.lowercased(), password: hashedPassword, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline)
+                if let resetPasswordRequired = data.resetPasswordOnLogin, resetPasswordRequired {
+                    newUser.resetPasswordRequired = true
+                }
+                return req.blogUserRepository.save(newUser).map { _ in
+                    return req.redirect(to: self.pathCreator.createPath(for: "admin"))
+                }
             }
-            let profilePicture = data.profilePicture.isEmptyOrWhitespace() ? nil : data.profilePicture
-            let twitterHandle = data.twitterHandle.isEmptyOrWhitespace() ? nil : data.twitterHandle
-            let biography = data.biography.isEmptyOrWhitespace() ? nil : data.biography
-            let tagline = data.tagline.isEmptyOrWhitespace() ? nil : data.tagline
-            let newUser = BlogUser(name: name, username: username.lowercased(), password: hashedPassword, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline)
-            if let resetPasswordRequired = data.resetPasswordOnLogin, resetPasswordRequired {
-                newUser.resetPasswordRequired = true
-            }
-            return req.blogUserRepository.save(newUser).map { _ in
-                return req.redirect(to: self.pathCreator.createPath(for: "admin"))
-            }
-
         }
     }
 
@@ -108,16 +103,18 @@ struct UserAdminController: RouteCollection {
                         user.resetPasswordRequired = true
                     }
 
+                    let updatePassword: EventLoopFuture<Void>
                     if let password = data.password, password != "" {
-                        do {
-                            user.password = try req.passwordHasher.hash(password)
-                        } catch {
-                            return req.eventLoop.makeFailedFuture(error)
+                        updatePassword = req.password.async.hash(password).map { hashedPassword in
+                            user.password = hashedPassword
                         }
+                    } else {
+                        updatePassword = req.eventLoop.future()
                     }
-
-                    let redirect = req.redirect(to: self.pathCreator.createPath(for: "admin"))
-                    return req.blogUserRepository.save(user).transform(to: redirect)
+                    return updatePassword.flatMap {
+                        let redirect = req.redirect(to: self.pathCreator.createPath(for: "admin"))
+                        return req.blogUserRepository.save(user).transform(to: redirect)
+                    }
                 }
             } catch {
                 return req.eventLoop.makeFailedFuture(error)
