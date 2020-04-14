@@ -41,29 +41,29 @@ public struct SteampressLifecyle: LifecycleHandler {
     }
 
     public func willBoot(_ application: Application) throws {        
-//        let router = application.routes
-//
-//        let feedController = FeedController(pathCreator: self.pathCreator, feedInformation: self.feedInformation)
-//        let apiController = APIController()
-//        let blogController = BlogController(pathCreator: self.pathCreator, enableAuthorPages: self.enableAuthorPages, enableTagPages: self.enableTagPages, postsPerPage: self.postsPerPage)
-//        let blogAdminController = BlogAdminController(pathCreator: self.pathCreator)
-//
-//        let blogRoutes: RoutesBuilder
-//        if let blogPath = blogPath {
-//            blogRoutes = router.grouped(PathComponent(stringLiteral: blogPath))
-//        } else {
-//            blogRoutes = router.grouped("")
-//        }
-//        let steampressSessionsConfig = SessionsConfiguration(cookieName: "steampress-session") { value in
-//            HTTPCookies.Value(string: value.string)
-//        }
-//        let steampressSessions = SessionsMiddleware(session: application.sessions.driver, configuration: steampressSessionsConfig)
-//        let steampressAuthSessions = BlogAuthSessionsMiddleware()
-//        let sessionedRoutes = blogRoutes.grouped(steampressSessions, steampressAuthSessions)
-//
-//        try sessionedRoutes.register(collection: feedController)
-//        try sessionedRoutes.register(collection: apiController)
-//        try sessionedRoutes.register(collection: blogController)
-//        try sessionedRoutes.register(collection: blogAdminController)
+        let router = application.routes
+
+        let feedController = FeedController(pathCreator: self.pathCreator, feedInformation: self.feedInformation)
+        let apiController = APIController()
+        let blogController = BlogController(pathCreator: self.pathCreator, enableAuthorPages: self.enableAuthorPages, enableTagPages: self.enableTagPages, postsPerPage: self.postsPerPage)
+        let blogAdminController = BlogAdminController(pathCreator: self.pathCreator)
+
+        let blogRoutes: RoutesBuilder
+        if let blogPath = blogPath {
+            blogRoutes = router.grouped(PathComponent(stringLiteral: blogPath))
+        } else {
+            blogRoutes = router.grouped("")
+        }
+        let steampressSessionsConfig = SessionsConfiguration(cookieName: "steampress-session") { value in
+            HTTPCookies.Value(string: value.string)
+        }
+        let steampressSessions = SessionsMiddleware(session: application.sessions.driver, configuration: steampressSessionsConfig)
+        let steampressAuthSessions = BlogAuthSessionsMiddleware()
+        let sessionedRoutes = blogRoutes.grouped(steampressSessions, steampressAuthSessions)
+
+        try sessionedRoutes.register(collection: feedController)
+        try sessionedRoutes.register(collection: apiController)
+        try sessionedRoutes.register(collection: blogController)
+        try sessionedRoutes.register(collection: blogAdminController)
     }
 }
