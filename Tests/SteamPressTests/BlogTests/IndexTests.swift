@@ -16,13 +16,13 @@ class IndexTests: XCTestCase {
 
     // MARK: - Overrides
 
-    override func setUp() {
-        testWorld = TestWorld.create(postsPerPage: postsPerPage, websiteURL: "/")
-        firstData = try! testWorld.createPost(title: "Test Path", slugUrl: "test-path")
+    override func setUpWithError() throws {
+        testWorld = try TestWorld.create(postsPerPage: postsPerPage, websiteURL: "/")
+        firstData = try testWorld.createPost(title: "Test Path", slugUrl: "test-path")
     }
     
-    override func tearDown() {
-        XCTAssertNoThrow(try testWorld.shutdown())
+    override func tearDownWithError() throws {
+        try testWorld.shutdown()
     }
 
     // MARK: - Tests
@@ -77,7 +77,7 @@ class IndexTests: XCTestCase {
 
     func testThatAccessingPathsRouteRedirectsToBlogIndexWithCustomPath() throws {
         try testWorld.shutdown()
-        testWorld = TestWorld.create(path: "blog")
+        testWorld = try TestWorld.create(path: "blog")
         let response = try testWorld.getResponse(to: "/blog/posts/")
         XCTAssertEqual(response.status, .movedPermanently)
         XCTAssertEqual(response.headers[.location].first, "/blog/")
@@ -137,7 +137,7 @@ class IndexTests: XCTestCase {
     
     func testIndexPageCurrentPageWhenAtSubPath() throws {
         try testWorld.shutdown()
-        testWorld = TestWorld.create(path: "blog", websiteURL: "/")
+        testWorld = try TestWorld.create(path: "blog", websiteURL: "/")
         _ = try testWorld.getResponse(to: "/blog")
         XCTAssertEqual(presenter.indexPageInformation?.currentPageURL.absoluteString, "/blog")
         XCTAssertEqual(presenter.indexPageInformation?.websiteURL.absoluteString, "/")

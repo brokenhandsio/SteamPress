@@ -15,13 +15,13 @@ class AdminUserTests: XCTestCase {
 
     // MARK: - Overrides
 
-    override func setUp() {
-        testWorld = TestWorld.create()
+    override func setUpWithError() throws {
+        testWorld = try TestWorld.create()
         user = testWorld.createUser(name: "Leia", username: "leia")
     }
     
-    override func tearDown() {
-        XCTAssertNoThrow(try testWorld.shutdown())
+    override func tearDownWithError() throws {
+        try testWorld.shutdown()
     }
 
     // MARK: - User Creation
@@ -349,7 +349,7 @@ class AdminUserTests: XCTestCase {
 
     func testPasswordIsActuallyHashedWhenCreatingAUser() throws {
         try testWorld.shutdown()
-        testWorld = TestWorld.create(passwordHasherToUse: .reversed)
+        testWorld = try TestWorld.create(passwordHasherToUse: .reversed)
         let usersPassword = "password"
         let hashedPassword = String(usersPassword.reversed())
         user = testWorld.createUser(name: "Leia", username: "leia", password: hashedPassword)
@@ -639,7 +639,7 @@ class AdminUserTests: XCTestCase {
 
     func testPasswordIsActuallyHashedWhenEditingAUser() throws {
         try testWorld.shutdown()
-        testWorld = TestWorld.create(passwordHasherToUse: .reversed)
+        testWorld = try TestWorld.create(passwordHasherToUse: .reversed)
         let usersPassword = "password"
         let hashedPassword = String(usersPassword.reversed())
         user = testWorld.createUser(name: "Leia", username: "leia", password: hashedPassword)
@@ -726,7 +726,7 @@ class AdminUserTests: XCTestCase {
 
     func testCannotDeleteLastUser() throws {
         try testWorld.shutdown()
-        testWorld = TestWorld.create()
+        testWorld = try TestWorld.create()
         let adminUser = testWorld.createUser(name: "Admin", username: "admin")
         let testData = try testWorld.createPost(author: adminUser)
         _ = try testWorld.getResponse(to: "/admin/users/\(adminUser.userID!)/delete", body: EmptyContent(), loggedInUser: adminUser)

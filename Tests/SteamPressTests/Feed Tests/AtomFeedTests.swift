@@ -18,14 +18,14 @@ class AtomFeedTests: XCTestCase {
         dateFormatter.timeZone = TimeZone(secondsFromGMT: 0)
     }
     
-    override func tearDown() {
-        XCTAssertNoThrow(try testWorld.shutdown())
+    override func tearDownWithError() throws {
+        try testWorld.shutdown()
     }
 
     // MARK: - Tests
 
     func testNoPostsReturnsCorrectAtomFeed() throws {
-        testWorld = TestWorld.create()
+        testWorld = try TestWorld.create()
 
         let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>https://www.steampress.io/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"https://www.steampress.io/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"https://www.steampress.io/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: Date()))</updated>\n</feed>"
 
@@ -37,7 +37,7 @@ class AtomFeedTests: XCTestCase {
     func testThatFeedTitleCanBeConfigured() throws {
         let title = "My Awesome Blog"
         let feedInformation = FeedInformation(title: title)
-        testWorld = TestWorld.create(feedInformation: feedInformation)
+        testWorld = try TestWorld.create(feedInformation: feedInformation)
 
         let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>\(title)</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>https://www.steampress.io/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"https://www.steampress.io/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"https://www.steampress.io/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: Date()))</updated>\n</feed>"
 
@@ -48,7 +48,7 @@ class AtomFeedTests: XCTestCase {
     func testThatFeedSubtitleCanBeConfigured() throws {
         let description = "This is a test for my blog"
         let feedInformation = FeedInformation(description: description)
-        testWorld = TestWorld.create(feedInformation: feedInformation)
+        testWorld = try TestWorld.create(feedInformation: feedInformation)
 
         let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>\(description)</subtitle>\n<id>https://www.steampress.io/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"https://www.steampress.io/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"https://www.steampress.io/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: Date()))</updated>\n</feed>"
 
@@ -59,7 +59,7 @@ class AtomFeedTests: XCTestCase {
     func testThatRightsCanBeConifgured() throws {
         let copyright = "Copyright ©️ 2019 SteamPress"
         let feedInformation = FeedInformation(copyright: copyright)
-        testWorld = TestWorld.create(feedInformation: feedInformation)
+        testWorld = try TestWorld.create(feedInformation: feedInformation)
 
         let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>https://www.steampress.io/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"https://www.steampress.io/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"https://www.steampress.io/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: Date()))</updated>\n<rights>\(copyright)</rights>\n</feed>"
 
@@ -70,7 +70,7 @@ class AtomFeedTests: XCTestCase {
     func testThatLogoCanBeConfigured() throws {
         let imageURL = "https://static.brokenhands.io/images/feeds/atom.png"
         let feedInformation = FeedInformation(imageURL: imageURL)
-        testWorld = TestWorld.create(feedInformation: feedInformation)
+        testWorld = try TestWorld.create(feedInformation: feedInformation)
         let expectedXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\">\n\n<title>SteamPress Blog</title>\n<subtitle>SteamPress is an open-source blogging engine written for Vapor in Swift</subtitle>\n<id>https://www.steampress.io/</id>\n<link rel=\"alternate\" type=\"text/html\" href=\"https://www.steampress.io/\"/>\n<link rel=\"self\" type=\"application/atom+xml\" href=\"https://www.steampress.io/atom.xml\"/>\n<generator uri=\"https://www.steampress.io/\">SteamPress</generator>\n<updated>\(dateFormatter.string(from: Date()))</updated>\n<logo>\(imageURL)</logo>\n</feed>"
 
         let actualXmlResponse = try testWorld.getResponseString(to: atomPath)
@@ -78,7 +78,7 @@ class AtomFeedTests: XCTestCase {
     }
 
     func testThatFeedIsCorrectForOnePost() throws {
-        testWorld = TestWorld.create()
+        testWorld = try TestWorld.create()
         let testData = try testWorld.createPost()
 
         let post = testData.post
@@ -91,7 +91,7 @@ class AtomFeedTests: XCTestCase {
     }
 
     func testThatFeedIsCorrectForOnePostUnderPath() throws {
-        testWorld = TestWorld.create(path: "blog")
+        testWorld = try TestWorld.create(path: "blog")
         let testData = try testWorld.createPost()
 
         let post = testData.post
@@ -104,7 +104,7 @@ class AtomFeedTests: XCTestCase {
     }
 
     func testThatFeedCorrectForTwoPosts() throws {
-        testWorld = TestWorld.create()
+        testWorld = try TestWorld.create()
         let testData = try testWorld.createPost()
 
         let post = testData.post
@@ -121,7 +121,7 @@ class AtomFeedTests: XCTestCase {
     }
 
     func testThatDraftsDontAppearInFeed() throws {
-        testWorld = TestWorld.create()
+        testWorld = try TestWorld.create()
         let testData = try testWorld.createPost()
 
         let post = testData.post
@@ -136,7 +136,7 @@ class AtomFeedTests: XCTestCase {
     }
 
     func testThatEditedPostsHaveUpdatedTimes() throws {
-        testWorld = TestWorld.create()
+        testWorld = try TestWorld.create()
         let firstPostDate = Date().addingTimeInterval(-3600)
         let testData = try testWorld.createPost(createdDate: firstPostDate)
 
@@ -156,7 +156,7 @@ class AtomFeedTests: XCTestCase {
     }
 
     func testThatTagsAppearWhenPostHasThem() throws {
-        testWorld = TestWorld.create()
+        testWorld = try TestWorld.create()
         let tag1 = "Vapor 2"
         let tag2 = "Engineering"
 
@@ -172,13 +172,13 @@ class AtomFeedTests: XCTestCase {
     }
 
     func testCorrectHeaderSetForAtomFeed() throws {
-        testWorld = TestWorld.create()
+        testWorld = try TestWorld.create()
         let actualXmlResponse = try testWorld.getResponse(to: atomPath)
         XCTAssertEqual(actualXmlResponse.headers.first(name: .contentType), "application/atom+xml")
     }
 
     func testThatDateFormatterIsCorrect() throws {
-        testWorld = TestWorld.create()
+        testWorld = try TestWorld.create()
 
         let createDate = Date(timeIntervalSince1970: 1505867108)
         let testData = try testWorld.createPost(createdDate: createDate)

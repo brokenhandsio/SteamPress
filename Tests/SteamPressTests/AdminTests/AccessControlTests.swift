@@ -11,13 +11,13 @@ class AccessControlTests: XCTestCase {
 
     // MARK: - Overrides
 
-    override func setUp() {
-        testWorld = TestWorld.create(path: "blog")
+    override func setUpWithError() throws {
+        testWorld = try TestWorld.create(path: "blog")
         user = testWorld.createUser()
     }
     
-    override func tearDown() {
-        XCTAssertNoThrow(try testWorld.shutdown())
+    override func tearDownWithError() throws {
+        try testWorld.shutdown()
     }
 
     // MARK: - Tests

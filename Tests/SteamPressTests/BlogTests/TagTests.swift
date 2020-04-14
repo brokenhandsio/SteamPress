@@ -19,21 +19,21 @@ class TagTests: XCTestCase {
 
     // MARK: - Overrides
 
-    override func setUp() {
-        testWorld = TestWorld.create(postsPerPage: postsPerPage, websiteURL: "/")
-        postData = try! testWorld.createPost()
-        tag = try! testWorld.createTag(tagName, on: postData.post)
+    override func setUpWithError() throws {
+        testWorld = try TestWorld.create(postsPerPage: postsPerPage, websiteURL: "/")
+        postData = try testWorld.createPost()
+        tag = try testWorld.createTag(tagName, on: postData.post)
     }
     
-    override func tearDown() {
-        XCTAssertNoThrow(try testWorld.shutdown())
+    override func tearDownWithError() throws {
+        try testWorld.shutdown()
     }
 
     // MARK: - Tests
 
     func testAllTagsPageGetsAllTags() throws {
-        let secondPost = try! testWorld.createPost()
-        let thirdPost = try! testWorld.createPost()
+        let secondPost = try testWorld.createPost()
+        let thirdPost = try testWorld.createPost()
         let secondTag = try testWorld.createTag("AnotherTag", on: secondPost.post)
         try testWorld.context.repository.internalAdd(secondTag, to: thirdPost.post)
         _ = try testWorld.getResponse(to: allTagsRequestPath)

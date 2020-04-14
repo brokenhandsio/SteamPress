@@ -17,15 +17,15 @@ class AuthorTests: XCTestCase {
     private var postsPerPage = 7
 
     // MARK: - Overrides
-
-    override func setUp() {
-        testWorld = TestWorld.create(postsPerPage: postsPerPage, websiteURL: "/")
+    
+    override func setUpWithError() throws {
+        testWorld = try TestWorld.create(postsPerPage: postsPerPage, websiteURL: "/")
         user = testWorld.createUser(username: "leia")
-        postData = try! testWorld.createPost(author: user)
+        postData = try testWorld.createPost(author: user)
     }
     
-    override func tearDown() {
-        XCTAssertNoThrow(try testWorld.shutdown())
+    override func tearDownWithError() throws {
+        try testWorld.shutdown()
     }
 
     // MARK: - Tests
@@ -54,7 +54,7 @@ class AuthorTests: XCTestCase {
 
     func testDisabledBlogAuthorsPath() throws {
         try testWorld.shutdown()
-        testWorld = TestWorld.create(enableAuthorPages: false)
+        testWorld = try TestWorld.create(enableAuthorPages: false)
         _ = testWorld.createUser(username: "leia")
 
         let authorResponse = try testWorld.getResponse(to: authorsRequestPath)

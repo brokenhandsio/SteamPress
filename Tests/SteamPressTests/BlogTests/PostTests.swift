@@ -17,12 +17,12 @@ class PostTests: XCTestCase {
     // MARK: - Overrides
 
     override func setUpWithError() throws {
-        testWorld = TestWorld.create(websiteURL: "/")
+        testWorld = try TestWorld.create(websiteURL: "/")
         firstData = try testWorld.createPost(title: "Test Path", slugUrl: "test-path")
     }
     
-    override func tearDown() {
-        XCTAssertNoThrow(try testWorld.shutdown())
+    override func tearDownWithError() throws {
+        try testWorld.shutdown()
     }
 
     // MARK: - Tests

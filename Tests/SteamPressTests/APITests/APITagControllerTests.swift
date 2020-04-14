@@ -9,8 +9,8 @@ class APITagControllerTests: XCTestCase {
     
     // MARK: - Overrides
     
-    override func setUp() {
-        testWorld = TestWorld.create()
+    override func setUpWithError() throws {
+        testWorld = try TestWorld.create()
     }
     
     override func tearDownWithError() throws {

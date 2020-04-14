@@ -15,13 +15,13 @@ class AdminPostTests: XCTestCase {
 
     // MARK: - Overrides
 
-    override func setUp() {
-        testWorld = TestWorld.create(websiteURL: "/")
+    override func setUpWithError() throws {
+        testWorld = try TestWorld.create(websiteURL: "/")
         user = testWorld.createUser(username: "leia")
     }
     
-    override func tearDown() {
-        XCTAssertNoThrow(try testWorld.shutdown())
+    override func tearDownWithError() throws {
+        try testWorld.shutdown()
     }
 
     // MARK: - Post Creation
@@ -60,7 +60,7 @@ class AdminPostTests: XCTestCase {
     func testCreatingPostWithNonUniqueSlugFromSameTitle() throws {
         let randomNumber = 345
         try testWorld.shutdown()
-        testWorld = TestWorld.create(randomNumberGenerator: StubbedRandomNumberGenerator(numberToReturn: randomNumber))
+        testWorld = try TestWorld.create(randomNumberGenerator: StubbedRandomNumberGenerator(numberToReturn: randomNumber))
         let initialPostData = try testWorld.createPost(title: "Post Title", slugUrl: "post-title")
 
         struct CreatePostData: Content {

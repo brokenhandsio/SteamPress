@@ -20,20 +20,20 @@ class LoginTests: XCTestCase {
 
     // MARK: - Overrides
 
-    override func setUp() {
-        testWorld = TestWorld.create(path: "blog", websiteURL: "/")
+    override func setUpWithError() throws {
+        testWorld = try TestWorld.create(path: "blog", websiteURL: "/")
         user = testWorld.createUser()
     }
     
-    override func tearDown() {
-        XCTAssertNoThrow(try testWorld.shutdown())
+    override func tearDownWithError() throws {
+        try testWorld.shutdown()
     }
 
     // MARK: - Tests
 
     func testLogin() throws {
         try testWorld.shutdown()
-        testWorld = TestWorld.create(path: "blog", passwordHasherToUse: .real)
+        testWorld = try TestWorld.create(path: "blog", passwordHasherToUse: .real)
         let hashedPassword = try BCryptDigest().hash("password")
         user = testWorld.createUser(password: hashedPassword)
         let loginData = LoginData(username: user.username, password: "password")
