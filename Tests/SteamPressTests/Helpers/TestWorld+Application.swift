@@ -18,19 +18,19 @@ extension TestWorld {
         
         application.steampress.configuration = SteamPressConfiguration(blogPath: path, feedInformation: feedInformation, postsPerPage: postsPerPage, enableAuthorPages: enableAuthorPages, enableTagPages: enableTagPages)
         
-        application.blogRepositories.use { _ in
+        application.steampress.blogRepositories.use { _ in
             return repository
         }
 
-        application.randomNumberGenerators.use { _ in randomNumberGenerator }
+        application.steampress.randomNumberGenerators.use { _ in randomNumberGenerator }
 
         application.middleware.use(BlogRememberMeMiddleware())
         application.middleware.use(SessionsMiddleware(session: application.sessions.driver))
 
-        application.blogPresenters.use { _ in
+        application.steampress.blogPresenters.use { _ in
             return blogPresenter
         }
-        application.adminPresenters.use { _ in
+        application.steampress.adminPresenters.use { _ in
             return adminPresenter
         }
 

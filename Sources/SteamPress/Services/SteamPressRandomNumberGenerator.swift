@@ -13,16 +13,16 @@ extension RealRandomNumberGenerator {
 
 public extension Request {
     var randomNumberGenerator: SteamPressRandomNumberGenerator {
-        self.application.randomNumberGenerators.generator.for(self)
+        self.application.steampress.randomNumberGenerators.generator.for(self)
     }
 }
 
-public extension Application {
+public extension Application.SteamPress {
     struct RandomNumberGenerators {
         public struct Provider {
             static var real: Self {
                 .init {
-                    $0.randomNumberGenerators.use { $0.randomNumberGenerators.real }
+                    $0.steampress.randomNumberGenerators.use { $0.steampress.randomNumberGenerators.real }
                 }
             }
 
@@ -77,6 +77,6 @@ public extension Application {
     }
 
     var randomNumberGenerators: RandomNumberGenerators {
-        .init(application: self)
+        .init(application: self.application)
     }
 }
