@@ -44,14 +44,11 @@ extension TestWorld {
 
         switch passwordHasherToUse {
         case .real:
-            application.passwordHashers.use(.bcrypt)
-            application.passwordVerifiers.use(.bcrypt)
+            application.passwords.use(.bcrypt)
         case .plaintext:
-            application.passwordHashers.use(.plaintext)
-            application.passwordVerifiers.use(.plaintext)
+            application.passwords.use(.plaintext)
         case .reversed:
-            application.passwordVerifiers.use(.reversed)
-            application.passwordHashers.use(.reversed)
+            application.passwords.use(.reversed)
         }
 
         return application

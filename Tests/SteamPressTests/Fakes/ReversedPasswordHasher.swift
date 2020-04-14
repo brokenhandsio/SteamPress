@@ -1,48 +1,23 @@
 import Vapor
 import SteamPress
 
-struct ReversedPasswordHasher: PasswordHasher, SteamPressPasswordVerifier {
-    func `for`(_ request: Request) -> PasswordHasher {
-        return ReversedPasswordHasher()
+struct ReversedPasswordHasher: PasswordHasher {
+    
+    func verify<Password, Digest>(_ password: Password, created digest: Digest) throws -> Bool where Password : DataProtocol, Digest : DataProtocol {
+        return password.reversed() == Array(digest)
     }
     
-    func `for`(_ request: Request) -> SteamPressPasswordVerifier {
-        return ReversedPasswordHasher()
-    }
-    
-    func hash(_ plaintext: String) throws -> String {
-        return String(plaintext.reversed())
-    }
-    
-    func verify(_ plaintext: String, created hash: String) throws -> Bool {
-        return plaintext == String(hash.reversed())
+    func hash<Password>(_ password: Password) throws -> [UInt8] where Password : DataProtocol {
+        return password.reversed()
     }
 }
 
-extension Application.PasswordHashers.Provider {
+extension Application.Passwords.Provider {
     public static var reversed: Self {
         .init {
-            $0.passwordHashers.use { $0.passwordHashers.reversed }
-        }
-    }
-}
-
-extension Application.PasswordHashers {
-    var reversed: ReversedPasswordHasher {
-        return .init()
-    }
-}
-
-extension Application.PasswordVerifiers {
-    var reversed: ReversedPasswordHasher {
-        return .init()
-    }
-}
-
-extension Application.PasswordVerifiers.Provider {
-    public static var reversed: Self {
-        .init {
-            $0.passwordVerifiers.use { $0.passwordVerifiers.reversed }
+            $0.passwords.use { _ in
+                ReversedPasswordHasher()
+            }
         }
     }
 }
