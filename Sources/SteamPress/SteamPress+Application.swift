@@ -1,22 +1,23 @@
 import Vapor
 
 extension Application {
-    public struct SteamPress {
+    public class SteamPress {
         let application: Application
+        let lifecycleHandler: SteamPressRoutesLifecycleHandler
+        
+        init(application: Application, lifecycleHandler: SteamPressRoutesLifecycleHandler) {
+            self.application = application
+            self.lifecycleHandler = lifecycleHandler
+        }
         
         final class Storage {
-//            let databases: Databases
-//            let migrations: Migrations
-
-            init(threadPool: NIOThreadPool, on eventLoopGroup: EventLoopGroup) {
-//                self.databases = Databases(
-//                    threadPool: threadPool,
-//                    on: eventLoopGroup
-//                )
-//                self.migrations = .init()
+            var configuration: SteamPressConfiguration
+            
+            init() {
+                configuration = SteamPressConfiguration()
             }
         }
-
+        
         struct Key: StorageKey {
             typealias Value = Storage
         }
@@ -27,30 +28,45 @@ extension Application {
             }
             return self.application.storage[Key.self]!
         }
-
+        
         func initialize() {
-            self.application.storage[Key.self] = .init(
-                threadPool: self.application.threadPool,
-                on: self.application.eventLoopGroup
-            )
-//            self.application.lifecycle.use(SteamPressRoutesLifecycleHandler())
+            self.application.storage[Key.self] = .init()
+            self.application.lifecycle.use(lifecycleHandler)
+        }
+        
+        public var configuration: SteamPressConfiguration {
+            get {
+                self.storage.configuration
+            }
+            set {
+                self.storage.configuration = newValue
+                self.lifecycleHandler.configuration = newValue
+            }
         }
     }
     
     public var steampress: SteamPress {
-        .init(application: self)
+        .init(application: self, lifecycleHandler: SteamPressRoutesLifecycleHandler())
     }
-    
-//    public var configuration: SteamPressConfiguration {
-//        get {
-//            self.steampress.storage.configuration
-//        }
-//        set {
-//
-//        }
-//    }
 }
 
-public struct SteamPressConfiguration {
+public class SteamPressConfiguration {
+    let blogPath: String?
+    let feedInformation: FeedInformation
+    let postsPerPage: Int
+    let enableAuthorPages: Bool
+    let enableTagPages: Bool
     
+    public init(
+        blogPath: String? = nil,
+        feedInformation: FeedInformation = FeedInformation(),
+        postsPerPage: Int = 10,
+        enableAuthorPages: Bool = true,
+        enableTagPages: Bool = true) {
+        self.blogPath = blogPath
+        self.feedInformation = feedInformation
+        self.postsPerPage = postsPerPage
+        self.enableAuthorPages = enableAuthorPages
+        self.enableTagPages = enableTagPages
+    }
 }

@@ -1,37 +1,24 @@
 import Vapor
 
-public struct SteamPressRoutesLifecycleHandler: LifecycleHandler {
+public class SteamPressRoutesLifecycleHandler: LifecycleHandler {
 
-    let blogPath: String?
-    let feedInformation: FeedInformation
-    let postsPerPage: Int
-    let enableAuthorPages: Bool
-    let enableTagPages: Bool
+    var configuration: SteamPressConfiguration
 
-    public init(
-        blogPath: String?,
-        feedInformation: FeedInformation,
-        postsPerPage: Int,
-        enableAuthorPages: Bool,
-        enableTagPages: Bool) {
-        self.blogPath = blogPath
-        self.feedInformation = feedInformation
-        self.postsPerPage = postsPerPage
-        self.enableAuthorPages = enableAuthorPages
-        self.enableTagPages = enableTagPages
+    public init(configuration: SteamPressConfiguration = SteamPressConfiguration()) {
+        self.configuration = configuration
     }
     
     public func willBoot(_ application: Application) throws {
         let router = application.routes
-        let pathCreator = BlogPathCreator(blogPath: self.blogPath)
+        let pathCreator = BlogPathCreator(blogPath: self.configuration.blogPath)
 
-        let feedController = FeedController(pathCreator: pathCreator, feedInformation: self.feedInformation)
+        let feedController = FeedController(pathCreator: pathCreator, feedInformation: self.configuration.feedInformation)
         let apiController = APIController()
-        let blogController = BlogController(pathCreator: pathCreator, enableAuthorPages: self.enableAuthorPages, enableTagPages: self.enableTagPages, postsPerPage: self.postsPerPage)
+        let blogController = BlogController(pathCreator: pathCreator, enableAuthorPages: self.configuration.enableAuthorPages, enableTagPages: self.configuration.enableTagPages, postsPerPage: self.configuration.postsPerPage)
         let blogAdminController = BlogAdminController(pathCreator: pathCreator)
 
         let blogRoutes: RoutesBuilder
-        if let blogPath = blogPath {
+        if let blogPath = self.configuration.blogPath {
             blogRoutes = router.grouped(PathComponent(stringLiteral: blogPath))
         } else {
             blogRoutes = router.grouped("")

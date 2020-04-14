@@ -75,10 +75,11 @@ extension Application {
         }
 
         var storage: Storage {
-            guard let storage = self.application.storage[Key.self] else {
-                fatalError("BlogAdminPresenters not configured. Configure with app.adminPresenters.initialize()")
+            if self.application.storage[Key.self] == nil {
+                let pathCreator = BlogPathCreator(blogPath: self.application.steampress.configuration.blogPath)
+                initialize(pathCreator: pathCreator)
             }
-            return storage
+            return self.application.storage[Key.self]!
         }
     }
 

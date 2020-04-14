@@ -3,11 +3,8 @@ import XCTest
 import Vapor
 
 class ProviderTests: XCTestCase {
-    func testUsingProviderSetsCorrectServices() throws {
+    func testSteamPressSetsCorrectServices() throws {
         let app = Application()
-        let lifecycle = SteamPress.SteampressLifecyle()
-        lifecycle.tmpSetup(app)
-        app.lifecycle.use(lifecycle)
         app.middleware.use(BlogRememberMeMiddleware())
         app.middleware.use(SessionsMiddleware(session: app.sessions.driver))
 
