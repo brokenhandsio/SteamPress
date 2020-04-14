@@ -16,17 +16,8 @@ extension TestWorld {
         
         let application = Application(.testing, .shared(eventLoopGroup))
         
-//        let steampress = SteamPress.SteampressLifecyle(
-//                                             blogPath: path,
-//                                             feedInformation: feedInformation,
-//                                             postsPerPage: postsPerPage,
-//                                             enableAuthorPages: enableAuthorPages,
-//                                             enableTagPages: enableTagPages)
         application.steampress.configuration = SteamPressConfiguration(blogPath: path, feedInformation: feedInformation, postsPerPage: postsPerPage, enableAuthorPages: enableAuthorPages, enableTagPages: enableTagPages)
-//        application.lifecycle.use(steampress)
-//        
-//        #warning("This should be removed")
-//        steampress.tmpSetup(application)
+        
         application.blogRepositories.use { _ in
             return repository
         }

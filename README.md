@@ -3,7 +3,7 @@
     <br>
     <br>
     <a href="https://swift.org">
-        <img src="http://img.shields.io/badge/Swift-5.1-brightgreen.svg" alt="Language">
+        <img src="http://img.shields.io/badge/Swift-5.2-brightgreen.svg" alt="Language">
     </a>
     <a href="https://github.com/brokenhandsio/SteamPress/actions">
         <img src="https://github.com/brokenhandsio/SteamPress/workflows/CI/badge.svg?branch=master" alt="Build Status">
@@ -16,7 +16,7 @@
     </a>
 </p>
 
-SteamPress is a Swift blogging engine for use with the Vapor Framework to deploy blogs to sites that run on top of Vapor. It uses [Fluent](https://github.com/vapor/fluent) so will work with any database that has a Fluent Driver. It also incorporates a [Markdown Provider](https://github.com/vapor-community/markdown-provider) allowing you to write your posts in Markdown and then use Leaf to render the markdown.
+SteamPress is a Swift blogging engine for use with the Vapor Framework to deploy blogs to sites that run on top of Vapor. It uses protocols to define database storage, so will work with any database that has a `SteamPressRepository` implementation, or you can write your own! It also incorporates a [Markdown Provider](https://github.com/vapor-community/markdown-provider) allowing you to write your posts in Markdown and then use Leaf to render the markdown.
 
 The blog can either be used as the root of your website (i.e. appearing at https://www.acme.org) or in a subpath (i.e. https://www.acme.org/blog/).
 
@@ -49,7 +49,7 @@ First, add the provider to your `Package.swift` dependencies:
 ```swift
 dependencies: [
     // ...
-    .package(name: "SteampressFluentPostgres", url: "https://github.com/brokenhandsio/steampress-fluent-postgres.git", from: "1.0.0"),
+    .package(name: "SteampressFluentPostgres", url: "https://github.com/brokenhandsio/steampress-fluent-postgres.git", from: "2.0.0"),
 ],
 ```
 
@@ -98,7 +98,7 @@ First add SteamPress to your `Package.swift` dependencies:
 ```swift
 dependencies: [
     // ...,
-    .package(name: "SteamPress", url: "https://github.com/brokenhandsio/SteamPress", from: "1.0.0")
+    .package(name: "SteamPress", url: "https://github.com/brokenhandsio/SteamPress", from: "2.0.0")
 ]
 ```
 
