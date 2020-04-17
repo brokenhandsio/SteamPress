@@ -2,7 +2,7 @@ import Vapor
 
 extension Application {
     public class SteamPress {
-        let application: Application
+        public let application: Application
         let lifecycleHandler: SteamPressRoutesLifecycleHandler
         
         init(application: Application, lifecycleHandler: SteamPressRoutesLifecycleHandler) {
