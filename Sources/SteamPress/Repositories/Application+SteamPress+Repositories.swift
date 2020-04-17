@@ -23,21 +23,21 @@ public extension Application.SteamPress {
         
         let application: Application
         
-        var userRepository: BlogUserRepository {
+        public var userRepository: BlogUserRepository {
             guard let makeRepository = self.storage.makeUserRepository else {
                 fatalError("No user repository configured. Configure with app.blogRepositories.use(...)")
             }
             return makeRepository(self.application)
         }
         
-        var postRepository: BlogPostRepository {
+        public var postRepository: BlogPostRepository {
             guard let makeRepository = self.storage.makePostRepository else {
                 fatalError("No post repository configured. Configure with app.blogRepositories.use(...)")
             }
             return makeRepository(self.application)
         }
         
-        var tagRepository: BlogTagRepository {
+        public var tagRepository: BlogTagRepository {
             guard let makeRepository = self.storage.makeTagRepository else {
                 fatalError("No tag repository configured. Configure with app.blogRepositories.use(...)")
             }
