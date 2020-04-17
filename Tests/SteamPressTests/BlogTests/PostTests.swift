@@ -77,4 +77,9 @@ class PostTests: XCTestCase {
         XCTAssertEqual(tags.first?.name, tag1Name)
         XCTAssertEqual(tags.last?.name, tag2Name)
     }
+    
+    func testExtraInitialiserWorks() throws {
+        let post = BlogPost(blogID: 1, title: "title", contents: "contents", authorID: 1, creationDate: Date(), slugUrl: "slug-url", published: true)
+        XCTAssertEqual(post.blogID, 1)
+    }
 }

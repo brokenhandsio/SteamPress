@@ -29,6 +29,18 @@ public final class BlogPost: Codable {
         self.lastEdited = nil
         self.published = published
     }
+    
+    public init(blogID: Int? = nil, title: String, contents: String, authorID: Int, creationDate: Date, slugUrl: String,
+                published: Bool) {
+        self.blogID = blogID
+        self.title = title
+        self.contents = contents
+        self.author = authorID
+        self.created = creationDate
+        self.slugUrl = slugUrl
+        self.lastEdited = nil
+        self.published = published
+    }
 }
 
 // MARK: - BlogPost Utilities
