@@ -54,6 +54,18 @@ public extension Application.SteamPress {
             self.storage.makePostRepository = makeRespository
         }
         
+        public func use(_ makeRepository: @escaping (Application) -> BlogUserRepository) {
+            self.storage.makeUserRepository = makeRepository
+        }
+        
+        public func use(_ makeRepository: @escaping (Application) -> BlogTagRepository) {
+            self.storage.makeTagRepository = makeRepository
+        }
+        
+        public func use(_ makeRepository: @escaping (Application) -> BlogPostRepository) {
+            self.storage.makePostRepository = makeRepository
+        }
+        
         public func initialize() {
             self.application.storage[Key.self] = .init()
         }
