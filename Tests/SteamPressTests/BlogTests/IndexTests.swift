@@ -16,13 +16,13 @@ class IndexTests: XCTestCase {
 
     // MARK: - Overrides
 
-    override func setUp() {
-        testWorld = try! TestWorld.create(postsPerPage: postsPerPage)
-        firstData = try! testWorld.createPost(title: "Test Path", slugUrl: "test-path")
+    override func setUpWithError() throws {
+        testWorld = try TestWorld.create(postsPerPage: postsPerPage, websiteURL: "/")
+        firstData = try testWorld.createPost(title: "Test Path", slugUrl: "test-path")
     }
     
-    override func tearDown() {
-        XCTAssertNoThrow(try testWorld.tryAsHardAsWeCanToShutdownApplication())
+    override func tearDownWithError() throws {
+        try testWorld.shutdown()
     }
 
     // MARK: - Tests
@@ -71,15 +71,16 @@ class IndexTests: XCTestCase {
 
     func testThatAccessingPathsRouteRedirectsToBlogIndex() throws {
         let response = try testWorld.getResponse(to: "/posts/")
-        XCTAssertEqual(response.http.status, .movedPermanently)
-        XCTAssertEqual(response.http.headers[.location].first, "/")
+        XCTAssertEqual(response.status, .movedPermanently)
+        XCTAssertEqual(response.headers[.location].first, "/")
     }
 
     func testThatAccessingPathsRouteRedirectsToBlogIndexWithCustomPath() throws {
-        testWorld = try! TestWorld.create(path: "blog")
+        try testWorld.shutdown()
+        testWorld = try TestWorld.create(path: "blog")
         let response = try testWorld.getResponse(to: "/blog/posts/")
-        XCTAssertEqual(response.http.status, .movedPermanently)
-        XCTAssertEqual(response.http.headers[.location].first, "/blog/")
+        XCTAssertEqual(response.status, .movedPermanently)
+        XCTAssertEqual(response.headers[.location].first, "/blog/")
     }
 
     // MARK: - Pagination Tests
@@ -135,7 +136,8 @@ class IndexTests: XCTestCase {
     }
     
     func testIndexPageCurrentPageWhenAtSubPath() throws {
-        testWorld = try TestWorld.create(path: "blog")
+        try testWorld.shutdown()
+        testWorld = try TestWorld.create(path: "blog", websiteURL: "/")
         _ = try testWorld.getResponse(to: "/blog")
         XCTAssertEqual(presenter.indexPageInformation?.currentPageURL.absoluteString, "/blog")
         XCTAssertEqual(presenter.indexPageInformation?.websiteURL.absoluteString, "/")

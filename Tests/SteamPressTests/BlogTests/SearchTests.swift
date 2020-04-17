@@ -15,13 +15,13 @@ class SearchTests: XCTestCase {
 
     // MARK: - Overrides
 
-    override func setUp() {
-        testWorld = try! TestWorld.create()
-        firstData = try! testWorld.createPost(title: "Test Path", slugUrl: "test-path")
+    override func setUpWithError() throws {
+        testWorld = try TestWorld.create(websiteURL: "/")
+        firstData = try testWorld.createPost(title: "Test Path", slugUrl: "test-path")
     }
     
-    override func tearDown() {
-        XCTAssertNoThrow(try testWorld.tryAsHardAsWeCanToShutdownApplication())
+    override func tearDownWithError() throws {
+        try testWorld.shutdown()
     }
 
     // MARK: - Tests
@@ -29,7 +29,7 @@ class SearchTests: XCTestCase {
     func testBlogPassedToSearchPageCorrectly() throws {
         let response = try testWorld.getResponse(to: "/search?term=Test")
 
-        XCTAssertEqual(response.http.status, .ok)
+        XCTAssertEqual(response.status, .ok)
         XCTAssertEqual(presenter.searchTerm, "Test")
         XCTAssertEqual(presenter.searchTotalResults, 1)
         XCTAssertEqual(presenter.searchPosts?.first?.title, firstData.post.title)
@@ -38,7 +38,7 @@ class SearchTests: XCTestCase {
     func testThatSearchTermNilIfEmptySearch() throws {
         let response = try testWorld.getResponse(to: "/search?term=")
 
-        XCTAssertEqual(response.http.status, .ok)
+        XCTAssertEqual(response.status, .ok)
         XCTAssertEqual(presenter.searchPosts?.count, 0)
         XCTAssertNil(presenter.searchTerm)
     }
@@ -46,7 +46,7 @@ class SearchTests: XCTestCase {
     func testThatSearchTermNilIfNoSearchTerm() throws {
         let response = try testWorld.getResponse(to: "/search")
 
-        XCTAssertEqual(response.http.status, .ok)
+        XCTAssertEqual(response.status, .ok)
         XCTAssertEqual(presenter.searchPosts?.count, 0)
         XCTAssertNil(presenter.searchTerm)
     }
@@ -94,7 +94,7 @@ class SearchTests: XCTestCase {
         let tag2Name = "Search"
         let tag1 = try testWorld.createTag(tag1Name, on: post2.post)
         _ = try testWorld.createTag(tag2Name, on: firstData.post)
-        try testWorld.context.repository.add(tag1, to: firstData.post)
+        try testWorld.context.repository.internalAdd(tag1, to: firstData.post)
         
         _ = try testWorld.getResponse(to: "/search?term=Test")
         let tagsForPosts = try XCTUnwrap(presenter.searchPageTagsForPost)

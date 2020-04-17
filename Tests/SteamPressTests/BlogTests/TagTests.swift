@@ -19,23 +19,23 @@ class TagTests: XCTestCase {
 
     // MARK: - Overrides
 
-    override func setUp() {
-        testWorld = try! TestWorld.create(postsPerPage: postsPerPage)
-        postData = try! testWorld.createPost()
-        tag = try! testWorld.createTag(tagName, on: postData.post)
+    override func setUpWithError() throws {
+        testWorld = try TestWorld.create(postsPerPage: postsPerPage, websiteURL: "/")
+        postData = try testWorld.createPost()
+        tag = try testWorld.createTag(tagName, on: postData.post)
     }
     
-    override func tearDown() {
-        XCTAssertNoThrow(try testWorld.tryAsHardAsWeCanToShutdownApplication())
+    override func tearDownWithError() throws {
+        try testWorld.shutdown()
     }
 
     // MARK: - Tests
 
     func testAllTagsPageGetsAllTags() throws {
-        let secondPost = try! testWorld.createPost()
-        let thirdPost = try! testWorld.createPost()
+        let secondPost = try testWorld.createPost()
+        let thirdPost = try testWorld.createPost()
         let secondTag = try testWorld.createTag("AnotherTag", on: secondPost.post)
-        try testWorld.context.repository.add(secondTag, to: thirdPost.post)
+        try testWorld.context.repository.internalAdd(secondTag, to: thirdPost.post)
         _ = try testWorld.getResponse(to: allTagsRequestPath)
 
         XCTAssertEqual(presenter.allTagsPageTags?.count, 2)
@@ -77,7 +77,7 @@ class TagTests: XCTestCase {
     func testRequestToURLEncodedTag() throws {
         _ = try testWorld.createTag("Some tag")
         let response = try testWorld.getResponse(to: "/tags/Some%20tag")
-        XCTAssertEqual(response.http.status, .ok)
+        XCTAssertEqual(response.status, .ok)
     }
     
     func testTagPageInformationGetsLoggedInUser() throws {

@@ -16,13 +16,13 @@ class PostTests: XCTestCase {
 
     // MARK: - Overrides
 
-    override func setUp() {
-        testWorld = try! TestWorld.create()
-        firstData = try! testWorld.createPost(title: "Test Path", slugUrl: "test-path")
+    override func setUpWithError() throws {
+        testWorld = try TestWorld.create(websiteURL: "/")
+        firstData = try testWorld.createPost(title: "Test Path", slugUrl: "test-path")
     }
     
-    override func tearDown() {
-        XCTAssertNoThrow(try testWorld.tryAsHardAsWeCanToShutdownApplication())
+    override func tearDownWithError() throws {
+        try testWorld.shutdown()
     }
 
     // MARK: - Tests
@@ -76,5 +76,10 @@ class PostTests: XCTestCase {
         XCTAssertEqual(tags.count, 2)
         XCTAssertEqual(tags.first?.name, tag1Name)
         XCTAssertEqual(tags.last?.name, tag2Name)
+    }
+    
+    func testExtraInitialiserWorks() throws {
+        let post = BlogPost(blogID: 1, title: "title", contents: "contents", authorID: 1, creationDate: Date(), slugUrl: "slug-url", published: true)
+        XCTAssertEqual(post.blogID, 1)
     }
 }

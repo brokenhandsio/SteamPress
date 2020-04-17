@@ -1,11 +1,7 @@
 import Foundation
 import Vapor
 
-struct LongPostDateFormatter: ServiceType {
-    static func makeService(for container: Container) throws -> LongPostDateFormatter {
-        return .init()
-    }
-    
+struct LongPostDateFormatter {    
     let formatter: DateFormatter
     
     init() {

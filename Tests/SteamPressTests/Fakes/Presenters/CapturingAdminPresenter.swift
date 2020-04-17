@@ -1,19 +1,28 @@
-import SteamPress
+@testable import SteamPress
 import Vapor
 
 class CapturingAdminPresenter: BlogAdminPresenter {
+    
+    let eventLoop: EventLoop
+    init(eventLoop: EventLoop) {
+        self.eventLoop = eventLoop
+    }
+    
+    func `for`(_ request: Request, pathCreator: BlogPathCreator) -> BlogAdminPresenter {
+        return self
+    }
 
     // MARK: - BlogPresenter
     private(set) var adminViewErrors: [String]?
     private(set) var adminViewPosts: [BlogPost]?
     private(set) var adminViewUsers: [BlogUser]?
     private(set) var adminViewPageInformation: BlogAdminPageInformation?
-    func createIndexView(on container: Container, posts: [BlogPost], users: [BlogUser], errors: [String]?, pageInformation: BlogAdminPageInformation) -> EventLoopFuture<View> {
+    func createIndexView(posts: [BlogPost], users: [BlogUser], errors: [String]?, pageInformation: BlogAdminPageInformation) -> EventLoopFuture<View> {
         self.adminViewErrors = errors
         self.adminViewPosts = posts
         self.adminViewUsers = users
         self.adminViewPageInformation = pageInformation
-        return createFutureView(on: container)
+        return TestDataBuilder.createFutureView(on: eventLoop)
     }
 
     private(set) var createPostErrors: [String]?
@@ -27,7 +36,7 @@ class CapturingAdminPresenter: BlogAdminPresenter {
     private(set) var createPostTitleError: Bool?
     private(set) var createPostContentsError: Bool?
     private(set) var createPostPageInformation: BlogAdminPageInformation?
-    func createPostView(on container: Container, errors: [String]?, title: String?, contents: String?, slugURL: String?, tags: [String]?, isEditing: Bool, post: BlogPost?, isDraft: Bool?, titleError: Bool, contentsError: Bool, pageInformation: BlogAdminPageInformation) -> EventLoopFuture<View> {
+    func createPostView(errors: [String]?, title: String?, contents: String?, slugURL: String?, tags: [String]?, isEditing: Bool, post: BlogPost?, isDraft: Bool?, titleError: Bool, contentsError: Bool, pageInformation: BlogAdminPageInformation) -> EventLoopFuture<View> {
         self.createPostErrors = errors
         self.createPostTitle = title
         self.createPostContents = contents
@@ -39,7 +48,7 @@ class CapturingAdminPresenter: BlogAdminPresenter {
         self.createPostTitleError = titleError
         self.createPostContentsError = contentsError
         self.createPostPageInformation = pageInformation
-        return createFutureView(on: container)
+        return TestDataBuilder.createFutureView(on: eventLoop)
     }
 
     private(set) var createUserErrors: [String]?
@@ -56,7 +65,7 @@ class CapturingAdminPresenter: BlogAdminPresenter {
     private(set) var createUserEditing: Bool?
     private(set) var createUserNameError: Bool?
     private(set) var createUserUsernameError: Bool?
-    func createUserView(on container: Container, editing: Bool, errors: [String]?, name: String?, nameError: Bool, username: String?, usernameErorr: Bool, passwordError: Bool, confirmPasswordError: Bool, resetPasswordOnLogin: Bool, userID: Int?, profilePicture: String?, twitterHandle: String?, biography: String?, tagline: String?, pageInformation: BlogAdminPageInformation) -> EventLoopFuture<View> {
+    func createUserView(editing: Bool, errors: [String]?, name: String?, nameError: Bool, username: String?, usernameErorr: Bool, passwordError: Bool, confirmPasswordError: Bool, resetPasswordOnLogin: Bool, userID: Int?, profilePicture: String?, twitterHandle: String?, biography: String?, tagline: String?, pageInformation: BlogAdminPageInformation) -> EventLoopFuture<View> {
         self.createUserEditing = editing
         self.createUserErrors = errors
         self.createUserName = name
@@ -71,26 +80,18 @@ class CapturingAdminPresenter: BlogAdminPresenter {
         self.createUserNameError = nameError
         self.createUserUsernameError = usernameErorr
         self.createUserResetPasswordRequired = resetPasswordOnLogin
-        return createFutureView(on: container)
+        return TestDataBuilder.createFutureView(on: eventLoop)
     }
 
     private(set) var resetPasswordErrors: [String]?
     private(set) var resetPasswordError: Bool?
     private(set) var resetPasswordConfirmError: Bool?
     private(set) var resetPasswordPageInformation: BlogAdminPageInformation?
-    func createResetPasswordView(on container: Container, errors: [String]?, passwordError: Bool?, confirmPasswordError: Bool?, pageInformation: BlogAdminPageInformation) -> EventLoopFuture<View> {
+    func createResetPasswordView(errors: [String]?, passwordError: Bool?, confirmPasswordError: Bool?, pageInformation: BlogAdminPageInformation) -> EventLoopFuture<View> {
         self.resetPasswordErrors = errors
         self.resetPasswordError = passwordError
         self.resetPasswordConfirmError = confirmPasswordError
         self.resetPasswordPageInformation = pageInformation
-        return createFutureView(on: container)
-    }
-
-    // MARK: - Helpers
-
-    func createFutureView(on container: Container) -> EventLoopFuture<View> {
-        let data = "some HTML".convertToData()
-        let view = View(data: data)
-        return container.future(view)
+        return TestDataBuilder.createFutureView(on: eventLoop)
     }
 }

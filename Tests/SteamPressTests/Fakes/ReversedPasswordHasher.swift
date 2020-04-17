@@ -1,15 +1,23 @@
 import Vapor
-import Authentication
 import SteamPress
 
-struct ReversedPasswordHasher: PasswordHasher, PasswordVerifier {
-    func hash(_ plaintext: LosslessDataConvertible) throws -> String {
-        return String(String.convertFromData(plaintext.convertToData()).reversed())
+struct ReversedPasswordHasher: PasswordHasher {
+    
+    func verify<Password, Digest>(_ password: Password, created digest: Digest) throws -> Bool where Password : DataProtocol, Digest : DataProtocol {
+        return password.reversed() == Array(digest)
     }
+    
+    func hash<Password>(_ password: Password) throws -> [UInt8] where Password : DataProtocol {
+        return password.reversed()
+    }
+}
 
-    func verify(_ password: LosslessDataConvertible, created hash: LosslessDataConvertible) throws -> Bool {
-        let passwordString = String.convertFromData(password.convertToData())
-        let passwordHash = String.convertFromData(hash.convertToData())
-        return passwordString == String(passwordHash.reversed())
+extension Application.Passwords.Provider {
+    public static var reversed: Self {
+        .init {
+            $0.passwords.use { _ in
+                ReversedPasswordHasher()
+            }
+        }
     }
 }

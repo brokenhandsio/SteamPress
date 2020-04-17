@@ -1,7 +1,6 @@
 import Foundation
 @testable import SteamPress
 import Vapor
-import Authentication
 
 struct TestDataBuilder {
 
@@ -51,11 +50,13 @@ struct TestDataBuilder {
         repository.add(user)
         return user
     }
-
-    static func createFutureView(on container: Container) -> EventLoopFuture<View> {
-        let data = "some HTML".convertToData()
-        let view = View(data: data)
-        return container.future(view)
+    
+    static func createFutureView(on eventLoop: EventLoop) -> EventLoopFuture<View> {
+        let string = "Some HTML"
+        var byteBuffer = ByteBufferAllocator().buffer(capacity: string.count)
+        byteBuffer.writeString("Some HTML")
+        let view = View(data: byteBuffer)
+        return eventLoop.future(view)
     }
 }
 

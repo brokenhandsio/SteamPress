@@ -3,46 +3,26 @@ import Vapor
 
 extension Request {
     func url() throws -> URL {
-        let path = self.http.url.path.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
-        
-        let hostname: String
-        if let envURL = Environment.get("WEBSITE_URL") {
-            hostname = envURL
+        let path = self.url.path.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
+        let rootURL = try self.rootUrl()
+        if rootURL.absoluteString == "/" {
+            guard let pathURL = URL(string: path) else {
+                throw SteamPressError(identifier: "SteamPressError", "Failed to convert path to URL")
+            }
+            return pathURL
         } else {
-            hostname = self.http.remotePeer.description
+            return rootURL.appendingPathComponent(path)
         }
-        
-        let urlString  = "\(hostname)\(path)"
-        guard let url = URL(string: urlString) else {
-            throw SteamPressError(identifier: "SteamPressError", "Failed to convert url path to URL")
-        }
-        return url
     }
     
     func rootUrl() throws -> URL {
-        if let envURL = Environment.get("WEBSITE_URL") {
-            guard let url = URL(string: envURL) else {
-                throw SteamPressError(identifier: "SteamPressError", "Failed to convert url hostname to URL")
-            }
-            return url
+        guard let hostname = Environment.get("WEBSITE_URL") else {
+            throw SteamPressError(identifier: "SteamPressError", "WEBSITE_URL not set")
         }
         
-        var hostname = self.http.remotePeer.description
-        if hostname == "" {
-            hostname = "/"
-        }
         guard let url = URL(string: hostname) else {
             throw SteamPressError(identifier: "SteamPressError", "Failed to convert url hostname to URL")
         }
         return url
-    }
-}
-
-private extension String {
-    func replacingFirstOccurrence(of target: String, with replaceString: String) -> String {
-        if let range = self.range(of: target) {
-            return self.replacingCharacters(in: range, with: replaceString)
-        }
-        return self
     }
 }

@@ -5,7 +5,7 @@ import SteamPress
 class AdminPageTests: XCTestCase {
     
     func testAdminPagePassesCorrectInformationToPresenter() throws {
-        var testWorld  = try TestWorld.create()
+        let testWorld  = try TestWorld.create(websiteURL: "/")
         let user = testWorld.createUser(username: "leia")
         let testData1 = try testWorld.createPost(author: user)
         let testData2 = try testWorld.createPost(title: "A second post", author: user)
@@ -22,8 +22,8 @@ class AdminPageTests: XCTestCase {
         
         XCTAssertEqual(presenter.adminViewPageInformation?.loggedInUser.username, user.username)
         XCTAssertEqual(presenter.adminViewPageInformation?.websiteURL.absoluteString, "/")
-        XCTAssertEqual(presenter.adminViewPageInformation?.currentPageURL.absoluteString, "/admin")
+        XCTAssertEqual(presenter.adminViewPageInformation?.currentPageURL.absoluteString, "/admin/")
         
-        XCTAssertNoThrow(try testWorld.tryAsHardAsWeCanToShutdownApplication())
+        try testWorld.shutdown()
     }
 }

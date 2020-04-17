@@ -5,7 +5,7 @@ import Vapor
 class BlogPresenterTests: XCTestCase {
 
     // MARK: - Properties
-    var basicContainer: BasicContainer!
+    var eventLoopGroup: MultiThreadedEventLoopGroup!
     var presenter: ViewBlogPresenter!
     var viewRenderer: CapturingViewRenderer!
     var testTag: BlogTag!
@@ -22,23 +22,17 @@ class BlogPresenterTests: XCTestCase {
     private static let siteTwitterHandle = "brokenhandsio"
     private static let disqusName = "steampress"
     private static let googleAnalyticsIdentifier = "UA-12345678-1"
-
     // MARK: - Overrides
 
     override func setUp() {
-        presenter = ViewBlogPresenter()
-        basicContainer = BasicContainer(config: Config.default(), environment: Environment.testing, services: .init(), on: EmbeddedEventLoop())
-        basicContainer.services.register(ViewRenderer.self) { _ in
-            return self.viewRenderer
-        }
-        basicContainer.services.register(LongPostDateFormatter.self)
-        basicContainer.services.register(NumericPostDateFormatter.self)
-        viewRenderer = CapturingViewRenderer(worker: basicContainer)
+        eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
+        viewRenderer = CapturingViewRenderer(eventLoop: eventLoopGroup.next())
+        presenter = ViewBlogPresenter(viewRenderer: viewRenderer, longDateFormatter: LongPostDateFormatter(), numericDateFormatter: NumericPostDateFormatter(), eventLoopGroup: eventLoopGroup)
         testTag = BlogTag(id: 1, name: "Tattoine")
     }
     
-    override func tearDown() {
-        try! basicContainer.syncShutdownGracefully()
+    override func tearDownWithError() throws {
+        try eventLoopGroup.syncShutdownGracefully()
     }
 
     // MARK: - Tests
@@ -49,7 +43,7 @@ class BlogPresenterTests: XCTestCase {
         let tags = [BlogTag(id: 0, name: "tag1"), BlogTag(id: 1, name: "tag2")]
 
         let pageInformation = buildPageInformation(currentPageURL: allTagsURL)
-        _ = presenter.allTagsView(on: basicContainer, tags: tags, tagPostCounts: [:], pageInformation: pageInformation)
+        _ = presenter.allTagsView(tags: tags, tagPostCounts: [:], pageInformation: pageInformation)
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? AllTagsPageContext)
 
@@ -71,7 +65,7 @@ class BlogPresenterTests: XCTestCase {
         let tags = [tag1, tag2]
         let tagPostCount = [0: 5, 1: 20]
         let pageInformation = buildPageInformation(currentPageURL: allTagsURL)
-        _ = presenter.allTagsView(on: basicContainer, tags: tags, tagPostCounts: tagPostCount, pageInformation: pageInformation)
+        _ = presenter.allTagsView(tags: tags, tagPostCounts: tagPostCount, pageInformation: pageInformation)
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? AllTagsPageContext)
         XCTAssertEqual(context.tags.first?.postCount, 20)
@@ -86,7 +80,7 @@ class BlogPresenterTests: XCTestCase {
         let tags = [tag1, tag2]
         let tagPostCount = [0: 0, 1: 20]
         let pageInformation = buildPageInformation(currentPageURL: allTagsURL)
-        _ = presenter.allTagsView(on: basicContainer, tags: tags, tagPostCounts: tagPostCount, pageInformation: pageInformation)
+        _ = presenter.allTagsView(tags: tags, tagPostCounts: tagPostCount, pageInformation: pageInformation)
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? AllTagsPageContext)
         XCTAssertEqual(context.tags[1].tagID, 0)
@@ -96,7 +90,7 @@ class BlogPresenterTests: XCTestCase {
     func testTwitterHandleNotSetOnAllTagsPageIfNotGiven() throws {
         let tags = [BlogTag(id: 0, name: "tag1"), BlogTag(id: 1, name: "tag2")]
         let pageInformation = buildPageInformation(currentPageURL: allTagsURL, siteTwitterHandle: nil)
-        _ = presenter.allTagsView(on: basicContainer, tags: tags, tagPostCounts: [:], pageInformation: pageInformation)
+        _ = presenter.allTagsView(tags: tags, tagPostCounts: [:], pageInformation: pageInformation)
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? AllTagsPageContext)
         XCTAssertNil(context.pageInformation.siteTwitterHandle)
@@ -105,7 +99,7 @@ class BlogPresenterTests: XCTestCase {
     func testDisqusNameNotSetOnAllTagsPageIfNotGiven() throws {
         let tags = [BlogTag(id: 0, name: "tag1"), BlogTag(id: 1, name: "tag2")]
         let pageInformation = buildPageInformation(currentPageURL: allTagsURL, disqusName: nil)
-        _ = presenter.allTagsView(on: basicContainer, tags: tags, tagPostCounts: [:], pageInformation: pageInformation)
+        _ = presenter.allTagsView(tags: tags, tagPostCounts: [:], pageInformation: pageInformation)
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? AllTagsPageContext)
         XCTAssertNil(context.pageInformation.disqusName)
@@ -114,7 +108,7 @@ class BlogPresenterTests: XCTestCase {
     func testGAIdentifierNotSetOnAllTagsPageIfNotGiven() throws {
         let tags = [BlogTag(id: 0, name: "tag1"), BlogTag(id: 1, name: "tag2")]
         let pageInformation = buildPageInformation(currentPageURL: allTagsURL, googleAnalyticsIdentifier: nil)
-        _ = presenter.allTagsView(on: basicContainer, tags: tags, tagPostCounts: [:], pageInformation: pageInformation)
+        _ = presenter.allTagsView(tags: tags, tagPostCounts: [:], pageInformation: pageInformation)
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? AllTagsPageContext)
         XCTAssertNil(context.pageInformation.googleAnalyticsIdentifier)
@@ -124,7 +118,7 @@ class BlogPresenterTests: XCTestCase {
         let tags = [BlogTag(id: 0, name: "tag1"), BlogTag(id: 1, name: "tag2")]
         let user = TestDataBuilder.anyUser()
         let pageInformation = buildPageInformation(currentPageURL: allTagsURL, user: user)
-        _ = presenter.allTagsView(on: basicContainer, tags: tags, tagPostCounts: [:], pageInformation: pageInformation)
+        _ = presenter.allTagsView(tags: tags, tagPostCounts: [:], pageInformation: pageInformation)
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? AllTagsPageContext)
         XCTAssertEqual(context.pageInformation.loggedInUser?.name, user.name)
@@ -138,7 +132,7 @@ class BlogPresenterTests: XCTestCase {
         let user2 = TestDataBuilder.anyUser(id: 1, name: "Han", username: "han")
         let authors = [user1, user2]
         let pageInformation = buildPageInformation(currentPageURL: allAuthorsURL)
-        _ = presenter.allAuthorsView(on: basicContainer, authors: authors, authorPostCounts: [:], pageInformation: pageInformation)
+        _ = presenter.allAuthorsView(authors: authors, authorPostCounts: [:], pageInformation: pageInformation)
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? AllAuthorsPageContext)
         XCTAssertEqual(context.authors.count, 2)
@@ -158,7 +152,7 @@ class BlogPresenterTests: XCTestCase {
         let authors = [user1, user2]
         let authorPostCount = [0: 1, 1: 20]
         let pageInformation = buildPageInformation(currentPageURL: allAuthorsURL)
-        _ = presenter.allAuthorsView(on: basicContainer, authors: authors, authorPostCounts: authorPostCount, pageInformation: pageInformation)
+        _ = presenter.allAuthorsView(authors: authors, authorPostCounts: authorPostCount, pageInformation: pageInformation)
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? AllAuthorsPageContext)
         XCTAssertEqual(context.authors.first?.postCount, 20)
@@ -173,7 +167,7 @@ class BlogPresenterTests: XCTestCase {
         let authors = [user1, user2]
         let authorPostCount = [0: 0, 1: 20]
         let pageInformation = buildPageInformation(currentPageURL: allAuthorsURL)
-        _ = presenter.allAuthorsView(on: basicContainer, authors: authors, authorPostCounts: authorPostCount, pageInformation: pageInformation)
+        _ = presenter.allAuthorsView(authors: authors, authorPostCounts: authorPostCount, pageInformation: pageInformation)
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? AllAuthorsPageContext)
         XCTAssertEqual(context.authors[1].userID, 0)
@@ -182,7 +176,7 @@ class BlogPresenterTests: XCTestCase {
 
     func testTwitterHandleNotSetOnAllAuthorsPageIfNotProvided() throws {
         let pageInformation = buildPageInformation(currentPageURL: allAuthorsURL, siteTwitterHandle: nil)
-        _ = presenter.allAuthorsView(on: basicContainer, authors: [], authorPostCounts: [:], pageInformation: pageInformation)
+        _ = presenter.allAuthorsView(authors: [], authorPostCounts: [:], pageInformation: pageInformation)
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? AllAuthorsPageContext)
         XCTAssertNil(context.pageInformation.siteTwitterHandle)
@@ -190,7 +184,7 @@ class BlogPresenterTests: XCTestCase {
 
     func testDisqusNameNotSetOnAllAuthorsPageIfNotProvided() throws {
         let pageInformation = buildPageInformation(currentPageURL: allAuthorsURL, disqusName: nil)
-        _ = presenter.allAuthorsView(on: basicContainer, authors: [], authorPostCounts: [:], pageInformation: pageInformation)
+        _ = presenter.allAuthorsView(authors: [], authorPostCounts: [:], pageInformation: pageInformation)
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? AllAuthorsPageContext)
         XCTAssertNil(context.pageInformation.disqusName)
@@ -198,7 +192,7 @@ class BlogPresenterTests: XCTestCase {
 
     func testGAIdentifierNotSetOnAllAuthorsPageIfNotProvided() throws {
         let pageInformation = buildPageInformation(currentPageURL: allAuthorsURL, googleAnalyticsIdentifier: nil)
-        _ = presenter.allAuthorsView(on: basicContainer, authors: [], authorPostCounts: [:], pageInformation: pageInformation)
+        _ = presenter.allAuthorsView(authors: [], authorPostCounts: [:], pageInformation: pageInformation)
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? AllAuthorsPageContext)
         XCTAssertNil(context.pageInformation.googleAnalyticsIdentifier)
@@ -207,7 +201,7 @@ class BlogPresenterTests: XCTestCase {
     func testLoggedInUserPassedToAllAuthorsPageIfProvided() throws {
         let user = TestDataBuilder.anyUser()
         let pageInformation = buildPageInformation(currentPageURL: allAuthorsURL, user: user)
-        _ = presenter.allAuthorsView(on: basicContainer, authors: [], authorPostCounts: [:], pageInformation: pageInformation)
+        _ = presenter.allAuthorsView(authors: [], authorPostCounts: [:], pageInformation: pageInformation)
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? AllAuthorsPageContext)
         XCTAssertEqual(context.pageInformation.loggedInUser?.name, user.name)
@@ -228,7 +222,7 @@ class BlogPresenterTests: XCTestCase {
         let totalPages = 10
         let currentQuery = "?page=2"
 
-        _ = presenter.tagView(on: basicContainer, tag: testTag, posts: posts, authors: [user], totalPosts: 3, pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation(currentPage: currentPage, totalPages: totalPages, currentQuery: currentQuery))
+        _ = presenter.tagView(tag: testTag, posts: posts, authors: [user], totalPosts: 3, pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation(currentPage: currentPage, totalPages: totalPages, currentQuery: currentQuery))
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? TagPageContext)
         XCTAssertEqual(context.tag.name, testTag.name)
@@ -256,7 +250,7 @@ class BlogPresenterTests: XCTestCase {
 
     func testNoLoggedInUserPassedToTagPageIfNoneProvided() throws {
         let pageInformation = buildPageInformation(currentPageURL: tagURL)
-        _ = presenter.tagView(on: basicContainer, tag: testTag, posts: [], authors: [], totalPosts: 0, pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation())
+        _ = presenter.tagView(tag: testTag, posts: [], authors: [], totalPosts: 0, pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation())
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? TagPageContext)
         XCTAssertNil(context.pageInformation.loggedInUser)
@@ -264,7 +258,7 @@ class BlogPresenterTests: XCTestCase {
 
     func testDisqusNameNotPassedToTagPageIfNotSet() throws {
         let pageInformation = buildPageInformation(currentPageURL: tagURL, disqusName: nil)
-        _ = presenter.tagView(on: basicContainer, tag: testTag, posts: [], authors: [], totalPosts: 0, pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation())
+        _ = presenter.tagView(tag: testTag, posts: [], authors: [], totalPosts: 0, pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation())
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? TagPageContext)
         XCTAssertNil(context.pageInformation.disqusName)
@@ -272,7 +266,7 @@ class BlogPresenterTests: XCTestCase {
 
     func testTwitterHandleNotPassedToTagPageIfNotSet() throws {
         let pageInformation = buildPageInformation(currentPageURL: tagURL, siteTwitterHandle: nil)
-        _ = presenter.tagView(on: basicContainer, tag: testTag, posts: [], authors: [], totalPosts: 0, pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation())
+        _ = presenter.tagView(tag: testTag, posts: [], authors: [], totalPosts: 0, pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation())
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? TagPageContext)
         XCTAssertNil(context.pageInformation.siteTwitterHandle)
@@ -280,7 +274,7 @@ class BlogPresenterTests: XCTestCase {
 
     func testGAIdentifierNotPassedToTagPageIfNotSet() throws {
         let pageInformation = buildPageInformation(currentPageURL: tagURL, googleAnalyticsIdentifier: nil)
-        _ = presenter.tagView(on: basicContainer, tag: testTag, posts: [], authors: [], totalPosts: 0, pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation())
+        _ = presenter.tagView(tag: testTag, posts: [], authors: [], totalPosts: 0, pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation())
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? TagPageContext)
         XCTAssertNil(context.pageInformation.googleAnalyticsIdentifier)
@@ -306,7 +300,7 @@ class BlogPresenterTests: XCTestCase {
         let currentQuery = "?page=2"
 
         let pageInformation = buildPageInformation(currentPageURL: blogIndexURL)
-        _ = presenter.indexView(on: basicContainer, posts: [post, post2], tags: tags, authors: [author1, author2], tagsForPosts: [1: [tag1, tag2], 2: [tag1]], pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation(currentPage: currentPage, totalPages: totalPages, currentQuery: currentQuery))
+        _ = presenter.indexView(posts: [post, post2], tags: tags, authors: [author1, author2], tagsForPosts: [1: [tag1, tag2], 2: [tag1]], pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation(currentPage: currentPage, totalPages: totalPages, currentQuery: currentQuery))
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? BlogIndexPageContext)
         XCTAssertEqual(context.title, "Blog")
@@ -353,7 +347,7 @@ class BlogPresenterTests: XCTestCase {
     func testUserPassedToBlogIndexIfUserPassedIn() throws {
         let user = TestDataBuilder.anyUser()
         let pageInformation = buildPageInformation(currentPageURL: blogIndexURL, user: user)
-        _ = presenter.indexView(on: basicContainer, posts: [], tags: [], authors: [], tagsForPosts: [:], pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation())
+        _ = presenter.indexView(posts: [], tags: [], authors: [], tagsForPosts: [:], pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation())
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? BlogIndexPageContext)
         XCTAssertEqual(context.pageInformation.loggedInUser?.name, user.name)
@@ -362,7 +356,7 @@ class BlogPresenterTests: XCTestCase {
 
     func testDisqusNameNotPassedToBlogIndexIfNotPassedIn() throws {
         let pageInformation = buildPageInformation(currentPageURL: blogIndexURL, disqusName: nil)
-        _ = presenter.indexView(on: basicContainer, posts: [], tags: [], authors: [], tagsForPosts: [:], pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation())
+        _ = presenter.indexView(posts: [], tags: [], authors: [], tagsForPosts: [:], pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation())
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? BlogIndexPageContext)
         XCTAssertNil(context.pageInformation.disqusName)
@@ -370,7 +364,7 @@ class BlogPresenterTests: XCTestCase {
 
     func testTwitterHandleNotPassedToBlogIndexIfNotPassedIn() throws {
         let pageInformation = buildPageInformation(currentPageURL: blogIndexURL, siteTwitterHandle: nil)
-        _ = presenter.indexView(on: basicContainer, posts: [], tags: [], authors: [], tagsForPosts: [:], pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation())
+        _ = presenter.indexView(posts: [], tags: [], authors: [], tagsForPosts: [:], pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation())
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? BlogIndexPageContext)
         XCTAssertNil(context.pageInformation.siteTwitterHandle)
@@ -378,7 +372,7 @@ class BlogPresenterTests: XCTestCase {
 
     func testGAIdentifierNotPassedToBlogIndexIfNotPassedIn() throws {
         let pageInformation = buildPageInformation(currentPageURL: blogIndexURL, googleAnalyticsIdentifier: nil)
-        _ = presenter.indexView(on: basicContainer, posts: [], tags: [], authors: [], tagsForPosts: [:], pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation())
+        _ = presenter.indexView(posts: [], tags: [], authors: [], tagsForPosts: [:], pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation())
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? BlogIndexPageContext)
         XCTAssertNil(context.pageInformation.googleAnalyticsIdentifier)
@@ -397,7 +391,7 @@ class BlogPresenterTests: XCTestCase {
         let query = "page=2"
 
         let pageInformation = buildPageInformation(currentPageURL: authorURL)
-        _ = presenter.authorView(on: basicContainer, author: author, posts: [post1, post2], postCount: 2, tagsForPosts: [:], pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation(currentPage: page, totalPages: totalPages, currentQuery: query))
+        _ = presenter.authorView(author: author, posts: [post1, post2], postCount: 2, tagsForPosts: [:], pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation(currentPage: page, totalPages: totalPages, currentQuery: query))
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? AuthorPageContext)
         XCTAssertEqual(context.author.name, author.name)
@@ -426,7 +420,7 @@ class BlogPresenterTests: XCTestCase {
         let author = TestDataBuilder.anyUser(id: 0)
         let user = TestDataBuilder.anyUser(id: 1, username: "hans")
         let pageInformation = buildPageInformation(currentPageURL: authorURL, user: user)
-        _ = presenter.authorView(on: basicContainer, author: author, posts: [], postCount: 0, tagsForPosts: [:], pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation())
+        _ = presenter.authorView(author: author, posts: [], postCount: 0, tagsForPosts: [:], pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation())
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? AuthorPageContext)
         XCTAssertEqual(context.pageInformation.loggedInUser?.userID, user.userID)
@@ -436,7 +430,7 @@ class BlogPresenterTests: XCTestCase {
     func testMyProfileFlagSetIfLoggedInUserIsTheSameAsAuthorOnAuthorView() throws {
         let author = TestDataBuilder.anyUser(id: 0)
         let pageInformation = buildPageInformation(currentPageURL: authorURL, user: author)
-        _ = presenter.authorView(on: basicContainer, author: author, posts: [], postCount: 0, tagsForPosts: [:], pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation())
+        _ = presenter.authorView(author: author, posts: [], postCount: 0, tagsForPosts: [:], pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation())
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? AuthorPageContext)
         XCTAssertTrue(context.myProfile)
@@ -445,7 +439,7 @@ class BlogPresenterTests: XCTestCase {
     func testAuthorViewDoesNotGetDisqusNameIfNotProvided() throws {
         let author = TestDataBuilder.anyUser()
         let pageInformation = buildPageInformation(currentPageURL: authorURL, disqusName: nil)
-        _ = presenter.authorView(on: basicContainer, author: author, posts: [], postCount: 0, tagsForPosts: [:], pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation())
+        _ = presenter.authorView(author: author, posts: [], postCount: 0, tagsForPosts: [:], pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation())
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? AuthorPageContext)
         XCTAssertNil(context.pageInformation.disqusName)
@@ -454,7 +448,7 @@ class BlogPresenterTests: XCTestCase {
     func testAuthorViewDoesNotGetTwitterHandleIfNotProvided() throws {
         let author = TestDataBuilder.anyUser()
         let pageInformation = buildPageInformation(currentPageURL: authorURL, siteTwitterHandle: nil)
-        _ = presenter.authorView(on: basicContainer, author: author, posts: [], postCount: 0, tagsForPosts: [:], pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation())
+        _ = presenter.authorView(author: author, posts: [], postCount: 0, tagsForPosts: [:], pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation())
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? AuthorPageContext)
         XCTAssertNil(context.pageInformation.siteTwitterHandle)
@@ -463,7 +457,7 @@ class BlogPresenterTests: XCTestCase {
     func testAuthorViewDoesNotGetGAIdentifierIfNotProvided() throws {
         let author = TestDataBuilder.anyUser()
         let pageInformation = buildPageInformation(currentPageURL: authorURL, googleAnalyticsIdentifier: nil)
-        _ = presenter.authorView(on: basicContainer, author: author, posts: [], postCount: 0, tagsForPosts: [:], pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation())
+        _ = presenter.authorView(author: author, posts: [], postCount: 0, tagsForPosts: [:], pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation())
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? AuthorPageContext)
         XCTAssertNil(context.pageInformation.googleAnalyticsIdentifier)
@@ -478,7 +472,7 @@ class BlogPresenterTests: XCTestCase {
         let post3 = try TestDataBuilder.anyPost(author: author)
         post3.blogID = 3
         let pageInformation = buildPageInformation(currentPageURL: authorURL)
-        _ = presenter.authorView(on: basicContainer, author: author, posts: [post1, post2, post3], postCount: 3, tagsForPosts: [:], pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation())
+        _ = presenter.authorView(author: author, posts: [post1, post2, post3], postCount: 3, tagsForPosts: [:], pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation())
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? AuthorPageContext)
         XCTAssertEqual(context.postCount, 3)
@@ -489,7 +483,7 @@ class BlogPresenterTests: XCTestCase {
         let post1 = try TestDataBuilder.anyPost(author: author, contents: TestDataBuilder.longContents)
         post1.blogID = 1
         let pageInformation = buildPageInformation(currentPageURL: authorURL)
-        _ = presenter.authorView(on: basicContainer, author: author, posts: [post1], postCount: 1, tagsForPosts: [:], pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation())
+        _ = presenter.authorView(author: author, posts: [post1], postCount: 1, tagsForPosts: [:], pageInformation: pageInformation, paginationTagInfo: buildPaginationInformation())
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? AuthorPageContext)
         let characterCount = try XCTUnwrap(context.posts.first?.longSnippet.count)
@@ -498,7 +492,7 @@ class BlogPresenterTests: XCTestCase {
 
     func testLoginViewGetsCorrectParameters() throws {
         let pageInformation = buildPageInformation(currentPageURL: loginURL)
-        _ = presenter.loginView(on: basicContainer, loginWarning: false, errors: nil, username: nil, usernameError: false, passwordError: false, rememberMe: false, pageInformation: pageInformation)
+        _ = presenter.loginView(loginWarning: false, errors: nil, username: nil, usernameError: false, passwordError: false, rememberMe: false, pageInformation: pageInformation)
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? LoginPageContext)
         XCTAssertNil(context.errors)
@@ -515,7 +509,7 @@ class BlogPresenterTests: XCTestCase {
     func testLoginViewWhenErrored() throws {
         let expectedError = "Username/password incorrect"
         let pageInformation = buildPageInformation(currentPageURL: loginURL)
-        _ = presenter.loginView(on: basicContainer, loginWarning: true, errors: [expectedError], username: "tim", usernameError: true, passwordError: true, rememberMe: true, pageInformation: pageInformation)
+        _ = presenter.loginView(loginWarning: true, errors: [expectedError], username: "tim", usernameError: true, passwordError: true, rememberMe: true, pageInformation: pageInformation)
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? LoginPageContext)
         XCTAssertEqual(context.errors?.count, 1)
@@ -536,7 +530,7 @@ class BlogPresenterTests: XCTestCase {
         let pageInformation = buildPageInformation(currentPageURL: searchURL)
         let paginationInformation = PaginationTagInformation(currentPage: 1, totalPages: 3, currentQuery: "?term=vapor")
 
-        _ = presenter.searchView(on: basicContainer, totalResults: 2, posts: [post1, post2], authors: [author], searchTerm: "vapor", tagsForPosts: [:], pageInformation: pageInformation, paginationTagInfo: paginationInformation)
+        _ = presenter.searchView(totalResults: 2, posts: [post1, post2], authors: [author], searchTerm: "vapor", tagsForPosts: [:], pageInformation: pageInformation, paginationTagInfo: paginationInformation)
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? SearchPageContext)
         XCTAssertEqual(context.title, "Search Blog")
@@ -562,7 +556,7 @@ class BlogPresenterTests: XCTestCase {
     func testSearchPageGetsNilIfNoSearchTermProvided() throws {
         let pageInformation = buildPageInformation(currentPageURL: searchURL)
         let paginationInformation = PaginationTagInformation(currentPage: 0, totalPages: 0, currentQuery: nil)
-        _ = presenter.searchView(on: basicContainer, totalResults: 0, posts: [], authors: [], searchTerm: nil, tagsForPosts: [:], pageInformation: pageInformation, paginationTagInfo: paginationInformation)
+        _ = presenter.searchView(totalResults: 0, posts: [], authors: [], searchTerm: nil, tagsForPosts: [:], pageInformation: pageInformation, paginationTagInfo: paginationInformation)
 
         let context = try XCTUnwrap(viewRenderer.capturedContext as? SearchPageContext)
         XCTAssertNil(context.searchTerm)

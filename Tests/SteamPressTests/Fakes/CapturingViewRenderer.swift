@@ -1,19 +1,23 @@
 import Vapor
 
-class CapturingViewRenderer: ViewRenderer, Service {
+class CapturingViewRenderer: ViewRenderer {
     var shouldCache = false
-    var worker: Worker
+    var eventLoop: EventLoop
 
-    init(worker: Worker) {
-        self.worker = worker
+    init(eventLoop: EventLoop) {
+        self.eventLoop = eventLoop
+    }
+    
+    func `for`(_ request: Request) -> ViewRenderer {
+        return self
     }
 
     private(set) var capturedContext: Encodable?
     private(set) var templatePath: String?
-    func render<E>(_ path: String, _ context: E, userInfo: [AnyHashable: Any]) -> EventLoopFuture<View> where E: Encodable {
+    func render<E>(_ name: String, _ context: E) -> EventLoopFuture<View> where E : Encodable {
         self.capturedContext = context
-        self.templatePath = path
-        return Future.map(on: worker) { return View(data: "Test".convertToData()) }
+        self.templatePath = name
+        return TestDataBuilder.createFutureView(on: eventLoop)
     }
 
 }

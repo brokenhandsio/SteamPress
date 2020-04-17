@@ -1,5 +1,4 @@
 import Vapor
-import Authentication
 
 struct UserAdminController: RouteCollection {
 
@@ -12,127 +11,149 @@ struct UserAdminController: RouteCollection {
     }
 
     // MARK: - Route setup
-    func boot(router: Router) throws {
-        router.get("createUser", use: createUserHandler)
-        router.post("createUser", use: createUserPostHandler)
-        router.get("users", BlogUser.parameter, "edit", use: editUserHandler)
-        router.post("users", BlogUser.parameter, "edit", use: editUserPostHandler)
-        router.post("users", BlogUser.parameter, "delete", use: deleteUserPostHandler)
+    func boot(routes: RoutesBuilder) throws {
+        routes.get("createUser", use: createUserHandler)
+        routes.post("createUser", use: createUserPostHandler)
+        routes.get("users", BlogUser.parameter, "edit", use: editUserHandler)
+        routes.post("users", BlogUser.parameter, "edit", use: editUserPostHandler)
+        routes.post("users", BlogUser.parameter, "delete", use: deleteUserPostHandler)
     }
 
     // MARK: - Route handlers
     func createUserHandler(_ req: Request) throws -> EventLoopFuture<View> {
-        let presenter = try req.make(BlogAdminPresenter.self)
-        return try presenter.createUserView(on: req, editing: false, errors: nil, name: nil, nameError: false, username: nil, usernameErorr: false, passwordError: false, confirmPasswordError: false, resetPasswordOnLogin: false, userID: nil, profilePicture: nil, twitterHandle: nil, biography: nil, tagline: nil, pageInformation: req.adminPageInfomation())
+        return try req.adminPresenter.createUserView(editing: false, errors: nil, name: nil, nameError: false, username: nil, usernameErorr: false, passwordError: false, confirmPasswordError: false, resetPasswordOnLogin: false, userID: nil, profilePicture: nil, twitterHandle: nil, biography: nil, tagline: nil, pageInformation: req.adminPageInfomation())
     }
 
     func createUserPostHandler(_ req: Request) throws -> EventLoopFuture<Response> {
-        let data = try req.content.syncDecode(CreateUserData.self)
+        let data = try req.content.decode(CreateUserData.self)
 
         return try validateUserCreation(data, on: req).flatMap { createUserErrors in
             if let errors = createUserErrors {
-                let presenter = try req.make(BlogAdminPresenter.self)
-                let view = try presenter.createUserView(on: req, editing: false, errors: errors.errors, name: data.name, nameError: errors.nameError, username: data.username, usernameErorr: errors.usernameError, passwordError: errors.passwordError, confirmPasswordError: errors.confirmPasswordError, resetPasswordOnLogin: data.resetPasswordOnLogin ?? false, userID: nil, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline, pageInformation: req.adminPageInfomation())
-                return try view.encode(for: req)
+                do {
+                    let view = try req.adminPresenter.createUserView(editing: false, errors: errors.errors, name: data.name, nameError: errors.nameError, username: data.username, usernameErorr: errors.usernameError, passwordError: errors.passwordError, confirmPasswordError: errors.confirmPasswordError, resetPasswordOnLogin: data.resetPasswordOnLogin ?? false, userID: nil, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline, pageInformation: req.adminPageInfomation())
+                    return view.encodeResponse(for: req)
+                } catch {
+                    return req.eventLoop.makeFailedFuture(error)
+                }
             }
 
             guard let name = data.name, let username = data.username, let password = data.password else {
-                throw Abort(.internalServerError)
+                return req.eventLoop.makeFailedFuture(Abort(.internalServerError))
             }
 
-            let hasher = try req.make(PasswordHasher.self)
-            let hashedPassword = try hasher.hash(password)
-            let profilePicture = data.profilePicture.isEmptyOrWhitespace() ? nil : data.profilePicture
-            let twitterHandle = data.twitterHandle.isEmptyOrWhitespace() ? nil : data.twitterHandle
-            let biography = data.biography.isEmptyOrWhitespace() ? nil : data.biography
-            let tagline = data.tagline.isEmptyOrWhitespace() ? nil : data.tagline
-            let newUser = BlogUser(name: name, username: username.lowercased(), password: hashedPassword, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline)
-            if let resetPasswordRequired = data.resetPasswordOnLogin, resetPasswordRequired {
-                newUser.resetPasswordRequired = true
-            }
-            let userRepository = try req.make(BlogUserRepository.self)
-            return userRepository.save(newUser, on: req).map { _ in
-                return req.redirect(to: self.pathCreator.createPath(for: "admin"))
-            }
-
-        }
-    }
-
-    func editUserHandler(_ req: Request) throws -> EventLoopFuture<View> {
-        return try req.parameters.next(BlogUser.self).flatMap { user in
-            let presenter = try req.make(BlogAdminPresenter.self)
-            return try presenter.createUserView(on: req, editing: true, errors: nil, name: user.name, nameError: false, username: user.username, usernameErorr: false, passwordError: false, confirmPasswordError: false, resetPasswordOnLogin: user.resetPasswordRequired, userID: user.userID, profilePicture: user.profilePicture, twitterHandle: user.twitterHandle, biography: user.biography, tagline: user.tagline, pageInformation: req.adminPageInfomation())
-        }
-    }
-
-    func editUserPostHandler(_ req: Request) throws -> EventLoopFuture<Response> {
-        return try req.parameters.next(BlogUser.self).flatMap { user in
-            let data = try req.content.syncDecode(CreateUserData.self)
-
-            guard let name = data.name, let username = data.username else {
-                throw Abort(.internalServerError)
-            }
-
-            return try self.validateUserCreation(data, editing: true, existingUsername: user.username, on: req).flatMap { errors in
-                if let editUserErrors = errors {
-                    let presenter = try req.make(BlogAdminPresenter.self)
-                    let view = try presenter.createUserView(on: req, editing: true, errors: editUserErrors.errors, name: data.name, nameError: errors?.nameError ?? false, username: data.username, usernameErorr: errors?.usernameError ?? false, passwordError: editUserErrors.passwordError, confirmPasswordError: editUserErrors.confirmPasswordError, resetPasswordOnLogin: data.resetPasswordOnLogin ?? false, userID: user.userID, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline, pageInformation: req.adminPageInfomation())
-                    return try view.encode(for: req)
-                }
-
-                user.name = name
-                user.username = username.lowercased()
-                
+            return req.password.async.hash(password).flatMap { hashedPassword in
                 let profilePicture = data.profilePicture.isEmptyOrWhitespace() ? nil : data.profilePicture
                 let twitterHandle = data.twitterHandle.isEmptyOrWhitespace() ? nil : data.twitterHandle
                 let biography = data.biography.isEmptyOrWhitespace() ? nil : data.biography
                 let tagline = data.tagline.isEmptyOrWhitespace() ? nil : data.tagline
-                
-                user.profilePicture = profilePicture
-                user.twitterHandle = twitterHandle
-                user.biography = biography
-                user.tagline = tagline
+                let newUser = BlogUser(name: name, username: username.lowercased(), password: hashedPassword, profilePicture: profilePicture, twitterHandle: twitterHandle, biography: biography, tagline: tagline)
+                if let resetPasswordRequired = data.resetPasswordOnLogin, resetPasswordRequired {
+                    newUser.resetPasswordRequired = true
+                }
+                return req.blogUserRepository.save(newUser).map { _ in
+                    return req.redirect(to: self.pathCreator.createPath(for: "admin"))
+                }
+            }
+        }
+    }
 
-                if let resetPasswordOnLogin = data.resetPasswordOnLogin, resetPasswordOnLogin {
-                    user.resetPasswordRequired = true
+    func editUserHandler(_ req: Request) throws -> EventLoopFuture<View> {
+        req.parameters.findUser(on: req).flatMap { user in
+            do {
+                return try req.adminPresenter.createUserView(editing: true, errors: nil, name: user.name, nameError: false, username: user.username, usernameErorr: false, passwordError: false, confirmPasswordError: false, resetPasswordOnLogin: user.resetPasswordRequired, userID: user.userID, profilePicture: user.profilePicture, twitterHandle: user.twitterHandle, biography: user.biography, tagline: user.tagline, pageInformation: req.adminPageInfomation())
+            } catch {
+                return req.eventLoop.makeFailedFuture(error)
+            }
+        }
+    }
+
+    func editUserPostHandler(_ req: Request) throws -> EventLoopFuture<Response> {
+        req.parameters.findUser(on: req).flatMap { user in
+            do {
+                let data = try req.content.decode(CreateUserData.self)
+
+                guard let name = data.name, let username = data.username else {
+                    throw Abort(.internalServerError)
                 }
 
-                if let password = data.password, password != "" {
-                    let hasher = try req.make(PasswordHasher.self)
-                    user.password = try hasher.hash(password)
-                }
+                return try self.validateUserCreation(data, editing: true, existingUsername: user.username, on: req).flatMap { errors in
+                    if let editUserErrors = errors {
+                        do {
+                            let view = try req.adminPresenter.createUserView(editing: true, errors: editUserErrors.errors, name: data.name, nameError: errors?.nameError ?? false, username: data.username, usernameErorr: errors?.usernameError ?? false, passwordError: editUserErrors.passwordError, confirmPasswordError: editUserErrors.confirmPasswordError, resetPasswordOnLogin: data.resetPasswordOnLogin ?? false, userID: user.userID, profilePicture: data.profilePicture, twitterHandle: data.twitterHandle, biography: data.biography, tagline: data.tagline, pageInformation: req.adminPageInfomation())
+                            return view.encodeResponse(for: req)
+                        } catch {
+                            return req.eventLoop.makeFailedFuture(error)
+                        }
+                    }
 
-                let redirect = req.redirect(to: self.pathCreator.createPath(for: "admin"))
-                let userRepository = try req.make(BlogUserRepository.self)
-                return userRepository.save(user, on: req).transform(to: redirect)
+                    user.name = name
+                    user.username = username.lowercased()
+                    
+                    let profilePicture = data.profilePicture.isEmptyOrWhitespace() ? nil : data.profilePicture
+                    let twitterHandle = data.twitterHandle.isEmptyOrWhitespace() ? nil : data.twitterHandle
+                    let biography = data.biography.isEmptyOrWhitespace() ? nil : data.biography
+                    let tagline = data.tagline.isEmptyOrWhitespace() ? nil : data.tagline
+                    
+                    user.profilePicture = profilePicture
+                    user.twitterHandle = twitterHandle
+                    user.biography = biography
+                    user.tagline = tagline
+
+                    if let resetPasswordOnLogin = data.resetPasswordOnLogin, resetPasswordOnLogin {
+                        user.resetPasswordRequired = true
+                    }
+
+                    let updatePassword: EventLoopFuture<Void>
+                    if let password = data.password, password != "" {
+                        updatePassword = req.password.async.hash(password).map { hashedPassword in
+                            user.password = hashedPassword
+                        }
+                    } else {
+                        updatePassword = req.eventLoop.future()
+                    }
+                    return updatePassword.flatMap {
+                        let redirect = req.redirect(to: self.pathCreator.createPath(for: "admin"))
+                        return req.blogUserRepository.save(user).transform(to: redirect)
+                    }
+                }
+            } catch {
+                return req.eventLoop.makeFailedFuture(error)
             }
         }
     }
 
     func deleteUserPostHandler(_ req: Request) throws -> EventLoopFuture<Response> {
-        let userRepository = try req.make(BlogUserRepository.self)
-        return try flatMap(req.parameters.next(BlogUser.self), userRepository.getUsersCount(on: req)) { user, userCount in
+        req.parameters.findUser(on: req).and(req.blogUserRepository.getUsersCount()).flatMap { user, userCount in
             guard userCount > 1 else {
-                let postRepository = try req.make(BlogPostRepository.self)
-                return flatMap(postRepository.getAllPostsSortedByPublishDate(includeDrafts: true, on: req), userRepository.getAllUsers(on: req)) { posts, users in
-                    let presenter = try req.make(BlogAdminPresenter.self)
-                    let view = try presenter.createIndexView(on: req, posts: posts, users: users, errors: ["You cannot delete the last user"], pageInformation: req.adminPageInfomation())
-                    return try view.encode(for: req)
+                return req.blogPostRepository.getAllPostsSortedByPublishDate(includeDrafts: true).and(req.blogUserRepository.getAllUsers()).flatMap { posts, users in
+                    do {
+                        let view = try req.adminPresenter.createIndexView(posts: posts, users: users, errors: ["You cannot delete the last user"], pageInformation: req.adminPageInfomation())
+                        return view.encodeResponse(for: req)
+                    } catch {
+                        return req.eventLoop.makeFailedFuture(error)
+                    }
                 }
             }
 
-            let loggedInUser = try req.requireAuthenticated(BlogUser.self)
+            let loggedInUser: BlogUser
+            do {
+                loggedInUser = try req.auth.require(BlogUser.self)
+            } catch {
+                return req.eventLoop.makeFailedFuture(error)
+            }
             guard loggedInUser.userID != user.userID else {
-                let postRepository = try req.make(BlogPostRepository.self)
-                return flatMap(postRepository.getAllPostsSortedByPublishDate(includeDrafts: true, on: req), userRepository.getAllUsers(on: req)) { posts, users in
-                    let presenter = try req.make(BlogAdminPresenter.self)
-                    let view = try presenter.createIndexView(on: req, posts: posts, users: users, errors: ["You cannot delete yourself whilst logged in"], pageInformation: req.adminPageInfomation())
-                    return try view.encode(for: req)
+                return req.blogPostRepository.getAllPostsSortedByPublishDate(includeDrafts: true).and(req.blogUserRepository.getAllUsers()).flatMap { posts, users in
+                    do {
+                        let view = try req.adminPresenter.createIndexView(posts: posts, users: users, errors: ["You cannot delete yourself whilst logged in"], pageInformation: req.adminPageInfomation())
+                        return view.encodeResponse(for: req)
+                    } catch {
+                        return req.eventLoop.makeFailedFuture(error)
+                    }
                 }
             }
 
             let redirect = req.redirect(to: self.pathCreator.createPath(for: "admin"))
-            return userRepository.delete(user, on: req).transform(to: redirect)
+            return req.blogUserRepository.delete(user).transform(to: redirect)
         }
     }
 
@@ -180,19 +201,18 @@ struct UserAdminController: RouteCollection {
         }
 
         do {
-            try data.validate()
+            try CreateUserData.validate(req)
         } catch {
             createUserErrors.append("The username provided is not valid")
             usernameError = true
         }
 
         var usernameUniqueError: EventLoopFuture<String?>
-        let usersRepository = try req.make(BlogUserRepository.self)
         if let username = data.username {
             if editing && data.username == existingUsername {
-                usernameUniqueError = req.future(nil)
+                usernameUniqueError = req.eventLoop.future(nil)
             } else {
-                usernameUniqueError = usersRepository.getUser(username: username.lowercased(), on: req).map { user in
+                usernameUniqueError = req.blogUserRepository.getUser(username: username.lowercased()).map { user in
                     if user != nil {
                         return "Sorry that username has already been taken"
                     } else {
@@ -201,7 +221,7 @@ struct UserAdminController: RouteCollection {
                 }
             }
         } else {
-            usernameUniqueError = req.future(nil)
+            usernameUniqueError = req.eventLoop.future(nil)
         }
 
         return usernameUniqueError.map { usernameErrorOccurred in

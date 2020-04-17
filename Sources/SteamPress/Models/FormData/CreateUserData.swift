@@ -12,12 +12,11 @@ struct CreateUserData: Content {
     let resetPasswordOnLogin: Bool?
 }
 
-extension CreateUserData: Validatable, Reflectable {
-    static func validations() throws -> Validations<CreateUserData> {
-        var validations = Validations(CreateUserData.self)
+extension CreateUserData: Validatable {
+    
+    static func validations(_ validations: inout Validations) {
         let usernameCharacterSet = CharacterSet(charactersIn: "-_")
         let usernameValidationCharacters = Validator<String>.characterSet(.alphanumerics + usernameCharacterSet)
-        try validations.add(\.username, usernameValidationCharacters || .nil)
-        return validations
+        validations.add("username", as: String.self, is: usernameValidationCharacters)
     }
 }

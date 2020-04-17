@@ -1,42 +1,26 @@
 import XCTest
-import SteamPress
+@testable import SteamPress
 import Vapor
 
 class ProviderTests: XCTestCase {
-    func testUsingProviderSetsCorrectServices() throws {
-        var services = Services.default()
-        let steampress = SteamPress.Provider()
-        try services.register(steampress)
-        
-        var middlewareConfig = MiddlewareConfig()
-        middlewareConfig.use(ErrorMiddleware.self)
-        middlewareConfig.use(BlogRememberMeMiddleware.self)
-        middlewareConfig.use(SessionsMiddleware.self)
-        services.register(middlewareConfig)
+    func testSteamPressSetsCorrectServices() throws {
+        let app = Application()
+        app.middleware.use(BlogRememberMeMiddleware())
+        app.middleware.use(SessionsMiddleware(session: app.sessions.driver))
 
-        services.register([BlogTagRepository.self, BlogPostRepository.self, BlogUserRepository.self]) { _ in
-            return InMemoryRepository()
+        app.steampress.blogRepositories.use { application in
+            return InMemoryRepository(eventLoop: application.eventLoopGroup.next())
         }
         
-        let app: Application? = try Application(services: services)
-        
-        let numberGenerator = try app!.make(SteamPressRandomNumberGenerator.self)
+        let numberGenerator = app.steampress.randomNumberGenerators.generator
         XCTAssertTrue(type(of: numberGenerator) == RealRandomNumberGenerator.self)
         
-        let blogPresenter = try app!.make(BlogPresenter.self)
+        let blogPresenter = app.steampress.blogPresenters.blogPresenter
         XCTAssertTrue(type(of: blogPresenter) == ViewBlogPresenter.self)
         
-        let blogAdminPresenter = try app!.make(BlogAdminPresenter.self)
+        let blogAdminPresenter = app.steampress.adminPresenters.adminPresenter
         XCTAssertTrue(type(of: blogAdminPresenter) == ViewBlogAdminPresenter.self)
         
-        // Work around Vapor 3 lifecycle mess
-        weak var weakApp: Application? = app
-        weakApp = nil
-        var tries = 0
-        while weakApp != nil && tries < 10 {
-            Thread.sleep(forTimeInterval: 0.1)
-            tries += 1
-        }
-        XCTAssertNil(weakApp, "application leak: \(weakApp.debugDescription)")
+        app.shutdown()
     }
 }

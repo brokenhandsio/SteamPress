@@ -1,5 +1,4 @@
 import Vapor
-import Authentication
 
 struct BlogAdminController: RouteCollection {
 
@@ -12,8 +11,8 @@ struct BlogAdminController: RouteCollection {
     }
 
     // MARK: - Route setup
-    func boot(router: Router) throws {
-        let adminRoutes = router.grouped("admin")
+    func boot(routes: RoutesBuilder) throws {
+        let adminRoutes = routes.grouped("admin")
 
         let redirectMiddleware = BlogLoginRedirectAuthMiddleware(pathCreator: pathCreator)
         let adminProtectedRoutes = adminRoutes.grouped(redirectMiddleware)
@@ -29,11 +28,12 @@ struct BlogAdminController: RouteCollection {
 
     // MARK: Admin Handler
     func adminHandler(_ req: Request) throws -> EventLoopFuture<View> {
-        let usersRepository = try req.make(BlogUserRepository.self)
-        let postsRepository = try req.make(BlogPostRepository.self)
-        return flatMap(postsRepository.getAllPostsSortedByPublishDate(includeDrafts: true, on: req), usersRepository.getAllUsers(on: req)) { posts, users in
-            let presenter = try req.make(BlogAdminPresenter.self)
-            return try presenter.createIndexView(on: req, posts: posts, users: users, errors: nil, pageInformation: req.adminPageInfomation())
+        return req.blogPostRepository.getAllPostsSortedByPublishDate(includeDrafts: true).and(req.blogUserRepository.getAllUsers()).flatMap { posts, users in
+            do {
+                return try req.adminPresenter.createIndexView(posts: posts, users: users, errors: nil, pageInformation: req.adminPageInfomation())
+            } catch {
+                return req.eventLoop.makeFailedFuture(error)
+            }
         }
     }
 

@@ -15,20 +15,20 @@ class AdminPostTests: XCTestCase {
 
     // MARK: - Overrides
 
-    override func setUp() {
-        testWorld = try! TestWorld.create()
+    override func setUpWithError() throws {
+        testWorld = try TestWorld.create(websiteURL: "/")
         user = testWorld.createUser(username: "leia")
     }
     
-    override func tearDown() {
-        XCTAssertNoThrow(try testWorld.tryAsHardAsWeCanToShutdownApplication())
+    override func tearDownWithError() throws {
+        try testWorld.shutdown()
     }
 
     // MARK: - Post Creation
 
     func testPostCanBeCreated() throws {
         struct CreatePostData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let title = "Post Title"
             let contents = "# Post Title\n\nWe have a post"
             let tags = ["First Tag", "Second Tag"]
@@ -53,17 +53,18 @@ class AdminPostTests: XCTestCase {
         XCTAssertTrue(testWorld.context.repository.postTagLinks
             .contains { $0.postID == post.blogID! && $0.tagID == secondTagID })
 
-        XCTAssertEqual(response.http.status, .seeOther)
-        XCTAssertEqual(response.http.headers[.location].first, "/posts/post-title/")
+        XCTAssertEqual(response.status, .seeOther)
+        XCTAssertEqual(response.headers[.location].first, "/posts/post-title/")
     }
 
     func testCreatingPostWithNonUniqueSlugFromSameTitle() throws {
         let randomNumber = 345
+        try testWorld.shutdown()
         testWorld = try TestWorld.create(randomNumberGenerator: StubbedRandomNumberGenerator(numberToReturn: randomNumber))
         let initialPostData = try testWorld.createPost(title: "Post Title", slugUrl: "post-title")
 
         struct CreatePostData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let title = "Post Title"
             let contents = "# Post Title\n\nWe have a post"
             let tags = ["First Tag", "Second Tag"]
@@ -75,7 +76,7 @@ class AdminPostTests: XCTestCase {
         XCTAssertEqual(testWorld.context.repository.posts.count, 2)
         let post = try XCTUnwrap(testWorld.context.repository.posts.last)
         XCTAssertEqual(post.slugUrl, "post-title-\(randomNumber)")
-        XCTAssertEqual(response.http.headers[.location].first, "/posts/post-title-\(randomNumber)/")
+        XCTAssertEqual(response.headers[.location].first, "/posts/post-title-\(randomNumber)/")
     }
 
     func testPostCreationPageGetsBasicInfo() throws {
@@ -95,13 +96,13 @@ class AdminPostTests: XCTestCase {
         XCTAssertFalse(titleError)
         XCTAssertFalse(contentsError)
         XCTAssertEqual(presenter.createPostPageInformation?.loggedInUser.username, user.username)
-        XCTAssertEqual(presenter.createPostPageInformation?.currentPageURL.absoluteString, "/admin/createPost")
+        XCTAssertEqual(presenter.createPostPageInformation?.currentPageURL.absoluteString, "/admin/createPost/")
         XCTAssertEqual(presenter.createPostPageInformation?.websiteURL.absoluteString, "/")
     }
 
     func testPostCannotBeCreatedIfDraftAndPublishNotSet() throws {
         struct CreatePostData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let title = "Post Title"
             let contents = "# Post Title\n\nWe have a post"
             let tags = ["First Tag", "Second Tag"]
@@ -110,12 +111,12 @@ class AdminPostTests: XCTestCase {
 
         let response = try testWorld.getResponse(to: createPostPath, body: createData, loggedInUser: user)
 
-        XCTAssertEqual(response.http.status, .badRequest)
+        XCTAssertEqual(response.status, .badRequest)
     }
 
     func testCreatePostMustIncludeTitle() throws {
         struct CreatePostData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let contents = "# Post Title\n\nWe have a post"
             let tags = ["First Tag", "Second Tag"]
             let publish = true
@@ -130,13 +131,13 @@ class AdminPostTests: XCTestCase {
         XCTAssertTrue(titleError)
         XCTAssertFalse(contentsError)
         XCTAssertEqual(presenter.createPostPageInformation?.loggedInUser.username, user.username)
-        XCTAssertEqual(presenter.createPostPageInformation?.currentPageURL.absoluteString, "/admin/createPost")
+        XCTAssertEqual(presenter.createPostPageInformation?.currentPageURL.absoluteString, "/admin/createPost/")
         XCTAssertEqual(presenter.createPostPageInformation?.websiteURL.absoluteString, "/")
     }
 
     func testCreatePostMustIncludeContents() throws {
         struct CreatePostData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let title = "Post Title"
             let tags = ["First Tag", "Second Tag"]
             let publish = true
@@ -154,7 +155,7 @@ class AdminPostTests: XCTestCase {
 
     func testPresenterGetsDataIfValidationOfDataFails() throws {
         struct CreatePostData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let title = "Post Title"
             let tags = ["First Tag", "Second Tag"]
             let publish = true
@@ -176,7 +177,7 @@ class AdminPostTests: XCTestCase {
 
     func testCreatePostWithDraftDoesNotPublishPost() throws {
         struct CreatePostData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let title = "Post Title"
             let contents = "# Post Title\n\nWe have a post"
             let tags = ["First Tag", "Second Tag"]
@@ -197,7 +198,7 @@ class AdminPostTests: XCTestCase {
         let existingTag = try testWorld.createTag(existingTagName, on: existingPost.post)
 
         struct CreatePostData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let title = "Post Title"
             let contents = "# Post Title\n\nWe have a post"
             let tags = ["First Tag", "Second Tag"]
@@ -218,7 +219,7 @@ class AdminPostTests: XCTestCase {
 
     func testPostCanBeUpdated() throws {
         struct UpdatePostData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let title = "Post Title"
             let contents = "# Post Title\n\nWe have a post"
             let tags = ["First Tag", "Second Tag"]
@@ -241,7 +242,7 @@ class AdminPostTests: XCTestCase {
 
     func testPostCanBeUpdatedAndUpdateSlugURL() throws {
         struct UpdatePostData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let title = "Post Title"
             let contents = "# Post Title\n\nWe have a post"
             let tags = ["First Tag", "Second Tag"]
@@ -298,8 +299,8 @@ class AdminPostTests: XCTestCase {
         let updateData = UpdateData(title: testData.post.title)
         let response = try testWorld.getResponse(to: "/admin/posts/\(testData.post.blogID!)/edit", body: updateData, loggedInUser: user)
 
-        XCTAssertEqual(response.http.status, .seeOther)
-        XCTAssertEqual(response.http.headers[.location].first, "/posts/\(testData.post.slugUrl)/")
+        XCTAssertEqual(response.status, .seeOther)
+        XCTAssertEqual(response.headers[.location].first, "/posts/\(testData.post.slugUrl)/")
     }
 
     func testThatEditingPostGetsRedirectToPostPageWithNewSlugURL() throws {
@@ -315,8 +316,8 @@ class AdminPostTests: XCTestCase {
         let updateData = UpdateData(title: "Some New Title")
         let response = try testWorld.getResponse(to: "/admin/posts/\(testData.post.blogID!)/edit", body: updateData, loggedInUser: user)
 
-        XCTAssertEqual(response.http.status, .seeOther)
-        XCTAssertEqual(response.http.headers[.location].first, "/posts/some-new-title/")
+        XCTAssertEqual(response.status, .seeOther)
+        XCTAssertEqual(response.headers[.location].first, "/posts/some-new-title/")
     }
 
     func testEditingPostWithNewTagsRemovesOldLinksAndAddsNewLinks() throws {
@@ -329,7 +330,7 @@ class AdminPostTests: XCTestCase {
         let newTagName = "A New Tag"
 
         struct UpdatePostData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let title = "Post Title"
             let contents = "# Post Title\n\nWe have a post"
             let tags: [String]
@@ -352,7 +353,7 @@ class AdminPostTests: XCTestCase {
 
     func testLastUpdatedTimeGetsChangedWhenEditingAPost() throws {
         struct UpdatePostData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let title = "Post Title"
             let contents = "# Post Title\n\nWe have a post"
             let tags = ["First Tag", "Second Tag"]
@@ -373,7 +374,7 @@ class AdminPostTests: XCTestCase {
 
     func testCreatedTimeSetWhenPublishingADraft() throws {
         struct UpdatePostData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let title = "Post Title"
             let contents = "# Post Title\n\nWe have a post"
             let tags = ["First Tag", "Second Tag"]
@@ -395,7 +396,7 @@ class AdminPostTests: XCTestCase {
 
     func testCreatedTimeSetAndMarkedAsDraftWhenSavingADraft() throws {
         struct UpdatePostData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let title = "Post Title"
             let contents = "# Post Title\n\nWe have a post"
             let tags = ["First Tag", "Second Tag"]
@@ -417,7 +418,7 @@ class AdminPostTests: XCTestCase {
 
     func testEditingPageWithInvalidDataPassesExistingDataToPresenter() throws {
         struct UpdatePostData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let title = ""
             let contents = "# Post Title\n\nWe have a post"
             let tags = ["First Tag", "Second Tag"]
@@ -449,7 +450,7 @@ class AdminPostTests: XCTestCase {
     
     func testEditingPageWithInvalidContentsDataPassesExistingDataToPresenter() throws {
         struct UpdatePostData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let title = "A new title"
             let contents = ""
             let tags = ["First Tag", "Second Tag"]
@@ -475,8 +476,8 @@ class AdminPostTests: XCTestCase {
         let testData = try testWorld.createPost()
         let response = try testWorld.getResponse(to: "/admin/posts/\(testData.post.blogID!)/delete", method: .POST, body: EmptyContent(), loggedInUser: user)
 
-        XCTAssertEqual(response.http.status, .seeOther)
-        XCTAssertEqual(response.http.headers[.location].first, "/admin/")
+        XCTAssertEqual(response.status, .seeOther)
+        XCTAssertEqual(response.headers[.location].first, "/admin/")
         XCTAssertEqual(testWorld.context.repository.posts.count, 0)
     }
 
@@ -548,7 +549,7 @@ class AdminPostTests: XCTestCase {
         let existingTag = try testWorld.createTag(existingTagName)
 
         struct UpdatePostData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let title = "Post Title"
             let contents = "# Post Title\n\nWe have a post"
             let tags: [String]
@@ -578,14 +579,14 @@ class AdminPostTests: XCTestCase {
         let website = ""
         setenv("WEBSITE_URL", website, 1)
         let response = try testWorld.getResponse(to: createPostPath, loggedInUser: user)
-        XCTAssertEqual(response.http.status, .internalServerError)
+        XCTAssertEqual(response.status, .internalServerError)
     }
 
     // MARK: - Helpers
 
     private func createPostViaRequest(title: String) throws -> BlogPost {
         struct CreatePostData: Content {
-            static let defaultContentType = MediaType.urlEncodedForm
+            static let defaultContentType = HTTPMediaType.urlEncodedForm
             let title: String
             let contents = "# Post Title\n\nWe have a post"
             let tags = ["First Tag", "Second Tag"]

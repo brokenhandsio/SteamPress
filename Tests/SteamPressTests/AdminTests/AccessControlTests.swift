@@ -11,13 +11,13 @@ class AccessControlTests: XCTestCase {
 
     // MARK: - Overrides
 
-    override func setUp() {
-        testWorld = try! TestWorld.create(path: "blog")
+    override func setUpWithError() throws {
+        testWorld = try TestWorld.create(path: "blog")
         user = testWorld.createUser()
     }
     
-    override func tearDown() {
-        XCTAssertNoThrow(try testWorld.tryAsHardAsWeCanToShutdownApplication())
+    override func tearDownWithError() throws {
+        try testWorld.shutdown()
     }
 
     // MARK: - Tests
@@ -82,33 +82,33 @@ class AccessControlTests: XCTestCase {
 
     func testCanAccessAdminPageWhenLoggedIn() throws {
         let response = try testWorld.getResponse(to: "/blog/admin/", loggedInUser: user)
-        XCTAssertEqual(response.http.status, .ok)
+        XCTAssertEqual(response.status, .ok)
     }
 
     func testCanAccessCreatePostPageWhenLoggedIn() throws {
         let response = try testWorld.getResponse(to: "/blog/admin/createPost", loggedInUser: user)
-        XCTAssertEqual(response.http.status, .ok)
+        XCTAssertEqual(response.status, .ok)
     }
 
     func testCanAccessEditPostPageWhenLoggedIn() throws {
         let post = try testWorld.createPost()
         let response = try testWorld.getResponse(to: "/blog/admin/posts/\(post.post.blogID!)/edit", loggedInUser: user)
-        XCTAssertEqual(response.http.status, .ok)
+        XCTAssertEqual(response.status, .ok)
     }
 
     func testCanAccessCreateUserPageWhenLoggedIn() throws {
         let response = try testWorld.getResponse(to: "/blog/admin/createUser", loggedInUser: user)
-        XCTAssertEqual(response.http.status, .ok)
+        XCTAssertEqual(response.status, .ok)
     }
 
     func testCanAccessEditUserPageWhenLoggedIn() throws {
         let response = try testWorld.getResponse(to: "/blog/admin/users/1/edit", loggedInUser: user)
-        XCTAssertEqual(response.http.status, .ok)
+        XCTAssertEqual(response.status, .ok)
     }
 
     func testCanAccessResetPasswordPage() throws {
         let response = try testWorld.getResponse(to: "/blog/admin/resetPassword", loggedInUser: user)
-        XCTAssertEqual(response.http.status, .ok)
+        XCTAssertEqual(response.status, .ok)
     }
 
     // MARK: - Helpers
@@ -116,8 +116,8 @@ class AccessControlTests: XCTestCase {
     private func assertLoginRequired(method: HTTPMethod, path: String) throws {
         let response = try testWorld.getResponse(to: "/blog/admin/\(path)", method: method)
 
-        XCTAssertEqual(response.http.status, .seeOther)
-        XCTAssertEqual(response.http.headers[.location].first, "/blog/admin/login/?loginRequired")
+        XCTAssertEqual(response.status, .seeOther)
+        XCTAssertEqual(response.headers[.location].first, "/blog/admin/login/?loginRequired")
     }
 
 }

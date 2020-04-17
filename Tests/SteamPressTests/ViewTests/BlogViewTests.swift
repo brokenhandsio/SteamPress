@@ -5,7 +5,7 @@ import Vapor
 class BlogViewTests: XCTestCase {
     
     // MARK: - Properties
-    var basicContainer: BasicContainer!
+    var eventLoopGroup: MultiThreadedEventLoopGroup!
     var presenter: ViewBlogPresenter!
     var author: BlogUser!
     var post: BlogPost!
@@ -13,36 +13,30 @@ class BlogViewTests: XCTestCase {
     var pageInformation: BlogGlobalPageInformation!
     var websiteURL: URL!
     var currentPageURL: URL!
-    
+
     // MARK: - Overrides
     
-    override func setUp() {
-        presenter = ViewBlogPresenter()
-        basicContainer = BasicContainer(config: Config.default(), environment: Environment.testing, services: .init(), on: EmbeddedEventLoop())
-        basicContainer.services.register(ViewRenderer.self) { _ in
-            return self.viewRenderer
-        }
-        basicContainer.services.register(LongPostDateFormatter.self)
-        basicContainer.services.register(NumericPostDateFormatter.self)
-        viewRenderer = CapturingViewRenderer(worker: basicContainer)
-        author = TestDataBuilder.anyUser()
-        author.userID = 1
+    override func setUpWithError() throws {
+        eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
+        viewRenderer = CapturingViewRenderer(eventLoop: eventLoopGroup.next())
+        presenter = ViewBlogPresenter(viewRenderer: viewRenderer, longDateFormatter: LongPostDateFormatter(), numericDateFormatter: NumericPostDateFormatter(), eventLoopGroup: eventLoopGroup)
+        author = TestDataBuilder.anyUser(id: 1)
         let createdDate = Date(timeIntervalSince1970: 1584714638)
         let lastEditedDate = Date(timeIntervalSince1970: 1584981458)
-        post = try! TestDataBuilder.anyPost(author: author, contents: TestDataBuilder.longContents, creationDate: createdDate, lastEditedDate: lastEditedDate)
+        post = try TestDataBuilder.anyPost(author: author, contents: TestDataBuilder.longContents, creationDate: createdDate, lastEditedDate: lastEditedDate)
         websiteURL = URL(string: "https://www.brokenhands.io")!
         currentPageURL = websiteURL.appendingPathComponent("blog").appendingPathComponent("posts").appendingPathComponent("test-post")
         pageInformation = BlogGlobalPageInformation(disqusName: "disqusName", siteTwitterHandle: "twitterHandleSomething", googleAnalyticsIdentifier: "GAString....", loggedInUser: author, websiteURL: websiteURL, currentPageURL: currentPageURL, currentPageEncodedURL: currentPageURL.absoluteString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!)
     }
     
-    override func tearDown() {
-        try! basicContainer.syncShutdownGracefully()
+    override func tearDownWithError() throws {
+        try eventLoopGroup.syncShutdownGracefully()
     }
     
     // MARK: - Tests
     
     func testDescriptionOnBlogPostPageIsShortSnippetTextCleaned() throws {
-        _ = presenter.postView(on: basicContainer, post: post, author: author, tags: [], pageInformation: pageInformation)
+        _ = presenter.postView(post: post, author: author, tags: [], pageInformation: pageInformation)
         
         let context = try XCTUnwrap(viewRenderer.capturedContext as? BlogPostPageContext)
         let expectedDescription = "Welcome to SteamPress!\nSteamPress started out as an idea - after all, I was porting sites and backends over to Swift and would like to have a blog as well. Being early days for Server-Side Swift, and embracing Vapor, there wasn't anything available to put a blog on my site, so I did what any self-respecting engineer would do - I made one! Besides, what better way to learn a framework than build a blog!"
@@ -51,7 +45,7 @@ class BlogViewTests: XCTestCase {
     
     func testBlogPostPageGetsCorrectParameters() throws {
         let tag = BlogTag(id: 1, name: "Engineering")
-        _ = presenter.postView(on: basicContainer, post: post, author: author, tags: [tag], pageInformation: pageInformation)
+        _ = presenter.postView(post: post, author: author, tags: [tag], pageInformation: pageInformation)
         
         let context = try XCTUnwrap(viewRenderer.capturedContext as? BlogPostPageContext)
         
@@ -89,7 +83,7 @@ class BlogViewTests: XCTestCase {
     
     func testDisqusNameNotPassedToBlogPostPageIfNotPassedIn() throws {
         let pageInformationWithoutDisqus = BlogGlobalPageInformation(disqusName: nil, siteTwitterHandle: "twitter", googleAnalyticsIdentifier: "google", loggedInUser: author, websiteURL: websiteURL, currentPageURL: currentPageURL, currentPageEncodedURL: currentPageURL.absoluteString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!)
-        _ = presenter.postView(on: basicContainer, post: post, author: author, tags: [], pageInformation: pageInformationWithoutDisqus)
+        _ = presenter.postView(post: post, author: author, tags: [], pageInformation: pageInformationWithoutDisqus)
         
         let context = try XCTUnwrap(viewRenderer.capturedContext as? BlogPostPageContext)
         XCTAssertNil(context.pageInformation.disqusName)
@@ -97,7 +91,7 @@ class BlogViewTests: XCTestCase {
     
     func testTwitterHandleNotPassedToBlogPostPageIfNotPassedIn() throws {
         let pageInformationWithoutTwitterHandle = BlogGlobalPageInformation(disqusName: "disqus", siteTwitterHandle: nil, googleAnalyticsIdentifier: "google", loggedInUser: author, websiteURL: websiteURL, currentPageURL: currentPageURL, currentPageEncodedURL: currentPageURL.absoluteString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!)
-        _ = presenter.postView(on: basicContainer, post: post, author: author, tags: [], pageInformation: pageInformationWithoutTwitterHandle)
+        _ = presenter.postView(post: post, author: author, tags: [], pageInformation: pageInformationWithoutTwitterHandle)
         
         let context = try XCTUnwrap(viewRenderer.capturedContext as? BlogPostPageContext)
         XCTAssertNil(context.pageInformation.siteTwitterHandle)
@@ -105,7 +99,7 @@ class BlogViewTests: XCTestCase {
     
     func testGAIdentifierNotPassedToBlogPostPageIfNotPassedIn() throws {
         let pageInformationWithoutGAIdentifier = BlogGlobalPageInformation(disqusName: "disqus", siteTwitterHandle: "twitter", googleAnalyticsIdentifier: nil, loggedInUser: author, websiteURL: websiteURL, currentPageURL: currentPageURL, currentPageEncodedURL: currentPageURL.absoluteString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!)
-        _ = presenter.postView(on: basicContainer, post: post, author: author, tags: [], pageInformation: pageInformationWithoutGAIdentifier)
+        _ = presenter.postView(post: post, author: author, tags: [], pageInformation: pageInformationWithoutGAIdentifier)
         
         let context = try XCTUnwrap(viewRenderer.capturedContext as? BlogPostPageContext)
         XCTAssertNil(context.pageInformation.googleAnalyticsIdentifier)
@@ -116,7 +110,7 @@ class BlogViewTests: XCTestCase {
         let urlEncodedName = try XCTUnwrap(tagName.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed))
         let tag = BlogTag(id: 1, name: tagName)
         
-        _ = presenter.postView(on: basicContainer, post: post, author: author, tags: [tag], pageInformation: pageInformation)
+        _ = presenter.postView(post: post, author: author, tags: [tag], pageInformation: pageInformation)
         
         let context = try XCTUnwrap(viewRenderer.capturedContext as? BlogPostPageContext)
         XCTAssertEqual(context.post.tags.first?.urlEncodedName, urlEncodedName)

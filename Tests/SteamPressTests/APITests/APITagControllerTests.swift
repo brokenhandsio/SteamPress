@@ -4,11 +4,22 @@ import SteamPress
 
 class APITagControllerTests: XCTestCase {
 
+    // MARK: - Properties
+    var testWorld: TestWorld!
+    
+    // MARK: - Overrides
+    
+    override func setUpWithError() throws {
+        testWorld = try TestWorld.create()
+    }
+    
+    override func tearDownWithError() throws {
+        try testWorld.shutdown()
+    }
+    
     // MARK: - Tests
 
     func testThatAllTagsAreReturnedFromAPI() throws {
-        var testWorld = try TestWorld.create()
-
         let tag1 = try testWorld.context.repository.addTag(name: "Vapor3")
         let tag2 = try testWorld.context.repository.addTag(name: "Engineering")
 
@@ -16,8 +27,6 @@ class APITagControllerTests: XCTestCase {
 
         XCTAssertEqual(tags[0].name, tag1.name)
         XCTAssertEqual(tags[1].name, tag2.name)
-        
-        XCTAssertNoThrow(try testWorld.tryAsHardAsWeCanToShutdownApplication())
     }
     
 }

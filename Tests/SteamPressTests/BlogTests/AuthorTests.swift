@@ -17,15 +17,15 @@ class AuthorTests: XCTestCase {
     private var postsPerPage = 7
 
     // MARK: - Overrides
-
-    override func setUp() {
-        testWorld = try! TestWorld.create(postsPerPage: postsPerPage)
+    
+    override func setUpWithError() throws {
+        testWorld = try TestWorld.create(postsPerPage: postsPerPage, websiteURL: "/")
         user = testWorld.createUser(username: "leia")
-        postData = try! testWorld.createPost(author: user)
+        postData = try testWorld.createPost(author: user)
     }
     
-    override func tearDown() {
-        XCTAssertNoThrow(try testWorld.tryAsHardAsWeCanToShutdownApplication())
+    override func tearDownWithError() throws {
+        try testWorld.shutdown()
     }
 
     // MARK: - Tests
@@ -53,14 +53,15 @@ class AuthorTests: XCTestCase {
     }
 
     func testDisabledBlogAuthorsPath() throws {
+        try testWorld.shutdown()
         testWorld = try TestWorld.create(enableAuthorPages: false)
         _ = testWorld.createUser(username: "leia")
 
         let authorResponse = try testWorld.getResponse(to: authorsRequestPath)
         let allAuthorsResponse = try testWorld.getResponse(to: allAuthorsRequestPath)
 
-        XCTAssertEqual(authorResponse.http.status, .notFound)
-        XCTAssertEqual(allAuthorsResponse.http.status, .notFound)
+        XCTAssertEqual(authorResponse.status, .notFound)
+        XCTAssertEqual(allAuthorsResponse.status, .notFound)
     }
 
     func testAuthorView() throws {
@@ -163,7 +164,7 @@ class AuthorTests: XCTestCase {
         let tag2Name = "Search"
         let tag1 = try testWorld.createTag(tag1Name, on: post2.post)
         _ = try testWorld.createTag(tag2Name, on: postData.post)
-        try testWorld.context.repository.add(tag1, to: postData.post)
+        try testWorld.context.repository.internalAdd(tag1, to: postData.post)
         
         _ = try testWorld.getResponse(to: "/authors/leia")
         let tagsForPosts = try XCTUnwrap(presenter.authorPageTagsForPost)

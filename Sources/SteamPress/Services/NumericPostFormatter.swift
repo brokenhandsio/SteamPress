@@ -1,10 +1,7 @@
 import Foundation
 import Vapor
 
-struct NumericPostDateFormatter: ServiceType {
-    static func makeService(for container: Container) throws -> NumericPostDateFormatter {
-        return .init()
-    }
+struct NumericPostDateFormatter {
     
     let formatter: DateFormatter
     

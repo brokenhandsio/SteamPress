@@ -3,7 +3,7 @@
     <br>
     <br>
     <a href="https://swift.org">
-        <img src="http://img.shields.io/badge/Swift-5.1-brightgreen.svg" alt="Language">
+        <img src="http://img.shields.io/badge/Swift-5.2-brightgreen.svg" alt="Language">
     </a>
     <a href="https://github.com/brokenhandsio/SteamPress/actions">
         <img src="https://github.com/brokenhandsio/SteamPress/workflows/CI/badge.svg?branch=master" alt="Build Status">
@@ -16,7 +16,7 @@
     </a>
 </p>
 
-SteamPress is a Swift blogging engine for use with the Vapor Framework to deploy blogs to sites that run on top of Vapor. It uses [Fluent](https://github.com/vapor/fluent) so will work with any database that has a Fluent Driver. It also incorporates a [Markdown Provider](https://github.com/vapor-community/markdown-provider) allowing you to write your posts in Markdown and then use Leaf to render the markdown.
+SteamPress is a Swift blogging engine for use with the Vapor Framework to deploy blogs to sites that run on top of Vapor. It uses protocols to define database storage, so will work with any database that has a `SteamPressRepository` implementation, or you can write your own! It also incorporates a [Markdown Provider](https://github.com/vapor-community/markdown-provider) allowing you to write your posts in Markdown and then use Leaf to render the markdown.
 
 The blog can either be used as the root of your website (i.e. appearing at https://www.acme.org) or in a subpath (i.e. https://www.acme.org/blog/).
 
@@ -42,6 +42,8 @@ There is an example of how it can work in a site (and what it requires in terms 
 
 ## Add as a dependency
 
+**TODO** Update
+
 SteamPress is easy to integrate with your application. There are two providers that provide implementations for [PostgreSQL](https://github.com/brokenhandsio/steampress-fluent-postgres) or [MySQL](https://github.com/brokenhandsio/steampress-fluent-mysql). You are also free to write your own integrations. Normally you'd choose one of the implementations as that provides repository integrations for the database. In this example, we're using Postgres.
 
 First, add the provider to your `Package.swift` dependencies:
@@ -49,7 +51,7 @@ First, add the provider to your `Package.swift` dependencies:
 ```swift
 dependencies: [
     // ...
-    .package(name: "SteampressFluentPostgres", url: "https://github.com/brokenhandsio/steampress-fluent-postgres.git", from: "1.0.0"),
+    .package(name: "SteampressFluentPostgres", url: "https://github.com/brokenhandsio/steampress-fluent-postgres.git", from: "2.0.0"),
 ],
 ```
 
@@ -98,7 +100,7 @@ First add SteamPress to your `Package.swift` dependencies:
 ```swift
 dependencies: [
     // ...,
-    .package(name: "SteamPress", url: "https://github.com/brokenhandsio/SteamPress", from: "1.0.0")
+    .package(name: "SteamPress", url: "https://github.com/brokenhandsio/SteamPress", from: "2.0.0")
 ]
 ```
 
@@ -115,42 +117,29 @@ And then as a dependency to your target:
 This will register the routes for you. You must provide implementations for the different repository types to your services:
 
 ```swift
-services.register(MyTagRepository(), as: BlogTagRepository.self)
-services.register(MyUserRepository(), as: BlogUserRepository.self)
-services.register(MyPostRepository(), as: BlogPostRepository.self)
+app.steampress.blogRepositories.use { application in
+    MyRepository(application: application)
+}
 ```
 
-You can then register the SteamPress provider with your services:
-
-```swift
-let steampressProvider = SteamPress.Provider()
-try services.register(steampressProvider)
-```
+SteamPress will be automatically registered, depending on the configuration provided (see below).
 
 ## Integration
 
 SteamPress offers a 'Remember Me' functionality when logging in to extend the duration of the session. In order for this to work, you must register the middleware:
 
 ```swift
-var middlewares = MiddlewareConfig()
-// ...
-middlewares.use(BlogRememberMeMiddleware.self)
-middlewares.use(SessionsMiddleware.self)
-services.register(middlewares)
+application.middlewares.use(BlogRememberMeMiddleware())
 ```
 
 **Note:** This must be registered before you register the `SessionsMiddleware`.
 
-SteamPress uses a `PasswordVerifier` protocol to check passwords. Vapor doesn't provide a default BCrypt implementation for this, so you must register this yourself:
-
-```swift
-config.prefer(BCryptDigest.self, for: PasswordVerifier.self)
-```
+**TODO: Update**
 
 Finally, if you wish to use the `#markdown()` tag with your blog Leaf templates, you must register this. There's also a paginator tag, to make pagination easy:
 
 ```swift
- var tags = LeafTagConfig.default()
+var tags = LeafTagConfig.default()
 tags.use(Markdown(), as: "markdown")
 let paginatorTag = PaginatorTag(paginationLabel: "Blog Posts")
 tags.use(paginatorTag, as: PaginatorTag.name)
@@ -175,7 +164,7 @@ let feedInformation = FeedInformation(
     description: "SteamPress is an open-source blogging engine written for Vapor in Swift", 
     copyright: "Released under the MIT licence", 
     imageURL: "https://user-images.githubusercontent.com/9938337/29742058-ed41dcc0-8a6f-11e7-9cfc-680501cdfb97.png")
-try services.register(SteamPressFluentPostgresProvider(blogPath: "blog", feedInformation: feedInformation, postsPerPage: 5))
+application.steampress.configuration = SteamPressConfiguration(blogPath: "blog", feedInformation: feedInformation, postsPerPage: 5)
 ```
 
 Additionally, you should set the `WEBSITE_URL` environment variable to the root address of your website, e.g. `https://www.steampress.io`. This is used to set various parameters throughout SteamPress.

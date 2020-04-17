@@ -28,8 +28,8 @@ struct FeedController: RouteCollection {
     }
 
     // MARK: - Route Collection
-    func boot(router: Router) throws {
-        router.get("atom.xml", use: atomGenerator.feedHandler)
-        router.get("rss.xml", use: rssGenerator.feedHandler)
+    func boot(routes: RoutesBuilder) throws {
+        routes.get("atom.xml", use: atomGenerator.feedHandler)
+        routes.get("rss.xml", use: rssGenerator.feedHandler)
     }
 }

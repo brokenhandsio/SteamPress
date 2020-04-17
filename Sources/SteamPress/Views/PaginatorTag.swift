@@ -1,6 +1,7 @@
-import TemplateKit
+import LeafKit
+import Foundation
 
-public final class PaginatorTag: TagRenderer {
+public final class PaginatorTag: LeafTag {
     public enum Error: Swift.Error {
         case expectedPaginationInformation
     }
@@ -13,19 +14,18 @@ public final class PaginatorTag: TagRenderer {
 
     public static let name = "paginator"
     
-    public func render(tag: TagContext) throws -> EventLoopFuture<TemplateData> {
-        try tag.requireNoBody()
+    public func render(_ ctx: LeafContext) throws -> LeafData {
+        try ctx.requireNoBody()
                 
-        guard let paginationInformaton = tag.context.data.dictionary?["paginationTagInformation"] else {
+        guard let paginationInformation = ctx.data["paginationTagInformation"]?.dictionary else {
             throw Error.expectedPaginationInformation
         }
         
-        guard let currentPage = paginationInformaton.dictionary?["currentPage"]?.int,
-            let totalPages = paginationInformaton.dictionary?["totalPages"]?.int else {
+        guard let currentPage = paginationInformation["currentPage"]?.int, let totalPages = paginationInformation["totalPages"]?.int else {
             throw Error.expectedPaginationInformation
         }
         
-        let currentQuery = paginationInformaton.dictionary?["currentQuery"]?.string
+        let currentQuery = paginationInformation["currentQuery"]?.string
         
         let previousPage: String?
         let nextPage: String?
@@ -45,7 +45,7 @@ public final class PaginatorTag: TagRenderer {
         }
         
         let data = buildNavigation(currentPage: currentPage, totalPages: totalPages, previousPage: previousPage, nextPage: nextPage, currentQuery: currentQuery)
-        return tag.eventLoop.future(data)
+        return data
         
     }
 }
@@ -102,7 +102,7 @@ extension PaginatorTag {
         return links
     }
 
-    func buildNavigation(currentPage: Int, totalPages: Int, previousPage: String?, nextPage: String?, currentQuery: String?) -> TemplateData {
+    func buildNavigation(currentPage: Int, totalPages: Int, previousPage: String?, nextPage: String?, currentQuery: String?) -> LeafData {
         
         var result = ""
 
@@ -126,7 +126,7 @@ extension PaginatorTag {
 
         result += footer
 
-        return TemplateData.string(result)
+        return LeafData.string(result)
     }
 
     func buildLink(title: String, active: Bool, link: String?, disabled: Bool) -> String {
