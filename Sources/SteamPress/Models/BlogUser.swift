@@ -8,17 +8,18 @@ public final class BlogUser: Codable {
     public var name: String
     public var username: String
     public var password: String
-    public var resetPasswordRequired: Bool = false
+    public var resetPasswordRequired: Bool
     public var profilePicture: String?
     public var twitterHandle: String?
     public var biography: String?
     public var tagline: String?
 
-    public init(userID: Int? = nil, name: String, username: String, password: String, profilePicture: String?, twitterHandle: String?, biography: String?, tagline: String?) {
+    public init(userID: Int? = nil, name: String, username: String, password: String, resetPasswordRequired: Bool = false, profilePicture: String?, twitterHandle: String?, biography: String?, tagline: String?) {
         self.userID = userID
         self.name = name
         self.username = username.lowercased()
         self.password = password
+        self.resetPasswordRequired = resetPasswordRequired
         self.profilePicture = profilePicture
         self.twitterHandle = twitterHandle
         self.biography = biography
